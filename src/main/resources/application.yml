@@ -3,11 +3,6 @@ server:
   forward-headers-strategy: framework
 
 spring:
-  datasource:
-    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:caro}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${DB_USER:root}
-    password: ${DB_PASS:}
   jpa:
     hibernate:
       ddl-auto: update
@@ -24,5 +19,12 @@ huggingface:
   model: ""
 
 app:
+  datasource:
+    laragon:
+      host: ${LARAGON_DB_HOST:127.0.0.1}
+      port: ${LARAGON_DB_PORT:3306}
+      database: ${LARAGON_DB_NAME:caro}
+      username: ${LARAGON_DB_USER:root}
+      password: ${LARAGON_DB_PASS:}
   websocket:
     allowed-origin-patterns: ${WS_ALLOWED_ORIGINS:*}
