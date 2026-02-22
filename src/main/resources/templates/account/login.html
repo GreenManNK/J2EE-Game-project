@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Dang nhap')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('account-login')}"></div>
+
+<div class="card theme-box mx-auto mt-5" style="max-width: 450px;">
+  <div class="card-header">
+    <h4 class="mb-0 theme-text">Dang nhap</h4>
+  </div>
+  <div class="card-body theme-text">
+    <form id="loginForm">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input id="email" class="form-control" type="email" placeholder="Nhap email" required>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Mat khau</label>
+        <div class="input-group">
+          <input id="password" class="form-control" type="password" placeholder="Nhap mat khau" required>
+          <button class="btn btn-outline-secondary" id="togglePasswordBtn" type="button">👁</button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Dang nhap</button>
+      <div class="text-center mt-2">
+        <a th:href="@{/account/reset-page}" class="btn btn-link">Quen mat khau?</a>
+      </div>
+    </form>
+    <pre id="out" class="small mt-3"></pre>
+  </div>
+</div>
+
+<th:block th:replace="~{fragments :: appScripts('account-login')}"></th:block>
+<script th:src="@{/js/account-login.js}"></script>
+<script>
+  document.getElementById('togglePasswordBtn')?.addEventListener('click', function () {
+    const input = document.getElementById('password');
+    if (!input) return;
+    const hidden = input.type === 'password';
+    input.type = hidden ? 'text' : 'password';
+    this.textContent = hidden ? '🙈' : '👁';
+  });
+</script>
+</body>
+</html>

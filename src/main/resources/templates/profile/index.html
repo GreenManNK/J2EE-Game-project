@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Profile</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div th:replace="~{fragments :: nav}"></div>
+<div class="container">
+<h1>Profile</h1>
+<div>
+  <p><strong>User:</strong> <span th:text="${user.displayName}"></span></p>
+  <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+  <p><strong>Score:</strong> <span th:text="${user.score}"></span></p>
+  <p><strong>WinRate:</strong> <span th:text="${winRate}"></span>%</p>
+  <p><strong>Total Games:</strong> <span th:text="${totalGames}"></span></p>
+  <p><strong>Win Count:</strong> <span th:text="${winCount}"></span></p>
+  <p><strong>Rank:</strong> <span th:text="${rank}"></span></p>
+</div>
+<h3>Danh hieu</h3>
+<ul><li th:each="d : ${danhHieu}" th:text="${d}"></li></ul>
+<h3>Diem Achievements</h3>
+<ul><li th:each="a : ${diemAchievements}" th:text="${a}"></li></ul>
+<h3>Locked</h3>
+<ul><li th:each="a : ${lockedAchievements}" th:text="${a}"></li></ul>
+<a th:href="@{/}">Ve Home</a>
+</div>
+</body>
+</html>

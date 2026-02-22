@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Notifications</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div th:replace="~{fragments :: nav}"></div>
+<div class="container">
+<h1>Notifications</h1>
+<h3>Friend Requests</h3>
+<ul><li th:each="f : ${friendRequests}" th:text="${f.requesterId + ' -> ' + f.addresseeId}"></li></ul>
+<h3>Achievement</h3>
+<ul><li th:each="a : ${achievementNotifications}" th:text="${a.achievementName + ' - ' + a.createdAt}"></li></ul>
+<h3>System</h3>
+<ul><li th:each="s : ${systemNotifications}" th:text="${s.content + ' - ' + s.createdAt}"></li></ul>
+<a th:href="@{/friendship(currentUserId=${currentUserId})}">Back Friendship</a>
+</div>
+</body></html>

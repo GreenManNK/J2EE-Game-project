@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Xac thuc email')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('account-verify')}"></div>
+
+<div class="card theme-box mx-auto mt-5" style="max-width: 450px;">
+  <div class="card-header"><h4 class="mb-0 theme-text">Xac thuc Email</h4></div>
+  <div class="card-body theme-text">
+    <form id="verifyForm">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input id="email" type="email" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="code" class="form-label">Ma xac thuc</label>
+        <input id="code" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Xac thuc</button>
+    </form>
+    <pre id="out" class="small mt-3"></pre>
+  </div>
+</div>
+
+<th:block th:replace="~{fragments :: appScripts('account-verify')}"></th:block>
+<script th:src="@{/js/account-verify-email.js}"></script>
+</body>
+</html>

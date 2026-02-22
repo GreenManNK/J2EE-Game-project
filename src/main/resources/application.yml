@@ -1,0 +1,28 @@
+server:
+  port: 8080
+  forward-headers-strategy: framework
+
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:caro}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER:root}
+    password: ${DB_PASS:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  thymeleaf:
+    cache: false
+
+logging:
+  level:
+    root: INFO
+
+huggingface:
+  apiKey: ""
+  model: ""
+
+app:
+  websocket:
+    allowed-origin-patterns: ${WS_ALLOWED_ORIGINS:*}

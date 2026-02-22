@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Friendship</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div th:replace="~{fragments :: nav}"></div>
+<div class="container" id="friendshipRoot" th:attr="data-current-user-id=${currentUserId}">
+<h1>Friendship</h1>
+<p>Current user: <strong th:text="${currentUserId}"></strong></p>
+<form id="sendByEmailForm">
+  <input id="email" placeholder="friend email">
+  <button type="submit">Send Request</button>
+</form>
+<pre id="out"></pre>
+
+<h3>Friends</h3>
+<ul><li th:each="f : ${friends}" th:text="${f.displayName + ' (' + f.email + ')'}"></li></ul>
+<h3>Pending Requests</h3>
+<ul>
+  <li th:each="p : ${pendingRequests}">
+    <span th:text="${p.requesterId + ' -> ' + p.addresseeId}"></span>
+    <button class="accept btn secondary" th:attr="data-id=${p.id}">Accept</button>
+    <button class="decline btn secondary" th:attr="data-id=${p.id}">Decline</button>
+  </li>
+</ul>
+<h3>Sent Requests</h3>
+<ul><li th:each="s : ${sentRequests}" th:text="${s.requesterId + ' -> ' + s.addresseeId}"></li></ul>
+
+<p><a th:href="@{/friendship/notifications(currentUserId=${currentUserId})}">Notifications</a></p>
+<p><a th:href="@{/}">Home</a></p>
+</div>
+<script th:src="@{/js/friendship-index.js}"></script>
+</body></html>

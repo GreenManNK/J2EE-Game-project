@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Dang ky')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('account-register')}"></div>
+
+<div class="card theme-box mx-auto mt-5" style="max-width: 450px;">
+  <div class="card-header">
+    <h4 class="mb-0 theme-text">Dang ky tai khoan</h4>
+  </div>
+  <div class="card-body theme-text">
+    <form id="regForm">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input id="email" class="form-control" type="email" placeholder="Nhap email" required>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Mat khau</label>
+        <div class="input-group">
+          <input id="password" class="form-control" type="password" placeholder="Tao mat khau" required>
+          <button class="btn btn-outline-secondary" id="toggleRegPasswordBtn" type="button">👁</button>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="displayName" class="form-label">Ten hien thi</label>
+        <input id="displayName" class="form-control" placeholder="Ten hien thi" required>
+      </div>
+      <button type="submit" class="btn btn-success w-100">Gui ma xac thuc</button>
+    </form>
+    <div class="text-center mt-2">
+      <a th:href="@{/account/verify-email-page}" class="btn btn-link">Da co ma? Xac thuc email</a>
+    </div>
+    <pre id="out" class="small mt-3"></pre>
+  </div>
+</div>
+
+<th:block th:replace="~{fragments :: appScripts('account-register')}"></th:block>
+<script th:src="@{/js/account-register.js}"></script>
+<script>
+  document.getElementById('toggleRegPasswordBtn')?.addEventListener('click', function () {
+    const input = document.getElementById('password');
+    if (!input) return;
+    const hidden = input.type === 'password';
+    input.type = hidden ? 'text' : 'password';
+    this.textContent = hidden ? '🙈' : '👁';
+  });
+</script>
+</body>
+</html>

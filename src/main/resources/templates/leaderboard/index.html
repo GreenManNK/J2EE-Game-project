@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Leaderboard</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div th:replace="~{fragments :: nav}"></div>
+<div class="container">
+<h1>Bang xep hang</h1>
+<table border="1" cellpadding="6">
+  <thead><tr><th>#</th><th>Name</th><th>Score</th></tr></thead>
+  <tbody>
+    <tr th:each="p, i : ${players}">
+      <td th:text="${i.count}"></td>
+      <td th:text="${p.displayName}"></td>
+      <td th:text="${p.score}"></td>
+    </tr>
+  </tbody>
+</table>
+<a th:href="@{/}">Ve Home</a>
+</div>
+</body>
+</html>

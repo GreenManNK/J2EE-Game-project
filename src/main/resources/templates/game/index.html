@@ -1,0 +1,228 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Game Online')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('game-index')}"></div>
+
+<main id="gameMain" class="transition-margin d-flex flex-column align-items-center text-center gap-2">
+  <h1 class="display-4 theme-text fw-bold" style="font-size: 1.75rem; text-shadow: 2px 2px 0 #000, 4px 4px 0 #0ff; margin-top: 1rem;">
+    MULTIPLAYER - ONLINE
+  </h1>
+
+  <div class="info-top-container">
+    <div class="info-box theme-box">
+      <div><strong>Ma phong:</strong> <span id="roomIdText" th:text="${roomId}">room</span></div>
+      <div><strong>Ky hieu:</strong> <span id="playerSymbol" th:text="${symbol}">?</span></div>
+      <div class="mt-2">
+        <button id="leaveRoomBtn" class="btn btn-outline-danger btn-sm">Roi phong</button>
+      </div>
+    </div>
+    <div class="info-box theme-box">
+      <div><strong>Trang thai:</strong> <span id="turnStatus">Dang ket noi...</span></div>
+      <div><strong>Nguoi choi:</strong> <span id="playerName">...</span></div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-center align-items-start gap-3 w-100" style="max-width: 980px;">
+    <div id="chat-container" class="theme-box d-flex flex-column" style="width: 300px; border: 1px solid #333; border-radius: 10px;">
+      <div id="chat-box" class="chat-box"></div>
+      <div class="d-flex p-2 border-top">
+        <input id="message-input" type="text" class="form-control me-2" placeholder="Nhan tin...">
+        <button id="sendBtn" class="btn btn-primary rounded-circle" style="width: 40px; height: 40px;"><i class="bi bi-send"></i></button>
+      </div>
+    </div>
+
+    <div id="game-board-wrapper"></div>
+  </div>
+</main>
+
+<style>
+  .info-box { border: 2px solid; border-radius: 10px; padding: 12px; }
+  .info-top-container { max-width: 760px; margin: 0 auto 12px auto; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  #game-board-wrapper { display: grid; grid-template-columns: repeat(10, 1fr); width: 420px; aspect-ratio: 1 / 1; }
+  .cell {
+    aspect-ratio: 1 / 1;
+    border: 1px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+  }
+  .player-x { color: #0d6efd; }
+  .player-o { color: #dc3545; }
+  #chat-box { display: flex; flex-direction: column; gap: 8px; height: 300px; overflow-y: auto; padding: 8px; }
+  .chat-message { padding: 6px 10px; border-radius: 12px; max-width: 85%; word-wrap: break-word; }
+  .chat-you { align-self: flex-end; background: #0d6efd; color: #fff; }
+  .chat-other { align-self: flex-start; background: #f1f1f1; color: #000; }
+  body.dark-mode .chat-other { background: #333; color: #e0e0e0; }
+</style>
+
+<th:block th:replace="~{fragments :: appScripts('game-index')}"></th:block>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+<script th:inline="javascript">
+  (function () {
+    const initialRoomId = /*[[${roomId}]]*/ '';
+    const requestedSymbol = /*[[${symbol}]]*/ '';
+    const roomId = (initialRoomId || '').trim();
+    if (!roomId) {
+      alert('Ban chua vao phong. He thong se quay lai sanh.');
+      window.location.href = '/lobby';
+      return;
+    }
+
+    const boardEl = document.getElementById('game-board-wrapper');
+    const statusEl = document.getElementById('turnStatus');
+    const symbolEl = document.getElementById('playerSymbol');
+    const playerNameEl = document.getElementById('playerName');
+    const chatBox = document.getElementById('chat-box');
+    const messageInput = document.getElementById('message-input');
+
+    const userId = localStorage.getItem('userId') || ('guest_' + Math.random().toString(36).slice(2, 10));
+    const displayName = localStorage.getItem('displayName') || ('Nguoi choi ' + userId.slice(-4));
+    const avatarPath = localStorage.getItem('avatarPath') || '/uploads/avatars/default-avatar.jpg';
+    localStorage.setItem('userId', userId);
+    localStorage.setItem('displayName', displayName);
+    localStorage.setItem('avatarPath', avatarPath);
+    playerNameEl.textContent = displayName;
+
+    const board = Array.from({ length: 10 }, () => Array(10).fill(''));
+    let mySymbol = requestedSymbol || '';
+    let myTurnUserId = '';
+    let connected = false;
+
+    function renderBoard() {
+      boardEl.innerHTML = '';
+      for (let x = 0; x < 10; x++) {
+        for (let y = 0; y < 10; y++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          const value = board[x][y];
+          cell.textContent = value;
+          if (value === 'X') cell.classList.add('player-x');
+          if (value === 'O') cell.classList.add('player-o');
+          cell.addEventListener('click', () => makeMove(x, y));
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    function appendChat(name, text, isYou) {
+      const line = document.createElement('div');
+      line.className = 'chat-message ' + (isYou ? 'chat-you' : 'chat-other');
+      line.innerHTML = '<strong>' + name + ':</strong> ' + text;
+      chatBox.appendChild(line);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    const client = new window.StompJs.Client({
+      webSocketFactory: () => new SockJS('/ws', null, {
+        transports: ['websocket', 'xhr-streaming', 'xhr-polling']
+      }),
+      reconnectDelay: 3000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
+      connectionTimeout: 12000,
+      onConnect: () => {
+        connected = true;
+        statusEl.textContent = 'Da ket noi. Dang vao phong...';
+
+        client.subscribe('/topic/room.' + roomId, (message) => {
+          const payload = JSON.parse(message.body || '{}');
+          if (payload.type === 'PLAYER_JOINED') {
+            if (payload.userId === userId && payload.symbol) {
+              mySymbol = payload.symbol;
+              symbolEl.textContent = mySymbol;
+            }
+            statusEl.textContent = 'Da co nguoi choi trong phong.';
+          }
+          if (payload.type === 'MOVE') {
+            if (payload.x >= 0 && payload.y >= 0) {
+              board[payload.x][payload.y] = payload.symbol || '';
+              renderBoard();
+            }
+            myTurnUserId = payload.nextTurnUserId || '';
+            statusEl.textContent = myTurnUserId
+              ? ('Luot cua: ' + (myTurnUserId === userId ? 'ban' : 'doi thu'))
+              : 'Dang cho doi thu';
+          }
+          if (payload.type === 'GAME_OVER') {
+            const win = payload.winnerUserId === userId;
+            statusEl.textContent = win ? 'Ban thang!' : 'Ban thua!';
+            setTimeout(() => alert(win ? 'Ban da thang!' : 'Ban da thua!'), 100);
+          }
+          if (payload.type === 'PLAYER_LEFT') {
+            statusEl.textContent = 'Doi thu da roi phong';
+          }
+          if (payload.type === 'CHAT') {
+            appendChat(payload.displayName || 'Unknown', payload.message || '', payload.userId === userId);
+          }
+        });
+
+        client.subscribe('/user/queue/errors', (message) => {
+          const payload = JSON.parse(message.body || '{}');
+          if (payload.error) {
+            statusEl.textContent = payload.error;
+          }
+        });
+
+        client.publish({
+          destination: '/app/game.join',
+          body: JSON.stringify({ roomId, userId, displayName, avatarPath })
+        });
+      },
+      onStompError: () => {
+        statusEl.textContent = 'Loi ket noi STOMP';
+      },
+      onWebSocketError: () => {
+        connected = false;
+        statusEl.textContent = 'Loi WebSocket - dang thu ket noi lai...';
+      },
+      onWebSocketClose: () => {
+        connected = false;
+        statusEl.textContent = 'Mat ket noi - dang thu ket noi lai...';
+      }
+    });
+
+    function makeMove(x, y) {
+      if (!connected) return;
+      if (board[x][y]) return;
+      client.publish({
+        destination: '/app/game.move',
+        body: JSON.stringify({ roomId, userId, x, y })
+      });
+    }
+
+    document.getElementById('sendBtn')?.addEventListener('click', () => {
+      const text = (messageInput.value || '').trim();
+      if (!text || !connected) return;
+      client.publish({
+        destination: '/app/game.chat',
+        body: JSON.stringify({ roomId, userId, displayName, avatarPath, content: text })
+      });
+      messageInput.value = '';
+    });
+
+    messageInput?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('sendBtn')?.click();
+      }
+    });
+
+    document.getElementById('leaveRoomBtn')?.addEventListener('click', () => {
+      if (connected) {
+        client.publish({ destination: '/app/game.leave', body: JSON.stringify({ roomId, userId }) });
+      }
+      window.location.href = '/lobby';
+    });
+
+    renderBoard();
+    client.activate();
+  })();
+</script>
+</body>
+</html>

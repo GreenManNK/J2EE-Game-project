@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>System Notifications</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div th:replace="~{fragments :: nav}"></div>
+<div class="container">
+<h1>System Notifications</h1>
+<form id="createForm">
+  <input id="content" placeholder="content" required>
+  <button type="submit">Create</button>
+</form>
+<pre id="out"></pre>
+<ul>
+  <li th:each="n : ${notifications}">
+    <span th:text="${n.content + ' - ' + n.createdAt}"></span>
+    <button th:attr="data-id=${n.id}" class="del">Delete</button>
+  </li>
+</ul>
+<a th:href="@{/}">Home</a>
+</div>
+<script th:src="@{/js/notification-admin.js}"></script>
+</body></html>

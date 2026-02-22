@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Chat Bot</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div th:replace="~{fragments :: nav}"></div>
+<div class="container">
+<h1>Chat Bot</h1>
+<form id="chatForm" class="card">
+  <input id="message" style="width:80%" placeholder="Nhap cau hoi...">
+  <button class="btn" type="submit">Send</button>
+</form>
+<pre id="out" class="card"></pre>
+<a th:href="@{/}">Home</a>
+</div>
+<script th:src="@{/js/chat-bot.js}"></script>
+</body></html>

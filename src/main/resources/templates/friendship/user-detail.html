@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>User Detail</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div th:replace="~{fragments :: nav}"></div>
+<div class="container">
+<h1>User Detail</h1>
+<p><strong>Name:</strong> <span th:text="${user.displayName}"></span></p>
+<p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+<p><strong>Score:</strong> <span th:text="${user.score}"></span></p>
+<p><strong>isFriend:</strong> <span th:text="${isFriend}"></span></p>
+<p><strong>hasPending:</strong> <span th:text="${hasPending}"></span></p>
+<a th:href="@{/friendship(currentUserId=${currentUserId})}">Back Friendship</a>
+</div>
+</body></html>

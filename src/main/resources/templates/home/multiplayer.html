@@ -1,0 +1,20 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Multiplayer')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('multiplayer')}"></div>
+
+<div class="container text-center mt-5">
+  <h1 class="display-4 mb-4 theme-text fw-bold" style="text-shadow: 2px 2px 0 #000, 4px 4px 0 #0ff;">
+    CHE DO NHIEU NGUOI CHOI
+  </h1>
+  <p class="theme-text mb-3 fs-5">Che do choi:</p>
+  <div class="d-flex flex-column align-items-center gap-3">
+    <a th:href="@{/lobby}" class="btn theme-outline-btn btn-lg w-50">Online</a>
+    <a th:href="@{/game/offline}" class="btn theme-outline-btn btn-lg w-50">Offline</a>
+  </div>
+</div>
+
+<th:block th:replace="~{fragments :: appScripts('multiplayer')}"></th:block>
+</body>
+</html>

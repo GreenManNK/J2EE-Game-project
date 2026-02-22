@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Admin User Detail</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div th:replace="~{fragments :: nav}"></div>
+<div class="container" id="adminUserDetailRoot" th:attr="data-user-id=${user.id}">
+<h1>User Detail</h1>
+<p><strong>ID:</strong> <span th:text="${user.id}"></span></p>
+<p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+<p><strong>Name:</strong> <span th:text="${user.displayName}"></span></p>
+<p><strong>Score:</strong> <span th:text="${user.score}"></span></p>
+<p><strong>Role:</strong> <span th:text="${user.role}"></span></p>
+<p><strong>Banned Until:</strong> <span th:text="${user.bannedUntil}"></span></p>
+
+<h3>Quick Ban</h3>
+<input id="minutes" type="number" value="60">
+<button id="banBtn">Ban</button>
+<button id="unbanBtn">Unban</button>
+<button id="delBtn">Delete</button>
+<pre id="out"></pre>
+<a th:href="@{/admin/users}">Back</a>
+</div>
+<script th:src="@{/js/admin-user-detail.js}"></script>
+</body></html>

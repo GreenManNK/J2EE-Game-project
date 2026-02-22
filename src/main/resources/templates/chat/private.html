@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Private Chat</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div th:replace="~{fragments :: nav}"></div>
+<div class="container">
+<h1>Private Chat Info</h1>
+<div th:if="${success}">
+  <p><strong>Current:</strong> <span th:text="${currentUserName}"></span></p>
+  <p><strong>Friend:</strong> <span th:text="${friendName}"></span></p>
+</div>
+<div th:if="${success == false}">
+  <p th:text="${error}"></p>
+</div>
+<p>Realtime chat use WebSocket topic room/chat (to be extended).</p>
+<a th:href="@{/}">Home</a>
+</div>
+</body></html>

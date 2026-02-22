@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>History</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div th:replace="~{fragments :: nav}"></div>
+<div class="container">
+<h1>Lich su dau</h1>
+<form method="get" th:action="@{/history}">
+  <label>User ID <input name="userId" th:value="${userId}"></label>
+  <button type="submit">Xem lich su</button>
+</form>
+<p>User ID: <strong th:text="${userId}"></strong></p>
+<p th:if="${#lists.isEmpty(histories)}">Chua co du lieu lich su.</p>
+<table border="1" cellpadding="6">
+  <thead>
+    <tr><th>GameCode</th><th>P1</th><th>P2</th><th>First</th><th>Moves</th><th>Winner</th><th>Result</th><th>At</th></tr>
+  </thead>
+  <tbody>
+    <tr th:each="h : ${histories}">
+      <td th:text="${h.gameCode}"></td>
+      <td th:text="${h.player1Name}"></td>
+      <td th:text="${h.player2Name}"></td>
+      <td th:text="${h.firstPlayerName}"></td>
+      <td th:text="${h.totalMoves}"></td>
+      <td th:text="${h.winnerName}"></td>
+      <td th:text="${h.result}"></td>
+      <td th:text="${h.playedAt}"></td>
+    </tr>
+  </tbody>
+</table>
+<a th:href="@{/}">Ve Home</a>
+</div>
+</body>
+</html>

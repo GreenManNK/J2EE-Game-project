@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Dang cho doi thu')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('game-waiting')}"></div>
+
+<div class="container d-flex flex-column align-items-center justify-content-center theme-text mt-5">
+  <h2 class="fw-bold mb-4">Dang cho doi thu phan hoi...</h2>
+
+  <div class="card bg-dark text-white p-4 shadow rounded-4" style="max-width: 460px;">
+    <div class="text-center mb-3">
+      <div class="mt-3 fs-5">Ma yeu cau: <strong th:text="${requestId}">id</strong></div>
+      <div class="mt-3 fs-5">He thong se huy loi moi sau <strong id="countdown">30</strong>s</div>
+      <div class="mt-2 text-secondary">Vui long cho phan hoi tu doi thu...</div>
+    </div>
+
+    <div class="progress" role="progressbar" aria-label="Countdown" aria-valuemin="0" aria-valuemax="30">
+      <div id="progressBar" class="progress-bar bg-warning" style="width: 100%"></div>
+    </div>
+  </div>
+</div>
+
+<th:block th:replace="~{fragments :: appScripts('game-waiting')}"></th:block>
+<script>
+  let countdown = 30;
+  const countdownEl = document.getElementById('countdown');
+  const progressEl = document.getElementById('progressBar');
+
+  const timer = setInterval(() => {
+    countdown--;
+    countdownEl.textContent = countdown;
+    progressEl.style.width = (countdown / 30 * 100) + '%';
+
+    if (countdown <= 0) {
+      clearInterval(timer);
+      Swal.fire('Doi thu khong phan hoi', 'Ban se duoc quay lai sanh', 'info').then(() => {
+        window.location.href = '/lobby';
+      });
+    }
+  }, 1000);
+</script>
+</body>
+</html>

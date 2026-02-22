@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Lobby')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('lobby')}"></div>
+
+<div class="container mt-5 text-center">
+  <h1 class="display-4 theme-text fw-bold" style="text-shadow: 2px 2px 0 #000, 4px 4px 0 #0ff;">
+    SANH
+  </h1>
+
+  <div class="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-4">
+    <div class="input-group" style="width: 360px;">
+      <input type="text" class="form-control" id="roomIdInput" placeholder="Nhap ma phong...">
+      <button class="btn btn-success" id="createRoomBtn">Tao phong</button>
+    </div>
+  </div>
+
+  <div class="card mx-auto theme-box cyberpunk-card mt-4" style="max-width: 700px;">
+    <div class="card-header theme-text fw-bold">
+      <i class="bi bi-door-open-fill"></i> Danh sach phong dang cho
+    </div>
+    <ul class="list-group list-group-flush" id="roomList">
+      <li class="list-group-item" th:if="${#lists.isEmpty(availableRooms)}">Hien tai khong co phong nao.</li>
+      <li class="list-group-item d-flex justify-content-between align-items-center" th:each="room : ${availableRooms}">
+        <span th:text="${room}">room-id</span>
+        <a class="btn btn-sm btn-primary" th:href="@{/game(roomId=${room})}">Tham gia</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<audio id="siteMusic" th:src="@{/music/lobby.mp3}" loop preload="auto"></audio>
+<button id="siteMusicToggleBtn" class="btn btn-sm btn-outline-light theme-text" style="position: fixed; bottom: 10px; right: 10px; z-index: 999; background-color: transparent;">
+  🔊 Tat Nhac
+</button>
+
+<th:block th:replace="~{fragments :: appScripts('lobby')}"></th:block>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('roomIdInput');
+    const btn = document.getElementById('createRoomBtn');
+    const roomList = document.getElementById('roomList');
+    const siteMusic = document.getElementById('siteMusic');
+    const siteToggleBtn = document.getElementById('siteMusicToggleBtn');
+
+    btn?.addEventListener('click', () => {
+      const roomId = (input?.value || '').trim();
+      if (!roomId) {
+        alert('Vui long nhap ma phong');
+        return;
+      }
+      window.location.href = '/game?roomId=' + encodeURIComponent(roomId);
+    });
+
+    input?.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        btn?.click();
+      }
+    });
+
+    function renderRooms(rooms) {
+      if (!Array.isArray(rooms) || rooms.length === 0) {
+        roomList.innerHTML = '<li class="list-group-item">Hien tai khong co phong nao.</li>';
+        return;
+      }
+      roomList.innerHTML = rooms.map((room) =>
+        '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+          '<span>' + room + '</span>' +
+          '<a class="btn btn-sm btn-primary" href="/game?roomId=' + encodeURIComponent(room) + '">Tham gia</a>' +
+        '</li>'
+      ).join('');
+    }
+
+    async function refreshRoomsByApi() {
+      try {
+        const res = await fetch('/lobby/api', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        renderRooms(data.availableRooms || []);
+      } catch (_) {
+      }
+    }
+
+    const lobbyClient = new window.StompJs.Client({
+      webSocketFactory: () => new SockJS('/ws'),
+      reconnectDelay: 3000
+    });
+
+    lobbyClient.onConnect = () => {
+      lobbyClient.subscribe('/topic/lobby.rooms', (message) => {
+        const payload = JSON.parse(message.body || '{}');
+        if (payload.type === 'ROOM_LIST') {
+          renderRooms(payload.rooms || []);
+        }
+      });
+    };
+    lobbyClient.onStompError = refreshRoomsByApi;
+    lobbyClient.onWebSocketError = refreshRoomsByApi;
+    lobbyClient.activate();
+    refreshRoomsByApi();
+    window.setInterval(refreshRoomsByApi, 15000);
+
+    if (siteMusic) {
+      siteMusic.volume = 0.3;
+      if (localStorage.getItem('music') === 'off') {
+        siteMusic.pause();
+        siteToggleBtn.textContent = '🔇 Bat Nhac';
+      } else {
+        siteMusic.play().catch(() => {});
+      }
+      siteToggleBtn?.addEventListener('click', () => {
+        if (siteMusic.paused) {
+          siteMusic.play().then(() => {
+            siteToggleBtn.textContent = '🔊 Tat Nhac';
+            localStorage.setItem('music', 'on');
+          }).catch(() => {});
+        } else {
+          siteMusic.pause();
+          siteToggleBtn.textContent = '🔇 Bat Nhac';
+          localStorage.setItem('music', 'off');
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>
