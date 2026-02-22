@@ -1,0 +1,325 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<Caro.Models.ApplicationUser> UserManager
+@inject Caro.Data.ApplicationDbContext _context
+
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var showFriendList = User.Identity?.IsAuthenticated == true;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Caro</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+            body:not(.game-index) {
+                padding-left: 260px;
+                padding-right: 280px;
+            }
+
+            body.dark-mode {
+                --bg: #121212;
+                --text: #fcee09;
+                --border-color: #666;
+                --accent: #fcee09;
+            }
+
+            body:not(.dark-mode) {
+                --bg: #ffffff;
+                --text: #000;
+                --border-color: #ccc;
+                --accent: #fcee09;
+            }
+
+        .theme-outline-btn {
+            background-color: transparent !important;
+            border: 1px solid var(--border-color) !important;
+            color: var(--text) !important;
+            transition: all 0.3s ease;
+        }
+
+            .theme-outline-btn:hover {
+                background-color: var(--accent) !important;
+                color: #000 !important;
+                border-color: var(--accent) !important;
+            }
+
+        .btn,
+        .dropdown-item {
+            transition: all 0.3s ease;
+        }
+
+        .theme-text {
+            color: var(--text) !important;
+        }
+
+        .dropdown-menu {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode .dropdown-menu {
+            background-color: #1e1e1e;
+            color: var(--text);
+            border: 1px solid var(--border-color);
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--accent);
+            color: #000;
+        }
+
+        #friendSidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background-color: var(--bg);
+            overflow-y: auto;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 1040;
+            padding: 90px 10px 10px 10px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        body.sidebar-open #friendSidebar {
+            transform: translateX(0);
+        }
+
+        .sidebar-toggle-btn {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%) translateX(0);
+            background-color: #0ff;
+            border: none;
+            padding: 5px 8px;
+            cursor: pointer;
+            z-index: 1042;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.3s ease;
+        }
+
+        body.sidebar-open .sidebar-toggle-btn {
+            transform: translateY(-50%) translateX(260px);
+        }
+
+        .sidebar-toggle-btn:hover {
+            background-color: #00e0e0;
+        }
+
+        .sidebar-toggle-btn i {
+            font-size: 1.2rem;
+            color: #000;
+        }
+
+        #friendListInlineContainer {
+            position: fixed;
+            top: 120px;
+            right: 10px;
+            width: 260px;
+            background-color: var(--bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.85rem;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1040;
+            box-shadow: -2px 0 6px rgba(0, 0, 0, 0.15);
+        }
+
+        #userDropdownContainer {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1050;
+        }
+
+        #backButton {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div id="friendSidebar" class="theme-text">
+        <div class="d-flex flex-column gap-2 mb-3 px-1 justify-content-center align-items-center">
+            <a class="btn theme-outline-btn w-100 text-start fw-bold theme-text" href="/Home/Index">
+                <i class="bi bi-house-fill me-2"></i> Trang chủ
+            </a>
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <a class="btn theme-outline-btn w-100 text-start theme-text" href="/Leaderboard">
+                    <i class="bi bi-bar-chart-fill me-2"></i> Bảng xếp hạng
+                </a>
+                <a class="btn theme-outline-btn w-100 text-start theme-text" href="/History">
+                    <i class="bi bi-clock-history me-2"></i> Lịch sử đấu
+                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a class="btn theme-outline-btn w-100 text-start theme-text" href="/Admin">
+                        <i class="bi bi-gear-fill me-2"></i> Quản lý người dùng
+                    </a>
+                }
+                @if (User.IsInRole("Manager"))
+                {
+                    <a class="btn theme-outline-btn w-100 text-start theme-text" href="/Manager/Index">
+                        <i class="bi bi-sliders me-2"></i> Trang quản lý
+                    </a>
+                }
+            }
+            <a class="btn theme-outline-btn w-100 text-start theme-text" href="/ChatBot">
+                <i class="bi bi-robot me-2"></i> Chat Bot
+            </a>
+            <form class="d-flex w-100" asp-controller="Friendship" asp-action="Search" method="get">
+                <input class="form-control me-2" name="query" placeholder="Tìm bạn..." style="border-color: var(--accent);" />
+                <button class="btn theme-outline-btn theme-text" type="submit">Tìm</button>
+            </form>
+            <button id="toggle-theme" class="btn theme-outline-btn w-100 text-start theme-text">
+                <i class="bi bi-circle-half me-2"></i> Chuyển giao diện
+            </button>
+            @if (!(User.Identity?.IsAuthenticated ?? false))
+            {
+                <a class="btn theme-outline-btn w-100 text-start theme-text" href="/Account/Login">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Đăng nhập
+                </a>
+                <a class="btn theme-outline-btn w-100 text-start theme-text" href="/Account/Register">
+                    <i class="bi bi-person-plus-fill me-2"></i> Đăng ký
+                </a>
+            }
+        </div>
+    </div>
+
+    <button id="toggleSidebar" class="sidebar-toggle-btn">
+        <i class="bi bi-chevron-double-right"></i>
+    </button>
+
+    <div id="userDropdownContainer">
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            var user = await UserManager.GetUserAsync(User);
+            var pendingCount = _context.Friendships.Count(f => f.AddresseeId == user.Id && !f.IsAccepted);
+            var hasAchievementNoti = _context.AchievementNotifications.Any(a => a.UserId == user.Id && !a.IsRead);
+            var hasNewSystemNoti = _context.SystemNotifications.OrderByDescending(n => n.CreatedAt).Take(5).Any(n => n.CreatedAt > user.LastSystemNotificationSeenAt);
+
+            <div class="dropdown">
+                <a class="btn theme-outline-btn dropdown-toggle d-flex align-items-center theme-text" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="@user.AvatarPath" class="rounded-circle me-2" width="32" height="32" />
+                    @user.DisplayName
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li><a class="dropdown-item @(pendingCount > 0 || hasAchievementNoti || hasNewSystemNoti ? "text-danger fw-bold" : "")" asp-controller="Friendship" asp-action="Notifications">Thông báo</a></li>
+                    <li><a class="dropdown-item" asp-controller="Profile" asp-action="Index">Hồ sơ</a></li>
+                    <li><a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a></li>
+                    <li><a class="dropdown-item" asp-controller="ChatBot" asp-action="Index">Chat Bot</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li>
+                        <form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" class="d-none"></form>
+                        <a class="dropdown-item text-danger" href="#" onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">Đăng xuất</a>
+                    </li>
+                </ul>
+            </div>
+        }
+    </div>
+
+    <main role="main">
+        <div class="container-fluid px-3">
+            @RenderBody()
+        </div>
+    </main>
+
+    @if (showFriendList)
+    {
+        <div id="friendListInlineContainer">
+            @await Component.InvokeAsync("FriendList")
+        </div>
+    }
+
+    @if (!(controller == "Home" && action == "Index"))
+    {
+        <a id="backButton" href="/Home/Index" class="btn btn-outline-secondary">
+            ⬅ Quay lại
+        </a>
+    }
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const body = document.body;
+            const sidebar = document.getElementById("friendSidebar");
+            const toggleBtn = document.getElementById("toggleSidebar");
+            const icon = toggleBtn.querySelector("i");
+
+            if (sidebar && toggleBtn) {
+                toggleBtn.addEventListener("click", () => {
+                    const isOpen = body.classList.contains("sidebar-open");
+                    body.classList.toggle("sidebar-open", !isOpen);
+                    icon.className = isOpen ? "bi bi-chevron-double-right" : "bi bi-chevron-double-left";
+                });
+            }
+
+            const toggleThemeBtn = document.getElementById("toggle-theme");
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "dark") body.classList.add("dark-mode");
+
+            toggleThemeBtn?.addEventListener("click", () => {
+                const isDark = body.classList.toggle("dark-mode");
+                localStorage.setItem("theme", isDark ? "dark" : "light");
+            });
+
+            const controller = "@controller";
+            const action = "@action";
+            if (controller === "Game" && action === "Index") {
+                body.classList.add("game-index");
+            }
+
+            setInterval(() => {
+                fetch('/Friendship/FriendList')
+                    .then(res => res.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newList = doc.getElementById('friendListContainer');
+                        const oldList = document.querySelector('#friendListInlineContainer #friendListContainer');
+                        if (newList && oldList) {
+                            oldList.replaceWith(newList);
+                        }
+                    });
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

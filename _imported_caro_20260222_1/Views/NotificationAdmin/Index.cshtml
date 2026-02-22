@@ -1,0 +1,54 @@
+﻿@model List<Caro.Models.SystemNotification>
+@{
+    ViewData["Title"] = "Quản lý Thông báo";
+    ViewData["FullWidth"] = true;
+}
+<h2 class="neon-text text-center">Gửi thông báo hệ thống</h2>
+<form method="post" asp-action="Create" class="mt-4">
+    <div class="mb-3">
+        <textarea name="content" class="form-control cyberpunk-textarea" rows="3" placeholder="Nội dung thông báo..." required></textarea>
+    </div>
+    <button type="submit" class="btn cyberpunk-btn glow-btn">Gửi thông báo</button>
+</form>
+<hr class="neon-line" />
+<h4 class="neon-text">Lịch sử thông báo</h4>
+<ul class="list-group">
+    @foreach (var noti in Model)
+    {
+        <li class="list-group-item theme-notification d-flex justify-content-between align-items-center cyberpunk-notification glow-row">
+            <span>@noti.Content</span>
+            <div class="d-flex align-items-center">
+                <small class="text-muted me-3">@noti.CreatedAt.ToString("HH:mm dd/MM/yyyy")</small>
+                <form asp-action="Delete" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa thông báo này?')">
+                    <input type="hidden" name="id" value="@noti.Id" />
+                    <button class="btn btn-sm btn-outline-danger cyberpunk-btn glow-btn">
+                        <i class="bi bi-trash"></i> Xóa
+                    </button>
+                </form>
+            </div>
+        </li>
+    }
+</ul>
+@section Styles {
+    <style>
+        /* Hiệu ứng phát sáng cho nút gửi thông báo */
+        .glow-btn:hover {
+            background: linear-gradient(45deg, #ff00cc, #00ffff);
+            color: white;
+            box-shadow: 0 0 20px rgba(255, 0, 204, 0.7), 0 0 40px rgba(0, 255, 255, 0.7);
+        }
+        /* Hiệu ứng cho dòng thông báo khi hover */
+        .glow-row:hover {
+            background-color: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+        }
+        /* Hiệu ứng cho các thông báo */
+        .cyberpunk-notification {
+            transition: all 0.3s ease-in-out;
+        }
+            .cyberpunk-notification:hover {
+                background-color: rgba(0, 255, 255, 0.2);
+                transform: scale(1.02);
+            }
+    </style>
+}

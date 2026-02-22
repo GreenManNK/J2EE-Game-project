@@ -1,0 +1,64 @@
+﻿@model AdminEditUserViewModel
+
+@{
+    ViewData["Title"] = "Chỉnh sửa người dùng (Manager)";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card p-4 shadow-lg cyberpunk-card">
+    <h4 class="theme-text mb-4 neon-text">
+        <i class="bi bi-pencil-square text-warning"></i> Chỉnh sửa người dùng
+    </h4>
+
+    <form asp-controller="Manager" asp-action="Edit" enctype="multipart/form-data" class="theme-text">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="ExistingAvatarPath" />
+        <input type="hidden" asp-for="Role" />
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label neon-text">Email</label>
+            <input asp-for="Email" class="form-control cyberpunk-input" readonly />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="DisplayName" class="form-label neon-text">Tên hiển thị</label>
+            <input asp-for="DisplayName" class="form-control cyberpunk-input" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Score" class="form-label neon-text">Điểm</label>
+            <input asp-for="Score" class="form-control cyberpunk-input" type="number" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label neon-text">Ảnh đại diện hiện tại</label><br />
+            @if (!string.IsNullOrEmpty(Model.ExistingAvatarPath))
+            {
+                <img src="@Model.ExistingAvatarPath" alt="Avatar" class="rounded-circle border cyberpunk-avatar glow-effect" style="width: 80px; height: 80px;" />
+            }
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Avatar" class="form-label neon-text">Chọn ảnh đại diện mới</label>
+            <input asp-for="Avatar" class="form-control cyberpunk-input" type="file" />
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label neon-text">Vai trò</label>
+            <input class="form-control cyberpunk-input" value="@Model.Role" readonly />
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn cyberpunk-btn glow-btn">
+                <i class="bi bi-save"></i> Lưu thay đổi
+            </button>
+            <a asp-controller="Manager" asp-action="Index" class="btn cyberpunk-btn glow-btn">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

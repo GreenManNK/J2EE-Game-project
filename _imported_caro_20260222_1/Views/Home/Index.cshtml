@@ -1,0 +1,208 @@
+﻿@model List<Caro.Models.Post>
+@{
+    ViewData["Title"] = "Trang chính";
+}
+
+<main role="main" id="homeMain" class="transition-margin px-4" style="min-height: 80vh; padding-top: 3rem;">
+    <h2 class="mb-3 text-center theme-text fw-bold" style="text-shadow: 2px 2px 0 #000, 4px 4px 0 #0ff;">
+        CHÀO MỪNG BẠN ĐẾN VỚI CARO.IO
+    </h2>
+
+    <!-- Nút chọn chế độ chơi -->
+    <div class="d-flex justify-content-center mb-3 gap-2 flex-wrap">
+        <a href="@Url.Action("Multiplayer", "Home")" class="btn theme-outline-btn btn-lg">👥 Multiplayer</a>
+        <a href="@Url.Action("SinglePlayer", "Home")" class="btn theme-outline-btn btn-lg">👤 Single Player</a>
+    </div>
+
+    <!-- Khối đăng bài viết -->
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="mb-3">
+            <h5 class="mb-2 theme-text text-center">Đăng bài viết mới</h5>
+            <form asp-action="CreatePost" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="card shadow-sm px-3 py-2 mx-auto" style="max-width: 900px;">
+                    <textarea name="content" class="form-control mb-2" rows="3" placeholder="Bạn đang nghĩ gì?" required></textarea>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="btn btn-outline-secondary btn-sm mb-0">
+                                Đính kèm ảnh
+                                <input type="file" name="ImageFile" accept="image/*" hidden onchange="updateFileName(this)" />
+                            </label>
+                            <span id="selectedFileName" class="text-muted small fst-italic"></span>
+                        </div>
+                        <button type="submit" class="btn theme-outline-btn btn-sm">Đăng bài</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    }
+
+    <!-- Bảng tin người chơi -->
+    <div class="mx-auto" style="max-width: 900px;">
+        <h5 class="mb-2 theme-text">Bảng tin</h5>
+        <div style="max-height: 600px; overflow-y: auto;" class="scroll-posts">
+            @foreach (var post in Model.OrderByDescending(p => p.CreatedAt))
+            {
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body py-2 px-3 text-start">
+                        <div class="mb-1">
+                            <strong class="theme-text">@post.Author</strong><br />
+                            <small class="text-muted">@post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                        </div>
+
+                        <p class="theme-text mb-2">@post.Content</p>
+                        @if (!string.IsNullOrEmpty(post.ImagePath))
+                        {
+                            <img src="@post.ImagePath" class="img-fluid rounded mb-2" style="max-height: 300px;" />
+                        }
+
+                        <form asp-action="CreateComment" method="post" class="mt-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="postId" value="@post.Id" />
+                            <div class="input-group">
+                                <input name="content" class="form-control" placeholder="Viết bình luận..." required />
+                                <button class="btn btn-outline-secondary" type="submit">Gửi</button>
+                            </div>
+                        </form>
+
+                        @if (post.Comments.Any())
+                        {
+                            <div class="mt-2" style="max-height: 150px; overflow-y: auto;">
+                                @foreach (var cmt in post.Comments.OrderBy(c => c.CreatedAt))
+                                {
+                                    <div class="mb-1">
+                                        <div class="bg-light px-3 py-2 rounded comment-box">
+                                            <strong class="theme-text">@cmt.Author</strong><br />
+                                            <span class="text-muted small">@cmt.Content</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</main>
+
+
+<audio id="siteMusic" src="~/music/home.mp3" loop preload="auto"></audio>
+<button id="siteMusicToggleBtn" class="btn theme-outline-btn btn-sm theme-text"
+        style="position: fixed; bottom: 10px; right: 10px; z-index: 999;">
+    🔊 Tắt Nhạc
+</button>
+
+@section Styles {
+    <style>
+        .transition-margin {
+            transition: margin-left 0.3s ease;
+        }
+
+        .theme-text {
+            color: #8a2be2;
+        }
+
+        body.dark-mode .theme-text {
+            color: #fcee09;
+        }
+
+        .theme-outline-btn {
+            border: 2px solid #6c63ff;
+            background: transparent;
+            color: #6c63ff;
+            transition: all 0.2s ease;
+        }
+
+            .theme-outline-btn:hover {
+                background-color: #6c63ff;
+                color: white;
+            }
+
+        body.dark-mode .theme-outline-btn {
+            color: #9be7ff;
+        }
+
+            body.dark-mode .theme-outline-btn:hover {
+                background-color: #fcee09;
+                color: black;
+            }
+
+        body.dark-mode .comment-box {
+            background-color: #222 !important;
+            color: var(--text);
+        }
+
+        .scroll-posts::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-posts::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+
+        body.dark-mode .scroll-posts::-webkit-scrollbar-thumb {
+            background: #555;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const siteMusic = document.getElementById("siteMusic");
+            const siteToggleBtn = document.getElementById("siteMusicToggleBtn");
+            const homeMain = document.getElementById("homeMain");
+
+            if (siteMusic) {
+                siteMusic.volume = 0.3;
+
+                if (localStorage.getItem("music") === "off") {
+                    siteMusic.pause();
+                    siteToggleBtn.textContent = "🔇 Bật Nhạc";
+                } else {
+                    try {
+                        siteMusic.play();
+                        siteToggleBtn.textContent = "🔊 Tắt Nhạc";
+                    } catch (e) {
+                        console.warn("Tự động phát nhạc bị trình duyệt chặn.");
+                    }
+                }
+
+                siteToggleBtn?.addEventListener("click", () => {
+                    if (siteMusic.paused) {
+                        siteMusic.play().then(() => {
+                            siteToggleBtn.textContent = "🔊 Tắt Nhạc";
+                            localStorage.setItem("music", "on");
+                        }).catch(err => {
+                            alert("Trình duyệt đã chặn phát nhạc tự động.");
+                        });
+                    } else {
+                        siteMusic.pause();
+                        siteToggleBtn.textContent = "🔇 Bật Nhạc";
+                        localStorage.setItem("music", "off");
+                    }
+                });
+            }
+
+            if (localStorage.getItem("sidebarOpen") === "true") {
+                homeMain.style.marginLeft = "280px";
+            } else {
+                homeMain.style.marginLeft = "0";
+            }
+        });
+    </script>
+    <script>
+        function updateFileName(input) {
+            const fileNameSpan = document.getElementById("selectedFileName");
+            if (input.files.length > 0) {
+                fileNameSpan.textContent = "Tệp đã chọn: " + input.files[0].name;
+            } else {
+                fileNameSpan.textContent = "";
+            }
+        }
+    </script>
+}

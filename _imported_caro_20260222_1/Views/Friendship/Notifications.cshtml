@@ -1,0 +1,158 @@
+﻿@using Caro.Models
+@using Caro.Models.ViewModels
+@model NotificationViewModel
+
+@{
+    ViewData["Title"] = "Thông báo";
+    ViewData["FullWidth"] = true;
+}
+
+<main id="notificationMain" class="transition-margin container mt-4">
+
+    <!-- THÔNG BÁO KẾT BẠN -->
+    <div class="theme-box">
+        <h2 class="theme-text mb-3"><i class="bi bi-person-plus-fill me-2"></i>Thông báo kết bạn</h2>
+
+        @if (!Model.FriendRequests.Any())
+        {
+            <p class="theme-text">Không có lời mời kết bạn nào.</p>
+        }
+        else
+        {
+            <ul class="list-group">
+                @foreach (var request in Model.FriendRequests)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center theme-notification glow-item">
+                        <div class="d-flex align-items-center">
+                            <img src="@request.Requester.AvatarPath" class="me-2" style="width: 35px; height: 35px; border-radius: 50%;" />
+                            <span class="fw-semibold">@request.Requester.DisplayName</span>
+                            <span class="text-muted ms-2 small">(@request.Requester.Email)</span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <form asp-controller="Friendship" asp-action="Accept" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@request.Id" />
+                                <button class="btn btn-success btn-sm"><i class="bi bi-check-lg"></i></button>
+                            </form>
+                            <form asp-controller="Friendship" asp-action="Decline" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@request.Id" />
+                                <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-lg"></i></button>
+                            </form>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    <!-- THÔNG BÁO HỆ THỐNG -->
+    <div class="theme-box">
+        <h2 class="theme-text mb-3"><i class="bi bi-megaphone-fill me-2"></i>Thông báo hệ thống</h2>
+
+        @if (!Model.SystemNotifications.Any())
+        {
+            <p class="theme-text">Không có thông báo nào.</p>
+        }
+        else
+        {
+            @foreach (var noti in Model.SystemNotifications)
+            {
+                <div class="d-flex justify-content-between align-items-start theme-text border-bottom py-2">
+                    <span><i class="bi bi-info-circle text-info me-2"></i>@noti.Content</span>
+                    <span class="text-muted small">@noti.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+            }
+        }
+    </div>
+
+    <!-- THÀNH TỰU MỚI -->
+    <div class="theme-box">
+        <h2 class="theme-text mb-3"><i class="bi bi-trophy-fill text-warning me-2"></i>Thành tựu mới</h2>
+
+        @if (!Model.AchievementNotifications.Any())
+        {
+            <p class="theme-text">Chưa có thành tựu nào mới.</p>
+        }
+        else
+        {
+            <ul class="list-group">
+                @foreach (var noti in Model.AchievementNotifications)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center theme-notification glow-item">
+                        <div><i class="bi bi-stars text-warning me-2"></i>Bạn đã đạt được <strong>@noti.AchievementName</strong></div>
+                        <span class="text-muted small">@noti.CreatedAt.ToString("HH:mm dd/MM/yyyy")</span>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+</main>
+
+@section Styles {
+    <style>
+        .transition-margin {
+            transition: margin-left 0.3s ease;
+        }
+
+        .theme-box {
+            background-color: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        body.dark-mode .theme-box {
+            background-color: rgba(33, 33, 33, 0.95);
+            border-color: #444;
+        }
+
+        .theme-text {
+            color: #8a2be2;
+        }
+
+        body.dark-mode .theme-text {
+            color: #9be7ff;
+        }
+
+        .theme-notification {
+            background-color: rgba(245, 245, 245, 0.85);
+            border: none;
+            color: #333;
+        }
+
+        body.dark-mode .theme-notification {
+            background-color: rgba(40, 40, 40, 0.85);
+            color: #e0e0e0;
+        }
+
+        .glow-item:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        body.dark-mode .glow-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .text-muted {
+            color: #6c757d !important;
+        }
+
+        body.dark-mode .text-muted {
+            color: #aaa !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        window.addEventListener("DOMContentLoaded", () => {
+            const main = document.getElementById("notificationMain");
+            if (localStorage.getItem("sidebarOpen") === "true") {
+                main.style.marginLeft = "280px";
+            } else {
+                main.style.marginLeft = "0";
+            }
+        });
+    </script>
+}

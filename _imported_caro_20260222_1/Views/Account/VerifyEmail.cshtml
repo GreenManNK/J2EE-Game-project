@@ -1,0 +1,35 @@
+﻿@{
+    ViewData["Title"] = "Xác thực Email";
+    ViewData["FullWidth"] = true;
+}
+
+<div class="card theme-box mx-auto mt-5" style="max-width: 500px;">
+    <div class="card-header">
+        <h4 class="mb-0 theme-text">📧 Xác thực Email</h4>
+    </div>
+    <div class="card-body theme-text">
+        <p class="text-info mb-3">
+            Mã xác thực đã được gửi tới địa chỉ email <strong>@ViewBag.Email</strong>.<br />
+            Vui lòng nhập mã bên dưới để hoàn tất quá trình đăng ký.<br />
+            Nếu không thấy email, hãy kiểm tra cả hộp thư rác (Spam).
+        </p>
+
+        <form asp-action="VerifyEmail" method="post">
+            <input type="hidden" name="email" value="@ViewBag.Email" />
+
+            <div class="mb-3">
+                <label for="code" class="form-label">Mã xác thực</label>
+                <input type="text" name="code" id="code" class="form-control" placeholder="Nhập mã 6 số" required />
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">Xác nhận</button>
+        </form>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger mt-3">
+                @TempData["Error"]
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,58 @@
+﻿@{
+    ViewData["Title"] = "Đang chờ đối thủ...";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container d-flex flex-column align-items-center justify-content-center theme-text mt-5">
+    <h2 class="fw-bold mb-4">⏳ Đang chờ đối thủ phản hồi...</h2>
+
+    <div class="card bg-dark text-white p-4 shadow rounded-4" style="max-width: 400px;">
+        <div class="text-center mb-3">
+            <div class="mt-3 fs-5">
+                Hệ thống sẽ hủy lời mời sau <strong id="countdown">30</strong>s
+            </div>
+            <div class="mt-2 text-secondary">
+                Vui lòng chờ phản hồi từ đối thủ...
+            </div>
+        </div>
+
+        <div class="progress" role="progressbar" aria-label="Countdown" aria-valuemin="0" aria-valuemax="30">
+            <div id="progressBar" class="progress-bar bg-warning" style="width: 100%"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        let countdown = 30;
+        const countdownEl = document.getElementById("countdown");
+        const progressEl = document.getElementById("progressBar");
+
+        const timer = setInterval(() => {
+            countdown--;
+            countdownEl.textContent = countdown;
+            progressEl.style.width = (countdown / 30 * 100) + "%";
+
+            if (countdown <= 0) {
+                clearInterval(timer);
+                Swal.fire("⛔ Đối thủ không phản hồi", "Bạn sẽ được quay lại sảnh", "info")
+                    .then(() => window.location.href = "/");
+            }
+        }, 1000);
+
+        // Xử lý khi đối thủ đồng ý
+        window.connection?.on("StartChallengeGame", function (roomId) {
+            clearInterval(timer);
+            window.location.href = `/Game/Index?roomId=${roomId}`;
+        });
+
+        // Xử lý khi đối thủ từ chối
+        window.connection?.on("ChallengeDeclined", function () {
+            clearInterval(timer);
+            Swal.fire("Đối thủ đã từ chối!", "", "warning")
+                .then(() => window.location.href = "/");
+        });
+    </script>
+}

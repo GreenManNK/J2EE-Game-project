@@ -1,0 +1,1167 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\manager\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\manager\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\admin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\admin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\hubs\\gamehub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:hubs\\gamehub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\wwwroot\\js\\game.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:wwwroot\\js\\game.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\game\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\game\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\shared\\components\\friendlist\\default.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\shared\\components\\friendlist\\default.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\shared\\_validationscriptspartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\shared\\_validationscriptspartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\home\\multiplayer.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\home\\multiplayer.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\models\\post.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:models\\post.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\controllers\\managercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:controllers\\managercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\controllers\\gamecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:controllers\\gamecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\controllers\\friendshipcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:controllers\\friendshipcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\controllers\\chatbotcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:controllers\\chatbotcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\controllers\\botcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:controllers\\botcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\account\\resetpassword.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\account\\resetpassword.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\hubs\\nameuseridprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:hubs\\nameuseridprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\hubs\\chathub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:hubs\\chathub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\chatbot\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\chatbot\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\chat\\private.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\chat\\private.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\friendship\\searchresults.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\friendship\\searchresults.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\admin\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\admin\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\admin\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\admin\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\admin\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\admin\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\account\\verifyresetcode.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\account\\verifyresetcode.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\account\\verifyemail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\account\\verifyemail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\account\\requestreset.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\account\\requestreset.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\account\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\account\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\account\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\account\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\account\\changepassword.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\account\\changepassword.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\account\\bannotification.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\account\\bannotification.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\account\\accessdenied.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\account\\accessdenied.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\profile\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\profile\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\profile\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\profile\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\notificationadmin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\notificationadmin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\manager\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\manager\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\manager\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\manager\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\manager\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\manager\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\lobby\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\lobby\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\leaderboard\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\leaderboard\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\home\\tiendo.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\home\\tiendo.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\home\\singleplayer.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\home\\singleplayer.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\history\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\history\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\game\\waiting.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\game\\waiting.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\game\\offline.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\game\\offline.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\friendship\\notifications.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\friendship\\notifications.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\friendship\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\friendship\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\bot\\hard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\bot\\hard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\views\\bot\\easy.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:views\\bot\\easy.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\models\\comment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:models\\comment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\wwwroot\\js\\site.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:wwwroot\\js\\site.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\wwwroot\\js\\waiting.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:wwwroot\\js\\waiting.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\wwwroot\\js\\offline.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:wwwroot\\js\\offline.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\wwwroot\\js\\lobby.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:wwwroot\\js\\lobby.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\models\\emailverificationtoken.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:models\\emailverificationtoken.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\models\\passwordresettoken.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:models\\passwordresettoken.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\models\\errorviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:models\\errorviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\models\\viewmodels\\registerviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:models\\viewmodels\\registerviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\controllers\\leaderboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:controllers\\leaderboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\controllers\\profilecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:controllers\\profilecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\controllers\\historycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:controllers\\historycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\migrations\\20250430135814_emailverificationtoken.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:migrations\\20250430135814_emailverificationtoken.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\migrations\\20250525041906_addpostandcomment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:migrations\\20250525041906_addpostandcomment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|c:\\users\\dangl\\onedrive\\desktop\\caro\\migrations\\20250530021821_addimagepathtopost.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8003A16D-4531-4BB5-B7C0-07B63B9795ED}|Caro.csproj|solutionrelative:migrations\\20250530021821_addimagepathtopost.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 9,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Home\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Home\\Index.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Home\\Index.cshtml",
+              "RelativeToolTip": "Views\\Home\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T04:20:51.248Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "NameUserIdProvider.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Hubs\\NameUserIdProvider.cs",
+              "RelativeDocumentMoniker": "Hubs\\NameUserIdProvider.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Hubs\\NameUserIdProvider.cs",
+              "RelativeToolTip": "Hubs\\NameUserIdProvider.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T02:27:16.587Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Multiplayer.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Home\\Multiplayer.cshtml",
+              "RelativeDocumentMoniker": "Views\\Home\\Multiplayer.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Home\\Multiplayer.cshtml",
+              "RelativeToolTip": "Views\\Home\\Multiplayer.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:12:37.937Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAAFQAAAAAAAAAAAAswMIAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-30T12:15:39.279Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Game\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Game\\Index.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Game\\Index.cshtml",
+              "RelativeToolTip": "Views\\Game\\Index.cshtml",
+              "ViewState": "AgIAAA4BAAAAAAAAAAAQwEUBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-24T14:27:19.177Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "game.js",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\wwwroot\\js\\game.js",
+              "RelativeDocumentMoniker": "wwwroot\\js\\game.js",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\wwwroot\\js\\game.js",
+              "RelativeToolTip": "wwwroot\\js\\game.js",
+              "ViewState": "AgIAAMEAAAAAAAAAAAAQwOwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-05-24T10:11:35.79Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "GameHub.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Hubs\\GameHub.cs",
+              "RelativeDocumentMoniker": "Hubs\\GameHub.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Hubs\\GameHub.cs",
+              "RelativeToolTip": "Hubs\\GameHub.cs",
+              "ViewState": "AgIAADUBAAAAAAAAAAAgwCgBAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-24T10:33:36.273Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Manager\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Manager\\Index.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Manager\\Index.cshtml",
+              "RelativeToolTip": "Views\\Manager\\Index.cshtml",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAAE8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:12:59.161Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Admin\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Admin\\Index.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Admin\\Index.cshtml",
+              "RelativeToolTip": "Views\\Admin\\Index.cshtml",
+              "ViewState": "AgIAACEAAAAAAAAAAAAgwEsAAACeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:28:30.337Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "AdminController.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\AdminController.cs",
+              "RelativeDocumentMoniker": "Controllers\\AdminController.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\AdminController.cs",
+              "RelativeToolTip": "Controllers\\AdminController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T02:27:31.059Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "_ValidationScriptsPartial.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Shared\\_ValidationScriptsPartial.cshtml",
+              "RelativeDocumentMoniker": "Views\\Shared\\_ValidationScriptsPartial.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Shared\\_ValidationScriptsPartial.cshtml",
+              "RelativeToolTip": "Views\\Shared\\_ValidationScriptsPartial.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-30T03:01:27.606Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Default.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Shared\\Components\\FriendList\\Default.cshtml",
+              "RelativeDocumentMoniker": "Views\\Shared\\Components\\FriendList\\Default.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Shared\\Components\\FriendList\\Default.cshtml",
+              "RelativeToolTip": "Views\\Shared\\Components\\FriendList\\Default.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-24T10:13:41.615Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "HomeController.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\HomeController.cs",
+              "RelativeDocumentMoniker": "Controllers\\HomeController.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\HomeController.cs",
+              "RelativeToolTip": "Controllers\\HomeController.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAADwvzgAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:00:59.244Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "ManagerController.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\ManagerController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ManagerController.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\ManagerController.cs",
+              "RelativeToolTip": "Controllers\\ManagerController.cs",
+              "ViewState": "AgIAAF0AAAAAAAAAAAAYwBkAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:00:56.677Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAACoAAAAAAAAAAAAswFkAAAA+AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:21:39.535Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "GameController.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\GameController.cs",
+              "RelativeDocumentMoniker": "Controllers\\GameController.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\GameController.cs",
+              "RelativeToolTip": "Controllers\\GameController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:01:00.583Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 70,
+              "Title": "20250530021821_AddImagePathToPost.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Migrations\\20250530021821_AddImagePathToPost.cs",
+              "RelativeDocumentMoniker": "Migrations\\20250530021821_AddImagePathToPost.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Migrations\\20250530021821_AddImagePathToPost.cs",
+              "RelativeToolTip": "Migrations\\20250530021821_AddImagePathToPost.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-30T02:18:21.323Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Data\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "Data\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Data\\ApplicationDbContext.cs",
+              "RelativeToolTip": "Data\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:56:06.773Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Post.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Models\\Post.cs",
+              "RelativeDocumentMoniker": "Models\\Post.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Models\\Post.cs",
+              "RelativeToolTip": "Models\\Post.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T04:17:12.607Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "BotController.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\BotController.cs",
+              "RelativeDocumentMoniker": "Controllers\\BotController.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\BotController.cs",
+              "RelativeToolTip": "Controllers\\BotController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T02:27:34.131Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "ChatBotController.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\ChatBotController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ChatBotController.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\ChatBotController.cs",
+              "RelativeToolTip": "Controllers\\ChatBotController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T02:27:38.834Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "FriendshipController.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\FriendshipController.cs",
+              "RelativeDocumentMoniker": "Controllers\\FriendshipController.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\FriendshipController.cs",
+              "RelativeToolTip": "Controllers\\FriendshipController.cs",
+              "ViewState": "AgIAAJ0AAAAAAAAAAADwvwAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T02:27:39.451Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "ChatHub.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Hubs\\ChatHub.cs",
+              "RelativeDocumentMoniker": "Hubs\\ChatHub.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Hubs\\ChatHub.cs",
+              "RelativeToolTip": "Hubs\\ChatHub.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-27T02:27:14.385Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "Create.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Manager\\Create.cshtml",
+              "RelativeDocumentMoniker": "Views\\Manager\\Create.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Manager\\Create.cshtml",
+              "RelativeToolTip": "Views\\Manager\\Create.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:12:53.697Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-05-24T10:10:52.873Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "Details.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Manager\\Details.cshtml",
+              "RelativeDocumentMoniker": "Views\\Manager\\Details.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Manager\\Details.cshtml",
+              "RelativeToolTip": "Views\\Manager\\Details.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:12:56.217Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "ResetPassword.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\ResetPassword.cshtml",
+              "RelativeDocumentMoniker": "Views\\Account\\ResetPassword.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\ResetPassword.cshtml",
+              "RelativeToolTip": "Views\\Account\\ResetPassword.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-30T13:36:18.529Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "Edit.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Manager\\Edit.cshtml",
+              "RelativeDocumentMoniker": "Views\\Manager\\Edit.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Manager\\Edit.cshtml",
+              "RelativeToolTip": "Views\\Manager\\Edit.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:12:58.265Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "RequestReset.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\RequestReset.cshtml",
+              "RelativeDocumentMoniker": "Views\\Account\\RequestReset.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\RequestReset.cshtml",
+              "RelativeToolTip": "Views\\Account\\RequestReset.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:13:59.712Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\NotificationAdmin\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\NotificationAdmin\\Index.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\NotificationAdmin\\Index.cshtml",
+              "RelativeToolTip": "Views\\NotificationAdmin\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:13:16.457Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "Create.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Admin\\Create.cshtml",
+              "RelativeDocumentMoniker": "Views\\Admin\\Create.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Admin\\Create.cshtml",
+              "RelativeToolTip": "Views\\Admin\\Create.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:28:18.505Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "Details.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Admin\\Details.cshtml",
+              "RelativeDocumentMoniker": "Views\\Admin\\Details.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Admin\\Details.cshtml",
+              "RelativeToolTip": "Views\\Admin\\Details.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:28:20.169Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "Edit.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Admin\\Edit.cshtml",
+              "RelativeDocumentMoniker": "Views\\Admin\\Edit.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Admin\\Edit.cshtml",
+              "RelativeToolTip": "Views\\Admin\\Edit.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:28:25.25Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 47,
+              "Title": "Singleplayer.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Home\\Singleplayer.cshtml",
+              "RelativeDocumentMoniker": "Views\\Home\\Singleplayer.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Home\\Singleplayer.cshtml",
+              "RelativeToolTip": "Views\\Home\\Singleplayer.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:12:39.313Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 49,
+              "Title": "Waiting.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Game\\Waiting.cshtml",
+              "RelativeDocumentMoniker": "Views\\Game\\Waiting.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Game\\Waiting.cshtml",
+              "RelativeToolTip": "Views\\Game\\Waiting.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:12:26.881Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "SearchResults.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Friendship\\SearchResults.cshtml",
+              "RelativeDocumentMoniker": "Views\\Friendship\\SearchResults.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Friendship\\SearchResults.cshtml",
+              "RelativeToolTip": "Views\\Friendship\\SearchResults.cshtml",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAACcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:11:46.993Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 51,
+              "Title": "Notifications.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Friendship\\Notifications.cshtml",
+              "RelativeDocumentMoniker": "Views\\Friendship\\Notifications.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Friendship\\Notifications.cshtml",
+              "RelativeToolTip": "Views\\Friendship\\Notifications.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:11:40.793Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 52,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Friendship\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Friendship\\Index.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Friendship\\Index.cshtml",
+              "RelativeToolTip": "Views\\Friendship\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:11:37.554Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "Private.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Chat\\Private.cshtml",
+              "RelativeDocumentMoniker": "Views\\Chat\\Private.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Chat\\Private.cshtml",
+              "RelativeToolTip": "Views\\Chat\\Private.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T05:11:32.234Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 48,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\History\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\History\\Index.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\History\\Index.cshtml",
+              "RelativeToolTip": "Views\\History\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T04:55:36.689Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 38,
+              "Title": "Edit.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Profile\\Edit.cshtml",
+              "RelativeDocumentMoniker": "Views\\Profile\\Edit.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Profile\\Edit.cshtml",
+              "RelativeToolTip": "Views\\Profile\\Edit.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T04:51:06.464Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 44,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Lobby\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Lobby\\Index.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Lobby\\Index.cshtml",
+              "RelativeToolTip": "Views\\Lobby\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T04:50:59.921Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 45,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Leaderboard\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Leaderboard\\Index.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Leaderboard\\Index.cshtml",
+              "RelativeToolTip": "Views\\Leaderboard\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T04:50:39.112Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\ChatBot\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\ChatBot\\Index.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\ChatBot\\Index.cshtml",
+              "RelativeToolTip": "Views\\ChatBot\\Index.cshtml",
+              "ViewState": "AgIAAKUAAAAAAAAAAAAAAAIAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-25T04:50:12.784Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 69,
+              "Title": "20250525041906_AddPostAndComment.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Migrations\\20250525041906_AddPostAndComment.cs",
+              "RelativeDocumentMoniker": "Migrations\\20250525041906_AddPostAndComment.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Migrations\\20250525041906_AddPostAndComment.cs",
+              "RelativeToolTip": "Migrations\\20250525041906_AddPostAndComment.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T04:19:06.392Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 55,
+              "Title": "Comment.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Models\\Comment.cs",
+              "RelativeDocumentMoniker": "Models\\Comment.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Models\\Comment.cs",
+              "RelativeToolTip": "Models\\Comment.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T04:17:51.146Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 56,
+              "Title": "site.js",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\wwwroot\\js\\site.js",
+              "RelativeDocumentMoniker": "wwwroot\\js\\site.js",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\wwwroot\\js\\site.js",
+              "RelativeToolTip": "wwwroot\\js\\site.js",
+              "ViewState": "AgIAAE0AAAAAAAAAAAAYwG0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-05-24T10:11:47.503Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 57,
+              "Title": "waiting.js",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\wwwroot\\js\\waiting.js",
+              "RelativeDocumentMoniker": "wwwroot\\js\\waiting.js",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\wwwroot\\js\\waiting.js",
+              "RelativeToolTip": "wwwroot\\js\\waiting.js",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-05-24T10:11:46.04Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 58,
+              "Title": "offline.js",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\wwwroot\\js\\offline.js",
+              "RelativeDocumentMoniker": "wwwroot\\js\\offline.js",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\wwwroot\\js\\offline.js",
+              "RelativeToolTip": "wwwroot\\js\\offline.js",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-05-24T10:11:43.96Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 59,
+              "Title": "lobby.js",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\wwwroot\\js\\lobby.js",
+              "RelativeDocumentMoniker": "wwwroot\\js\\lobby.js",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\wwwroot\\js\\lobby.js",
+              "RelativeToolTip": "wwwroot\\js\\lobby.js",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-05-24T10:11:40.952Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Profile\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Profile\\Index.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Profile\\Index.cshtml",
+              "RelativeToolTip": "Views\\Profile\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAMcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-24T15:07:01.442Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "AccessDenied.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\AccessDenied.cshtml",
+              "RelativeDocumentMoniker": "Views\\Account\\AccessDenied.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\AccessDenied.cshtml",
+              "RelativeToolTip": "Views\\Account\\AccessDenied.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-24T15:27:07.494Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "BanNotification.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\BanNotification.cshtml",
+              "RelativeDocumentMoniker": "Views\\Account\\BanNotification.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\BanNotification.cshtml",
+              "RelativeToolTip": "Views\\Account\\BanNotification.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-24T15:27:09.274Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "VerifyResetCode.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\VerifyResetCode.cshtml",
+              "RelativeDocumentMoniker": "Views\\Account\\VerifyResetCode.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\VerifyResetCode.cshtml",
+              "RelativeToolTip": "Views\\Account\\VerifyResetCode.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-30T14:27:11.189Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 68,
+              "Title": "20250430135814_EmailVerificationToken.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Migrations\\20250430135814_EmailVerificationToken.cs",
+              "RelativeDocumentMoniker": "Migrations\\20250430135814_EmailVerificationToken.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Migrations\\20250430135814_EmailVerificationToken.cs",
+              "RelativeToolTip": "Migrations\\20250430135814_EmailVerificationToken.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:58:14.26Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 63,
+              "Title": "ErrorViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Models\\ErrorViewModel.cs",
+              "RelativeDocumentMoniker": "Models\\ErrorViewModel.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Models\\ErrorViewModel.cs",
+              "RelativeToolTip": "Models\\ErrorViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:57:05.55Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 62,
+              "Title": "PasswordResetToken.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Models\\PasswordResetToken.cs",
+              "RelativeDocumentMoniker": "Models\\PasswordResetToken.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Models\\PasswordResetToken.cs",
+              "RelativeToolTip": "Models\\PasswordResetToken.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:56:56.515Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 61,
+              "Title": "EmailVerificationToken.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Models\\EmailVerificationToken.cs",
+              "RelativeDocumentMoniker": "Models\\EmailVerificationToken.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Models\\EmailVerificationToken.cs",
+              "RelativeToolTip": "Models\\EmailVerificationToken.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAQwBEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:56:42.624Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "VerifyEmail.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\VerifyEmail.cshtml",
+              "RelativeDocumentMoniker": "Views\\Account\\VerifyEmail.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\VerifyEmail.cshtml",
+              "RelativeToolTip": "Views\\Account\\VerifyEmail.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-30T13:37:15.122Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "Register.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\Register.cshtml",
+              "RelativeDocumentMoniker": "Views\\Account\\Register.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\Register.cshtml",
+              "RelativeToolTip": "Views\\Account\\Register.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-30T13:36:13.573Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "ChangePassword.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\ChangePassword.cshtml",
+              "RelativeDocumentMoniker": "Views\\Account\\ChangePassword.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\ChangePassword.cshtml",
+              "RelativeToolTip": "Views\\Account\\ChangePassword.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-30T13:36:05.742Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "Login.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\Login.cshtml",
+              "RelativeDocumentMoniker": "Views\\Account\\Login.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Account\\Login.cshtml",
+              "RelativeToolTip": "Views\\Account\\Login.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-30T13:36:04.813Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 64,
+              "Title": "RegisterViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Models\\ViewModels\\RegisterViewModel.cs",
+              "RelativeDocumentMoniker": "Models\\ViewModels\\RegisterViewModel.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Models\\ViewModels\\RegisterViewModel.cs",
+              "RelativeToolTip": "Models\\ViewModels\\RegisterViewModel.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAQwBsAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:31:16.173Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 60,
+              "Title": "AccountController.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\AccountController.cs",
+              "RelativeDocumentMoniker": "Controllers\\AccountController.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\AccountController.cs",
+              "RelativeToolTip": "Controllers\\AccountController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAALEAAABOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:28:13.439Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 66,
+              "Title": "ProfileController.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\ProfileController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ProfileController.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\ProfileController.cs",
+              "RelativeToolTip": "Controllers\\ProfileController.cs",
+              "ViewState": "AgIAAIsAAAAAAAAAAAAowLYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:08:29.314Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 65,
+              "Title": "LeaderboardController.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\LeaderboardController.cs",
+              "RelativeDocumentMoniker": "Controllers\\LeaderboardController.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\LeaderboardController.cs",
+              "RelativeToolTip": "Controllers\\LeaderboardController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:01:02.868Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 67,
+              "Title": "HistoryController.cs",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\HistoryController.cs",
+              "RelativeDocumentMoniker": "Controllers\\HistoryController.cs",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Controllers\\HistoryController.cs",
+              "RelativeToolTip": "Controllers\\HistoryController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-30T13:00:59.945Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 50,
+              "Title": "Offline.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Game\\Offline.cshtml",
+              "RelativeDocumentMoniker": "Views\\Game\\Offline.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Game\\Offline.cshtml",
+              "RelativeToolTip": "Views\\Game\\Offline.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-30T10:39:29.96Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 54,
+              "Title": "Easy.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Bot\\Easy.cshtml",
+              "RelativeDocumentMoniker": "Views\\Bot\\Easy.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Bot\\Easy.cshtml",
+              "RelativeToolTip": "Views\\Bot\\Easy.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-30T10:37:51.821Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 53,
+              "Title": "Hard.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Bot\\Hard.cshtml",
+              "RelativeDocumentMoniker": "Views\\Bot\\Hard.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Bot\\Hard.cshtml",
+              "RelativeToolTip": "Views\\Bot\\Hard.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-30T10:37:44.15Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 46,
+              "Title": "TienDo.cshtml",
+              "DocumentMoniker": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Home\\TienDo.cshtml",
+              "RelativeDocumentMoniker": "Views\\Home\\TienDo.cshtml",
+              "ToolTip": "C:\\Users\\dangl\\OneDrive\\Desktop\\Caro\\Views\\Home\\TienDo.cshtml",
+              "RelativeToolTip": "Views\\Home\\TienDo.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-26T14:39:14.583Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

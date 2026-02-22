@@ -1,0 +1,31 @@
+﻿@model IEnumerable<Caro.Controllers.GameHistoryViewModel>
+
+<h2>Lịch sử trận đấu</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Kết quả</th>
+            <th>Mã trận</th>
+            <th>Người chơi</th>
+            <th>Đi trước</th>
+            <th>Tổng lượt</th>
+            <th>Người thắng</th>
+            <th>Thời gian</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var g in Model)
+        {
+            <tr>
+                <td><strong class="@(g.Result == "Thắng" ? "text-success" : "text-danger")">@g.Result</strong></td>
+                <td>@g.GameCode</td>
+                <td>@g.Player1Name vs @g.Player2Name</td>
+                <td>@g.FirstPlayerName</td>
+                <td>@g.TotalMoves</td>
+                <td>@g.WinnerName</td>
+                <td>@g.PlayedAt.ToString("dd/MM/yyyy HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>

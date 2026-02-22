@@ -1,0 +1,65 @@
+﻿@model AdminEditUserViewModel
+@using System
+
+@{
+    ViewData["Title"] = "Chi tiết người dùng";
+    ViewData["FullWidth"] = true;
+}
+
+<div class="card theme-box mx-auto mt-4 p-4 shadow-sm" style="max-width: 700px;">
+    <h4 class="theme-text mb-4">👤 Thông tin người dùng</h4>
+
+    <div class="row align-items-center">
+        <!-- Avatar -->
+        <div class="col-md-4 text-center mb-3">
+            <img src="@Model.ExistingAvatarPath" alt="Avatar" class="img-thumbnail rounded-circle" style="width: 140px; height: 140px; object-fit: cover;" />
+        </div>
+
+        <!-- Thông tin -->
+        <div class="col-md-8 theme-text">
+            <dl class="row mb-3">
+                <dt class="col-sm-4">Tên hiển thị:</dt>
+                <dd class="col-sm-8">@Model.DisplayName</dd>
+
+                <dt class="col-sm-4">Email:</dt>
+                <dd class="col-sm-8">@Model.Email</dd>
+
+                <dt class="col-sm-4">Điểm:</dt>
+                <dd class="col-sm-8">@Model.Score</dd>
+
+                <dt class="col-sm-4">Vai trò:</dt>
+                <dd class="col-sm-8">@Model.Role</dd>
+            </dl>
+
+            <!-- Ban/Unban -->
+            @if (Model.BannedUntil == null || Model.BannedUntil <= DateTime.Now)
+            {
+                <form asp-action="BanUser" asp-controller="Admin" method="post" class="mb-3">
+                    <input type="hidden" name="userId" value="@Model.Id" />
+                    <div class="input-group">
+                        <select name="duration" class="form-select">
+                            <option value="3">3 phút</option>
+                            <option value="20160">14 ngày</option>
+                            <option value="-1">Vĩnh viễn</option>
+                        </select>
+                        <button type="submit" class="btn btn-danger">Ban</button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <form asp-action="UnbanUser" asp-controller="Admin" method="post">
+                    <input type="hidden" name="userId" value="@Model.Id" />
+                    <div class="d-flex align-items-center justify-content-between bg-warning p-2 rounded mb-3">
+                        <span class="fw-bold text-dark">
+                            Tài khoản đang bị cấm đến: @Model.BannedUntil?.ToString("g")
+                        </span>
+                        <button type="submit" class="btn btn-success btn-sm ms-3">Unban</button>
+                    </div>
+                </form>
+            }
+
+            <a asp-action="Index" class="btn btn-secondary">⬅ Quay lại</a>
+        </div>
+    </div>
+</div>

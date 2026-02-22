@@ -1,0 +1,61 @@
+﻿@model AdminEditUserViewModel
+@using System
+
+@{
+    ViewData["Title"] = "Chi tiết người dùng";
+}
+
+<div class="card theme-box mx-auto mt-4 p-4 shadow-lg cyberpunk-card" style="max-width: 700px;">
+    <h4 class="theme-text mb-4 neon-text">👤 Thông tin người dùng</h4>
+
+    <div class="row align-items-center">
+        <!-- Avatar -->
+        <div class="col-md-4 text-center mb-3">
+            <img src="@Model.ExistingAvatarPath" alt="Avatar" class="img-thumbnail rounded-circle cyberpunk-avatar glow-effect" style="width: 140px; height: 140px; object-fit: cover;" />
+        </div>
+
+        <!-- Thông tin -->
+        <div class="col-md-8 theme-text">
+            <dl class="row mb-3">
+                <dt class="col-sm-4 neon-text">Tên hiển thị:</dt>
+                <dd class="col-sm-8">@Model.DisplayName</dd>
+
+                <dt class="col-sm-4 neon-text">Email:</dt>
+                <dd class="col-sm-8">@Model.Email</dd>
+
+                <dt class="col-sm-4 neon-text">Điểm:</dt>
+                <dd class="col-sm-8">@Model.Score</dd>
+
+                <dt class="col-sm-4 neon-text">Vai trò:</dt>
+                <dd class="col-sm-8">@Model.Role</dd>
+            </dl>
+
+            @if (Model.BannedUntil == null || Model.BannedUntil <= DateTime.Now)
+            {
+                <form asp-action="BanUser" asp-controller="Manager" method="post" class="mb-3">
+                    <input type="hidden" name="userId" value="@Model.Id" />
+                    <div class="input-group cyberpunk-input-group">
+                        <select name="duration" class="form-select cyberpunk-select">
+                            <option value="3">3 phút</option>
+                            <option value="20160">14 ngày</option>
+                            <option value="-1">Vĩnh viễn</option>
+                        </select>
+                        <button type="submit" class="btn btn-danger cyberpunk-btn glow-btn">Ban</button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="d-flex align-items-center justify-content-between bg-warning p-2 rounded mb-3 glow-effect">
+                    <span class="fw-bold text-dark">
+                        Tài khoản đang bị cấm đến: @Model.BannedUntil?.ToString("g")
+                    </span>
+                </div>
+            }
+
+            <a asp-controller="Manager" asp-action="Index" class="btn btn-outline-primary cyberpunk-btn glow-btn">
+                ⬅ Quay lại
+            </a>
+        </div>
+    </div>
+</div>

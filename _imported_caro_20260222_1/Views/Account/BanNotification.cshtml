@@ -1,0 +1,12 @@
+﻿@{
+    ViewData["Title"] = "Tài khoản bị cấm";
+}
+<div class="alert alert-danger mt-5 text-center">
+    <h4>@TempData["BanMessage"]</h4>
+    <p>Bạn sẽ được chuyển hướng về trang đăng nhập trong vài giây...</p>
+</div>
+<script>
+    setTimeout(function () {
+        window.location.href = "/Account/Login";
+    }, 4000);
+</script>

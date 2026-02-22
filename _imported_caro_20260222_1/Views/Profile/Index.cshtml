@@ -1,0 +1,199 @@
+﻿@using Caro.Models.ViewModels
+@model ProfileViewModel
+
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+    var badAchievements = new HashSet<string> { "Chuỗi thua huyền thoại", "1 phút lơ là" };
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-4">
+            <div class="row">
+
+                <!-- Cột trái -->
+                <div class="col-md-5 border-end">
+                    <div class="text-center mb-4">
+                        <img src="@Model.AvatarPath"
+                             alt="Avatar"
+                             class="rounded-circle border border-light shadow mb-2"
+                             style="width: 130px; height: 130px;" />
+                        <h4 class="mb-0">@Model.DisplayName</h4>
+                        <p class="text-muted">@Model.Email</p>
+                    </div>
+
+                    <div class="px-3">
+                        <h5 class="mb-3">🎯 Thông tin cá nhân</h5>
+                        <p><strong>Điểm hiện tại:</strong> @Model.Score</p>
+                        <p><strong>Điểm cao nhất:</strong> @Model.HighestScore</p>
+
+                        <hr />
+                        <h5 class="mb-3">📊 Thống kê thi đấu</h5>
+                        <p><strong>Tổng số trận:</strong> @Model.TotalGames</p>
+                        <p><strong>Số trận thắng:</strong> @Model.WinCount</p>
+                        <p><strong>Tỷ lệ thắng:</strong> @Model.WinRate %</p>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        @if (Model.IsOwner)
+                        {
+                            <a href="/Profile/Edit" class="btn btn-outline-primary px-4">
+                                🖊️ Chỉnh sửa thông tin cá nhân
+                            </a>
+                        }
+                        else
+                        {
+                            @if (Model.IsFriend)
+                            {
+                                <form asp-controller="Friendship" asp-action="Remove" method="post">
+                                    <input type="hidden" name="id" value="@Model.ViewedUserId" />
+                                    <button class="btn btn-danger px-4">❌ Hủy kết bạn</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-controller="Friendship" asp-action="SendRequestById" method="post">
+                                    <input type="hidden" name="addresseeId" value="@Model.ViewedUserId" />
+                                    @if (Model.HasPending)
+                                    {
+                                        <button class="btn btn-warning px-4">⏳ Đã gửi (nhấn để gửi lại)</button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-success px-4">➕ Kết bạn</button>
+                                    }
+                                </form>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Cột giữa -->
+                <div class="col-md-4 d-flex flex-column align-items-center justify-content-start">
+                    <div class="mb-4 text-center">
+                        <h4 class="text-warning fw-bold mb-3">🏆 Danh hiệu nổi bật</h4>
+                        @if (Model.DanhHieu.Any())
+                        {
+                            <ul class="list-unstyled fs-5">
+                                @foreach (var title in Model.DanhHieu)
+                                {
+                                    <li class="mb-1"><strong>@title</strong></li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="text-muted">Chưa có danh hiệu nổi bật</p>
+                        }
+                    </div>
+
+                    <!-- Biểu đồ -->
+                    <div class="my-4">
+                        <h6 class="text-center">Tỷ lệ thắng/thua</h6>
+                        <canvas id="winRateChart" width="250" height="250"></canvas>
+                    </div>
+
+                    <div class="mt-4 text-start w-100 px-4">
+                        <h5 class="mb-2 text-info">🎖️ Thành tích</h5>
+                        <p><strong>Thắng ranked dưới 15 lượt:</strong> @Model.WinFastRanked trận</p>
+                        <p><strong>Chuỗi thắng ranked dài nhất:</strong> @Model.BestStreak trận</p>
+                    </div>
+                </div>
+
+                <!-- Cột phải: Thành tựu -->
+                <div class="col-md-3 text-start px-4 border-start">
+                    <div class="mb-4 text-center">
+                        <h4 class="text-warning fw-bold mb-3">Achievements</h4>
+                        <ul class="list-unstyled">
+                            @foreach (var achievement in Model.DiemAchievements)
+                            {
+                                <li class="text-warning fw-bold" data-bs-toggle="tooltip" title="@ViewBag.AchievementDescriptions[achievement]">
+                                    @achievement
+                                </li>
+                            }
+
+                            @foreach (var achievement in Model.RepeatAchievements)
+                            {
+                                if (achievement.Key.StartsWith("Kẻ cố chấp") || achievement.Key.StartsWith("Không thể ngăn cản"))
+                                {
+                                    continue;
+                                }
+                                var isBad = badAchievements.Contains(achievement.Key);
+                                var cssClass = isBad ? "theme-text fw-bold" : "text-warning fw-bold";
+
+                                <li class="@cssClass" data-bs-toggle="tooltip" title="@ViewBag.AchievementDescriptions[achievement.Key]">
+                                    @achievement.Key (@achievement.Value)x
+                                </li>
+                            }
+
+                            @foreach (var achievement in Model.Achievements)
+                            {
+                                var title = achievement.StartsWith("Kẻ cố chấp")
+                                ? ViewBag.AchievementDescriptions["Kẻ cố chấp"]
+                                : achievement.StartsWith("Không thể ngăn cản")
+                                ? ViewBag.AchievementDescriptions["Không thể ngăn cản"]
+                                : ViewBag.AchievementDescriptions[achievement];
+
+                                var cssClass = achievement.StartsWith("Kẻ cố chấp")
+                                ? "theme-text fw-bold"
+                                : "text-warning fw-bold";
+
+                                <li class="@cssClass" data-bs-toggle="tooltip" title="@title">
+                                    @achievement
+                                </li>
+                            }
+
+                            @foreach (var achievement in Model.LockedAchievements)
+                            {
+                                <li class="text-muted" data-bs-toggle="tooltip" title="@ViewBag.AchievementDescriptions[achievement]">
+                                    @achievement
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('winRateChart').getContext('2d');
+        const winRate = @Model.WinRate;
+        const loseRate = 100 - winRate;
+
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Thắng', 'Thua'],
+                datasets: [{
+                    data: [winRate, loseRate],
+                    backgroundColor: ['#28a745', '#dc3545'],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'white',
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Kích hoạt Bootstrap Tooltip
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...tooltipTriggerList].forEach(el => new bootstrap.Tooltip(el));
+    </script>
+}

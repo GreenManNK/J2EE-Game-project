@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = "Nhập mã xác minh";
+    ViewData["FullWidth"] = true;
+}
+
+<div class="card theme-box mx-auto mt-5" style="max-width: 500px;">
+    <div class="card-header">
+        <h4 class="mb-0 theme-text">Nhập mã xác minh</h4>
+    </div>
+    <div class="card-body theme-text">
+        <p class="text-info mb-3">
+            Email đã được gửi! Vui lòng kiểm tra hộp thư đến của bạn để lấy mã xác nhận.
+            <br />
+            Hãy kiểm tra cả mục Thư rác (Spam) nếu không thấy email!
+        </p>
+
+        <form asp-action="VerifyResetCode" method="post">
+            <input type="hidden" name="userId" value="@ViewBag.UserId" />
+
+            <div class="mb-3">
+                <label for="code" class="form-label">Mã xác nhận</label>
+                <input type="text" name="code" class="form-control" id="code" placeholder="Nhập mã xác nhận" required />
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">Xác minh</button>
+        </form>
+    </div>
+</div>
