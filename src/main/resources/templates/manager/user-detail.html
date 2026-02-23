@@ -1,39 +1,64 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Manager User Detail</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Manager User Detail')}"></head>
 <body>
-<div th:replace="~{fragments :: nav}"></div>
-<div class="container" id="managerUserDetailRoot" th:attr="data-user-id=${user.id}">
-<h1>Manager - User Detail</h1>
-<p><strong>ID:</strong> <span th:text="${user.id}"></span></p>
-<p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
-<p><strong>Name:</strong> <span th:text="${user.displayName}"></span></p>
-<p><strong>Score:</strong> <span th:text="${user.score}"></span></p>
-<p><strong>Role:</strong> <span th:text="${user.role}"></span></p>
-<p><strong>Banned Until:</strong> <span th:text="${user.bannedUntil}"></span></p>
+<div th:replace="~{fragments :: appShell('manager-user-detail')}"></div>
 
-<h3>Cap nhat nhanh</h3>
-<div>
-  <label>Name <input id="displayName" th:value="${user.displayName}"></label>
-</div>
-<div>
-  <label>Score <input id="score" type="number" th:value="${user.score}"></label>
-</div>
-<div>
-  <label>Role <input id="role" th:value="${user.role}"></label>
-</div>
-<div>
-  <label>Avatar Path <input id="avatarPath" th:value="${user.avatarPath}"></label>
-</div>
-<button id="saveBtn">Save</button>
+<div class="container py-4 theme-text" id="managerUserDetailRoot" th:attr="data-user-id=${user.id}">
+  <div class="theme-box rounded p-3 mb-3">
+    <h1 class="h3 mb-3 theme-text">Manager - User Detail</h1>
+    <div class="row g-2">
+      <div class="col-md-6"><strong>ID:</strong> <span th:text="${user.id}"></span></div>
+      <div class="col-md-6"><strong>Email:</strong> <span th:text="${user.email}"></span></div>
+      <div class="col-md-6"><strong>Name:</strong> <span th:text="${user.displayName}"></span></div>
+      <div class="col-md-6"><strong>Score:</strong> <span th:text="${user.score}"></span></div>
+      <div class="col-md-6"><strong>Role:</strong> <span th:text="${user.role}"></span></div>
+      <div class="col-md-6"><strong>Banned Until:</strong> <span th:text="${user.bannedUntil}"></span></div>
+    </div>
+  </div>
 
-<h3>Ban / Unban</h3>
-<input id="minutes" type="number" value="60">
-<button id="banBtn">Ban</button>
-<button id="unbanBtn">Unban</button>
+  <div class="theme-box rounded p-3 mb-3">
+    <h2 class="h5 mb-3 theme-text">Cap nhat nhanh</h2>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label" for="displayName">Name</label>
+        <input id="displayName" class="form-control" th:value="${user.displayName}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="score">Score</label>
+        <input id="score" class="form-control" type="number" th:value="${user.score}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="role">Role</label>
+        <input id="role" class="form-control" th:value="${user.role}">
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="avatarPath">Avatar Path</label>
+        <input id="avatarPath" class="form-control" th:value="${user.avatarPath}">
+      </div>
+    </div>
+    <button id="saveBtn" type="button" class="btn btn-primary mt-3">Save</button>
+  </div>
 
-<pre id="out"></pre>
-<a th:href="@{/manager/users}">Back</a>
+  <div class="theme-box rounded p-3 mb-3">
+    <h2 class="h5 mb-3 theme-text">Ban / Unban</h2>
+    <div class="row g-2 align-items-end">
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label" for="minutes">Minutes</label>
+        <input id="minutes" class="form-control" type="number" value="60" min="1">
+      </div>
+      <div class="col-sm-8 col-md-9 d-flex flex-wrap gap-2">
+        <button id="banBtn" type="button" class="btn btn-warning">Ban</button>
+        <button id="unbanBtn" type="button" class="btn btn-outline-success">Unban</button>
+      </div>
+    </div>
+    <pre id="out" class="small mt-3 mb-0 theme-text"></pre>
+  </div>
+
+  <a class="btn theme-outline-btn" th:href="@{/manager/users}">Back</a>
 </div>
+
+<th:block th:replace="~{fragments :: appScripts('manager-user-detail')}"></th:block>
 <script th:src="@{/js/manager-user-detail.js}"></script>
-</body></html>
+</body>
+</html>

@@ -1,17 +1,28 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>User Detail</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('User Detail')}"></head>
 <body>
-<div th:replace="~{fragments :: nav}"></div>
-<div class="container">
-<h1>User Detail</h1>
-<p><strong>Name:</strong> <span th:text="${user.displayName}"></span></p>
-<p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
-<p><strong>Score:</strong> <span th:text="${user.score}"></span></p>
-<p><strong>isFriend:</strong> <span th:text="${isFriend}"></span></p>
-<p><strong>hasPending:</strong> <span th:text="${hasPending}"></span></p>
-<p th:if="${isFriend and currentUserId != null and !#strings.isEmpty(currentUserId)}">
-  <a th:href="@{/chat/private(currentUserId=${currentUserId},friendId=${user.id})}">Chat rieng</a>
-</p>
-<a th:href="@{/friendship(currentUserId=${currentUserId})}">Back Friendship</a>
+<div th:replace="~{fragments :: appShell('friendship-user-detail')}"></div>
+
+<div class="container py-4 theme-text">
+  <div class="theme-box rounded p-3 mb-3">
+    <h1 class="h3 mb-3 theme-text">User Detail</h1>
+    <div class="row g-2">
+      <div class="col-md-6"><strong>Name:</strong> <span th:text="${user.displayName}"></span></div>
+      <div class="col-md-6"><strong>Email:</strong> <span th:text="${user.email}"></span></div>
+      <div class="col-md-6"><strong>Score:</strong> <span th:text="${user.score}"></span></div>
+      <div class="col-md-6"><strong>isFriend:</strong> <span th:text="${isFriend}"></span></div>
+      <div class="col-md-6"><strong>hasPending:</strong> <span th:text="${hasPending}"></span></div>
+    </div>
+    <div class="mt-3 d-flex flex-wrap gap-2">
+      <a class="btn theme-outline-btn"
+         th:if="${isFriend and currentUserId != null and !#strings.isEmpty(currentUserId)}"
+         th:href="@{/chat/private(currentUserId=${currentUserId},friendId=${user.id})}">Chat rieng</a>
+      <a class="btn btn-outline-secondary" th:href="@{/friendship(currentUserId=${currentUserId})}">Back Friendship</a>
+    </div>
+  </div>
 </div>
-</body></html>
+
+<th:block th:replace="~{fragments :: appScripts('friendship-user-detail')}"></th:block>
+</body>
+</html>

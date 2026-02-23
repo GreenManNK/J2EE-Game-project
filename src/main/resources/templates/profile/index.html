@@ -1,47 +1,97 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Profile</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<head th:replace="~{fragments :: appHead('Profile')}"></head>
 <body>
-<div th:replace="~{fragments :: nav}"></div>
-<div class="container">
-<h1>Profile</h1>
-<div>
-  <p><strong>User:</strong> <span th:text="${user.displayName}"></span></p>
-  <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
-  <p><strong>Score:</strong> <span th:text="${user.score}"></span></p>
-  <p><strong>WinRate:</strong> <span th:text="${winRate}"></span>%</p>
-  <p><strong>Total Games:</strong> <span th:text="${totalGames}"></span></p>
-  <p><strong>Win Count:</strong> <span th:text="${winCount}"></span></p>
-  <p><strong>Rank:</strong> <span th:text="${rank}"></span></p>
+<div th:replace="~{fragments :: appShell('profile')}"></div>
+
+<div class="container py-4 theme-text">
+  <div class="theme-box rounded p-3 mb-3">
+    <h1 class="h3 mb-3 theme-text">Profile</h1>
+    <div class="row g-2">
+      <div class="col-md-6"><strong>User:</strong> <span th:text="${user.displayName}"></span></div>
+      <div class="col-md-6"><strong>Email:</strong> <span th:text="${user.email}"></span></div>
+      <div class="col-md-4"><strong>Score:</strong> <span th:text="${user.score}"></span></div>
+      <div class="col-md-4"><strong>WinRate:</strong> <span th:text="${winRate}"></span>%</div>
+      <div class="col-md-4"><strong>Total Games:</strong> <span th:text="${totalGames}"></span></div>
+      <div class="col-md-4"><strong>Win Count:</strong> <span th:text="${winCount}"></span></div>
+      <div class="col-md-4"><strong>Rank:</strong> <span th:text="${rank}"></span></div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-4">
+      <div class="theme-box rounded p-3 h-100">
+        <h2 class="h5 theme-text">Danh hieu</h2>
+        <ul class="list-group">
+          <li class="list-group-item" th:each="d : ${danhHieu}" th:text="${d}"></li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="theme-box rounded p-3 h-100">
+        <h2 class="h5 theme-text">Diem Achievements</h2>
+        <ul class="list-group">
+          <li class="list-group-item" th:each="a : ${diemAchievements}" th:text="${a}"></li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="theme-box rounded p-3 h-100">
+        <h2 class="h5 theme-text">Locked</h2>
+        <ul class="list-group">
+          <li class="list-group-item" th:each="a : ${lockedAchievements}" th:text="${a}"></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="theme-box rounded p-3 mt-3"
+       th:if="${isOwner}"
+       id="profileOwnerRoot"
+       th:attr="data-user-id=${user.id}">
+    <h2 class="h5 mb-3 theme-text">Cap nhat thong tin</h2>
+    <form id="editProfileForm" class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label" for="displayName">Display Name</label>
+        <input id="displayName" class="form-control" th:value="${user.displayName}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="email">Email</label>
+        <input id="email" class="form-control" type="email" th:value="${user.email}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="avatarPath">Avatar Path</label>
+        <input id="avatarPath" class="form-control" th:value="${user.avatarPath}">
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Luu thay doi</button>
+      </div>
+    </form>
+
+    <h2 class="h5 mt-4 mb-3 theme-text">Doi mat khau</h2>
+    <form id="changePasswordForm" class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label" for="currentPassword">Mat khau hien tai</label>
+        <input id="currentPassword" class="form-control" type="password" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="newPassword">Mat khau moi</label>
+        <input id="newPassword" class="form-control" type="password" required>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-outline-primary">Doi mat khau</button>
+      </div>
+    </form>
+
+    <pre id="ownerOut" class="small mt-3 mb-0 theme-text"></pre>
+  </div>
+
+  <div class="mt-3">
+    <a class="btn theme-outline-btn" th:href="@{/}">Ve Home</a>
+  </div>
 </div>
-<h3>Danh hieu</h3>
-<ul><li th:each="d : ${danhHieu}" th:text="${d}"></li></ul>
-<h3>Diem Achievements</h3>
-<ul><li th:each="a : ${diemAchievements}" th:text="${a}"></li></ul>
-<h3>Locked</h3>
-<ul><li th:each="a : ${lockedAchievements}" th:text="${a}"></li></ul>
 
-<div th:if="${isOwner}" id="profileOwnerRoot" th:attr="data-user-id=${user.id}" style="margin-top:24px;">
-  <h3>Cap nhat thong tin</h3>
-  <form id="editProfileForm">
-    <div><label>Display Name <input id="displayName" th:value="${user.displayName}"></label></div>
-    <div><label>Email <input id="email" type="email" th:value="${user.email}"></label></div>
-    <div><label>Avatar Path <input id="avatarPath" th:value="${user.avatarPath}"></label></div>
-    <button type="submit">Luu thay doi</button>
-  </form>
-
-  <h3 style="margin-top:18px;">Doi mat khau</h3>
-  <form id="changePasswordForm">
-    <div><label>Mat khau hien tai <input id="currentPassword" type="password" required></label></div>
-    <div><label>Mat khau moi <input id="newPassword" type="password" required></label></div>
-    <button type="submit">Doi mat khau</button>
-  </form>
-
-  <pre id="ownerOut"></pre>
-</div>
-
-<a th:href="@{/}">Ve Home</a>
-</div>
+<th:block th:replace="~{fragments :: appScripts('profile')}"></th:block>
 <script>
   (function () {
     const root = document.getElementById('profileOwnerRoot');
@@ -66,11 +116,11 @@
           body: JSON.stringify(payload)
         });
         const data = await res.json();
-        out.textContent = 'Edit Profile:\\n' + JSON.stringify(data, null, 2);
+        out.textContent = 'Edit Profile:\n' + JSON.stringify(data, null, 2);
         if (data.success && window.CaroUser) {
-          const current = window.CaroUser.get() || { userId };
+          const current = window.CaroUser.get() || { userId: userId };
           window.CaroUser.set({
-            userId,
+            userId: userId,
             displayName: data.user?.displayName || payload.displayName || current.displayName,
             email: data.user?.email || payload.email || current.email,
             role: current.role || 'User',
@@ -96,17 +146,16 @@
           body: JSON.stringify(payload)
         });
         const data = await res.json();
-        out.textContent = (out.textContent ? out.textContent + '\\n\\n' : '') + 'Change Password:\\n' + JSON.stringify(data, null, 2);
+        out.textContent = (out.textContent ? out.textContent + '\n\n' : '') + 'Change Password:\n' + JSON.stringify(data, null, 2);
         if (data.success) {
           document.getElementById('currentPassword').value = '';
           document.getElementById('newPassword').value = '';
         }
       } catch (err) {
-        out.textContent = (out.textContent ? out.textContent + '\\n\\n' : '') + 'Change Password Error: ' + (err?.message || err);
+        out.textContent = (out.textContent ? out.textContent + '\n\n' : '') + 'Change Password Error: ' + (err?.message || err);
       }
     });
   })();
 </script>
-<script th:src="@{/js/site.js}"></script>
 </body>
 </html>

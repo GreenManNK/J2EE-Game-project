@@ -1,15 +1,27 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Chat Bot</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Chat Bot')}"></head>
 <body>
-<div th:replace="~{fragments :: nav}"></div>
-<div class="container">
-<h1>Chat Bot</h1>
-<form id="chatForm" class="card">
-  <input id="message" style="width:80%" placeholder="Nhap cau hoi...">
-  <button class="btn" type="submit">Send</button>
-</form>
-<pre id="out" class="card"></pre>
-<a th:href="@{/}">Home</a>
+<div th:replace="~{fragments :: appShell('chat-bot')}"></div>
+
+<div class="container py-4 theme-text">
+  <h1 class="h3 mb-3 theme-text">Chat Bot</h1>
+
+  <div class="theme-box rounded p-3 mb-3">
+    <form id="chatForm" class="d-flex flex-wrap gap-2">
+      <input id="message" class="form-control flex-grow-1" placeholder="Nhap cau hoi..." required>
+      <button class="btn btn-primary" type="submit">Send</button>
+    </form>
+  </div>
+
+  <div class="theme-box rounded p-3 mb-3">
+    <pre id="out" class="mb-0 small theme-text"></pre>
+  </div>
+
+  <a class="btn theme-outline-btn" th:href="@{/}">Home</a>
 </div>
+
+<th:block th:replace="~{fragments :: appScripts('chat-bot')}"></th:block>
 <script th:src="@{/js/chat-bot.js}"></script>
-</body></html>
+</body>
+</html>

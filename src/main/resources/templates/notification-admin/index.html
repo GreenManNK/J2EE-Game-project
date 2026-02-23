@@ -1,21 +1,38 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>System Notifications</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('System Notifications')}"></head>
 <body>
-<div th:replace="~{fragments :: nav}"></div>
-<div class="container">
-<h1>System Notifications</h1>
-<form id="createForm">
-  <input id="content" placeholder="content" required>
-  <button type="submit">Create</button>
-</form>
-<pre id="out"></pre>
-<ul>
-  <li th:each="n : ${notifications}">
-    <span th:text="${n.content + ' - ' + n.createdAt}"></span>
-    <button th:attr="data-id=${n.id}" class="del">Delete</button>
-  </li>
-</ul>
-<a th:href="@{/}">Home</a>
+<div th:replace="~{fragments :: appShell('notification-admin')}"></div>
+
+<div class="container py-4 theme-text">
+  <h1 class="h3 mb-3 theme-text">System Notifications</h1>
+
+  <div class="theme-box rounded p-3 mb-3">
+    <form id="createForm" class="row g-2 align-items-end">
+      <div class="col-md-9">
+        <label class="form-label" for="content">Content</label>
+        <input id="content" class="form-control" placeholder="content" required>
+      </div>
+      <div class="col-md-3">
+        <button type="submit" class="btn btn-primary w-100">Create</button>
+      </div>
+    </form>
+    <pre id="out" class="small mt-3 mb-0 theme-text"></pre>
+  </div>
+
+  <div class="theme-box rounded p-3 mb-3">
+    <ul class="list-group">
+      <li class="list-group-item d-flex justify-content-between align-items-center gap-2" th:each="n : ${notifications}">
+        <span th:text="${n.content + ' - ' + n.createdAt}"></span>
+        <button type="button" th:attr="data-id=${n.id}" class="del btn btn-sm btn-outline-danger">Delete</button>
+      </li>
+    </ul>
+  </div>
+
+  <a class="btn theme-outline-btn" th:href="@{/}">Home</a>
 </div>
+
+<th:block th:replace="~{fragments :: appScripts('notification-admin')}"></th:block>
 <script th:src="@{/js/notification-admin.js}"></script>
-</body></html>
+</body>
+</html>
