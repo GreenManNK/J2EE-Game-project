@@ -9,6 +9,9 @@
 <p><strong>Score:</strong> <span th:text="${user.score}"></span></p>
 <p><strong>isFriend:</strong> <span th:text="${isFriend}"></span></p>
 <p><strong>hasPending:</strong> <span th:text="${hasPending}"></span></p>
+<p th:if="${isFriend and currentUserId != null and !#strings.isEmpty(currentUserId)}">
+  <a th:href="@{/chat/private(currentUserId=${currentUserId},friendId=${user.id})}">Chat rieng</a>
+</p>
 <a th:href="@{/friendship(currentUserId=${currentUserId})}">Back Friendship</a>
 </div>
 </body></html>

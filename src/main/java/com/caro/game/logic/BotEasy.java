@@ -19,6 +19,12 @@ public final class BotEasy {
         }
     }
 
+    public static synchronized void placeBotMove(int x, int y) {
+        if (inside(x, y)) {
+            BOARD[x][y] = 'O';
+        }
+    }
+
     public static synchronized Move getNextMove(int lastPlayerX, int lastPlayerY) {
         if (inside(lastPlayerX, lastPlayerY)) {
             BOARD[lastPlayerX][lastPlayerY] = 'X';

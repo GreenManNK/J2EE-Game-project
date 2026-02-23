@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Manager User Detail</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div th:replace="~{fragments :: nav}"></div>
+<div class="container" id="managerUserDetailRoot" th:attr="data-user-id=${user.id}">
+<h1>Manager - User Detail</h1>
+<p><strong>ID:</strong> <span th:text="${user.id}"></span></p>
+<p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+<p><strong>Name:</strong> <span th:text="${user.displayName}"></span></p>
+<p><strong>Score:</strong> <span th:text="${user.score}"></span></p>
+<p><strong>Role:</strong> <span th:text="${user.role}"></span></p>
+<p><strong>Banned Until:</strong> <span th:text="${user.bannedUntil}"></span></p>
+
+<h3>Cap nhat nhanh</h3>
+<div>
+  <label>Name <input id="displayName" th:value="${user.displayName}"></label>
+</div>
+<div>
+  <label>Score <input id="score" type="number" th:value="${user.score}"></label>
+</div>
+<div>
+  <label>Role <input id="role" th:value="${user.role}"></label>
+</div>
+<div>
+  <label>Avatar Path <input id="avatarPath" th:value="${user.avatarPath}"></label>
+</div>
+<button id="saveBtn">Save</button>
+
+<h3>Ban / Unban</h3>
+<input id="minutes" type="number" value="60">
+<button id="banBtn">Ban</button>
+<button id="unbanBtn">Unban</button>
+
+<pre id="out"></pre>
+<a th:href="@{/manager/users}">Back</a>
+</div>
+<script th:src="@{/js/manager-user-detail.js}"></script>
+</body></html>

@@ -58,6 +58,10 @@ public class ManagerController {
     @ResponseBody
     @PostMapping("/users")
     public Object create(@RequestBody CreateUserRequest request) {
+        if (request == null || request.email() == null || request.email().isBlank()
+            || request.password() == null || request.password().isBlank()) {
+            return Map.of("success", false, "error", "Email and password are required");
+        }
         if (userAccountRepository.findByEmail(request.email()).isPresent()) {
             return Map.of("success", false, "error", "Email already exists");
         }
@@ -76,16 +80,33 @@ public class ManagerController {
         return Map.of("success", true, "user", user);
     }
 
+    @GetMapping("/users/{id}")
+    public String userDetailPage(@PathVariable String id, Model model) {
+        UserAccount user = userAccountRepository.findById(id).orElse(null);
+        if (user == null) {
+            return "redirect:/manager/users";
+        }
+        model.addAttribute("user", user);
+        return "manager/user-detail";
+    }
+
     @ResponseBody
     @GetMapping("/api/users/{id}")
-    public UserAccount details(@PathVariable String id) {
-        return userAccountRepository.findById(id).orElseThrow();
+    public Object details(@PathVariable String id) {
+        UserAccount user = userAccountRepository.findById(id).orElse(null);
+        if (user == null) {
+            return Map.of("success", false, "error", "User not found");
+        }
+        return user;
     }
 
     @ResponseBody
     @PatchMapping("/users/{id}")
     public Object edit(@PathVariable String id, @RequestBody EditUserRequest request) {
-        UserAccount user = userAccountRepository.findById(id).orElseThrow();
+        UserAccount user = userAccountRepository.findById(id).orElse(null);
+        if (user == null) {
+            return Map.of("success", false, "error", "User not found");
+        }
 
         if (request.displayName() != null) user.setDisplayName(request.displayName());
         if (request.score() != null) user.setScore(request.score());
@@ -111,6 +132,18 @@ public class ManagerController {
         }
         userAccountRepository.save(user);
         return Map.of("success", true, "bannedUntil", user.getBannedUntil());
+    }
+
+    @ResponseBody
+    @PostMapping("/users/{id}/unban")
+    public Object unban(@PathVariable String id) {
+        UserAccount user = userAccountRepository.findById(id).orElse(null);
+        if (user == null) {
+            return Map.of("success", false, "error", "User not found");
+        }
+        user.setBannedUntil(null);
+        userAccountRepository.save(user);
+        return Map.of("success", true);
     }
 
     private List<UserAccount> filterUsers(String searchTerm, String banFilter) {

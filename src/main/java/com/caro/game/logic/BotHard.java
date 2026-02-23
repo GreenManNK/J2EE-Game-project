@@ -15,6 +15,20 @@ public final class BotHard {
     private BotHard() {
     }
 
+    public static synchronized void placePlayerMove(int x, int y) {
+        if (inside(x, y)) {
+            BOARD[x][y] = 'X';
+            lastPlayerMove = new Move(x, y);
+        }
+    }
+
+    public static synchronized void placeBotMove(int x, int y) {
+        if (inside(x, y)) {
+            BOARD[x][y] = 'O';
+            lastBotMove = new Move(x, y);
+        }
+    }
+
     public static synchronized Move getNextMove(int lastPlayerX, int lastPlayerY) {
         if (inside(lastPlayerX, lastPlayerY)) {
             BOARD[lastPlayerX][lastPlayerY] = 'X';

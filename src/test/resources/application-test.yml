@@ -10,3 +10,7 @@ spring:
     show-sql: false
   thymeleaf:
     cache: false
+
+app:
+  email:
+    mode: log

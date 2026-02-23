@@ -1,7 +1,8 @@
 package com.caro.game.controller;
 
-import com.caro.game.entity.UserAccount;
-import com.caro.game.repository.UserAccountRepository;
+import com.caro.game.service.PrivateChatService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,36 +15,38 @@ import java.util.Map;
 @Controller
 @RequestMapping("/chat")
 public class ChatController {
-    private final UserAccountRepository userAccountRepository;
+    private final PrivateChatService privateChatService;
 
-    public ChatController(UserAccountRepository userAccountRepository) {
-        this.userAccountRepository = userAccountRepository;
+    public ChatController(PrivateChatService privateChatService) {
+        this.privateChatService = privateChatService;
     }
 
     @GetMapping("/private")
     public String privatePage(@RequestParam String currentUserId,
                               @RequestParam String friendId,
+                              HttpServletRequest request,
                               Model model) {
-        model.addAllAttributes(privateChat(currentUserId, friendId));
+        model.addAllAttributes(privateChat(currentUserId, friendId, request));
         return "chat/private";
     }
 
     @ResponseBody
     @GetMapping("/private/api")
-    public Map<String, Object> privateChat(@RequestParam String currentUserId, @RequestParam String friendId) {
-        UserAccount currentUser = userAccountRepository.findById(currentUserId).orElse(null);
-        UserAccount friend = userAccountRepository.findById(friendId).orElse(null);
-
-        if (currentUser == null || friend == null) {
-            return Map.of("success", false, "error", "User not found");
+    public Map<String, Object> privateChat(@RequestParam String currentUserId,
+                                           @RequestParam String friendId,
+                                           HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
         }
+        if (!sessionUserId.equals(currentUserId)) {
+            return Map.of("success", false, "error", "Session user mismatch");
+        }
+        return privateChatService.buildChatBootstrap(currentUserId, friendId).toMap();
+    }
 
-        return Map.of(
-            "success", true,
-            "currentUserId", currentUser.getId(),
-            "currentUserName", currentUser.getDisplayName(),
-            "friendId", friend.getId(),
-            "friendName", friend.getDisplayName()
-        );
+    private String asString(Object value) {
+        return value == null ? null : String.valueOf(value);
     }
 }

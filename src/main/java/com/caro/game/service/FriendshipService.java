@@ -39,8 +39,16 @@ public class FriendshipService {
     }
 
     public boolean acceptRequest(Long friendshipId) {
+        return acceptRequest(friendshipId, null);
+    }
+
+    public boolean acceptRequest(Long friendshipId, String actorUserId) {
         Friendship friendship = friendshipRepository.findById(friendshipId).orElse(null);
         if (friendship == null || friendship.isAccepted()) {
+            return false;
+        }
+        if (actorUserId != null && !actorUserId.isBlank()
+            && !actorUserId.equals(friendship.getAddresseeId())) {
             return false;
         }
         friendship.setAccepted(true);
@@ -49,9 +57,20 @@ public class FriendshipService {
     }
 
     public boolean declineRequest(Long friendshipId) {
+        return declineRequest(friendshipId, null);
+    }
+
+    public boolean declineRequest(Long friendshipId, String actorUserId) {
         Friendship friendship = friendshipRepository.findById(friendshipId).orElse(null);
         if (friendship == null || friendship.isAccepted()) {
             return false;
+        }
+        if (actorUserId != null && !actorUserId.isBlank()) {
+            boolean isRequester = actorUserId.equals(friendship.getRequesterId());
+            boolean isAddressee = actorUserId.equals(friendship.getAddresseeId());
+            if (!isRequester && !isAddressee) {
+                return false;
+            }
         }
         friendshipRepository.delete(friendship);
         return true;

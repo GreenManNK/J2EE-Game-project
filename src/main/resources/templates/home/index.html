@@ -20,7 +20,7 @@
       <div class="card shadow-sm px-3 py-2 mx-auto" style="max-width: 900px;">
         <textarea id="postContent" class="form-control mb-2" rows="3" placeholder="Ban dang nghi gi?" required></textarea>
         <div class="d-flex justify-content-between align-items-center">
-          <small class="text-muted">Tac gia mac dinh: demo-user</small>
+          <small class="text-muted">Tac gia: <span id="postAuthorLabel">Can dang nhap</span></small>
           <button type="submit" class="btn theme-outline-btn btn-sm">Dang bai</button>
         </div>
       </div>
@@ -33,12 +33,34 @@
       <p class="text-muted" th:if="${#lists.isEmpty(posts)}">Chua co bai dang nao.</p>
       <div class="card mb-3 shadow-sm" th:each="p : ${posts}">
         <div class="card-body py-2 px-3 text-start">
+          <div class="d-none post-id" th:text="${p.id}">0</div>
           <div class="mb-1">
             <strong class="theme-text" th:text="${p.author}">author</strong><br>
             <small class="text-muted" th:text="${p.createdAt}">time</small>
           </div>
           <p class="theme-text mb-2" th:text="${p.content}">content</p>
           <img th:if="${p.imagePath != null and !#strings.isEmpty(p.imagePath)}" th:src="${p.imagePath}" class="img-fluid rounded mb-2" style="max-height: 300px;" alt="post-image">
+
+          <div class="mt-2">
+            <div class="small fw-bold theme-text mb-1">Binh luan</div>
+            <div class="ps-2 border-start" th:if="${#lists.isEmpty(p.comments)}">
+              <small class="text-muted">Chua co binh luan</small>
+            </div>
+            <div class="ps-2 border-start d-flex flex-column gap-1" th:if="${!#lists.isEmpty(p.comments)}">
+              <div th:each="c : ${p.comments}">
+                <small>
+                  <strong th:text="${c.author}">author</strong>:
+                  <span th:text="${c.content}">comment</span>
+                </small>
+              </div>
+            </div>
+
+            <form class="commentForm mt-2 d-flex gap-2">
+              <input type="hidden" class="commentPostId" th:value="${p.id}">
+              <input type="text" class="form-control form-control-sm commentContent" placeholder="Viet binh luan..." maxlength="500">
+              <button type="submit" class="btn btn-sm btn-outline-secondary">Gui</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -55,8 +77,14 @@
   window.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('postForm');
     const contentEl = document.getElementById('postContent');
+    const authorLabel = document.getElementById('postAuthorLabel');
     const siteMusic = document.getElementById('siteMusic');
     const siteToggleBtn = document.getElementById('siteMusicToggleBtn');
+    const currentUser = window.CaroUser?.get?.() || null;
+
+    if (authorLabel) {
+      authorLabel.textContent = currentUser?.displayName || currentUser?.userId || 'Can dang nhap';
+    }
 
     if (siteMusic) {
       siteMusic.volume = 0.3;
@@ -87,19 +115,57 @@
       if (!content) {
         return;
       }
+      if (!currentUser?.userId) {
+        alert('Can dang nhap de dang bai');
+        return;
+      }
       try {
         const res = await fetch('/posts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content, author: 'demo-user', imagePath: '' })
+          body: JSON.stringify({ content, author: currentUser.displayName || currentUser.userId, imagePath: '' })
         });
-        if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.error || 'Khong dang bai duoc');
+        }
+        if (!data.success) {
           throw new Error('Khong dang bai duoc');
         }
         window.location.reload();
       } catch (err) {
         alert(err.message);
       }
+    });
+
+    document.querySelectorAll('.commentForm').forEach((commentForm) => {
+      commentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentUser?.userId) {
+          alert('Can dang nhap de binh luan');
+          return;
+        }
+        const postId = Number(commentForm.querySelector('.commentPostId')?.value || 0);
+        const input = commentForm.querySelector('.commentContent');
+        const content = (input?.value || '').trim();
+        if (!postId || !content) {
+          return;
+        }
+        try {
+          const res = await fetch('/posts/comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ postId, content, author: currentUser.displayName || currentUser.userId })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || data.success === false) {
+            throw new Error(data.error || 'Khong gui binh luan duoc');
+          }
+          window.location.reload();
+        } catch (err) {
+          alert(err.message);
+        }
+      });
     });
   });
 </script>

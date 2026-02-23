@@ -20,7 +20,93 @@
 <ul><li th:each="a : ${diemAchievements}" th:text="${a}"></li></ul>
 <h3>Locked</h3>
 <ul><li th:each="a : ${lockedAchievements}" th:text="${a}"></li></ul>
+
+<div th:if="${isOwner}" id="profileOwnerRoot" th:attr="data-user-id=${user.id}" style="margin-top:24px;">
+  <h3>Cap nhat thong tin</h3>
+  <form id="editProfileForm">
+    <div><label>Display Name <input id="displayName" th:value="${user.displayName}"></label></div>
+    <div><label>Email <input id="email" type="email" th:value="${user.email}"></label></div>
+    <div><label>Avatar Path <input id="avatarPath" th:value="${user.avatarPath}"></label></div>
+    <button type="submit">Luu thay doi</button>
+  </form>
+
+  <h3 style="margin-top:18px;">Doi mat khau</h3>
+  <form id="changePasswordForm">
+    <div><label>Mat khau hien tai <input id="currentPassword" type="password" required></label></div>
+    <div><label>Mat khau moi <input id="newPassword" type="password" required></label></div>
+    <button type="submit">Doi mat khau</button>
+  </form>
+
+  <pre id="ownerOut"></pre>
+</div>
+
 <a th:href="@{/}">Ve Home</a>
 </div>
+<script>
+  (function () {
+    const root = document.getElementById('profileOwnerRoot');
+    if (!root) return;
+    const userId = root.dataset.userId;
+    const out = document.getElementById('ownerOut');
+    const editForm = document.getElementById('editProfileForm');
+    const pwdForm = document.getElementById('changePasswordForm');
+
+    editForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        userId,
+        displayName: document.getElementById('displayName')?.value || '',
+        email: document.getElementById('email')?.value || '',
+        avatarPath: document.getElementById('avatarPath')?.value || ''
+      };
+      try {
+        const res = await fetch('/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        out.textContent = 'Edit Profile:\\n' + JSON.stringify(data, null, 2);
+        if (data.success && window.CaroUser) {
+          const current = window.CaroUser.get() || { userId };
+          window.CaroUser.set({
+            userId,
+            displayName: data.user?.displayName || payload.displayName || current.displayName,
+            email: data.user?.email || payload.email || current.email,
+            role: current.role || 'User',
+            avatarPath: data.user?.avatarPath || payload.avatarPath || current.avatarPath
+          });
+        }
+      } catch (err) {
+        out.textContent = 'Edit Profile Error: ' + (err?.message || err);
+      }
+    });
+
+    pwdForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        userId,
+        currentPassword: document.getElementById('currentPassword')?.value || '',
+        newPassword: document.getElementById('newPassword')?.value || ''
+      };
+      try {
+        const res = await fetch('/account/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        out.textContent = (out.textContent ? out.textContent + '\\n\\n' : '') + 'Change Password:\\n' + JSON.stringify(data, null, 2);
+        if (data.success) {
+          document.getElementById('currentPassword').value = '';
+          document.getElementById('newPassword').value = '';
+        }
+      } catch (err) {
+        out.textContent = (out.textContent ? out.textContent + '\\n\\n' : '') + 'Change Password Error: ' + (err?.message || err);
+      }
+    });
+  })();
+</script>
+<script th:src="@{/js/site.js}"></script>
 </body>
 </html>

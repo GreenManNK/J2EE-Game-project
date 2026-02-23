@@ -2,7 +2,11 @@ package com.caro.game.controller;
 
 import com.caro.game.entity.Comment;
 import com.caro.game.entity.Post;
+import com.caro.game.entity.UserAccount;
 import com.caro.game.repository.PostRepository;
+import com.caro.game.repository.UserAccountRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,9 +23,11 @@ import java.util.Map;
 @RequestMapping("/")
 public class HomeController {
     private final PostRepository postRepository;
+    private final UserAccountRepository userAccountRepository;
 
-    public HomeController(PostRepository postRepository) {
+    public HomeController(PostRepository postRepository, UserAccountRepository userAccountRepository) {
         this.postRepository = postRepository;
+        this.userAccountRepository = userAccountRepository;
     }
 
     @GetMapping
@@ -39,22 +45,44 @@ public class HomeController {
 
     @ResponseBody
     @PostMapping("posts")
-    public Post createPost(@RequestBody CreatePostRequest request) {
+    public Object createPost(@RequestBody CreatePostRequest request, HttpServletRequest httpRequest) {
+        UserAccount user = sessionUser(httpRequest);
+        if (user == null) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        String content = trimToNull(request == null ? null : request.content());
+        if (content == null) {
+            return Map.of("success", false, "error", "Content is required");
+        }
         Post post = new Post();
-        post.setAuthor(request.author());
-        post.setContent(request.content());
-        post.setImagePath(request.imagePath());
+        post.setAuthor(displayNameOf(user));
+        post.setContent(content);
+        post.setImagePath(trimToNull(request == null ? null : request.imagePath()));
         post.setCreatedAt(LocalDateTime.now());
-        return postRepository.save(post);
+        return Map.of("success", true, "post", postRepository.save(post));
     }
 
     @ResponseBody
     @PostMapping("posts/comment")
-    public Map<String, Object> createComment(@RequestBody CreateCommentRequest request) {
-        Post post = postRepository.findById(request.postId()).orElseThrow();
+    public Map<String, Object> createComment(@RequestBody CreateCommentRequest request, HttpServletRequest httpRequest) {
+        UserAccount user = sessionUser(httpRequest);
+        if (user == null) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        if (request == null || request.postId() == null) {
+            return Map.of("success", false, "error", "PostId is required");
+        }
+        String content = trimToNull(request.content());
+        if (content == null) {
+            return Map.of("success", false, "error", "Content is required");
+        }
+        Post post = postRepository.findById(request.postId()).orElse(null);
+        if (post == null) {
+            return Map.of("success", false, "error", "Post not found");
+        }
         Comment comment = new Comment();
-        comment.setAuthor(request.author());
-        comment.setContent(request.content());
+        comment.setAuthor(displayNameOf(user));
+        comment.setContent(content);
         comment.setCreatedAt(LocalDateTime.now());
         comment.setPost(post);
         List<Comment> comments = post.getComments();
@@ -78,5 +106,35 @@ public class HomeController {
     }
 
     public record CreateCommentRequest(Long postId, String content, String author) {
+    }
+
+    private UserAccount sessionUser(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        Object authUserId = session.getAttribute("AUTH_USER_ID");
+        if (authUserId == null) {
+            return null;
+        }
+        String userId = String.valueOf(authUserId).trim();
+        if (userId.isEmpty()) {
+            return null;
+        }
+        return userAccountRepository.findById(userId).orElse(null);
+    }
+
+    private String displayNameOf(UserAccount user) {
+        String displayName = trimToNull(user.getDisplayName());
+        return displayName == null ? user.getId() : displayName;
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

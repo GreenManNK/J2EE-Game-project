@@ -33,37 +33,6 @@
 </style>
 
 <th:block th:replace="~{fragments :: appScripts('game-offline')}"></th:block>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const board = document.getElementById('game-board');
-    let currentPlayer = 'X';
-
-    function updateStatus() {
-      document.getElementById('turnStatus').textContent = 'Luot cua: ' + currentPlayer;
-    }
-
-    function handleClick(cell) {
-      if (cell.textContent !== '') return;
-      cell.textContent = currentPlayer;
-      cell.classList.add(currentPlayer === 'X' ? 'player-x' : 'player-o');
-      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-      updateStatus();
-    }
-
-    for (let i = 0; i < 11; i++) {
-      const row = document.createElement('div');
-      row.classList.add('row');
-      for (let j = 0; j < 11; j++) {
-        const cell = document.createElement('div');
-        cell.classList.add('cell');
-        cell.onclick = () => handleClick(cell);
-        row.appendChild(cell);
-      }
-      board.appendChild(row);
-    }
-
-    updateStatus();
-  });
-</script>
+<script th:src="@{/js/offline.js}"></script>
 </body>
 </html>

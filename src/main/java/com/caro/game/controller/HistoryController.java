@@ -4,6 +4,8 @@ import com.caro.game.entity.GameHistory;
 import com.caro.game.entity.UserAccount;
 import com.caro.game.repository.GameHistoryRepository;
 import com.caro.game.repository.UserAccountRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,21 +32,52 @@ public class HistoryController {
     }
 
     @GetMapping
-    public String page(@RequestParam(required = false) String userId, Model model) {
-        if (userId == null || userId.isBlank()) {
+    public String page(@RequestParam(required = false) String userId,
+                       HttpServletRequest request,
+                       Model model) {
+        String effectiveUserId = effectiveUserId(userId, request);
+        if (effectiveUserId == null || effectiveUserId.isBlank()) {
             model.addAttribute("userId", "");
             model.addAttribute("histories", List.of());
             return "history/index";
         }
-        model.addAttribute("userId", userId);
-        model.addAttribute("histories", buildHistories(userId));
+        model.addAttribute("userId", effectiveUserId);
+        model.addAttribute("histories", buildHistories(effectiveUserId));
         return "history/index";
     }
 
     @ResponseBody
     @GetMapping("/api")
-    public List<GameHistoryView> indexApi(@RequestParam String userId) {
-        return buildHistories(userId);
+    public List<GameHistoryView> indexApi(@RequestParam String userId, HttpServletRequest request) {
+        String effectiveUserId = effectiveUserId(userId, request);
+        if (effectiveUserId == null || effectiveUserId.isBlank()) {
+            return List.of();
+        }
+        return buildHistories(effectiveUserId);
+    }
+
+    private String effectiveUserId(String requestedUserId, HttpServletRequest request) {
+        String sessionUserId = sessionUserId(request);
+        if (sessionUserId != null) {
+            return sessionUserId;
+        }
+        return "";
+    }
+
+    private String sessionUserId(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        Object value = session.getAttribute("AUTH_USER_ID");
+        if (value == null) {
+            return null;
+        }
+        String userId = String.valueOf(value).trim();
+        return userId.isEmpty() ? null : userId;
     }
 
     private List<GameHistoryView> buildHistories(String userId) {

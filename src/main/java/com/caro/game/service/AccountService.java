@@ -6,6 +6,7 @@ import com.caro.game.entity.UserAccount;
 import com.caro.game.repository.EmailVerificationTokenRepository;
 import com.caro.game.repository.PasswordResetTokenRepository;
 import com.caro.game.repository.UserAccountRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,58 +19,110 @@ import java.util.Random;
 
 @Service
 public class AccountService {
+    private static final int VERIFICATION_CODE_TTL_MINUTES = 5;
+    private static final long VERIFICATION_RESEND_COOLDOWN_SECONDS = 30;
+
     private final UserAccountRepository userAccountRepository;
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final String defaultAdminEmail;
     private final Random random = new Random();
 
     public AccountService(UserAccountRepository userAccountRepository,
                           EmailVerificationTokenRepository emailVerificationTokenRepository,
                           PasswordResetTokenRepository passwordResetTokenRepository,
                           PasswordEncoder passwordEncoder,
-                          EmailService emailService) {
+                          EmailService emailService,
+                          @Value("${app.admin.default-email:luckhaikiet@gmail.com}") String defaultAdminEmail) {
         this.userAccountRepository = userAccountRepository;
         this.emailVerificationTokenRepository = emailVerificationTokenRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.defaultAdminEmail = normalizeEmail(defaultAdminEmail);
     }
 
     public ServiceResult register(RegisterRequest request) {
-        if (userAccountRepository.findByEmail(request.email()).isPresent()) {
+        String normalizedEmail = normalizeEmail(request == null ? null : request.email());
+        String displayName = trimToNull(request == null ? null : request.displayName());
+        String password = request == null ? null : request.password();
+        String avatarPath = trimToNull(request == null ? null : request.avatarPath());
+
+        if (normalizedEmail == null) {
+            return ServiceResult.error("Email is required");
+        }
+        if (displayName == null) {
+            return ServiceResult.error("Display name is required");
+        }
+        if (password == null || password.isBlank()) {
+            return ServiceResult.error("Password is required");
+        }
+
+        if (userAccountRepository.findByEmail(normalizedEmail).isPresent()) {
             return ServiceResult.error("Email already exists");
         }
-        if (PendingRegisterStore.get(request.email()) != null) {
+        if (PendingRegisterStore.get(normalizedEmail) != null) {
             return ServiceResult.error("Email is waiting for verification");
         }
 
-        String code = String.valueOf(100000 + random.nextInt(900000));
-        EmailVerificationToken token = new EmailVerificationToken();
-        token.setEmail(request.email());
-        token.setToken(code);
-        token.setCreatedAt(LocalDateTime.now());
-        token.setExpireAt(LocalDateTime.now().plusMinutes(5));
-        emailVerificationTokenRepository.save(token);
+        RegisterRequest normalizedRequest = new RegisterRequest(normalizedEmail, displayName, password, avatarPath);
+        PendingRegisterStore.put(normalizedEmail, normalizedRequest, LocalDateTime.now().plusMinutes(VERIFICATION_CODE_TTL_MINUTES));
+        ServiceResult issueResult = issueVerificationCode(normalizedEmail, false);
+        if (!issueResult.success()) {
+            PendingRegisterStore.remove(normalizedEmail);
+            emailVerificationTokenRepository.deleteAll(emailVerificationTokenRepository.findByEmail(normalizedEmail));
+            return issueResult;
+        }
+        return issueResult;
+    }
 
-        PendingRegisterStore.put(request.email(), request);
-        emailService.sendEmail(request.email(), "Caro Verify Email", "Your verification code is: " + code);
+    public ServiceResult resendVerificationCode(String email) {
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail == null) {
+            return ServiceResult.error("Email is required");
+        }
+        if (userAccountRepository.findByEmail(normalizedEmail).isPresent()) {
+            return ServiceResult.error("Email already registered");
+        }
 
-        return ServiceResult.ok(Map.of("email", request.email(), "message", "Verification code sent"));
+        RegisterRequest pending = PendingRegisterStore.get(normalizedEmail);
+        if (pending == null) {
+            emailVerificationTokenRepository.deleteAll(emailVerificationTokenRepository.findByEmail(normalizedEmail));
+            return ServiceResult.error("No pending registration for this email");
+        }
+
+        ServiceResult cooldown = validateResendCooldown(normalizedEmail);
+        if (!cooldown.success()) {
+            return cooldown;
+        }
+
+        return issueVerificationCode(normalizedEmail, true);
     }
 
     public ServiceResult verifyEmail(String email, String code) {
+        String normalizedEmail = normalizeEmail(email);
+        String normalizedCode = trimToNull(code);
+        if (normalizedEmail == null || normalizedCode == null) {
+            return ServiceResult.error("Email and code are required");
+        }
         Optional<EmailVerificationToken> tokenOpt = emailVerificationTokenRepository
-            .findTopByEmailAndTokenOrderByCreatedAtDesc(email, code);
+            .findTopByEmailAndTokenOrderByCreatedAtDesc(normalizedEmail, normalizedCode);
 
         if (tokenOpt.isEmpty() || tokenOpt.get().getExpireAt().isBefore(LocalDateTime.now())) {
             return ServiceResult.error("Invalid or expired verification code");
         }
 
-        RegisterRequest pending = PendingRegisterStore.get(email);
+        RegisterRequest pending = PendingRegisterStore.get(normalizedEmail);
         if (pending == null) {
+            emailVerificationTokenRepository.deleteAll(emailVerificationTokenRepository.findByEmail(normalizedEmail));
             return ServiceResult.error("No pending registration for this email");
+        }
+        if (userAccountRepository.findByEmail(normalizedEmail).isPresent()) {
+            PendingRegisterStore.remove(normalizedEmail);
+            emailVerificationTokenRepository.deleteAll(emailVerificationTokenRepository.findByEmail(normalizedEmail));
+            return ServiceResult.error("Email already registered");
         }
 
         UserAccount user = new UserAccount();
@@ -80,15 +133,20 @@ public class AccountService {
             ? "/uploads/avatars/default-avatar.jpg" : pending.avatarPath());
         user.setPassword(passwordEncoder.encode(pending.password()));
         user.setEmailConfirmed(true);
-        user.setRole("User");
+        user.setRole(isDefaultAdminEmail(pending.email()) ? "Admin" : "User");
         userAccountRepository.save(user);
 
-        PendingRegisterStore.remove(email);
+        PendingRegisterStore.remove(normalizedEmail);
+        emailVerificationTokenRepository.deleteAll(emailVerificationTokenRepository.findByEmail(normalizedEmail));
         return ServiceResult.ok(Map.of("userId", user.getId(), "message", "Account created"));
     }
 
     public ServiceResult login(String email, String password) {
-        UserAccount user = userAccountRepository.findByEmail(email).orElse(null);
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail == null || password == null) {
+            return ServiceResult.error("Email and password are required");
+        }
+        UserAccount user = userAccountRepository.findByEmail(normalizedEmail).orElse(null);
         if (user == null) {
             return ServiceResult.error("Account not found");
         }
@@ -101,13 +159,23 @@ public class AccountService {
             return ServiceResult.error("Invalid credentials");
         }
 
+        boolean updated = false;
+        if (isDefaultAdminEmail(user.getEmail()) && !"Admin".equalsIgnoreCase(user.getRole())) {
+            user.setRole("Admin");
+            updated = true;
+        }
+
         user.setOnline(true);
-        userAccountRepository.save(user);
+        updated = true;
+        if (updated) {
+            userAccountRepository.save(user);
+        }
         return ServiceResult.ok(Map.of(
             "userId", user.getId(),
             "email", user.getEmail(),
             "displayName", user.getDisplayName(),
-            "role", user.getRole()
+            "role", user.getRole(),
+            "avatarPath", user.getAvatarPath() == null ? "/uploads/avatars/default-avatar.jpg" : user.getAvatarPath()
         ));
     }
 
@@ -136,7 +204,9 @@ public class AccountService {
     }
 
     public ServiceResult sendResetCode(String email) {
-        UserAccount user = userAccountRepository.findByEmail(email).orElse(null);
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail == null) return ServiceResult.error("Email is required");
+        UserAccount user = userAccountRepository.findByEmail(normalizedEmail).orElse(null);
         if (user == null) return ServiceResult.error("Email not found");
 
         String code = String.valueOf(100000 + random.nextInt(900000));
@@ -147,7 +217,12 @@ public class AccountService {
         token.setExpireAt(LocalDateTime.now().plusMinutes(5));
         passwordResetTokenRepository.save(token);
 
-        emailService.sendEmail(email, "Caro Reset Password", "Your reset code is: " + code);
+        try {
+            emailService.sendEmail(normalizedEmail, "Caro Reset Password", "Your reset code is: " + code);
+        } catch (RuntimeException ex) {
+            passwordResetTokenRepository.delete(token);
+            return ServiceResult.error("Cannot send reset code right now. Please try again.");
+        }
         return ServiceResult.ok(Map.of("userId", user.getId(), "message", "Reset code sent"));
     }
 
@@ -206,21 +281,32 @@ public class AccountService {
     }
 
     public static final class PendingRegisterStore {
-        private static final Map<String, RegisterRequest> STORE = new java.util.concurrent.ConcurrentHashMap<>();
+        private static final Map<String, PendingRegisterEntry> STORE = new java.util.concurrent.ConcurrentHashMap<>();
 
         private PendingRegisterStore() {
         }
 
-        public static void put(String email, RegisterRequest request) {
-            STORE.put(email, request);
+        public static void put(String email, RegisterRequest request, LocalDateTime expireAt) {
+            STORE.put(email, new PendingRegisterEntry(request, expireAt));
         }
 
         public static RegisterRequest get(String email) {
-            return STORE.get(email);
+            PendingRegisterEntry entry = STORE.get(email);
+            if (entry == null) {
+                return null;
+            }
+            if (entry.expireAt() != null && entry.expireAt().isBefore(LocalDateTime.now())) {
+                STORE.remove(email);
+                return null;
+            }
+            return entry.request();
         }
 
         public static void remove(String email) {
             STORE.remove(email);
+        }
+
+        private record PendingRegisterEntry(RegisterRequest request, LocalDateTime expireAt) {
         }
     }
 
@@ -235,5 +321,87 @@ public class AccountService {
         public static ServiceResult error(String error) {
             return new ServiceResult(false, error, null);
         }
+    }
+
+    private String normalizeEmail(String email) {
+        String normalized = trimToNull(email);
+        return normalized == null ? null : normalized.toLowerCase();
+    }
+
+    private boolean isDefaultAdminEmail(String email) {
+        String normalized = normalizeEmail(email);
+        return normalized != null && normalized.equals(defaultAdminEmail);
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private ServiceResult issueVerificationCode(String normalizedEmail, boolean keepPendingOnSendFailure) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expireAt = now.plusMinutes(VERIFICATION_CODE_TTL_MINUTES);
+        String code = String.valueOf(100000 + random.nextInt(900000));
+
+        EmailVerificationToken token = new EmailVerificationToken();
+        token.setEmail(normalizedEmail);
+        token.setToken(code);
+        token.setCreatedAt(now);
+        token.setExpireAt(expireAt);
+        emailVerificationTokenRepository.save(token);
+
+        try {
+            emailService.sendEmail(normalizedEmail, "Caro Verify Email", "Your verification code is: " + code);
+        } catch (RuntimeException ex) {
+            emailVerificationTokenRepository.delete(token);
+            if (!keepPendingOnSendFailure) {
+                PendingRegisterStore.remove(normalizedEmail);
+            }
+            return ServiceResult.error("Cannot send verification email right now. Please try again.");
+        }
+
+        RegisterRequest pending = PendingRegisterStore.get(normalizedEmail);
+        if (pending != null) {
+            PendingRegisterStore.put(normalizedEmail, pending, expireAt);
+        }
+        cleanupOldVerificationTokens(normalizedEmail, token.getId());
+        return ServiceResult.ok(Map.of(
+            "email", normalizedEmail,
+            "message", "Verification code sent",
+            "expireInSeconds", VERIFICATION_CODE_TTL_MINUTES * 60
+        ));
+    }
+
+    private void cleanupOldVerificationTokens(String email, Long keepTokenId) {
+        List<EmailVerificationToken> tokens = emailVerificationTokenRepository.findByEmail(email);
+        List<EmailVerificationToken> toDelete = tokens.stream()
+            .filter(t -> keepTokenId == null || t.getId() == null || !keepTokenId.equals(t.getId()))
+            .toList();
+        if (!toDelete.isEmpty()) {
+            emailVerificationTokenRepository.deleteAll(toDelete);
+        }
+    }
+
+    private ServiceResult validateResendCooldown(String normalizedEmail) {
+        LocalDateTime now = LocalDateTime.now();
+        Optional<LocalDateTime> latestCreatedAt = emailVerificationTokenRepository.findByEmail(normalizedEmail).stream()
+            .map(EmailVerificationToken::getCreatedAt)
+            .filter(java.util.Objects::nonNull)
+            .max(LocalDateTime::compareTo);
+
+        if (latestCreatedAt.isEmpty()) {
+            return ServiceResult.ok(Map.of());
+        }
+
+        LocalDateTime nextAllowed = latestCreatedAt.get().plusSeconds(VERIFICATION_RESEND_COOLDOWN_SECONDS);
+        if (nextAllowed.isAfter(now)) {
+            long waitSeconds = java.time.Duration.between(now, nextAllowed).toSeconds();
+            if (waitSeconds <= 0) {
+                waitSeconds = 1;
+            }
+            return ServiceResult.error("Please wait " + waitSeconds + " seconds before requesting a new code");
+        }
+        return ServiceResult.ok(Map.of());
     }
 }

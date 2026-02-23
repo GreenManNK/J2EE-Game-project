@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,12 +34,16 @@ public class GameRoomService {
     }
 
     public synchronized JoinResult joinRoom(String roomId, String userId) {
+        if (roomId == null || roomId.isBlank() || userId == null || userId.isBlank()) {
+            return new JoinResult(false, null, "Invalid room or user", null, 0);
+        }
+
         Map<String, String> players = roomPlayers.computeIfAbsent(roomId, k -> new ConcurrentHashMap<>());
         if (players.containsKey(userId)) {
-            return new JoinResult(true, players.get(userId), null);
+            return new JoinResult(true, players.get(userId), null, currentTurn.get(roomId), players.size());
         }
         if (players.size() >= 2) {
-            return new JoinResult(false, null, "Room is full");
+            return new JoinResult(false, null, "Room is full", currentTurn.get(roomId), players.size());
         }
 
         String symbol = players.isEmpty() ? "X" : "O";
@@ -49,13 +54,17 @@ public class GameRoomService {
             currentTurn.put(roomId, userId);
         }
 
-        return new JoinResult(true, symbol, null);
+        return new JoinResult(true, symbol, null, currentTurn.get(roomId), players.size());
     }
 
     public synchronized MoveResult makeMove(String roomId, String userId, int x, int y) {
         Map<String, String> players = roomPlayers.get(roomId);
         if (players == null || !players.containsKey(userId)) {
             return MoveResult.error("Player does not belong to room");
+        }
+
+        if (players.size() < 2) {
+            return MoveResult.error("Waiting for opponent");
         }
 
         if (!userId.equals(currentTurn.get(roomId))) {
@@ -105,6 +114,10 @@ public class GameRoomService {
             }
 
             return MoveResult.win(symbol, x, y, userId, loserId, winnerScore, loserScore);
+        }
+
+        if (countMoves(board) >= BOARD_SIZE * BOARD_SIZE) {
+            return MoveResult.draw(symbol, x, y);
         }
 
         String nextPlayer = players.keySet().stream().filter(id -> !id.equals(userId)).findFirst().orElse(userId);
@@ -157,6 +170,22 @@ public class GameRoomService {
         }
     }
 
+    public synchronized String[][] getBoardSnapshot(String roomId) {
+        String[][] board = boards.get(roomId);
+        String[][] copy = new String[BOARD_SIZE][BOARD_SIZE];
+        if (board == null) {
+            return copy;
+        }
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            copy[i] = Arrays.copyOf(board[i], BOARD_SIZE);
+        }
+        return copy;
+    }
+
+    public synchronized String getCurrentTurnUserId(String roomId) {
+        return currentTurn.get(roomId);
+    }
+
     private void persistGameHistory(String roomId, Map<String, String> players, String winnerId, int moves) {
         List<Map.Entry<String, String>> entries = players.entrySet().stream().toList();
         if (entries.size() < 2) {
@@ -175,7 +204,7 @@ public class GameRoomService {
         game.setGameCode(prefix + Instant.now().toEpochMilli());
         game.setPlayer1Id(playerX);
         game.setPlayer2Id(playerO);
-        game.setFirstPlayerId(currentTurn.get(roomId));
+        game.setFirstPlayerId(playerX);
         game.setTotalMoves(moves);
         game.setWinnerId(winnerId);
         gameHistoryRepository.save(game);
@@ -256,25 +285,30 @@ public class GameRoomService {
         return x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE;
     }
 
-    public record JoinResult(boolean ok, String symbol, String error) {
+    public record JoinResult(boolean ok, String symbol, String error, String currentTurnUserId, int playerCount) {
     }
 
-    public record MoveResult(boolean ok, boolean win, String symbol, int x, int y, String nextTurnUserId, String winnerUserId,
-                             String loserUserId, Integer winnerScore, Integer loserScore, String error) {
+    public record MoveResult(boolean ok, boolean win, boolean draw, String symbol, int x, int y, String nextTurnUserId,
+                             String winnerUserId, String loserUserId, Integer winnerScore, Integer loserScore, String error) {
         public static MoveResult ok(String symbol, int x, int y, String nextTurnUserId) {
-            return new MoveResult(true, false, symbol, x, y, nextTurnUserId, null, null, null, null, null);
+            return new MoveResult(true, false, false, symbol, x, y, nextTurnUserId, null, null, null, null, null);
         }
 
-        public static MoveResult win(String symbol, int x, int y, String winnerUserId, String loserUserId,
+        public static MoveResult win(String symbol, int x, int y, String winnerUserId, String loserId,
                                      Integer winnerScore, Integer loserScore) {
-            return new MoveResult(true, true, symbol, x, y, null, winnerUserId, loserUserId, winnerScore, loserScore, null);
+            return new MoveResult(true, true, false, symbol, x, y, null, winnerUserId, loserId, winnerScore, loserScore, null);
+        }
+
+        public static MoveResult draw(String symbol, int x, int y) {
+            return new MoveResult(true, false, true, symbol, x, y, null, null, null, null, null, null);
         }
 
         public static MoveResult error(String error) {
-            return new MoveResult(false, false, null, -1, -1, null, null, null, null, null, error);
+            return new MoveResult(false, false, false, null, -1, -1, null, null, null, null, null, error);
         }
     }
 
     private record ScoreUpdate(Integer winnerScore, Integer loserScore) {
     }
 }
+

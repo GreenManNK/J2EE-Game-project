@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead(${title})}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('bot-play')}"></div>
+
+<main class="container mt-4 text-center">
+  <h1 class="theme-text fw-bold" th:text="${title}">Bot</h1>
+  <p id="botStatus" class="theme-text">Ban danh X. Chon o de danh.</p>
+  <div class="d-flex justify-content-center gap-2 mb-3">
+    <button id="resetBtn" class="btn btn-outline-warning">Choi lai</button>
+    <a th:href="@{/single-player}" class="btn btn-outline-secondary">Quay lai</a>
+  </div>
+
+  <div class="d-flex justify-content-center">
+    <div id="botBoard" class="bot-board"></div>
+  </div>
+</main>
+
+<style>
+  .bot-board {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    width: min(90vw, 720px);
+    aspect-ratio: 1 / 1;
+    margin: 0 auto 24px auto;
+    border: 1px solid #555;
+    background: rgba(255,255,255,.04);
+  }
+  .bot-cell {
+    border: 1px solid rgba(128,128,128,.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    aspect-ratio: 1 / 1;
+    font-size: clamp(12px, 2.2vw, 22px);
+  }
+  .bot-cell.disabled { cursor: not-allowed; }
+  .bot-cell.x { color: #0d6efd; }
+  .bot-cell.o { color: #dc3545; }
+  .bot-cell.win { background: rgba(255, 193, 7, .25); }
+  @media (max-width: 576px) {
+    .bot-board { width: 96vw; }
+  }
+</style>
+
+<th:block th:replace="~{fragments :: appScripts('bot-play')}"></th:block>
+<script th:inline="javascript">
+  (function () {
+    const mode = /*[[${mode}]]*/ 'easy';
+    const boardSize = 15;
+    const board = Array.from({ length: boardSize }, () => Array(boardSize).fill(''));
+    const boardEl = document.getElementById('botBoard');
+    const statusEl = document.getElementById('botStatus');
+    let busy = false;
+    let gameOver = false;
+
+    function cellId(x, y) {
+      return 'bot-cell-' + x + '-' + y;
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = '';
+      for (let x = 0; x < boardSize; x++) {
+        for (let y = 0; y < boardSize; y++) {
+          const el = document.createElement('div');
+          el.id = cellId(x, y);
+          el.className = 'bot-cell';
+          const value = board[x][y];
+          if (value) {
+            el.textContent = value;
+            el.classList.add(value.toLowerCase());
+          }
+          if (busy || gameOver) {
+            el.classList.add('disabled');
+          }
+          el.addEventListener('click', () => handlePlayerMove(x, y));
+          boardEl.appendChild(el);
+        }
+      }
+    }
+
+    function setCell(x, y, value) {
+      if (x < 0 || y < 0 || x >= boardSize || y >= boardSize) return;
+      board[x][y] = value;
+      const el = document.getElementById(cellId(x, y));
+      if (!el) return;
+      el.textContent = value;
+      el.classList.remove('x', 'o');
+      if (value) el.classList.add(value.toLowerCase());
+    }
+
+    function highlightWinLine(winLine) {
+      if (!Array.isArray(winLine)) return;
+      winLine.forEach((m) => {
+        if (typeof m?.x !== 'number' || typeof m?.y !== 'number') return;
+        document.getElementById(cellId(m.x, m.y))?.classList.add('win');
+      });
+    }
+
+    async function callReset() {
+      await fetch('/bot/reset', { method: 'POST' });
+    }
+
+    async function resetGame() {
+      busy = true;
+      gameOver = false;
+      for (let x = 0; x < boardSize; x++) {
+        for (let y = 0; y < boardSize; y++) {
+          board[x][y] = '';
+        }
+      }
+      renderBoard();
+      statusEl.textContent = 'Dang khoi tao van moi...';
+      try {
+        await callReset();
+        statusEl.textContent = 'Ban danh X. Chon o de danh.';
+      } catch (_) {
+        statusEl.textContent = 'Khong reset duoc bot. Thu lai.';
+      } finally {
+        busy = false;
+        if (!gameOver) {
+          renderBoard();
+        }
+      }
+    }
+
+    async function handlePlayerMove(x, y) {
+      if (busy || gameOver) return;
+      if (board[x][y]) return;
+
+      busy = true;
+      setCell(x, y, 'X');
+      statusEl.textContent = 'Bot dang tinh nuoc...';
+      renderBoard();
+
+      try {
+        const endpoint = mode === 'hard' ? '/bot/hard-move' : '/bot/easy-move';
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ x, y })
+        });
+        if (!res.ok) {
+          throw new Error('Khong goi duoc API bot');
+        }
+
+        const data = await res.json();
+        if (data && data.success === false) {
+          throw new Error(data.error || 'Loi xu ly nuoc di');
+        }
+        if (typeof data.x === 'number' && typeof data.y === 'number' && data.x >= 0 && data.y >= 0) {
+          setCell(data.x, data.y, 'O');
+        }
+        if (Array.isArray(data.winLine)) {
+          highlightWinLine(data.winLine);
+        }
+
+        if (data.playerWin) {
+          gameOver = true;
+          statusEl.textContent = 'Ban thang!';
+          setTimeout(() => alert('Ban thang!'), 50);
+          return;
+        }
+        if (data.botWin) {
+          gameOver = true;
+          statusEl.textContent = 'Bot thang!';
+          setTimeout(() => alert('Bot thang!'), 50);
+          return;
+        }
+
+        statusEl.textContent = 'Ban danh X. Chon o de danh.';
+      } catch (err) {
+        board[x][y] = '';
+        setCell(x, y, '');
+        statusEl.textContent = err?.message || 'Loi khong xac dinh';
+      } finally {
+        busy = false;
+        renderBoard();
+      }
+    }
+
+    document.getElementById('resetBtn')?.addEventListener('click', resetGame);
+
+    renderBoard();
+    resetGame();
+  })();
+</script>
+</body>
+</html>

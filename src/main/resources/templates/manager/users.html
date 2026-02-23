@@ -21,10 +21,11 @@
   <a th:if="${page+1 < totalPages}" th:href="@{/manager/users(searchTerm=${searchTerm},banFilter=${banFilter},page=${page+1},size=${size})}">Next</a>
 </div>
 <table border="1" cellpadding="6">
-  <tr><th>ID</th><th>Email</th><th>Name</th><th>Score</th><th>Role</th></tr>
+  <tr><th>ID</th><th>Email</th><th>Name</th><th>Score</th><th>Role</th><th>Action</th></tr>
   <tr th:each="u : ${users}">
     <td th:text="${u.id}"></td><td th:text="${u.email}"></td><td th:text="${u.displayName}"></td>
     <td th:text="${u.score}"></td><td th:text="${u.role}"></td>
+    <td><a th:href="@{/manager/users/{id}(id=${u.id})}">Detail</a></td>
   </tr>
 </table>
 <a th:href="@{/}">Home</a>
