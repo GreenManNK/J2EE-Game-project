@@ -1,9 +1,13 @@
 ﻿(function () {
-  function appendCurrentUserId(url, userId) {
+  const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+    ? window.CaroUrl.path
+    : function (value) { return value; };
+
+  function appendCurrentUserId(url, userId, paramName) {
     try {
       const parsed = new URL(url, window.location.origin);
-      parsed.searchParams.set('currentUserId', userId);
-      return parsed.pathname + parsed.search;
+      parsed.searchParams.set(paramName || 'currentUserId', userId);
+      return appPath(parsed.pathname) + parsed.search + parsed.hash;
     } catch (_) {
       return url;
     }
@@ -36,10 +40,10 @@
 
       const items = friends.map((f) => {
         const name = f.displayName || f.email || f.id;
-        const avatar = f.avatarPath || '/uploads/avatars/default-avatar.jpg';
+        const avatar = appPath(f.avatarPath || '/uploads/avatars/default-avatar.jpg');
         const online = f.online ? '🟢' : '⚪';
         return '' +
-          '<a class="d-flex align-items-center text-decoration-none theme-text border rounded p-2 mb-2" href="/friendship/user-detail/' + encodeURIComponent(f.id) + '?currentUserId=' + encodeURIComponent(current.userId) + '">' +
+          '<a class="d-flex align-items-center text-decoration-none theme-text border rounded p-2 mb-2" href="' + appPath('/friendship/user-detail/' + encodeURIComponent(f.id)) + '?currentUserId=' + encodeURIComponent(current.userId) + '">' +
             '<img src="' + avatar + '" alt="avatar" width="28" height="28" class="rounded-circle me-2">' +
             '<span class="small flex-grow-1">' + name + '</span>' +
             '<span class="small">' + online + '</span>' +
@@ -63,7 +67,8 @@
       if (!href) {
         return;
       }
-      el.setAttribute('href', appendCurrentUserId(href, current.userId));
+      const paramName = el.getAttribute('data-user-param') || 'currentUserId';
+      el.setAttribute('href', appendCurrentUserId(href, current.userId, paramName));
     });
   }
 
@@ -82,7 +87,7 @@
       }
 
       const current = window.CaroUser?.get?.();
-      const base = '/friendship/search?query=' + encodeURIComponent(q);
+      const base = appPath('/friendship/search') + '?query=' + encodeURIComponent(q);
       if (current && current.userId) {
         window.location.href = base + '&currentUserId=' + encodeURIComponent(current.userId);
       } else {

@@ -65,12 +65,18 @@
 <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
 <script th:inline="javascript">
   (function () {
+    const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+      ? window.CaroUrl.path
+      : (value) => value;
     const initialRoomId = /*[[${roomId}]]*/ '';
     const requestedSymbol = /*[[${symbol}]]*/ '';
+    const sessionUserId = /*[[${sessionUserId}]]*/ '';
+    const sessionDisplayName = /*[[${sessionDisplayName}]]*/ '';
+    const sessionAvatarPath = /*[[${sessionAvatarPath}]]*/ '';
     const roomId = (initialRoomId || '').trim();
     if (!roomId) {
       alert('Ban chua vao phong. He thong se quay lai sanh.');
-      window.location.href = '/lobby';
+      window.location.href = appPath('/lobby');
       return;
     }
 
@@ -81,9 +87,20 @@
     const chatBox = document.getElementById('chat-box');
     const messageInput = document.getElementById('message-input');
 
-    const userId = localStorage.getItem('userId') || ('guest_' + Math.random().toString(36).slice(2, 10));
-    const displayName = localStorage.getItem('displayName') || ('Nguoi choi ' + userId.slice(-4));
-    const avatarPath = localStorage.getItem('avatarPath') || '/uploads/avatars/default-avatar.jpg';
+    const localUserId = localStorage.getItem('userId') || '';
+    const localDisplayName = localStorage.getItem('displayName') || '';
+    const localAvatarPath = localStorage.getItem('avatarPath') || '';
+
+    const userId = (sessionUserId || localUserId || '').trim();
+    const displayName = (sessionDisplayName || localDisplayName || (userId ? ('Nguoi choi ' + userId.slice(-4)) : '')).trim();
+    const avatarPath = (sessionAvatarPath || localAvatarPath || '/uploads/avatars/default-avatar.jpg').trim();
+
+    if (!sessionUserId) {
+      alert('Ban can dang nhap de choi online.');
+      window.location.href = appPath('/account/login-page');
+      return;
+    }
+
     localStorage.setItem('userId', userId);
     localStorage.setItem('displayName', displayName);
     localStorage.setItem('avatarPath', avatarPath);
@@ -93,6 +110,16 @@
     let mySymbol = requestedSymbol || '';
     let myTurnUserId = '';
     let connected = false;
+
+    function applyBoardSnapshot(snapshot) {
+      if (!Array.isArray(snapshot)) return;
+      for (let x = 0; x < 10; x++) {
+        for (let y = 0; y < 10; y++) {
+          board[x][y] = (snapshot[x] && snapshot[x][y]) || '';
+        }
+      }
+      renderBoard();
+    }
 
     function renderBoard() {
       boardEl.innerHTML = '';
@@ -113,13 +140,16 @@
     function appendChat(name, text, isYou) {
       const line = document.createElement('div');
       line.className = 'chat-message ' + (isYou ? 'chat-you' : 'chat-other');
-      line.innerHTML = '<strong>' + name + ':</strong> ' + text;
+      const strong = document.createElement('strong');
+      strong.textContent = (name || 'Unknown') + ': ';
+      line.appendChild(strong);
+      line.appendChild(document.createTextNode(text || ''));
       chatBox.appendChild(line);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
     const client = new window.StompJs.Client({
-      webSocketFactory: () => new SockJS('/ws', null, {
+      webSocketFactory: () => new SockJS(appPath('/ws'), null, {
         transports: ['websocket', 'xhr-streaming', 'xhr-polling']
       }),
       reconnectDelay: 3000,
@@ -133,11 +163,18 @@
         client.subscribe('/topic/room.' + roomId, (message) => {
           const payload = JSON.parse(message.body || '{}');
           if (payload.type === 'PLAYER_JOINED') {
+            applyBoardSnapshot(payload.board);
             if (payload.userId === userId && payload.symbol) {
               mySymbol = payload.symbol;
               symbolEl.textContent = mySymbol;
             }
-            statusEl.textContent = 'Da co nguoi choi trong phong.';
+            myTurnUserId = payload.currentTurnUserId || myTurnUserId || '';
+            const playerCount = Number(payload.playerCount || 0);
+            if (playerCount >= 2 && myTurnUserId) {
+              statusEl.textContent = 'Luot cua: ' + (myTurnUserId === userId ? 'ban' : 'doi thu');
+            } else {
+              statusEl.textContent = 'Dang cho doi thu vao phong...';
+            }
           }
           if (payload.type === 'MOVE') {
             if (payload.x >= 0 && payload.y >= 0) {
@@ -154,8 +191,24 @@
             statusEl.textContent = win ? 'Ban thang!' : 'Ban thua!';
             setTimeout(() => alert(win ? 'Ban da thang!' : 'Ban da thua!'), 100);
           }
+          if (payload.type === 'DRAW') {
+            myTurnUserId = '';
+            statusEl.textContent = 'Hoa co!';
+            setTimeout(() => alert('Van dau hoa!'), 100);
+          }
+          if (payload.type === 'RESET') {
+            applyBoardSnapshot(payload.board);
+            myTurnUserId = payload.currentTurnUserId || '';
+            statusEl.textContent = myTurnUserId
+              ? ('Van moi - luot cua: ' + (myTurnUserId === userId ? 'ban' : 'doi thu'))
+              : 'Van moi da san sang';
+          }
           if (payload.type === 'PLAYER_LEFT') {
+            myTurnUserId = '';
             statusEl.textContent = 'Doi thu da roi phong';
+          }
+          if (payload.type === 'ERROR' && payload.userId === userId && payload.error) {
+            statusEl.textContent = payload.error;
           }
           if (payload.type === 'CHAT') {
             appendChat(payload.displayName || 'Unknown', payload.message || '', payload.userId === userId);
@@ -189,6 +242,8 @@
 
     function makeMove(x, y) {
       if (!connected) return;
+      if (!myTurnUserId) return;
+      if (myTurnUserId !== userId) return;
       if (board[x][y]) return;
       client.publish({
         destination: '/app/game.move',
@@ -217,7 +272,7 @@
       if (connected) {
         client.publish({ destination: '/app/game.leave', body: JSON.stringify({ roomId, userId }) });
       }
-      window.location.href = '/lobby';
+      window.location.href = appPath('/lobby');
     });
 
     renderBoard();

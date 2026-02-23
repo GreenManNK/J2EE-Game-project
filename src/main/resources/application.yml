@@ -1,8 +1,21 @@
 server:
   port: 8080
+  servlet:
+    context-path: /Game
   forward-headers-strategy: framework
 
 spring:
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:luckhaikiet@gmail.com}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS:true}
   jpa:
     hibernate:
       ddl-auto: update
@@ -19,10 +32,15 @@ huggingface:
   model: ""
 
 app:
+  email:
+    mode: ${APP_EMAIL_MODE:log}
+    from: ${APP_EMAIL_FROM:luckhaikiet@gmail.com}
+  admin:
+    default-email: ${APP_DEFAULT_ADMIN_EMAIL:luckhaikiet@gmail.com}
   datasource:
     laragon:
       host: ${LARAGON_DB_HOST:127.0.0.1}
-      port: ${LARAGON_DB_PORT:3306}
+      port: ${LARAGON_DB_PORT:3360}
       database: ${LARAGON_DB_NAME:caro}
       username: ${LARAGON_DB_USER:root}
       password: ${LARAGON_DB_PASS:}

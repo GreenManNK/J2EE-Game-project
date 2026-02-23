@@ -18,9 +18,10 @@
         userId: data.data.userId,
         displayName: data.data.displayName || data.data.email || 'Player',
         email: data.data.email || '',
-        role: data.data.role || 'User'
+        role: data.data.role || 'User',
+        avatarPath: data.data.avatarPath || '/uploads/avatars/default-avatar.jpg'
       });
-      window.location.href = '/';
+      window.location.href = window.CaroUrl.path('/');
     }
   });
 })();

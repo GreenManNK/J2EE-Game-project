@@ -15,6 +15,9 @@
     out.textContent = JSON.stringify(data, null, 2);
     if (data.success) {
       localStorage.setItem('pendingVerifyEmail', email.value);
+      setTimeout(() => {
+        window.location.href = window.CaroUrl.path('/account/verify-email-page');
+      }, 600);
     }
   });
 })();

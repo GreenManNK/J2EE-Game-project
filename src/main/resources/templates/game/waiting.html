@@ -34,7 +34,7 @@
     if (countdown <= 0) {
       clearInterval(timer);
       Swal.fire('Doi thu khong phan hoi', 'Ban se duoc quay lai sanh', 'info').then(() => {
-        window.location.href = '/lobby';
+        window.location.href = window.CaroUrl.path('/lobby');
       });
     }
   }, 1000);

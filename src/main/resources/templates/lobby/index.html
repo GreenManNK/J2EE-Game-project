@@ -40,6 +40,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
 <script>
   window.addEventListener('DOMContentLoaded', () => {
+    const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+      ? window.CaroUrl.path
+      : (value) => value;
     const input = document.getElementById('roomIdInput');
     const btn = document.getElementById('createRoomBtn');
     const roomList = document.getElementById('roomList');
@@ -52,7 +55,7 @@
         alert('Vui long nhap ma phong');
         return;
       }
-      window.location.href = '/game?roomId=' + encodeURIComponent(roomId);
+      window.location.href = appPath('/game') + '?roomId=' + encodeURIComponent(roomId);
     });
 
     input?.addEventListener('keydown', (event) => {
@@ -70,7 +73,7 @@
       roomList.innerHTML = rooms.map((room) =>
         '<li class="list-group-item d-flex justify-content-between align-items-center">' +
           '<span>' + room + '</span>' +
-          '<a class="btn btn-sm btn-primary" href="/game?roomId=' + encodeURIComponent(room) + '">Tham gia</a>' +
+          '<a class="btn btn-sm btn-primary" href="' + appPath('/game') + '?roomId=' + encodeURIComponent(room) + '">Tham gia</a>' +
         '</li>'
       ).join('');
     }
@@ -86,7 +89,7 @@
     }
 
     const lobbyClient = new window.StompJs.Client({
-      webSocketFactory: () => new SockJS('/ws'),
+      webSocketFactory: () => new SockJS(appPath('/ws')),
       reconnectDelay: 3000
     });
 
