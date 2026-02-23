@@ -37,3 +37,11 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Local Runtime / Deployment Artifacts ###
+.env.public.local
+.tools/cloudflared.exe
+*.pid
+cloudflared*.log
+run-*.log
+app-*.log

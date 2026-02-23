@@ -20,6 +20,11 @@ public class SessionPrincipalHandshakeHandler extends DefaultHandshakeHandler {
         if (userId != null && !userId.isEmpty()) {
             return () -> userId;
         }
+        Object guestUserId = attributes.get("GUEST_USER_ID");
+        String guestId = guestUserId == null ? null : String.valueOf(guestUserId).trim();
+        if (guestId != null && !guestId.isEmpty()) {
+            return () -> guestId;
+        }
         return () -> "guest-" + UUID.randomUUID();
     }
 }

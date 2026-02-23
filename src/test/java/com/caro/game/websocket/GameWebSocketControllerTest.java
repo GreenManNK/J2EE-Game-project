@@ -14,6 +14,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -79,6 +80,38 @@ class GameWebSocketControllerTest {
                 && "/alice.jpg".equals(map.get("avatarPath"))
                 && "hello".equals(map.get("message"));
         }));
+    }
+
+    @Test
+    void joinShouldAllowGuestSessionUser() {
+        GameRoomService gameRoomService = mock(GameRoomService.class);
+        SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        SimpMessageHeaderAccessor headers = mock(SimpMessageHeaderAccessor.class);
+
+        when(headers.getSessionAttributes()).thenReturn(Map.of("GUEST_USER_ID", "guest-abcd1234"));
+        when(gameRoomService.joinRoom("room-g", "guest-abcd1234"))
+            .thenReturn(new GameRoomService.JoinResult(true, "X", null, "guest-abcd1234", 1));
+        when(gameRoomService.getBoardSnapshot("room-g")).thenReturn(new String[10][10]);
+        when(gameRoomService.availableRooms()).thenReturn(List.of("room-g"));
+        when(userAccountRepository.findById("guest-abcd1234")).thenReturn(Optional.empty());
+
+        GameWebSocketController controller = new GameWebSocketController(gameRoomService, messagingTemplate, userAccountRepository);
+        JoinGameMessage message = new JoinGameMessage();
+        message.setRoomId("room-g");
+        message.setUserId("guest-abcd1234");
+
+        controller.join(message, headers);
+
+        verify(gameRoomService).joinRoom("room-g", "guest-abcd1234");
+        verify(messagingTemplate).convertAndSend(eq("/topic/room.room-g"), org.mockito.ArgumentMatchers.<Object>argThat(payload -> {
+            if (!(payload instanceof Map<?, ?> map)) return false;
+            return "PLAYER_JOINED".equals(map.get("type"))
+                && "guest-abcd1234".equals(map.get("userId"))
+                && "Guest 1234".equals(map.get("displayName"))
+                && "/uploads/avatars/default-avatar.jpg".equals(map.get("avatarPath"));
+        }));
+        verify(messagingTemplate, never()).convertAndSendToUser(eq("guest-abcd1234"), eq("/queue/errors"), any());
     }
 
     private static UserAccount user(String id, String displayName, String avatarPath) {

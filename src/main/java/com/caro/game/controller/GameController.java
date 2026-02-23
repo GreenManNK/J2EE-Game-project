@@ -12,10 +12,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/game")
 public class GameController {
+    private static final String AUTH_USER_ID = "AUTH_USER_ID";
+    private static final String GUEST_USER_ID = "GUEST_USER_ID";
+    private static final String DEFAULT_AVATAR_PATH = "/uploads/avatars/default-avatar.jpg";
+
     private final UserAccountRepository userAccountRepository;
 
     public GameController(UserAccountRepository userAccountRepository) {
@@ -27,9 +32,6 @@ public class GameController {
                         @RequestParam(required = false) String symbol,
                         HttpServletRequest request,
                         Model model) {
-        if (sessionUser(request) == null) {
-            return "redirect:/account/login-page";
-        }
         model.addAttribute("roomId", roomId == null ? "" : roomId);
         model.addAttribute("symbol", symbol == null ? "" : symbol);
         addSessionPlayer(model, request);
@@ -41,13 +43,13 @@ public class GameController {
     public Map<String, Object> indexApi(@RequestParam(required = false) String roomId,
                                         @RequestParam(required = false) String symbol,
                                         HttpServletRequest request) {
-        UserAccount user = sessionUser(request);
+        SessionPlayer player = resolveSessionPlayer(request);
         return Map.of(
             "roomId", roomId == null ? "" : roomId,
             "symbol", symbol == null ? "" : symbol,
-            "sessionUserId", user == null ? "" : user.getId(),
-            "sessionDisplayName", user == null ? "" : displayNameOf(user),
-            "sessionAvatarPath", user == null ? "" : avatarPathOf(user)
+            "sessionUserId", player.userId(),
+            "sessionDisplayName", player.displayName(),
+            "sessionAvatarPath", player.avatarPath()
         );
     }
 
@@ -63,10 +65,47 @@ public class GameController {
     }
 
     private void addSessionPlayer(Model model, HttpServletRequest request) {
+        SessionPlayer player = resolveSessionPlayer(request);
+        model.addAttribute("sessionUserId", player.userId());
+        model.addAttribute("sessionDisplayName", player.displayName());
+        model.addAttribute("sessionAvatarPath", player.avatarPath());
+    }
+
+    private SessionPlayer resolveSessionPlayer(HttpServletRequest request) {
         UserAccount user = sessionUser(request);
-        model.addAttribute("sessionUserId", user == null ? "" : user.getId());
-        model.addAttribute("sessionDisplayName", user == null ? "" : displayNameOf(user));
-        model.addAttribute("sessionAvatarPath", user == null ? "" : avatarPathOf(user));
+        if (user != null) {
+            return new SessionPlayer(user.getId(), displayNameOf(user), avatarPathOf(user));
+        }
+        String guestUserId = ensureGuestUserId(request);
+        return new SessionPlayer(guestUserId, guestDisplayName(guestUserId), DEFAULT_AVATAR_PATH);
+    }
+
+    private String ensureGuestUserId(HttpServletRequest request) {
+        if (request == null) {
+            return "guest-" + UUID.randomUUID().toString().replace("-", "");
+        }
+        HttpSession session = request.getSession(true);
+        Object existing = session.getAttribute(GUEST_USER_ID);
+        if (existing != null) {
+            String userId = String.valueOf(existing).trim();
+            if (!userId.isEmpty()) {
+                return userId;
+            }
+        }
+        String guestUserId = "guest-" + UUID.randomUUID().toString().replace("-", "");
+        session.setAttribute(GUEST_USER_ID, guestUserId);
+        return guestUserId;
+    }
+
+    private String guestDisplayName(String guestUserId) {
+        if (guestUserId == null || guestUserId.isBlank()) {
+            return "Guest";
+        }
+        String normalized = guestUserId.trim();
+        String suffix = normalized.length() <= 4
+            ? normalized
+            : normalized.substring(normalized.length() - 4);
+        return "Guest " + suffix.toUpperCase();
     }
 
     private UserAccount sessionUser(HttpServletRequest request) {
@@ -77,7 +116,7 @@ public class GameController {
         if (session == null) {
             return null;
         }
-        Object authUserId = session.getAttribute("AUTH_USER_ID");
+        Object authUserId = session.getAttribute(AUTH_USER_ID);
         if (authUserId == null) {
             return null;
         }
@@ -95,5 +134,8 @@ public class GameController {
 
     private String avatarPathOf(UserAccount user) {
         return user.getAvatarPath() == null ? "" : user.getAvatarPath();
+    }
+
+    private record SessionPlayer(String userId, String displayName, String avatarPath) {
     }
 }

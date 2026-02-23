@@ -87,23 +87,22 @@
     const chatBox = document.getElementById('chat-box');
     const messageInput = document.getElementById('message-input');
 
-    const localUserId = localStorage.getItem('userId') || '';
-    const localDisplayName = localStorage.getItem('displayName') || '';
-    const localAvatarPath = localStorage.getItem('avatarPath') || '';
+    const userId = (sessionUserId || '').trim();
+    const displayName = (sessionDisplayName || (userId ? ('Guest ' + userId.slice(-4).toUpperCase()) : '')).trim();
+    const avatarPath = (sessionAvatarPath || '/uploads/avatars/default-avatar.jpg').trim();
+    const isGuestUser = /^guest-/i.test(userId);
 
-    const userId = (sessionUserId || localUserId || '').trim();
-    const displayName = (sessionDisplayName || localDisplayName || (userId ? ('Nguoi choi ' + userId.slice(-4)) : '')).trim();
-    const avatarPath = (sessionAvatarPath || localAvatarPath || '/uploads/avatars/default-avatar.jpg').trim();
-
-    if (!sessionUserId) {
-      alert('Ban can dang nhap de choi online.');
-      window.location.href = appPath('/account/login-page');
+    if (!userId) {
+      alert('Khong xac dinh duoc nguoi choi. He thong se quay lai sanh.');
+      window.location.href = appPath('/lobby');
       return;
     }
 
-    localStorage.setItem('userId', userId);
-    localStorage.setItem('displayName', displayName);
-    localStorage.setItem('avatarPath', avatarPath);
+    if (!isGuestUser) {
+      localStorage.setItem('userId', userId);
+      localStorage.setItem('displayName', displayName);
+      localStorage.setItem('avatarPath', avatarPath);
+    }
     playerNameEl.textContent = displayName;
 
     const board = Array.from({ length: 10 }, () => Array(10).fill(''));

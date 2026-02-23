@@ -1,0 +1,14 @@
+spring:
+  thymeleaf:
+    cache: true
+  jpa:
+    open-in-view: false
+
+app:
+  runtime:
+    canonical-url:
+      enforce: false
+
+logging:
+  level:
+    root: INFO
