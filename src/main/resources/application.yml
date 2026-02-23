@@ -46,3 +46,10 @@ app:
       password: ${LARAGON_DB_PASS:}
   websocket:
     allowed-origin-patterns: ${WS_ALLOWED_ORIGINS:*}
+  runtime:
+    canonical-url:
+      enforce: ${APP_ENFORCE_CANONICAL_URL:true}
+      host: ${APP_CANONICAL_HOST:J2EE}
+      context-path: ${APP_CANONICAL_CONTEXT_PATH:/Game}
+      require-port-80: ${APP_CANONICAL_REQUIRE_PORT80:true}
+      check-reverse-proxy: ${APP_CANONICAL_CHECK_PROXY:true}

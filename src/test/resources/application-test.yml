@@ -12,5 +12,8 @@ spring:
     cache: false
 
 app:
+  runtime:
+    canonical-url:
+      enforce: false
   email:
     mode: log
