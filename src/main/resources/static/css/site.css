@@ -321,3 +321,17 @@ svg {
         white-space: nowrap;
     }
 }
+
+.game-catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 14px;
+}
+
+.game-catalog-card {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .game-catalog-card {
+    border-color: #444;
+}

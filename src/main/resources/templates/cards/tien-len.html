@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Tien len Online 4 nguoi')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('tien-len')}"></div>
+
+<main class="container py-3 pb-5">
+  <div class="text-center mb-3">
+    <h1 class="theme-text fw-bold mb-2">TIEN LEN ONLINE 4 NGUOI (MVP)</h1>
+    <p class="theme-text mb-1">Cho phep guest choi online. Su dung room 4 nguoi tren cung server.</p>
+    <p class="text-muted mb-0">MVP hien tai ho tro: don, doi, sam, tu quy, sanh. Chua day du cac luat chat nang cao.</p>
+  </div>
+
+  <div class="tienlen-grid">
+    <section class="card shadow-sm theme-box">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 align-items-end">
+          <div class="flex-grow-1" style="min-width: 220px;">
+            <label for="tlRoomIdInput" class="form-label theme-text mb-1">Ma phong</label>
+            <input id="tlRoomIdInput" type="text" class="form-control" placeholder="VD: room-123"
+                   th:value="${defaultRoomId}">
+          </div>
+          <button id="tlJoinBtn" type="button" class="btn theme-outline-btn">Vao phong</button>
+          <button id="tlStartBtn" type="button" class="btn theme-outline-btn" disabled>Bat dau (du 4 nguoi)</button>
+          <button id="tlLeaveBtn" type="button" class="btn btn-outline-danger" disabled>Roi phong</button>
+        </div>
+
+        <div class="mt-3 d-flex flex-wrap gap-3 small">
+          <div><strong>Ban:</strong> <span id="tlSelfName" th:text="${sessionDisplayName}">Guest</span></div>
+          <div><strong>User ID:</strong> <span id="tlSelfUserId" th:text="${sessionUserId}">guest</span></div>
+          <div><strong>Phong hien tai:</strong> <span id="tlCurrentRoomLabel">Chua vao</span></div>
+        </div>
+
+        <div class="mt-2">
+          <div class="small"><strong>Trang thai:</strong> <span id="tlStatusText">Dang khoi tao ket noi...</span></div>
+          <div class="small"><strong>Thong bao:</strong> <span id="tlMessageText">-</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card shadow-sm theme-box">
+      <div class="card-body">
+        <h2 class="h5 theme-text mb-2">Danh sach phong dang cho</h2>
+        <div id="tlRoomList" class="small d-flex flex-column gap-2">
+          <div class="text-muted">Dang tai danh sach phong...</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="tienlen-main-grid mt-3">
+    <section class="card shadow-sm theme-box">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
+          <h2 class="h5 theme-text mb-0">Ban choi</h2>
+          <div class="small">
+            <span class="me-3"><strong>Luot:</strong> <span id="tlTurnText">-</span></span>
+            <span><strong>Bo hien tai:</strong> <span id="tlCurrentTrickLabel">Chua co</span></span>
+          </div>
+        </div>
+
+        <div id="tlPlayersBoard" class="tienlen-players-board">
+          <div class="tienlen-player-slot" data-slot="0">Chua co nguoi choi</div>
+          <div class="tienlen-player-slot" data-slot="1">Chua co nguoi choi</div>
+          <div class="tienlen-player-slot" data-slot="2">Chua co nguoi choi</div>
+          <div class="tienlen-player-slot" data-slot="3">Chua co nguoi choi</div>
+        </div>
+
+        <div class="mt-3 p-2 border rounded">
+          <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
+            <div class="theme-text fw-bold">Bo bai tren ban</div>
+            <div class="small text-muted">Nguoi danh gan nhat: <span id="tlTrickOwnerText">-</span></div>
+          </div>
+          <div id="tlTrickCards" class="tienlen-cards-row">
+            <div class="text-muted small">Chua co bo bai nao</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card shadow-sm theme-box">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
+          <h2 class="h5 theme-text mb-0">Bai tren tay cua ban</h2>
+          <div class="small">
+            <span class="me-2">Da chon: <strong id="tlSelectedCount">0</strong></span>
+            <span>Con lai: <strong id="tlHandCount">0</strong></span>
+          </div>
+        </div>
+
+        <div id="tlMyHand" class="tienlen-hand"></div>
+
+        <div class="mt-3 d-flex flex-wrap gap-2">
+          <button id="tlPlayBtn" type="button" class="btn theme-outline-btn" disabled>Danh bai</button>
+          <button id="tlPassBtn" type="button" class="btn theme-outline-btn" disabled>Bo luot</button>
+          <button id="tlClearSelectBtn" type="button" class="btn theme-outline-btn">Bo chon</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<style>
+  .tienlen-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 12px;
+  }
+  .tienlen-main-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  .tienlen-players-board {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .tienlen-player-slot {
+    border: 1px solid #777;
+    border-radius: 10px;
+    padding: 10px;
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    justify-content: center;
+  }
+  .tienlen-player-slot.is-turn {
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.75) inset;
+  }
+  .tienlen-player-slot.is-control {
+    box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.65) inset;
+  }
+  .tienlen-player-slot.is-passed {
+    opacity: 0.65;
+  }
+  .tienlen-player-slot.is-me {
+    border-color: #0dcaf0;
+  }
+  .tienlen-cards-row,
+  .tienlen-hand {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tienlen-card-btn {
+    border: 1px solid #777;
+    border-radius: 10px;
+    min-width: 54px;
+    height: 74px;
+    padding: 6px 8px;
+    background: #fff;
+    color: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+    user-select: none;
+  }
+  .tienlen-card-btn.red { color: #c1121f; }
+  .tienlen-card-btn.selected {
+    transform: translateY(-6px);
+    box-shadow: 0 0 0 2px #0dcaf0 inset;
+  }
+  .tienlen-card-btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  body.dark-mode .tienlen-card-btn {
+    background: #2c2c2c;
+    color: #f5f5f5;
+    border-color: #888;
+  }
+  body.dark-mode .tienlen-card-btn.red {
+    color: #ff8fa3;
+  }
+
+  @media (max-width: 991.98px) {
+    .tienlen-grid,
+    .tienlen-main-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 575.98px) {
+    .tienlen-player-slot {
+      min-height: 84px;
+      padding: 8px;
+    }
+    .tienlen-card-btn {
+      min-width: 48px;
+      height: 68px;
+      padding: 4px 6px;
+      font-size: 0.85rem;
+    }
+  }
+</style>
+
+<th:block th:replace="~{fragments :: appScripts('tien-len')}"></th:block>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+<script th:inline="javascript">
+  window.TienLenBoot = {
+    sessionUserId: /*[[${sessionUserId}]]*/ '',
+    sessionDisplayName: /*[[${sessionDisplayName}]]*/ '',
+    sessionAvatarPath: /*[[${sessionAvatarPath}]]*/ '',
+    defaultRoomId: /*[[${defaultRoomId}]]*/ ''
+  };
+</script>
+<script th:src="@{/js/tienlen-online.js}"></script>
+</body>
+</html>

@@ -13,6 +13,7 @@ Trong IntelliJ:
 3. Bam nut `Run` (tam giac xanh)
 
 Run configurations da them:
+- `Start (Default Public)` (mac dinh khuyen nghi, tu build + mo quick tunnel + in link cong cong)
 - `Start Public (Quick Tunnel)` (cho nguoi choi truy cap tu xa tu moi mang)
 - `Start Local (J2EE)` (chi test may nay / LAN)
 - `Status (App + Tunnel)` (xem PID/trang thai/link hien tai)
@@ -33,6 +34,7 @@ Cach chay:
 1. Mo project trong VS Code
 2. Vao `Terminal` -> `Run Task...`
 3. Chon 1 task:
+   - `Game: Start (Default Public)` (khuyen nghi)
    - `Game: Start Public (Quick Tunnel)`
    - `Game: Start Local (J2EE)`
    - `Game: Status (App + Tunnel)`
@@ -51,12 +53,16 @@ Luu y:
 
 Chay file:
 
+- `scripts/manual-start.cmd` (mac dinh, khuyen nghi)
 - `scripts/manual-start-public.cmd`
 
 Script se:
+- tu `AutoBuild` de lay code giao dien/chuc nang moi nhat
 - chay app (`prod` + MySQL local)
 - mo Cloudflare Quick Tunnel
 - in ra `PUBLIC_GAME_URL=...`
+- in khung tom tat link cong cong de copy nhanh
+- luu link vao `public-game-url.txt` (de script status hien lai)
 
 Gui link `https://...trycloudflare.com/Game` cho nguoi choi.
 
@@ -87,6 +93,7 @@ Script se hien:
 - app co dang listen cong `8080` khong
 - PID quick tunnel
 - quick tunnel URL hien tai (neu co)
+- `LAST_PUBLIC_GAME_URL` (link lan chay gan nhat da luu; co the het hieu luc neu da dung tunnel)
 
 ## Luu y quan trong
 
@@ -104,6 +111,7 @@ Script se hien:
 ## Cach chay bang command (khong can double-click)
 
 ```powershell
+cmd /c scripts\manual-start.cmd
 cmd /c scripts\manual-start-public.cmd
 cmd /c scripts\manual-status.cmd
 cmd /c scripts\manual-stop-all.cmd

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Chi tiet game')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games')}"></div>
+
+<main class="container py-4">
+  <div class="card shadow-sm theme-box">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi fs-3 theme-text" th:classappend="' ' + ${game.iconClass}"></i>
+            <h1 class="h3 mb-0 theme-text" th:text="${game.displayName}">Caro</h1>
+          </div>
+          <small class="text-muted" th:text="'Ma game: ' + ${game.code}">Ma game</small>
+        </div>
+        <span class="badge fs-6"
+              th:classappend="${game.availableNow} ? ' text-bg-success' : ' text-bg-warning'"
+              th:text="${game.availableNow} ? 'San sang choi' : 'Khung da san sang - chua co luat choi'">
+          San sang choi
+        </span>
+      </div>
+
+      <p class="theme-text mb-3" th:text="${game.description}">
+        Mo ta game
+      </p>
+
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
+          <div class="border rounded p-3 h-100">
+            <div class="fw-bold mb-2 theme-text">Tinh nang du kien</div>
+            <div class="d-flex flex-column gap-2">
+              <span class="badge text-start"
+                    th:classappend="${game.supportsOnline} ? ' text-bg-success' : ' text-bg-secondary'">
+                Online: <span th:text="${game.supportsOnline} ? 'Co' : 'Khong'">Co</span>
+              </span>
+              <span class="badge text-start"
+                    th:classappend="${game.supportsOffline} ? ' text-bg-success' : ' text-bg-secondary'">
+                Offline: <span th:text="${game.supportsOffline} ? 'Co' : 'Khong'">Co</span>
+              </span>
+              <span class="badge text-start"
+                    th:classappend="${game.supportsGuest} ? ' text-bg-success' : ' text-bg-secondary'">
+                Guest: <span th:text="${game.supportsGuest} ? 'Co' : 'Khong'">Co</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-8">
+          <div class="border rounded p-3 h-100">
+            <div class="fw-bold mb-2 theme-text">Roadmap trien khai</div>
+            <ol class="mb-0 ps-3">
+              <li th:each="item : ${game.roadmapItems}" th:text="${item}" class="theme-text">Roadmap item</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        <a th:href="@{/games}" class="btn theme-outline-btn">Thu vien game</a>
+
+        <a th:if="${game.primaryActionUrl != null and !#strings.isEmpty(game.primaryActionUrl)}"
+           th:href="@{${game.primaryActionUrl}}"
+           class="btn theme-outline-btn"
+           th:text="${game.primaryActionLabel}">Choi game</a>
+
+        <th:block th:if="${game.code == 'caro'}">
+          <a th:href="@{/single-player}" class="btn theme-outline-btn">Caro Single Player</a>
+          <a th:href="@{/lobby}" class="btn theme-outline-btn">Caro Lobby</a>
+        </th:block>
+
+        <button th:if="${game.primaryActionUrl == null or #strings.isEmpty(game.primaryActionUrl)}"
+                type="button" class="btn theme-outline-btn" disabled>
+          Chua co gameplay (se trien khai tiep)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <section class="card shadow-sm theme-box mt-3" th:if="${game.code == 'chess'}">
+    <div class="card-body">
+      <h2 class="h5 theme-text">Gioi han ban MVP hien tai</h2>
+      <p class="theme-text mb-2">
+        Co vua hien da choi duoc offline 2 nguoi cung may. Chua ho tro online, castling, en-passant va lua chon phong cap khac Hau.
+      </p>
+      <p class="mb-0 text-muted">
+        Buoc tiep theo co the la bo sung luat nang cao va che do online theo phong.
+      </p>
+    </div>
+  </section>
+
+  <section class="card shadow-sm theme-box mt-3" th:if="${game.code == 'cards'}">
+    <div class="card-body">
+      <h2 class="h5 theme-text">Tien len online 4 nguoi (MVP)</h2>
+      <p class="theme-text mb-2">
+        Ban MVP hien tai da co phong online 4 nguoi va che do choi voi bot Easy/Hard tren cung thiet bi.
+      </p>
+      <p class="theme-text mb-2">
+        Luat dang ho tro (online/bot MVP): don, doi, sam, tu quy, sanh, pass va reset vong. Chua day du toan bo luat nang cao.
+      </p>
+      <p class="mb-0 text-muted">
+        Muc tieu tiep theo la hoan thien luat nang cao va tang trai nghiem giao dien.
+      </p>
+    </div>
+  </section>
+
+  <section class="card shadow-sm theme-box mt-3" th:if="${game.code != 'caro' and game.code != 'chess'}">
+    <div class="card-body">
+      <h2 class="h5 theme-text">Trang thai hien tai</h2>
+      <p class="theme-text mb-2">
+        Game nay da duoc them vao he thong menu + route + trang rieng. Buoc tiep theo la viet engine luat choi va dong bo online.
+      </p>
+      <p class="mb-0 text-muted">
+        Muc tieu hien tai la mo rong nen tang da game ma khong lam anh huong luong choi Caro dang hoat dong.
+      </p>
+    </div>
+  </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games')}"></th:block>
+</body>
+</html>

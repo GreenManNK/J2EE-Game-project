@@ -46,3 +46,4 @@ build/
 cloudflared*.log
 run-*.log
 app-*.log
+public-game-url.txt

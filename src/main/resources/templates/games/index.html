@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Thu vien game')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games')}"></div>
+
+<main class="container py-4">
+  <div class="text-center mb-4">
+    <h1 class="display-6 theme-text fw-bold mb-2">THU VIEN GAME</h1>
+    <p class="theme-text mb-0">
+      Nen tang da duoc mo rong de ho tro nhieu game. Caro dang hoat dong day du, 3 game moi da co khung trien khai.
+    </p>
+  </div>
+
+  <div class="game-catalog-grid">
+    <section class="card shadow-sm theme-box game-catalog-card" th:each="g : ${games}">
+      <div class="card-body d-flex flex-column gap-2">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi fs-4 theme-text" th:classappend="' ' + ${g.iconClass}"></i>
+              <h2 class="h5 mb-0 theme-text" th:text="${g.displayName}">Caro</h2>
+            </div>
+            <small class="text-muted" th:text="${g.shortLabel}">Caro</small>
+          </div>
+          <span class="badge"
+                th:classappend="${g.availableNow} ? ' text-bg-success' : ' text-bg-warning'"
+                th:text="${g.availableNow} ? 'San sang' : 'Dang trien khai'">San sang</span>
+        </div>
+
+        <p class="mb-2 theme-text small" th:text="${g.description}">
+          Mo ta game
+        </p>
+
+        <div class="d-flex flex-wrap gap-2 small">
+          <span class="badge rounded-pill text-bg-secondary" th:if="${g.supportsOnline}">Online</span>
+          <span class="badge rounded-pill text-bg-secondary" th:if="${g.supportsOffline}">Offline</span>
+          <span class="badge rounded-pill text-bg-secondary" th:if="${g.supportsGuest}">Guest</span>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap mt-2">
+          <a th:href="@{'/games/' + ${g.code}}" class="btn btn-sm theme-outline-btn">Chi tiet</a>
+          <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
+             th:href="@{${g.primaryActionUrl}}"
+             class="btn btn-sm theme-outline-btn"
+             th:text="${g.primaryActionLabel}">Vao che do choi</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games')}"></th:block>
+</body>
+</html>

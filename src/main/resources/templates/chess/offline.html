@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead(${pageTitle} ?: 'Co vua Offline')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('chess-offline')}"></div>
+
+<main class="container py-4">
+  <div class="text-center mb-3">
+    <h1 class="theme-text fw-bold mb-2" th:text="${pageHeading} ?: 'CO VUA OFFLINE (MVP)'">CO VUA OFFLINE (MVP)</h1>
+    <p class="theme-text mb-1" th:text="${pageSubtitle} ?: '2 nguoi choi tren cung thiet bi. Khong can dang nhap.'">2 nguoi choi tren cung thiet bi. Khong can dang nhap.</p>
+    <p class="text-muted mb-0" th:text="${pageNote} ?: 'Ho tro luot di hop le, check/checkmate/stalemate, phong cap tot thanh Hau.'">Ho tro luot di hop le, check/checkmate/stalemate, phong cap tot thanh Hau.</p>
+  </div>
+
+  <div class="chess-layout">
+    <section class="card shadow-sm theme-box chess-board-panel">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+          <div>
+            <div id="chessTurnStatus" class="theme-text fw-bold">Luot: Trang</div>
+            <div id="chessGameStatus" class="text-muted small">Chon quan co de bat dau.</div>
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button id="chessResetBtn" type="button" class="btn btn-sm theme-outline-btn">Van moi</button>
+            <a th:href="@{/games/chess}" class="btn btn-sm theme-outline-btn">Chi tiet game</a>
+          </div>
+        </div>
+
+        <div class="chess-board-wrap">
+          <div id="chessBoard" class="chess-board" role="grid" aria-label="Ban co vua offline"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card shadow-sm theme-box chess-side-panel">
+      <div class="card-body">
+        <h2 class="h5 theme-text mb-2">Thong tin van dau</h2>
+        <div class="small mb-3">
+          <div class="theme-text">Trang thai: <span id="chessResultLabel">Dang choi</span></div>
+          <div class="theme-text">Nuoc di: <span id="chessMoveCount">0</span></div>
+          <div class="theme-text">Luot hien tai: <span id="chessCurrentColor">Trang</span></div>
+        </div>
+
+        <h3 class="h6 theme-text">Nhat ky nuoc di</h3>
+        <ol id="chessMoveLog" class="small chess-move-log mb-0"></ol>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<style>
+  .chess-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .chess-board-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .chess-board {
+    width: min(100%, 560px);
+    min-width: 280px;
+    aspect-ratio: 1 / 1;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    border: 2px solid #333;
+    margin: 0 auto;
+  }
+
+  .chess-cell {
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    font-size: clamp(22px, 4.4vw, 38px);
+    font-weight: 700;
+    user-select: none;
+    aspect-ratio: 1 / 1;
+    padding: 0;
+  }
+
+  .chess-cell.light {
+    background: #f0d9b5;
+  }
+
+  .chess-cell.dark {
+    background: #b58863;
+  }
+
+  .chess-cell.selected {
+    outline: 3px solid #00b7ff;
+    outline-offset: -3px;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+  }
+
+  .chess-cell.legal::after {
+    content: "";
+    width: 28%;
+    height: 28%;
+    border-radius: 50%;
+    background: rgba(0, 183, 255, 0.85);
+    position: absolute;
+  }
+
+  .chess-cell.capture::after {
+    width: 82%;
+    height: 82%;
+    background: transparent;
+    border: 3px solid rgba(255, 82, 82, 0.9);
+  }
+
+  .chess-cell.last-move {
+    box-shadow: inset 0 0 0 999px rgba(255, 235, 59, 0.22);
+  }
+
+  .chess-cell.in-check {
+    box-shadow: inset 0 0 0 999px rgba(255, 0, 0, 0.24);
+  }
+
+  .chess-piece.white { color: #fff; text-shadow: 0 0 2px #000, 0 0 4px #000; }
+  .chess-piece.black { color: #111; text-shadow: 0 0 2px rgba(255,255,255,0.45); }
+
+  .chess-coord {
+    position: absolute;
+    font-size: 10px;
+    line-height: 1;
+    opacity: 0.8;
+    pointer-events: none;
+  }
+  .chess-coord.file { right: 4px; bottom: 4px; }
+  .chess-coord.rank { left: 4px; top: 4px; }
+
+  .chess-move-log {
+    max-height: 360px;
+    overflow-y: auto;
+    padding-left: 1.1rem;
+  }
+
+  @media (max-width: 991.98px) {
+    .chess-layout {
+      grid-template-columns: 1fr;
+    }
+    .chess-side-panel {
+      order: 2;
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    .chess-board {
+      width: min(100%, 92vw);
+    }
+    .chess-cell {
+      font-size: clamp(18px, 6.5vw, 28px);
+    }
+    .chess-move-log {
+      max-height: 200px;
+    }
+  }
+</style>
+
+<th:block th:replace="~{fragments :: appScripts('chess-offline')}"></th:block>
+<script th:inline="javascript">
+  window.ChessBoot = {
+    botEnabled: /*[[${botEnabled}]]*/ false,
+    botDifficulty: /*[[${botDifficulty}]]*/ 'easy',
+    botSide: 'b',
+    botDelayMs: 450
+  };
+</script>
+<script th:src="@{/js/chess-offline.js}"></script>
+</body>
+</html>

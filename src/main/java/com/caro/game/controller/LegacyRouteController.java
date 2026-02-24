@@ -22,6 +22,11 @@ public class LegacyRouteController {
         return "redirect:/single-player";
     }
 
+    @GetMapping("/Home/Games")
+    public String homeGames() {
+        return "redirect:/games";
+    }
+
     @GetMapping("/Lobby")
     public String lobby() {
         return "redirect:/lobby";
@@ -53,6 +58,46 @@ public class LegacyRouteController {
     @GetMapping("/Game/Offline")
     public String gameOffline() {
         return "redirect:/game/offline";
+    }
+
+    @GetMapping("/Chess/Offline")
+    public String chessOffline() {
+        return "redirect:/chess/offline";
+    }
+
+    @GetMapping("/Chess/Bot")
+    public String chessBot() {
+        return "redirect:/chess/bot";
+    }
+
+    @GetMapping("/Xiangqi/Offline")
+    public String xiangqiOffline() {
+        return "redirect:/xiangqi/offline";
+    }
+
+    @GetMapping("/Xiangqi/Bot")
+    public String xiangqiBot() {
+        return "redirect:/xiangqi/bot";
+    }
+
+    @GetMapping("/Cards/TienLen")
+    public String cardsTienLen() {
+        return "redirect:/cards/tien-len";
+    }
+
+    @GetMapping("/Cards/TienLenBot")
+    public String cardsTienLenBot() {
+        return "redirect:/cards/tien-len/bot";
+    }
+
+    @GetMapping("/Online/Hub")
+    public String onlineHub(@RequestParam String game,
+                            @RequestParam(required = false) String roomId) {
+        StringBuilder redirect = new StringBuilder("redirect:/online-hub?game=").append(game);
+        if (roomId != null && !roomId.isBlank()) {
+            redirect.append("&roomId=").append(roomId);
+        }
+        return redirect.toString();
     }
 
     @GetMapping("/Game/Waiting")

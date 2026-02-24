@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead(${pageTitle} ?: 'Tien len Bot')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('tien-len-bot')}"></div>
+
+<main class="container py-3 pb-5">
+  <div class="text-center mb-3">
+    <h1 class="theme-text fw-bold mb-2" th:text="${pageHeading} ?: 'TIEN LEN VOI BOT (EASY) - MVP'">TIEN LEN VOI BOT (EASY) - MVP</h1>
+    <p class="theme-text mb-1" th:text="${pageSubtitle} ?: '1 nguoi choi + 3 bot tren cung thiet bi. Khong can dang nhap.'">1 nguoi choi + 3 bot tren cung thiet bi. Khong can dang nhap.</p>
+    <p class="text-muted mb-0" th:text="${pageNote} ?: 'MVP ho tro don, doi, sam, tu quy, sanh. Chua day du luat chat nang cao.'">MVP ho tro don, doi, sam, tu quy, sanh. Chua day du luat chat nang cao.</p>
+  </div>
+
+  <div class="tienlen-bot-top-grid">
+    <section class="card shadow-sm theme-box">
+      <div class="card-body d-flex flex-wrap gap-2 justify-content-between align-items-center">
+        <div>
+          <div class="small"><strong>Ban:</strong> <span id="tlBotSelfName" th:text="${sessionDisplayName}">Guest</span></div>
+          <div class="small"><strong>Che do:</strong> <span id="tlBotDifficultyLabel">-</span></div>
+          <div class="small"><strong>Trang thai:</strong> <span id="tlBotStatusText">Dang khoi tao van...</span></div>
+          <div class="small"><strong>Thong bao:</strong> <span id="tlBotMessageText">-</span></div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <button id="tlBotNewGameBtn" type="button" class="btn theme-outline-btn">Van moi</button>
+          <a th:href="@{/games/cards}" class="btn theme-outline-btn">Chi tiet game</a>
+          <a th:href="@{/game-mode/bot(game='cards')}" class="btn btn-outline-secondary">Doi do kho</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="card shadow-sm theme-box">
+      <div class="card-body">
+        <h2 class="h5 theme-text mb-2">Thong tin van dau</h2>
+        <div class="small d-flex flex-column gap-1">
+          <div>Luot hien tai: <strong id="tlBotTurnText">-</strong></div>
+          <div>Nguoi giu vong: <strong id="tlBotControlText">-</strong></div>
+          <div>Bo hien tai: <strong id="tlBotCurrentTrickLabel">Chua co</strong></div>
+          <div>Nguoi danh gan nhat: <strong id="tlBotTrickOwnerText">-</strong></div>
+          <div>Nuoc di: <strong id="tlBotMoveCount">0</strong></div>
+          <div>Ket qua: <strong id="tlBotResultText">Dang choi</strong></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="tienlen-bot-main-grid mt-3">
+    <section class="card shadow-sm theme-box">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
+          <h2 class="h5 theme-text mb-0">Ban choi (1 nguoi + 3 bot)</h2>
+          <div class="small text-muted">Bot danh tu dong khi den luot</div>
+        </div>
+
+        <div id="tlBotPlayersBoard" class="tienlen-bot-players-board">
+          <div class="tienlen-bot-player-slot" data-slot="0">Dang tai...</div>
+          <div class="tienlen-bot-player-slot" data-slot="1">Dang tai...</div>
+          <div class="tienlen-bot-player-slot" data-slot="2">Dang tai...</div>
+          <div class="tienlen-bot-player-slot" data-slot="3">Dang tai...</div>
+        </div>
+
+        <div class="mt-3 p-2 border rounded">
+          <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
+            <div class="theme-text fw-bold">Bo bai tren ban</div>
+            <div class="small text-muted">Nguoi danh gan nhat: <span id="tlBotTrickOwnerTextDup">-</span></div>
+          </div>
+          <div id="tlBotTrickCards" class="tienlen-bot-cards-row">
+            <div class="text-muted small">Chua co bo bai nao</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card shadow-sm theme-box">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
+          <h2 class="h5 theme-text mb-0">Bai tren tay cua ban</h2>
+          <div class="small">
+            <span class="me-2">Da chon: <strong id="tlBotSelectedCount">0</strong></span>
+            <span>Con lai: <strong id="tlBotHandCount">0</strong></span>
+          </div>
+        </div>
+
+        <div id="tlBotMyHand" class="tienlen-bot-hand"></div>
+
+        <div class="mt-3 d-flex flex-wrap gap-2">
+          <button id="tlBotPlayBtn" type="button" class="btn theme-outline-btn" disabled>Danh bai</button>
+          <button id="tlBotPassBtn" type="button" class="btn theme-outline-btn" disabled>Bo luot</button>
+          <button id="tlBotClearBtn" type="button" class="btn theme-outline-btn" disabled>Bo chon</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card shadow-sm theme-box mt-3">
+    <div class="card-body">
+      <h2 class="h5 theme-text mb-2">Nhat ky nuoc di</h2>
+      <ol id="tlBotMoveLog" class="small tl-bot-move-log mb-0"></ol>
+    </div>
+  </section>
+</main>
+
+<style>
+  .tienlen-bot-top-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 12px;
+  }
+  .tienlen-bot-main-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  .tienlen-bot-players-board {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .tienlen-bot-player-slot {
+    border: 1px solid #777;
+    border-radius: 10px;
+    padding: 10px;
+    min-height: 92px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    justify-content: center;
+  }
+  .tienlen-bot-player-slot.is-turn {
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.75) inset;
+  }
+  .tienlen-bot-player-slot.is-control {
+    box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.65) inset;
+  }
+  .tienlen-bot-player-slot.is-passed {
+    opacity: 0.65;
+  }
+  .tienlen-bot-player-slot.is-me {
+    border-color: #0dcaf0;
+  }
+  .tienlen-bot-cards-row,
+  .tienlen-bot-hand {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tienlen-bot-card-btn {
+    border: 1px solid #777;
+    border-radius: 10px;
+    min-width: 54px;
+    height: 74px;
+    padding: 6px 8px;
+    background: #fff;
+    color: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+    user-select: none;
+  }
+  .tienlen-bot-card-btn.red {
+    color: #c1121f;
+  }
+  .tienlen-bot-card-btn.selected {
+    transform: translateY(-6px);
+    box-shadow: 0 0 0 2px #0dcaf0 inset;
+  }
+  .tienlen-bot-card-btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  body.dark-mode .tienlen-bot-card-btn {
+    background: #2c2c2c;
+    color: #f5f5f5;
+    border-color: #888;
+  }
+  body.dark-mode .tienlen-bot-card-btn.red {
+    color: #ff8fa3;
+  }
+  .tl-bot-move-log {
+    max-height: 240px;
+    overflow-y: auto;
+    padding-left: 1.1rem;
+  }
+
+  @media (max-width: 991.98px) {
+    .tienlen-bot-top-grid,
+    .tienlen-bot-main-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 575.98px) {
+    .tienlen-bot-player-slot {
+      min-height: 84px;
+      padding: 8px;
+    }
+    .tienlen-bot-card-btn {
+      min-width: 48px;
+      height: 68px;
+      padding: 4px 6px;
+      font-size: 0.85rem;
+    }
+    .tl-bot-move-log {
+      max-height: 180px;
+    }
+  }
+</style>
+
+<th:block th:replace="~{fragments :: appScripts('tien-len-bot')}"></th:block>
+<script th:inline="javascript">
+  window.TienLenBotBoot = {
+    sessionUserId: /*[[${sessionUserId}]]*/ '',
+    sessionDisplayName: /*[[${sessionDisplayName}]]*/ '',
+    botDifficulty: /*[[${botDifficulty}]]*/ 'easy',
+    botDelayMs: 650
+  };
+</script>
+<script th:src="@{/js/tienlen-bot.js}"></script>
+</body>
+</html>

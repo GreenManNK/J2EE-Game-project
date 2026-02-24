@@ -120,6 +120,7 @@
   <div id="friendSidebar" class="theme-text">
     <div class="d-flex flex-column gap-2 mb-3 px-1 justify-content-center align-items-center">
       <a class="btn theme-outline-btn w-100 text-start fw-bold theme-text" th:href="@{/}"><i class="bi bi-house-fill me-2"></i> Trang chủ</a>
+      <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-controller me-2"></i> Thu vien game</a>
       <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/leaderboard}"><i class="bi bi-bar-chart-fill me-2"></i> Bảng xếp hạng</a>
       <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/history}" data-require-user-id="true" data-user-param="userId"><i class="bi bi-clock-history me-2"></i> Lịch sử đấu</a>
       <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship}" data-require-user-id="true"><i class="bi bi-people-fill me-2"></i> Bạn bè</a>
@@ -149,6 +150,7 @@
 
 <div th:fragment="nav" class="d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
   <a class="btn btn-sm btn-outline-secondary" th:href="@{/}">Home</a>
+  <a class="btn btn-sm btn-outline-secondary" th:href="@{/games}">Games</a>
   <a class="btn btn-sm btn-outline-secondary" th:href="@{/lobby}">Lobby</a>
   <a class="btn btn-sm btn-outline-secondary" th:href="@{/game}">Game</a>
   <a class="btn btn-sm btn-outline-secondary" th:href="@{/leaderboard}">Leaderboard</a>
