@@ -10,11 +10,21 @@
   </h1>
   <p class="theme-text mb-3">Chon cap do bot:</p>
 
-  <div class="d-flex flex-column align-items-center gap-3">
+  <div class="mode-menu d-flex flex-column align-items-center gap-3">
     <a th:href="@{/bot/easy}" class="btn theme-outline-btn btn-lg w-50">Bot De</a>
     <a th:href="@{/bot/hard}" class="btn theme-outline-btn btn-lg w-50">Bot Kho</a>
   </div>
 </div>
+
+<style>
+  .mode-menu {
+    width: min(100%, 520px);
+    margin: 0 auto;
+  }
+  .mode-menu > .btn {
+    width: min(420px, 100%) !important;
+  }
+</style>
 
 <th:block th:replace="~{fragments :: appScripts('single-player')}"></th:block>
 </body>

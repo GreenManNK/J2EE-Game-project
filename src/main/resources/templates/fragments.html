@@ -13,13 +13,20 @@
   <link rel="stylesheet" th:href="@{/css/site.css}">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
+    body {
+      --app-sidebar-width: 260px;
+      --app-friend-panel-width: 260px;
+    }
     html, body { margin: 0; padding: 0; overflow-x: hidden; }
-    body:not(.game-index) { padding-left: 260px; padding-right: 280px; }
+    body:not(.game-index) {
+      padding-left: var(--app-sidebar-width);
+      padding-right: calc(var(--app-friend-panel-width) + 20px);
+    }
     #friendSidebar {
       position: fixed;
       top: 0;
       left: 0;
-      width: 260px;
+      width: var(--app-sidebar-width);
       height: 100vh;
       background-color: var(--bg, #fff);
       overflow-y: auto;
@@ -43,12 +50,12 @@
       border-radius: 0 8px 8px 0;
       transition: all 0.3s ease;
     }
-    body.sidebar-open .sidebar-toggle-btn { transform: translateY(-50%) translateX(260px); }
+    body.sidebar-open .sidebar-toggle-btn { transform: translateY(-50%) translateX(var(--app-sidebar-width)); }
     #friendListInlineContainer {
       position: fixed;
       top: 120px;
       right: 10px;
-      width: 260px;
+      width: var(--app-friend-panel-width);
       background-color: var(--bg, #fff);
       border: 1px solid var(--border-color, #ccc);
       border-radius: 8px;
@@ -60,6 +67,52 @@
       box-shadow: -2px 0 6px rgba(0, 0, 0, 0.15);
     }
     #backButton { position: fixed; bottom: 10px; left: 10px; z-index: 999; }
+
+    @media (max-width: 1199.98px) {
+      body:not(.game-index) {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+      #friendListInlineContainer {
+        position: static;
+        width: auto;
+        max-width: 100%;
+        max-height: 220px;
+        margin: 72px 12px 8px 12px;
+        box-shadow: none;
+      }
+      #backButton {
+        bottom: 12px;
+        left: 12px;
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      body {
+        --app-sidebar-width: min(86vw, 320px);
+      }
+      #friendSidebar {
+        padding-top: 78px;
+      }
+      .sidebar-toggle-btn {
+        top: auto;
+        bottom: 72px;
+        transform: translateY(0) translateX(0);
+      }
+      body.sidebar-open .sidebar-toggle-btn {
+        transform: translateY(0) translateX(var(--app-sidebar-width));
+      }
+      #friendListInlineContainer {
+        margin: 64px 8px 8px 8px;
+        max-height: 180px;
+        font-size: 0.8rem;
+      }
+      #backButton {
+        max-width: calc(100vw - 24px);
+        font-size: 0.85rem;
+        padding: 4px 10px;
+      }
+    }
   </style>
 </th:block>
 

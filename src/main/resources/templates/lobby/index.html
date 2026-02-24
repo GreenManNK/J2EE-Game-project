@@ -4,7 +4,7 @@
 <body>
 <div th:replace="~{fragments :: appShell('lobby')}"></div>
 
-<div class="container mt-5 text-center">
+<div class="container mt-5 text-center lobby-page">
   <h1 class="display-4 theme-text fw-bold" style="text-shadow: 2px 2px 0 #000, 4px 4px 0 #0ff;">
     SANH
   </h1>
@@ -13,7 +13,7 @@
   </p>
 
   <div class="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-4">
-    <div class="input-group" style="width: 360px;">
+    <div class="input-group" style="width: min(360px, 100%);">
       <input type="text" class="form-control" id="roomIdInput" placeholder="Nhap ma phong...">
       <button class="btn btn-success" id="createRoomBtn">Tao phong</button>
     </div>
@@ -37,6 +37,27 @@
 <button id="siteMusicToggleBtn" class="btn btn-sm btn-outline-light theme-text" style="position: fixed; bottom: 10px; right: 10px; z-index: 999; background-color: transparent;">
   🔊 Tat Nhac
 </button>
+
+<style>
+  @media (max-width: 575.98px) {
+    .lobby-page {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+    #roomList .list-group-item {
+      gap: 8px;
+      flex-wrap: wrap;
+      text-align: left;
+    }
+    #roomList .list-group-item > span {
+      width: 100%;
+      word-break: break-word;
+    }
+    #roomList .btn {
+      width: 100%;
+    }
+  }
+</style>
 
 <th:block th:replace="~{fragments :: appScripts('lobby')}"></th:block>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>

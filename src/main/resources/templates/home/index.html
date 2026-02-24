@@ -9,7 +9,7 @@
     CHAO MUNG BAN DEN VOI CARO.IO
   </h2>
 
-  <div class="d-flex justify-content-center mb-3 gap-2 flex-wrap">
+  <div class="home-main-actions d-flex justify-content-center mb-3 gap-2 flex-wrap">
     <a th:href="@{/multiplayer}" class="btn theme-outline-btn btn-lg">Multiplayer</a>
     <a th:href="@{/single-player}" class="btn theme-outline-btn btn-lg">Single Player</a>
   </div>
@@ -71,6 +71,32 @@
 <button id="siteMusicToggleBtn" class="btn theme-outline-btn btn-sm theme-text" style="position: fixed; bottom: 10px; right: 10px; z-index: 999;">
   🔊 Tat Nhac
 </button>
+
+<style>
+  @media (max-width: 767.98px) {
+    #homeMain {
+      padding-left: 10px !important;
+      padding-right: 10px !important;
+      padding-top: 1rem !important;
+    }
+    .home-main-actions .btn {
+      width: min(420px, 100%);
+    }
+    .scroll-posts {
+      max-height: none !important;
+    }
+    .commentForm {
+      flex-wrap: wrap;
+    }
+    .commentForm .commentContent {
+      width: 100%;
+      min-width: 0;
+    }
+    .commentForm button {
+      width: 100%;
+    }
+  }
+</style>
 
 <script th:replace="~{fragments :: appScripts('home')}"></script>
 <script>

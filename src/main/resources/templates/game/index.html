@@ -23,8 +23,8 @@
     </div>
   </div>
 
-  <div class="d-flex justify-content-center align-items-start gap-3 w-100" style="max-width: 980px;">
-    <div id="chat-container" class="theme-box d-flex flex-column" style="width: 300px; border: 1px solid #333; border-radius: 10px;">
+  <div class="game-stage-layout d-flex justify-content-center align-items-start gap-3 w-100" style="max-width: 980px;">
+    <div id="chat-container" class="theme-box d-flex flex-column" style="width: 300px; max-width: 100%; border: 1px solid #333; border-radius: 10px;">
       <div id="chat-box" class="chat-box"></div>
       <div class="d-flex p-2 border-top">
         <input id="message-input" type="text" class="form-control me-2" placeholder="Nhan tin...">
@@ -37,9 +37,15 @@
 </main>
 
 <style>
+  #gameMain {
+    padding: 0 12px 86px;
+    width: 100%;
+  }
   .info-box { border: 2px solid; border-radius: 10px; padding: 12px; }
   .info-top-container { max-width: 760px; margin: 0 auto 12px auto; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
   #game-board-wrapper { display: grid; grid-template-columns: repeat(10, 1fr); width: 420px; aspect-ratio: 1 / 1; }
+  .game-stage-layout { width: 100%; flex-wrap: wrap; }
+  #chat-container { flex: 0 1 300px; }
   .cell {
     aspect-ratio: 1 / 1;
     border: 1px solid #555;
@@ -58,6 +64,49 @@
   .chat-you { align-self: flex-end; background: #0d6efd; color: #fff; }
   .chat-other { align-self: flex-start; background: #f1f1f1; color: #000; }
   body.dark-mode .chat-other { background: #333; color: #e0e0e0; }
+
+  @media (max-width: 991.98px) {
+    .game-stage-layout {
+      flex-direction: column;
+      align-items: center !important;
+      max-width: 460px;
+    }
+    #chat-container {
+      order: 2;
+      width: 100% !important;
+      flex-basis: auto;
+    }
+    #game-board-wrapper {
+      width: min(420px, 100%);
+    }
+    #chat-box {
+      height: 220px;
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    #gameMain {
+      padding: 0 8px 92px;
+    }
+    .info-top-container {
+      gap: 8px;
+      width: 100%;
+    }
+    .info-box {
+      width: 100%;
+      padding: 10px;
+    }
+    #game-board-wrapper {
+      width: min(100vw - 20px, 420px);
+    }
+    .cell {
+      font-size: 15px;
+    }
+    #sendBtn {
+      width: 38px !important;
+      height: 38px !important;
+    }
+  }
 </style>
 
 <th:block th:replace="~{fragments :: appScripts('game-index')}"></th:block>

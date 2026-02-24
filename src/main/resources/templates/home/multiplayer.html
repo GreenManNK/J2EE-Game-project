@@ -9,7 +9,7 @@
     CHE DO NHIEU NGUOI CHOI
   </h1>
   <p class="theme-text mb-3 fs-5">Che do choi:</p>
-  <div class="d-flex flex-column align-items-center gap-3">
+  <div class="mode-menu d-flex flex-column align-items-center gap-3">
     <a th:href="@{/lobby}" class="btn theme-outline-btn btn-lg w-50">Online</a>
     <a th:href="@{/game/offline}" class="btn theme-outline-btn btn-lg w-50">Offline</a>
   </div>
@@ -17,6 +17,16 @@
     Ban co the choi Online voi tu cach khach (khong can dang nhap).
   </p>
 </div>
+
+<style>
+  .mode-menu {
+    width: min(100%, 520px);
+    margin: 0 auto;
+  }
+  .mode-menu > .btn {
+    width: min(420px, 100%) !important;
+  }
+</style>
 
 <th:block th:replace="~{fragments :: appScripts('multiplayer')}"></th:block>
 </body>
