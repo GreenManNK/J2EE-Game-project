@@ -1,0 +1,81 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Game: Start Public (Quick Tunnel)",
+      "type": "shell",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "scripts\\manual-start-public.cmd",
+        "--no-pause"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Game: Start Local (J2EE)",
+      "type": "shell",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "scripts\\manual-start-local.cmd",
+        "--no-pause"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Game: Status (App + Tunnel)",
+      "type": "shell",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "scripts\\manual-status.cmd",
+        "--no-pause"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Game: Stop All (App + Tunnel)",
+      "type": "shell",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "scripts\\manual-stop-all.cmd",
+        "--no-pause"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}
