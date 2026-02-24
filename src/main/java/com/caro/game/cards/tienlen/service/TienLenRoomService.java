@@ -205,7 +205,7 @@ public class TienLenRoomService {
 
         Combination combo = parseCombination(selected);
         if (combo == null) {
-            return ActionResult.error("Bo bai khong hop le (MVP hien tai ho tro: don, doi, sam, tu quy, sanh)", snapshotOf(room));
+            return ActionResult.error("Bo bai khong hop le (ho tro: don, doi, sam, tu quy, sanh, doi thong)", snapshotOf(room));
         }
 
         if (room.playCount == 0 && selected.stream().noneMatch(card -> "3S".equals(card.code()))) {
@@ -572,6 +572,38 @@ public class TienLenRoomService {
             return new Combination(CombinationType.FOUR_KIND, 4, hi.rankValue(), hi.suitOrder(), sorted, "tu quy " + rankLabel(hi.rankValue()));
         }
 
+        if (size >= 6 && size % 2 == 0) {
+            boolean hasTwo = sorted.stream().anyMatch(card -> card.rankValue() == 15);
+            if (!hasTwo) {
+                boolean validDoubleStraight = true;
+                int prevRank = -1;
+                for (int i = 0; i < size; i += 2) {
+                    int currentRank = sorted.get(i).rankValue();
+                    if (sorted.get(i + 1).rankValue() != currentRank) {
+                        validDoubleStraight = false;
+                        break;
+                    }
+                    if (prevRank >= 0 && currentRank != prevRank + 1) {
+                        validDoubleStraight = false;
+                        break;
+                    }
+                    prevRank = currentRank;
+                }
+                if (validDoubleStraight) {
+                    TienLenCard hi = sorted.getLast();
+                    int pairCount = size / 2;
+                    return new Combination(
+                        CombinationType.DOUBLE_STRAIGHT,
+                        size,
+                        hi.rankValue(),
+                        hi.suitOrder(),
+                        sorted,
+                        "doi thong " + pairCount + " doi (" + sorted.getFirst().label() + " - " + hi.label() + ")"
+                    );
+                }
+            }
+        }
+
         if (size >= 3) {
             for (TienLenCard card : sorted) {
                 if (card.rankValue() == 15) {
@@ -643,7 +675,8 @@ public class TienLenRoomService {
         PAIR,
         TRIPLE,
         FOUR_KIND,
-        STRAIGHT
+        STRAIGHT,
+        DOUBLE_STRAIGHT
     }
 
     private record Combination(
@@ -658,6 +691,9 @@ public class TienLenRoomService {
             if (current == null) {
                 return true;
             }
+            if (canBeatSpecial(current)) {
+                return true;
+            }
             if (this.type != current.type) {
                 return false;
             }
@@ -668,6 +704,31 @@ public class TienLenRoomService {
                 return this.highestRank > current.highestRank;
             }
             return this.highestSuit > current.highestSuit;
+        }
+
+        private boolean canBeatSpecial(Combination current) {
+            if (current == null) {
+                return false;
+            }
+            if (current.type == CombinationType.SINGLE && current.highestRank == 15) {
+                if (this.type == CombinationType.FOUR_KIND) {
+                    return true;
+                }
+                return this.type == CombinationType.DOUBLE_STRAIGHT && this.length >= 6;
+            }
+            if (current.type == CombinationType.PAIR && current.highestRank == 15) {
+                if (this.type == CombinationType.FOUR_KIND) {
+                    return true;
+                }
+                return this.type == CombinationType.DOUBLE_STRAIGHT && this.length >= 8;
+            }
+            if (current.type == CombinationType.FOUR_KIND) {
+                return this.type == CombinationType.DOUBLE_STRAIGHT && this.length >= 8;
+            }
+            if (current.type == CombinationType.DOUBLE_STRAIGHT && this.type == CombinationType.DOUBLE_STRAIGHT) {
+                return this.length > current.length;
+            }
+            return false;
         }
     }
 

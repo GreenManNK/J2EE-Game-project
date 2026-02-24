@@ -6,22 +6,19 @@ import org.springframework.ui.ConcurrentModel;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class GameModeControllerTest {
 
     @Test
-    void botPickerShouldRenderForKnownGame() {
+    void botPickerShouldRedirectToDedicatedGamePage() {
         GameModeController controller = new GameModeController(new GameCatalogService());
         ConcurrentModel model = new ConcurrentModel();
 
         String view = controller.botPicker("chess", model);
 
-        assertEquals("game-mode/bot-picker", view);
-        assertNotNull(model.getAttribute("game"));
-        assertNotNull(model.getAttribute("easyUrl"));
-        assertNotNull(model.getAttribute("hardUrl"));
+        assertEquals("redirect:/games/chess", view);
+        assertEquals(0, model.size());
     }
 
     @Test

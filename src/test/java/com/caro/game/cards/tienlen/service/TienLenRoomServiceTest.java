@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Random;
+import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -129,10 +130,70 @@ class TienLenRoomServiceTest {
         }
     }
 
+    @Test
+    void parseCombinationShouldRecognizeDoubleStraightAndSpecialChopTwoRules() throws Exception {
+        TienLenRoomService service = new TienLenRoomService(new Random(6));
+
+        Object doubleStraight3Pairs = parseCombo(service, "3S", "3C", "4S", "4C", "5S", "5C");
+        Object doubleStraight4Pairs = parseCombo(service, "6S", "6C", "7S", "7C", "8S", "8C", "9S", "9C");
+        Object singleTwo = parseCombo(service, "2S");
+        Object pairTwo = parseCombo(service, "2S", "2C");
+        Object fourKind = parseCombo(service, "10S", "10C", "10D", "10H");
+        Object doubleStraight5Pairs = parseCombo(service, "5S", "5C", "6S", "6C", "7S", "7C", "8S", "8C", "9S", "9C");
+
+        assertNotNull(doubleStraight3Pairs);
+        assertEquals("DOUBLE_STRAIGHT", comboType(doubleStraight3Pairs));
+        assertEquals(6, comboLength(doubleStraight3Pairs));
+
+        assertTrue(comboCanBeat(fourKind, singleTwo));
+        assertTrue(comboCanBeat(doubleStraight3Pairs, singleTwo));
+        assertTrue(comboCanBeat(fourKind, pairTwo));
+        assertTrue(comboCanBeat(doubleStraight4Pairs, pairTwo));
+        assertTrue(comboCanBeat(doubleStraight4Pairs, fourKind));
+        assertTrue(comboCanBeat(doubleStraight5Pairs, doubleStraight4Pairs));
+    }
+
+    @Test
+    void parseCombinationShouldRejectInvalidDoubleStraightContainingTwo() throws Exception {
+        TienLenRoomService service = new TienLenRoomService(new Random(7));
+
+        Object invalid = parseCombo(service, "QS", "QC", "KS", "KC", "AS", "AC", "2S", "2C");
+
+        assertEquals(null, invalid);
+    }
+
     private static void joinFour(TienLenRoomService service, String roomId) {
         assertTrue(service.joinRoom(roomId, "u1", "P1", "").ok());
         assertTrue(service.joinRoom(roomId, "u2", "P2", "").ok());
         assertTrue(service.joinRoom(roomId, "u3", "P3", "").ok());
         assertTrue(service.joinRoom(roomId, "u4", "P4", "").ok());
+    }
+
+    private static Object parseCombo(TienLenRoomService service, String... codes) throws Exception {
+        Method parse = TienLenRoomService.class.getDeclaredMethod("parseCombination", List.class);
+        parse.setAccessible(true);
+        List<TienLenCard> cards = java.util.Arrays.stream(codes)
+            .map(TienLenCard::parseCode)
+            .toList();
+        return parse.invoke(service, cards);
+    }
+
+    private static String comboType(Object combo) throws Exception {
+        Method type = combo.getClass().getDeclaredMethod("type");
+        type.setAccessible(true);
+        Object enumValue = type.invoke(combo);
+        return String.valueOf(enumValue);
+    }
+
+    private static int comboLength(Object combo) throws Exception {
+        Method length = combo.getClass().getDeclaredMethod("length");
+        length.setAccessible(true);
+        return (int) length.invoke(combo);
+    }
+
+    private static boolean comboCanBeat(Object candidate, Object current) throws Exception {
+        Method canBeat = candidate.getClass().getDeclaredMethod("canBeat", candidate.getClass());
+        canBeat.setAccessible(true);
+        return (boolean) canBeat.invoke(candidate, current);
     }
 }

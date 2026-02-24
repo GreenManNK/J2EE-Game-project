@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Caro - Chon che do')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-caro')}"></div>
+
+<main class="container py-4">
+  <section class="card shadow-sm theme-box mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-grid-3x3-gap-fill fs-3 theme-text"></i>
+            <h1 class="h3 mb-0 theme-text">CARO - CHON CHE DO</h1>
+          </div>
+          <p class="theme-text mb-0 mt-2">
+            Trang mode rieng cho Caro. Chon cach choi phu hop (don / online) ma khong dung chung voi game khac.
+          </p>
+        </div>
+        <span class="badge text-bg-success fs-6">San sang</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="row g-3">
+    <div class="col-12 col-lg-6">
+      <section class="card shadow-sm theme-box h-100">
+        <div class="card-body d-flex flex-column">
+          <h2 class="h5 theme-text mb-2">Choi don / Offline</h2>
+          <p class="theme-text small mb-3">
+            Choi Caro tren cung thiet bi. Phu hop de test nhanh giao dien, luat co ban, va train voi bot.
+          </p>
+          <div class="d-grid gap-2 mt-auto">
+            <a th:href="@{/single-player}" class="btn theme-outline-btn btn-lg">Choi don (Bot)</a>
+            <a th:href="@{/game/offline}" class="btn btn-outline-secondary">Mo ban co offline truc tiep</a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <section class="card shadow-sm theme-box h-100">
+        <div class="card-body d-flex flex-column">
+          <h2 class="h5 theme-text mb-2">Choi online voi nguoi</h2>
+          <p class="theme-text small mb-3">
+            Vao trang phong online de tao phong, tim phong, moi nguoi choi va vao ban Caro online.
+          </p>
+          <div class="d-grid gap-2 mt-auto">
+            <a th:href="@{/online-hub(game='caro')}" class="btn theme-outline-btn btn-lg">Mo Caro Online Hub</a>
+            <a th:href="@{/lobby}" class="btn btn-outline-secondary">Vao Lobby Caro (route cu)</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card shadow-sm theme-box mt-3">
+    <div class="card-body">
+      <h2 class="h5 theme-text mb-2">Thong tin nhanh</h2>
+      <ul class="mb-0 theme-text">
+        <li>Guest co the choi online.</li>
+        <li>Trang online chung van duoc dung cho luong tim/tao phong.</li>
+        <li>Trang nay la trang mode rieng cua Caro (khong dung chung voi 3 game con lai).</li>
+      </ul>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <a th:href="@{/}" class="btn theme-outline-btn">Ve trang chu</a>
+        <a th:href="@{/games}" class="btn theme-outline-btn">Thu vien game</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-caro')}"></th:block>
+</body>
+</html>

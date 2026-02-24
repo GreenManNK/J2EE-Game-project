@@ -23,11 +23,8 @@ public class GameModeController {
     public String botPicker(@RequestParam String game, Model model) {
         GameCatalogItem item = gameCatalogService.findByCode(game)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
-        model.addAttribute("game", item);
-        model.addAttribute("easyUrl", botPlayUrl(item.code(), "easy"));
-        model.addAttribute("hardUrl", botPlayUrl(item.code(), "hard"));
-        model.addAttribute("hasRealBotNow", hasRealBotNow(item.code()));
-        return "game-mode/bot-picker";
+        // Legacy route kept for compatibility: redirect to dedicated mode page per game.
+        return "redirect:/games/" + item.code();
     }
 
     @GetMapping("/bot-play")

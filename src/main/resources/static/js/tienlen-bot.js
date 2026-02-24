@@ -12,7 +12,7 @@
     [3, '3'], [4, '4'], [5, '5'], [6, '6'], [7, '7'], [8, '8'], [9, '9'],
     [10, '10'], [11, 'J'], [12, 'Q'], [13, 'K'], [14, 'A'], [15, '2']
   ]);
-  const TYPE_ORDER = { SINGLE: 1, PAIR: 2, TRIPLE: 3, STRAIGHT: 4, FOUR_KIND: 5 };
+  const TYPE_ORDER = { SINGLE: 1, PAIR: 2, TRIPLE: 3, STRAIGHT: 4, DOUBLE_STRAIGHT: 5, FOUR_KIND: 6 };
 
   const state = {
     difficulty: normalizeDifficulty(boot.botDifficulty),
@@ -253,6 +253,9 @@
       if (combo.type === 'STRAIGHT') {
         score += combo.length * 8;
       }
+      if (combo.type === 'DOUBLE_STRAIGHT') {
+        score += combo.length * 10;
+      }
       score -= combo.highestRank * 4;
       score -= combo.highestSuit;
     }
@@ -310,7 +313,7 @@
     }
     const combo = parseCombination(selected);
     if (!combo) {
-      return { ok: false, error: 'Bo bai khong hop le (MVP: don, doi, sam, tu quy, sanh)' };
+      return { ok: false, error: 'Bo bai khong hop le (ho tro: don, doi, sam, tu quy, sanh, doi thong)' };
     }
     if (state.playCount === 0 && !selected.some((c) => c.code === '3S')) {
       return { ok: false, error: 'Nuoc dau tien phai chua 3S' };
@@ -477,6 +480,24 @@
       i = j;
     }
 
+    const pairableRankGroups = rankGroups.filter(([, cards]) => cards.length >= 2);
+    for (let i = 0; i < pairableRankGroups.length; i++) {
+      let j = i;
+      while (j + 1 < pairableRankGroups.length && pairableRankGroups[j + 1][0] === pairableRankGroups[j][0] + 1) {
+        j++;
+      }
+      const runLength = j - i + 1;
+      if (runLength >= 3) {
+        for (let start = i; start <= j - 2; start++) {
+          for (let end = start + 2; end <= j; end++) {
+            const segment = pairableRankGroups.slice(start, end + 1);
+            collectDoubleStraightChoices(segment, 0, [], moves);
+          }
+        }
+      }
+      i = j;
+    }
+
     return moves;
   }
 
@@ -492,6 +513,24 @@
     for (const card of cardsAtRank) {
       chosen.push(card);
       collectStraightChoices(rankSegment, index + 1, chosen, moves);
+      chosen.pop();
+    }
+  }
+
+  function collectDoubleStraightChoices(rankSegment, index, chosen, moves) {
+    if (index >= rankSegment.length) {
+      const combo = parseCombination(chosen);
+      if (combo) {
+        moves.push({ combo, cards: combo.cards.slice() });
+      }
+      return;
+    }
+    const cardsAtRank = rankSegment[index][1];
+    const pairChoices = chooseK(cardsAtRank, 2);
+    for (const pair of pairChoices) {
+      chosen.push(pair[0], pair[1]);
+      collectDoubleStraightChoices(rankSegment, index + 1, chosen, moves);
+      chosen.pop();
       chosen.pop();
     }
   }
@@ -568,6 +607,37 @@
       };
     }
 
+    if (size >= 6 && size % 2 === 0) {
+      const hasTwo = sorted.some((c) => c.rankValue === 15);
+      if (!hasTwo) {
+        let validDoubleStraight = true;
+        let prevRank = -1;
+        for (let i = 0; i < sorted.length; i += 2) {
+          const currentRank = sorted[i].rankValue;
+          if (!sorted[i + 1] || sorted[i + 1].rankValue !== currentRank) {
+            validDoubleStraight = false;
+            break;
+          }
+          if (prevRank >= 0 && currentRank !== prevRank + 1) {
+            validDoubleStraight = false;
+            break;
+          }
+          prevRank = currentRank;
+        }
+        if (validDoubleStraight) {
+          const hi = sorted[sorted.length - 1];
+          return {
+            type: 'DOUBLE_STRAIGHT',
+            length: size,
+            highestRank: hi.rankValue,
+            highestSuit: hi.suitOrder,
+            cards: sorted,
+            label: 'doi thong ' + (size / 2) + ' doi (' + sorted[0].label + ' - ' + hi.label + ')'
+          };
+        }
+      }
+    }
+
     if (size >= 3) {
       if (sorted.some((c) => c.rankValue === 15)) {
         return null;
@@ -594,10 +664,38 @@
   function comboCanBeat(next, current) {
     if (!next) return false;
     if (!current) return true;
+    if (canBeatSpecial(next, current)) return true;
     if (next.type !== current.type) return false;
     if (next.length !== current.length) return false;
     if (next.highestRank !== current.highestRank) return next.highestRank > current.highestRank;
     return next.highestSuit > current.highestSuit;
+  }
+
+  function canBeatSpecial(next, current) {
+    if (!next || !current) return false;
+    if (isSingleTwoCombo(current)) {
+      if (next.type === 'FOUR_KIND') return true;
+      if (next.type === 'DOUBLE_STRAIGHT' && next.length >= 6) return true;
+    }
+    if (isPairTwoCombo(current)) {
+      if (next.type === 'FOUR_KIND') return true;
+      if (next.type === 'DOUBLE_STRAIGHT' && next.length >= 8) return true;
+    }
+    if (current.type === 'FOUR_KIND') {
+      if (next.type === 'DOUBLE_STRAIGHT' && next.length >= 8) return true;
+    }
+    if (current.type === 'DOUBLE_STRAIGHT' && next.type === 'DOUBLE_STRAIGHT') {
+      return next.length > current.length;
+    }
+    return false;
+  }
+
+  function isSingleTwoCombo(combo) {
+    return !!combo && combo.type === 'SINGLE' && combo.highestRank === 15;
+  }
+
+  function isPairTwoCombo(combo) {
+    return !!combo && combo.type === 'PAIR' && combo.length === 2 && combo.highestRank === 15;
   }
 
   function compareMoveStrengthAsc(a, b) {

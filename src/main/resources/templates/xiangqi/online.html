@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Co tuong Online')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('xiangqi-online')}"></div>
+
+<main class="container py-4">
+  <div class="text-center mb-3">
+    <h1 class="theme-text fw-bold mb-2">CO TUONG ONLINE (MVP)</h1>
+    <p class="theme-text mb-1">2 nguoi choi online trong 1 phong. Guest duoc phep vao choi.</p>
+    <p class="text-muted mb-0">MVP hien tai dong bo luot va nuoc di qua server. Client kiem tra luat Co tuong va trang thai chieu/chieu bi.</p>
+  </div>
+
+  <section class="card shadow-sm theme-box mb-3">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div class="small">
+          <div><strong>Phong:</strong> <span id="xiangqiOnlineRoomLabel" th:text="${defaultRoomId} ?: 'Chua chon'">Chua chon</span></div>
+          <div><strong>Ban:</strong> <span id="xiangqiOnlineUserLabel" th:text="${sessionDisplayName}">Guest</span></div>
+          <div><strong>Mau quan cua ban:</strong> <span id="xiangqiOnlineMyColor">Chua vao phong</span></div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <button id="xiangqiOnlineResetBtn" type="button" class="btn btn-sm theme-outline-btn" disabled>Van moi</button>
+          <button id="xiangqiOnlineLeaveBtn" type="button" class="btn btn-sm btn-outline-danger">Roi phong</button>
+          <a class="btn btn-sm theme-outline-btn" th:href="@{/online-hub(game='xiangqi', roomId=${defaultRoomId})}">Ve Online Hub</a>
+        </div>
+      </div>
+      <div class="mt-2 small">
+        <div><strong>Ket noi:</strong> <span id="xiangqiOnlineConnectionStatus">Dang khoi tao...</span></div>
+        <div><strong>Trang thai van dau:</strong> <span id="xiangqiOnlineStatusText">Dang cho ket noi...</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="xiangqi-layout">
+    <section class="card shadow-sm theme-box">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+          <div>
+            <div id="xiangqiTurnStatus" class="theme-text fw-bold">Luot: Do</div>
+            <div id="xiangqiGameStatus" class="text-muted small">Dang cho vao phong...</div>
+          </div>
+          <div class="small text-muted">Chon quan roi chon o dich de gui nuoc di</div>
+        </div>
+
+        <div class="xiangqi-board-wrap">
+          <div id="xiangqiBoard" class="xiangqi-board" role="grid" aria-label="Ban co tuong online"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card shadow-sm theme-box">
+      <div class="card-body">
+        <h2 class="h5 theme-text mb-2">Nguoi choi trong phong</h2>
+        <div id="xiangqiOnlinePlayers" class="small xiangqi-player-list mb-3">
+          <div class="text-muted">Dang cho du nguoi...</div>
+        </div>
+
+        <h2 class="h5 theme-text mb-2">Thong tin van dau</h2>
+        <div class="small mb-3">
+          <div class="theme-text">Trang thai: <span id="xiangqiResultLabel">Dang choi</span></div>
+          <div class="theme-text">Nuoc di: <span id="xiangqiMoveCount">0</span></div>
+          <div class="theme-text">Luot hien tai: <span id="xiangqiCurrentColor">Do</span></div>
+        </div>
+
+        <h3 class="h6 theme-text">Nhat ky nuoc di</h3>
+        <ol id="xiangqiMoveLog" class="small xiangqi-move-log mb-0"></ol>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<style>
+  .xiangqi-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 14px;
+    align-items: start;
+  }
+  .xiangqi-board-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .xiangqi-board {
+    width: min(100%, 560px);
+    min-width: 300px;
+    aspect-ratio: 9 / 10;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    border: 2px solid #333;
+    margin: 0 auto;
+    background: #ddb67a;
+  }
+  .xiangqi-cell {
+    border: 1px solid rgba(60, 40, 20, 0.65);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 0;
+    aspect-ratio: 1 / 1;
+    user-select: none;
+  }
+  .xiangqi-cell.selected { outline: 3px solid #0dcaf0; outline-offset: -3px; }
+  .xiangqi-cell.legal::after {
+    content: "";
+    width: 24%;
+    height: 24%;
+    border-radius: 50%;
+    background: rgba(13, 202, 240, 0.9);
+    position: absolute;
+  }
+  .xiangqi-cell.capture::after {
+    width: 80%;
+    height: 80%;
+    background: transparent;
+    border: 3px solid rgba(220, 53, 69, 0.9);
+  }
+  .xiangqi-cell.last-move { box-shadow: inset 0 0 0 999px rgba(255, 235, 59, 0.2); }
+  .xiangqi-cell.in-check { box-shadow: inset 0 0 0 999px rgba(255, 0, 0, 0.2); }
+  .xiangqi-piece {
+    width: 82%;
+    height: 82%;
+    border-radius: 50%;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: clamp(11px, 2.2vw, 16px);
+    line-height: 1.05;
+    text-align: center;
+    padding: 2px;
+    background: rgba(255, 248, 230, 0.95);
+    z-index: 1;
+  }
+  .xiangqi-piece.red { color: #c1121f; border-color: #c1121f; }
+  .xiangqi-piece.black { color: #1d1d1d; border-color: #1d1d1d; }
+  .xiangqi-coord { position: absolute; font-size: 10px; line-height: 1; opacity: 0.75; pointer-events: none; }
+  .xiangqi-coord.file { right: 3px; bottom: 3px; }
+  .xiangqi-coord.rank { left: 3px; top: 3px; }
+  .xiangqi-move-log { max-height: 280px; overflow-y: auto; padding-left: 1.1rem; }
+  .xiangqi-player-list { display: flex; flex-direction: column; gap: 8px; }
+  .xiangqi-player-item { border: 1px solid #777; border-radius: 8px; padding: 8px 10px; }
+  .xiangqi-player-item.is-me { border-color: #0dcaf0; box-shadow: 0 0 0 1px rgba(13, 202, 240, 0.4) inset; }
+  .xiangqi-player-item.is-turn { box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.45) inset; }
+  @media (max-width: 991.98px) {
+    .xiangqi-layout { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 575.98px) {
+    .xiangqi-board { width: min(100%, 95vw); min-width: 0; }
+    .xiangqi-piece { font-size: clamp(10px, 2.8vw, 13px); }
+    .xiangqi-move-log { max-height: 220px; }
+  }
+</style>
+
+<th:block th:replace="~{fragments :: appScripts('xiangqi-online')}"></th:block>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+<script th:inline="javascript">
+  window.XiangqiOnlineBoot = {
+    roomId: /*[[${defaultRoomId}]]*/ '',
+    sessionUserId: /*[[${sessionUserId}]]*/ '',
+    sessionDisplayName: /*[[${sessionDisplayName}]]*/ '',
+    sessionAvatarPath: /*[[${sessionAvatarPath}]]*/ ''
+  };
+</script>
+<script th:src="@{/js/xiangqi-online.js}"></script>
+</body>
+</html>

@@ -33,4 +33,14 @@ class GameCatalogControllerTest {
 
         assertEquals(404, ex.getStatusCode().value());
     }
+
+    @Test
+    void detailShouldRenderDedicatedViewPerGame() {
+        GameCatalogController controller = new GameCatalogController(new GameCatalogService());
+
+        assertEquals("games/caro", controller.detail("caro", new ConcurrentModel()));
+        assertEquals("games/chess", controller.detail("chess", new ConcurrentModel()));
+        assertEquals("games/xiangqi", controller.detail("xiangqi", new ConcurrentModel()));
+        assertEquals("games/cards", controller.detail("cards", new ConcurrentModel()));
+    }
 }

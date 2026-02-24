@@ -1,6 +1,8 @@
 package com.caro.game.controller;
 
 import com.caro.game.cards.tienlen.service.TienLenRoomService;
+import com.caro.game.chess.service.ChessOnlineRoomService;
+import com.caro.game.xiangqi.service.XiangqiOnlineRoomService;
 import com.caro.game.service.GameCatalogItem;
 import com.caro.game.service.GameCatalogService;
 import com.caro.game.service.GameRoomService;
@@ -22,13 +24,19 @@ public class OnlineHubController {
     private final GameCatalogService gameCatalogService;
     private final GameRoomService gameRoomService;
     private final TienLenRoomService tienLenRoomService;
+    private final ChessOnlineRoomService chessOnlineRoomService;
+    private final XiangqiOnlineRoomService xiangqiOnlineRoomService;
 
     public OnlineHubController(GameCatalogService gameCatalogService,
                                GameRoomService gameRoomService,
-                               TienLenRoomService tienLenRoomService) {
+                               TienLenRoomService tienLenRoomService,
+                               ChessOnlineRoomService chessOnlineRoomService,
+                               XiangqiOnlineRoomService xiangqiOnlineRoomService) {
         this.gameCatalogService = gameCatalogService;
         this.gameRoomService = gameRoomService;
         this.tienLenRoomService = tienLenRoomService;
+        this.chessOnlineRoomService = chessOnlineRoomService;
+        this.xiangqiOnlineRoomService = xiangqiOnlineRoomService;
     }
 
     @GetMapping
@@ -62,7 +70,10 @@ public class OnlineHubController {
     }
 
     private boolean onlineGameplayImplemented(String gameCode) {
-        return "caro".equalsIgnoreCase(gameCode) || "cards".equalsIgnoreCase(gameCode);
+        return "caro".equalsIgnoreCase(gameCode)
+            || "cards".equalsIgnoreCase(gameCode)
+            || "chess".equalsIgnoreCase(gameCode)
+            || "xiangqi".equalsIgnoreCase(gameCode);
     }
 
     private String playUrlBase(String gameCode) {
@@ -71,6 +82,12 @@ public class OnlineHubController {
         }
         if ("cards".equalsIgnoreCase(gameCode)) {
             return "/cards/tien-len";
+        }
+        if ("chess".equalsIgnoreCase(gameCode)) {
+            return "/chess/online";
+        }
+        if ("xiangqi".equalsIgnoreCase(gameCode)) {
+            return "/xiangqi/online";
         }
         return "";
     }
@@ -104,6 +121,26 @@ public class OnlineHubController {
                     room.playerCount(),
                     room.playerLimit(),
                     "Dang cho du 4 nguoi"
+                ))
+                .toList();
+        }
+        if ("chess".equalsIgnoreCase(gameCode)) {
+            return chessOnlineRoomService.availableRooms().stream()
+                .map(room -> new RoomRow(
+                    room.roomId(),
+                    room.playerCount(),
+                    room.playerLimit(),
+                    room.note()
+                ))
+                .toList();
+        }
+        if ("xiangqi".equalsIgnoreCase(gameCode)) {
+            return xiangqiOnlineRoomService.availableRooms().stream()
+                .map(room -> new RoomRow(
+                    room.roomId(),
+                    room.playerCount(),
+                    room.playerLimit(),
+                    room.note()
                 ))
                 .toList();
         }

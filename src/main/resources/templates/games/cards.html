@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Danh bai - Tien len - Chon che do')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-cards')}"></div>
+
+<main class="container py-4">
+  <section class="card shadow-sm theme-box mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-suit-spade-fill fs-3 theme-text"></i>
+            <h1 class="h3 mb-0 theme-text">DANH BAI (TIEN LEN) - CHON CHE DO</h1>
+          </div>
+          <p class="theme-text mb-0 mt-2">
+            Trang mode rieng cho module Danh bai. Hien tai da co Tien len online 4 nguoi (MVP) va bot Easy/Hard (MVP).
+          </p>
+        </div>
+        <span class="badge text-bg-success fs-6">Tien len MVP</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="row g-3">
+    <div class="col-12 col-xl-6">
+      <section class="card shadow-sm theme-box h-100">
+        <div class="card-body d-flex flex-column">
+          <h2 class="h5 theme-text mb-2">Tien len voi bot</h2>
+          <p class="theme-text small mb-3">
+            1 nguoi choi + 3 bot tren cung thiet bi. Chon do kho ngay tai trang rieng cua module Danh bai.
+          </p>
+          <div class="d-grid gap-2 mt-auto">
+            <a th:href="@{/cards/tien-len/bot(difficulty='easy')}" class="btn theme-outline-btn btn-lg">Bot De (Easy)</a>
+            <a th:href="@{/cards/tien-len/bot(difficulty='hard')}" class="btn theme-outline-btn">Bot Kho (Hard)</a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-12 col-xl-6">
+      <section class="card shadow-sm theme-box h-100">
+        <div class="card-body d-flex flex-column">
+          <h2 class="h5 theme-text mb-2">Tien len online 4 nguoi</h2>
+          <p class="theme-text small mb-3">
+            Dung trang phong online de tao/tim/moi nguoi choi. Van dau chi bat dau khi du 4 nguoi.
+          </p>
+          <div class="d-grid gap-2 mt-auto">
+            <a th:href="@{/online-hub(game='cards')}" class="btn theme-outline-btn btn-lg">Tien len Online Hub</a>
+            <a th:href="@{/cards/tien-len}" class="btn btn-outline-secondary">Mo ban Tien len online truc tiep</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card shadow-sm theme-box mt-3">
+    <div class="card-body">
+      <h2 class="h5 theme-text mb-2">Luu y hien tai</h2>
+      <ul class="mb-0 theme-text">
+        <li>Luat MVP dang ho tro: don, doi, sam, tu quy, sanh, doi thong, pass va reset vong.</li>
+        <li>Da co chat 2 co ban (tu quy / doi thong); cac luat nang cao khac dang bo sung.</li>
+        <li>Trang nay la trang mode rieng cho Danh bai, khong dung chung layout dieu huong mode voi 3 game con lai.</li>
+      </ul>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <a th:href="@{/}" class="btn theme-outline-btn">Ve trang chu</a>
+        <a th:href="@{/games}" class="btn theme-outline-btn">Thu vien game</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-cards')}"></th:block>
+</body>
+</html>

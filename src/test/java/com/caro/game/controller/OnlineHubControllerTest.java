@@ -1,6 +1,8 @@
 package com.caro.game.controller;
 
 import com.caro.game.cards.tienlen.service.TienLenRoomService;
+import com.caro.game.chess.service.ChessOnlineRoomService;
+import com.caro.game.xiangqi.service.XiangqiOnlineRoomService;
 import com.caro.game.service.GameCatalogService;
 import com.caro.game.service.GameRoomService;
 import org.junit.jupiter.api.Test;
@@ -26,7 +28,9 @@ class OnlineHubControllerTest {
         OnlineHubController controller = new OnlineHubController(
             new GameCatalogService(),
             gameRoomService,
-            new TienLenRoomService()
+            new TienLenRoomService(),
+            new ChessOnlineRoomService(),
+            new XiangqiOnlineRoomService()
         );
         ConcurrentModel model = new ConcurrentModel();
 
@@ -47,7 +51,9 @@ class OnlineHubControllerTest {
         OnlineHubController controller = new OnlineHubController(
             new GameCatalogService(),
             gameRoomService,
-            new TienLenRoomService()
+            new TienLenRoomService(),
+            new ChessOnlineRoomService(),
+            new XiangqiOnlineRoomService()
         );
 
         Map<String, Object> result = controller.rooms("caro");
@@ -65,9 +71,47 @@ class OnlineHubControllerTest {
         OnlineHubController controller = new OnlineHubController(
             new GameCatalogService(),
             mock(GameRoomService.class),
-            new TienLenRoomService()
+            new TienLenRoomService(),
+            new ChessOnlineRoomService(),
+            new XiangqiOnlineRoomService()
         );
 
         assertThrows(ResponseStatusException.class, () -> controller.index("unknown", null, new ConcurrentModel()));
+    }
+
+    @Test
+    void chessShouldBeMarkedAsOnlineImplementedAndUseChessPlayUrl() {
+        OnlineHubController controller = new OnlineHubController(
+            new GameCatalogService(),
+            mock(GameRoomService.class),
+            new TienLenRoomService(),
+            new ChessOnlineRoomService(),
+            new XiangqiOnlineRoomService()
+        );
+        ConcurrentModel model = new ConcurrentModel();
+
+        String view = controller.index("chess", "CHESS-1", model);
+
+        assertEquals("online-hub/index", view);
+        assertEquals(true, model.getAttribute("onlineSupportedNow"));
+        assertEquals("/chess/online", model.getAttribute("playUrlBase"));
+    }
+
+    @Test
+    void xiangqiShouldBeMarkedAsOnlineImplementedAndUseXiangqiPlayUrl() {
+        OnlineHubController controller = new OnlineHubController(
+            new GameCatalogService(),
+            mock(GameRoomService.class),
+            new TienLenRoomService(),
+            new ChessOnlineRoomService(),
+            new XiangqiOnlineRoomService()
+        );
+        ConcurrentModel model = new ConcurrentModel();
+
+        String view = controller.index("xiangqi", "XQ-1", model);
+
+        assertEquals("online-hub/index", view);
+        assertEquals(true, model.getAttribute("onlineSupportedNow"));
+        assertEquals("/xiangqi/online", model.getAttribute("playUrlBase"));
     }
 }

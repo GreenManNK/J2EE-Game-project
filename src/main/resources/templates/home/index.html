@@ -79,28 +79,6 @@
   </div>
 </main>
 
-<div class="modal fade" id="gameModePickerModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="gameModePickerTitle">Chon che do choi</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Dong"></button>
-      </div>
-      <div class="modal-body">
-        <p class="mb-3" id="gameModePickerDescription">Chon che do cho game.</p>
-        <div class="d-grid gap-2">
-          <button id="gameModePrimaryBtn" type="button" class="btn theme-outline-btn btn-lg">Lua chon 1</button>
-          <button id="gameModeSecondaryBtn" type="button" class="btn theme-outline-btn btn-lg">Lua chon 2</button>
-          <a id="gameModeDetailBtn" th:href="@{/games}" class="btn btn-outline-secondary">Xem chi tiet game</a>
-        </div>
-        <div class="small text-muted mt-3" id="gameModeHintText">
-          Tat ca luong online se di qua trang phong online (tim phong / tao phong / moi nguoi choi).
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <audio id="siteMusic" th:src="@{/music/home.mp3}" loop preload="auto"></audio>
 <button id="siteMusicToggleBtn" class="btn theme-outline-btn btn-sm theme-text" style="position: fixed; bottom: 10px; right: 10px; z-index: 999;">
   🔊 Tat Nhac
@@ -156,77 +134,30 @@
     const siteMusic = document.getElementById('siteMusic');
     const siteToggleBtn = document.getElementById('siteMusicToggleBtn');
     const currentUser = window.CaroUser?.get?.() || null;
-    const modalEl = document.getElementById('gameModePickerModal');
-    const modalTitleEl = document.getElementById('gameModePickerTitle');
-    const modalDescEl = document.getElementById('gameModePickerDescription');
-    const modalPrimaryBtn = document.getElementById('gameModePrimaryBtn');
-    const modalSecondaryBtn = document.getElementById('gameModeSecondaryBtn');
-    const modalDetailBtn = document.getElementById('gameModeDetailBtn');
-    const modalHintEl = document.getElementById('gameModeHintText');
     const gamePickerButtons = Array.from(document.querySelectorAll('.js-game-picker'));
-    const modal = (modalEl && window.bootstrap && typeof window.bootstrap.Modal === 'function')
-      ? new window.bootstrap.Modal(modalEl)
-      : null;
-    let selectedGameCode = '';
 
     const gameConfigs = {
       caro: {
-        name: 'Caro',
-        description: 'Chon che do choi Caro.',
-        primary: { label: 'Choi don (Bot)', href: '/single-player' },
-        secondary: { label: 'Choi online nhieu nguoi', href: '/online-hub?game=caro' },
-        detailHref: '/games/caro',
-        hint: 'Che do online Caro se vao trang phong online de tim/tao phong va moi nguoi choi.'
+        detailHref: '/games/caro'
       },
       chess: {
-        name: 'Co vua',
-        description: 'Chon che do choi Co vua.',
-        primary: { label: 'Choi voi bot', href: '/game-mode/bot?game=chess' },
-        secondary: { label: 'Choi online voi nguoi', href: '/online-hub?game=chess' },
-        detailHref: '/games/chess',
-        hint: 'Co vua da co bot easy/hard. Chon do kho o man hinh tiep theo.'
+        detailHref: '/games/chess'
       },
       xiangqi: {
-        name: 'Co tuong',
-        description: 'Chon che do choi Co tuong.',
-        primary: { label: 'Choi voi bot', href: '/game-mode/bot?game=xiangqi' },
-        secondary: { label: 'Choi online voi nguoi', href: '/online-hub?game=xiangqi' },
-        detailHref: '/games/xiangqi',
-        hint: 'Co tuong da co bot easy/hard (MVP). Che do online se dung trang phong online de tim/tao phong va moi nguoi choi.'
+        detailHref: '/games/xiangqi'
       },
       cards: {
-        name: 'Danh bai (Tien len)',
-        description: 'Chon che do choi Danh bai / Tien len.',
-        primary: { label: 'Choi voi bot', href: '/game-mode/bot?game=cards' },
-        secondary: { label: 'Choi online voi nguoi', href: '/online-hub?game=cards' },
-        detailHref: '/games/cards',
-        hint: 'Tien len online 4 nguoi (MVP) da co. Bot se chon do kho o man hinh tiep theo.'
+        detailHref: '/games/cards'
       }
     };
 
     function openGameModeModal(gameCode) {
       const config = gameConfigs[gameCode];
-      if (!config || !modal) {
+      if (!config) {
         window.location.href = appPath('/games');
         return;
       }
-      selectedGameCode = gameCode;
-      modalTitleEl.textContent = 'Chon che do - ' + config.name;
-      modalDescEl.textContent = config.description;
-      modalPrimaryBtn.textContent = config.primary.label;
-      modalSecondaryBtn.textContent = config.secondary.label;
-      modalPrimaryBtn.dataset.href = config.primary.href;
-      modalSecondaryBtn.dataset.href = config.secondary.href;
-      modalDetailBtn.setAttribute('href', appPath(config.detailHref));
-      modalHintEl.textContent = config.hint;
-      modal.show();
-    }
-
-    function navigateFromModal(btn) {
-      const href = btn?.dataset?.href;
-      if (!href) return;
-      if (modal) modal.hide();
-      window.location.href = appPath(href);
+      window.location.href = appPath(config.detailHref);
     }
 
     gamePickerButtons.forEach((btn) => {
@@ -235,8 +166,6 @@
         openGameModeModal(code);
       });
     });
-    modalPrimaryBtn?.addEventListener('click', () => navigateFromModal(modalPrimaryBtn));
-    modalSecondaryBtn?.addEventListener('click', () => navigateFromModal(modalSecondaryBtn));
 
     if (authorLabel) {
       authorLabel.textContent = currentUser?.displayName || currentUser?.userId || 'Can dang nhap';

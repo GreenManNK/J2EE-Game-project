@@ -27,7 +27,7 @@ class GameCatalogServiceTest {
         var chess = service.findByCode("chess").orElseThrow();
         assertTrue(chess.availableNow());
         assertTrue(chess.supportsOffline());
-        assertTrue(!chess.supportsOnline());
+        assertTrue(chess.supportsOnline());
         assertNotNull(chess.primaryActionUrl());
 
         var cards = service.findByCode("cards").orElseThrow();
@@ -39,7 +39,7 @@ class GameCatalogServiceTest {
         var xiangqi = service.findByCode("xiangqi").orElseThrow();
         assertTrue(xiangqi.availableNow());
         assertTrue(xiangqi.supportsOffline());
-        assertTrue(!xiangqi.supportsOnline());
-        assertEquals("/game-mode/bot?game=xiangqi", xiangqi.primaryActionUrl());
+        assertTrue(xiangqi.supportsOnline());
+        assertEquals("/online-hub?game=xiangqi", xiangqi.primaryActionUrl());
     }
 }

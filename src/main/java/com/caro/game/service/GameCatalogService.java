@@ -37,36 +37,36 @@ public class GameCatalogService {
                 "chess",
                 "Co vua",
                 "Chess",
-                "Da co che do choi offline 2 nguoi cung may (MVP). Online va cac luat nang cao se duoc trien khai tiep.",
+                "Da co che do bot Easy/Hard, offline 2 nguoi cung may va online room (MVP). Se tiep tuc hoan thien luat/online nang cao.",
                 "bi-activity",
                 true,
-                false,
                 true,
                 true,
-                "Choi offline (MVP)",
-                "/chess/offline",
+                true,
+                "Co vua online (MVP)",
+                "/online-hub?game=chess",
                 List.of(
                     "Ban co 8x8, setup quan co day du.",
-                    "Luat nuoc di hop le va chieu/chieu het.",
-                    "Phong online va dong bo nuoc di."
+                    "Bot Easy/Hard va che do offline 2 nguoi.",
+                    "Phong online va dong bo nuoc di (MVP)."
                 )
             ),
             new GameCatalogItem(
                 "xiangqi",
                 "Co tuong",
                 "Xiangqi",
-                "Da co che do bot Easy/Hard (MVP) va che do offline 2 nguoi. Online room dang tiep tuc hoan thien.",
+                "Da co che do bot Easy/Hard (MVP), offline 2 nguoi va online room (MVP). Se tiep tuc hoan thien luat/online nang cao.",
                 "bi-diagram-3-fill",
                 true,
-                false,
                 true,
                 true,
-                "Choi voi bot (chon do kho)",
-                "/game-mode/bot?game=xiangqi",
+                true,
+                "Co tuong online (MVP)",
+                "/online-hub?game=xiangqi",
                 List.of(
                     "Bot Easy/Hard MVP da san sang.",
-                    "Hoan thien them luat/edge-case Co tuong neu can.",
-                    "Online room va xu ly ket thuc van co."
+                    "Offline 2 nguoi cung may.",
+                    "Online room va dong bo nuoc di (MVP)."
                 )
             ),
             new GameCatalogItem(
@@ -82,8 +82,8 @@ public class GameCatalogService {
                 "Tien len online 4 nguoi (MVP)",
                 "/cards/tien-len",
                 List.of(
-                    "MVP hien tai: online 4 nguoi + bot Easy/Hard, ho tro don, doi, sam, tu quy, sanh.",
-                    "Bo sung luat nang cao Tien len (chat 2, doi thong, bao toi/trang neu can).",
+                    "MVP hien tai: online 4 nguoi + bot Easy/Hard, ho tro don, doi, sam, tu quy, sanh, doi thong va chat 2 co ban (tu quy / doi thong).",
+                    "Bo sung them luat nang cao Tien len (doi thong nang cao, bao toi/trang neu can).",
                     "Them cac game bai khac sau khi on dinh module Tien len."
                 )
             )

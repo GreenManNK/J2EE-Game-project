@@ -70,6 +70,14 @@ public class LegacyRouteController {
         return "redirect:/chess/bot";
     }
 
+    @GetMapping("/Chess/Online")
+    public String chessOnline(@RequestParam(required = false) String roomId) {
+        if (roomId == null || roomId.isBlank()) {
+            return "redirect:/chess/online";
+        }
+        return "redirect:/chess/online?roomId=" + roomId;
+    }
+
     @GetMapping("/Xiangqi/Offline")
     public String xiangqiOffline() {
         return "redirect:/xiangqi/offline";
@@ -78,6 +86,14 @@ public class LegacyRouteController {
     @GetMapping("/Xiangqi/Bot")
     public String xiangqiBot() {
         return "redirect:/xiangqi/bot";
+    }
+
+    @GetMapping("/Xiangqi/Online")
+    public String xiangqiOnline(@RequestParam(required = false) String roomId) {
+        if (roomId == null || roomId.isBlank()) {
+            return "redirect:/xiangqi/online";
+        }
+        return "redirect:/xiangqi/online?roomId=" + roomId;
     }
 
     @GetMapping("/Cards/TienLen")

@@ -1,4 +1,4 @@
-package com.caro.game.cards.tienlen.controller;
+package com.caro.game.chess.controller;
 
 import com.caro.game.entity.UserAccount;
 import com.caro.game.repository.UserAccountRepository;
@@ -13,49 +13,28 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.UUID;
 
 @Controller
-@RequestMapping("/cards")
-public class TienLenController {
+@RequestMapping("/chess")
+public class ChessOnlineController {
     private static final String AUTH_USER_ID = "AUTH_USER_ID";
     private static final String GUEST_USER_ID = "GUEST_USER_ID";
     private static final String DEFAULT_AVATAR_PATH = "/uploads/avatars/default-avatar.jpg";
 
     private final UserAccountRepository userAccountRepository;
 
-    public TienLenController(UserAccountRepository userAccountRepository) {
+    public ChessOnlineController(UserAccountRepository userAccountRepository) {
         this.userAccountRepository = userAccountRepository;
     }
 
-    @GetMapping("/tien-len")
-    public String tienLen(@RequestParam(required = false) String roomId,
-                          HttpServletRequest request,
-                          Model model) {
+    @GetMapping("/online")
+    public String online(@RequestParam(required = false) String roomId,
+                         HttpServletRequest request,
+                         Model model) {
         SessionPlayer player = resolveSessionPlayer(request);
         model.addAttribute("sessionUserId", player.userId());
         model.addAttribute("sessionDisplayName", player.displayName());
         model.addAttribute("sessionAvatarPath", player.avatarPath());
         model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
-        return "cards/tien-len";
-    }
-
-    @GetMapping("/tien-len/bot")
-    public String tienLenBot(@RequestParam(defaultValue = "easy") String difficulty,
-                             HttpServletRequest request,
-                             Model model) {
-        SessionPlayer player = resolveSessionPlayer(request);
-        model.addAttribute("sessionUserId", player.userId());
-        model.addAttribute("sessionDisplayName", player.displayName());
-        model.addAttribute("sessionAvatarPath", player.avatarPath());
-
-        String botDifficulty = normalizeDifficulty(difficulty);
-        boolean hard = "hard".equals(botDifficulty);
-        model.addAttribute("botDifficulty", botDifficulty);
-        model.addAttribute("pageTitle", "Tien len Bot");
-        model.addAttribute("pageHeading", "TIEN LEN VOI BOT (" + (hard ? "HARD" : "EASY") + ") - MVP");
-        model.addAttribute("pageSubtitle", "1 nguoi choi + 3 bot tren cung thiet bi. Khong can dang nhap.");
-        model.addAttribute("pageNote", hard
-            ? "Bot hard uu tien danh bo bai hop le co gia tri tot hon va giu the chu dong. Da ho tro doi thong va chat 2 co ban (tu quy / doi thong); cac luat nang cao khac dang bo sung."
-            : "Bot easy danh ngau nhien trong cac nuoc hop le (uu tien bo bai nho/de danh). Da ho tro doi thong va chat 2 co ban (tu quy / doi thong); cac luat nang cao khac dang bo sung.");
-        return "cards/tien-len-bot";
+        return "chess/online";
     }
 
     private SessionPlayer resolveSessionPlayer(HttpServletRequest request) {
@@ -112,10 +91,6 @@ public class TienLenController {
         String normalized = guestUserId.trim();
         String suffix = normalized.length() <= 4 ? normalized : normalized.substring(normalized.length() - 4);
         return "Guest " + suffix.toUpperCase();
-    }
-
-    private String normalizeDifficulty(String difficulty) {
-        return "hard".equalsIgnoreCase(difficulty) ? "hard" : "easy";
     }
 
     private record SessionPlayer(String userId, String displayName, String avatarPath) {
