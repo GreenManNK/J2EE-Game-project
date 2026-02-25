@@ -41,9 +41,19 @@ build/
 
 ### Local Runtime / Deployment Artifacts ###
 .env.public.local
+.env.public.*.local
 .tools/cloudflared.exe
 *.pid
 cloudflared*.log
 run-*.log
+run.out.log
+run.err.log
 app-*.log
 public-game-url.txt
+.data/
+csrf-cookies.txt
+register-payload.json
+elevated-hosts-result.txt
+hosts.before-j2ee*.bak
+tmp-*.ps1
+_elevated_*.ps1

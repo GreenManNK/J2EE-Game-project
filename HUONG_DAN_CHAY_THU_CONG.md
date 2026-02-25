@@ -2,6 +2,16 @@
 
 Tai lieu nay giup ban tu chay/dung project bang cach don gian tren Windows, khong can AI ho tro.
 
+## Quy uoc chuan cua du an (bat buoc)
+
+- `Chay` = `Chay PUBLIC` (app + public tunnel + link gui nguoi choi o mang khac).
+- Script public phai chi bao thanh cong khi:
+  - app local truy cap duoc
+  - endpoint websocket local san sang
+  - URL public truy cap duoc
+  - endpoint websocket qua public URL san sang
+- Neu may khong co MySQL local, script public se tu dong fallback sang H2 file local de van chay duoc tren may khac.
+
 ## Chay bang nut bam trong IntelliJ (khuyen nghi)
 
 Project da co san run configurations dung chung trong thu muc `.run/`.
@@ -15,6 +25,8 @@ Trong IntelliJ:
 Run configurations da them:
 - `Start (Default Public)` (mac dinh khuyen nghi, tu build + mo quick tunnel + in link cong cong)
 - `Start Public (Quick Tunnel)` (cho nguoi choi truy cap tu xa tu moi mang)
+- `Start Public (MySQL Standard)` (cho may khong dung Laragon, dung MySQL Server thuong)
+- `Start Public (PostgreSQL)` (chay public bang PostgreSQL)
 - `Start Local (J2EE)` (chi test may nay / LAN)
 - `Status (App + Tunnel)` (xem PID/trang thai/link hien tai)
 - `Stop All (App + Tunnel)` (dung app + tunnel)
@@ -36,6 +48,8 @@ Cach chay:
 3. Chon 1 task:
    - `Game: Start (Default Public)` (khuyen nghi)
    - `Game: Start Public (Quick Tunnel)`
+   - `Game: Start Public (MySQL Standard)`
+   - `Game: Start Public (PostgreSQL)`
    - `Game: Start Local (J2EE)`
    - `Game: Status (App + Tunnel)`
    - `Game: Stop All (App + Tunnel)`
@@ -53,12 +67,13 @@ Luu y:
 
 Chay file:
 
+- `RUN_PUBLIC.cmd` (khuyen nghi nhat, bam truc tiep tai root project)
 - `scripts/manual-start.cmd` (mac dinh, khuyen nghi)
 - `scripts/manual-start-public.cmd`
 
 Script se:
 - tu `AutoBuild` de lay code giao dien/chuc nang moi nhat
-- chay app (`prod` + MySQL local)
+- chay app (`prod`; uu tien MySQL local, neu khong co se fallback H2 local)
 - mo Cloudflare Quick Tunnel
 - in ra `PUBLIC_GAME_URL=...`
 - in khung tom tat link cong cong de copy nhanh
@@ -66,10 +81,51 @@ Script se:
 
 Gui link `https://...trycloudflare.com/Game` cho nguoi choi.
 
+## May khong co Laragon (chi co MySQL server thuong hoac PostgreSQL)
+
+Ban van chay duoc, khong bat buoc Laragon.
+
+Luu y:
+- `MySQL Workbench`, `DBeaver`, `HeidiSQL`, `phpMyAdmin`... chi la cong cu quan ly (management tool), khong phai DB server.
+- Ban can `MySQL Server` hoac `PostgreSQL Server` dang chay va co thong tin ket noi (host/port/db/user/pass).
+
+### Chay PUBLIC voi MySQL Server thuong (khong Laragon)
+
+1. Copy file mau:
+   - `.env.public.mysql.example` -> `.env.public.mysql.local`
+2. Dien thong tin MySQL vao `.env.public.mysql.local`
+3. Chay mot trong cac cach:
+   - `RUN_PUBLIC_MYSQL.cmd` (bam truc tiep tai root project)
+   - `scripts/manual-start-public-mysql.cmd`
+   - IntelliJ: `Start Public (MySQL Standard)`
+   - VS Code Task: `Game: Start Public (MySQL Standard)`
+
+Ghi chu:
+- Script nay ep `APP_DATASOURCE_KIND=mysql`
+- Script nay tat fallback H2 de neu sai cau hinh MySQL thi se bao loi ro rang (khong fallback am tham)
+
+### Chay PUBLIC voi PostgreSQL
+
+1. Tao san database (vi du: `caro`) tren PostgreSQL
+2. Copy file mau:
+   - `.env.public.postgres.example` -> `.env.public.postgres.local`
+3. Dien thong tin PostgreSQL vao `.env.public.postgres.local`
+4. Chay mot trong cac cach:
+   - `RUN_PUBLIC_POSTGRES.cmd` (bam truc tiep tai root project)
+   - `scripts/manual-start-public-postgres.cmd`
+   - IntelliJ: `Start Public (PostgreSQL)`
+   - VS Code Task: `Game: Start Public (PostgreSQL)`
+
+Ghi chu:
+- Script nay ep `APP_DATASOURCE_KIND=postgres`
+- Script nay tat fallback H2 de bat loi cau hinh PostgreSQL som
+- PostgreSQL mode hien tai khong tu tao database moi; hay tao DB truoc
+
 ### Dung he thong
 
 Chay file:
 
+- `STOP_PUBLIC.cmd` (bam truc tiep tai root project)
 - `scripts/manual-stop-all.cmd`
 
 ## Chi test tren may nay / LAN
@@ -86,6 +142,7 @@ Link local:
 
 Chay file:
 
+- `STATUS_PUBLIC.cmd` (bam truc tiep tai root project)
 - `scripts/manual-status.cmd`
 
 Script se hien:
@@ -113,6 +170,13 @@ Script se hien:
 ```powershell
 cmd /c scripts\manual-start.cmd
 cmd /c scripts\manual-start-public.cmd
+cmd /c scripts\manual-start-public-mysql.cmd
+cmd /c scripts\manual-start-public-postgres.cmd
 cmd /c scripts\manual-status.cmd
 cmd /c scripts\manual-stop-all.cmd
+cmd /c RUN_PUBLIC.cmd
+cmd /c RUN_PUBLIC_MYSQL.cmd
+cmd /c RUN_PUBLIC_POSTGRES.cmd
+cmd /c STATUS_PUBLIC.cmd
+cmd /c STOP_PUBLIC.cmd
 ```

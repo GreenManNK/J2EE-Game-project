@@ -3,6 +3,10 @@ package com.caro.game.cards.tienlen.websocket;
 import com.caro.game.cards.tienlen.service.TienLenRoomService;
 import com.caro.game.entity.UserAccount;
 import com.caro.game.repository.UserAccountRepository;
+import jakarta.annotation.PreDestroy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -17,17 +21,35 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class TienLenWebSocketController {
+    private static final Logger log = LoggerFactory.getLogger(TienLenWebSocketController.class);
     private static final String AUTH_USER_ID = "AUTH_USER_ID";
     private static final String GUEST_USER_ID = "GUEST_USER_ID";
     private static final String DEFAULT_AVATAR_PATH = "/uploads/avatars/default-avatar.jpg";
+    private static final long DEFAULT_AUTO_FILL_WAIT_MS = 20_000L;
+    private static final long DEFAULT_BOT_TURN_DELAY_MS = 1_000L;
 
     private final TienLenRoomService roomService;
     private final SimpMessagingTemplate messagingTemplate;
     private final UserAccountRepository userAccountRepository;
     private final Map<String, RoomPresence> sessionRoomPresence = new ConcurrentHashMap<>();
+    private final Map<String, ScheduledFuture<?>> autoFillTasks = new ConcurrentHashMap<>();
+    private final Map<String, ScheduledFuture<?>> botTurnTasks = new ConcurrentHashMap<>();
+    @Value("${app.tienlen.automation.auto-fill-wait-ms:20000}")
+    private long autoFillWaitMs;
+    @Value("${app.tienlen.automation.bot-turn-delay-ms:1000}")
+    private long botTurnDelayMs;
+    private final ScheduledExecutorService automationExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread thread = new Thread(r, "tienlen-room-automation");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public TienLenWebSocketController(TienLenRoomService roomService,
                                       SimpMessagingTemplate messagingTemplate,
@@ -35,6 +57,15 @@ public class TienLenWebSocketController {
         this.roomService = roomService;
         this.messagingTemplate = messagingTemplate;
         this.userAccountRepository = userAccountRepository;
+    }
+
+    @PreDestroy
+    public void shutdownAutomation() {
+        autoFillTasks.values().forEach(task -> task.cancel(false));
+        botTurnTasks.values().forEach(task -> task.cancel(false));
+        autoFillTasks.clear();
+        botTurnTasks.clear();
+        automationExecutor.shutdownNow();
     }
 
     @MessageMapping("/tienlen.join")
@@ -62,6 +93,7 @@ public class TienLenWebSocketController {
         broadcastRoomState(roomId, "ROOM_STATE", result.room(), "Da vao phong");
         sendPrivateState(roomId, userId);
         broadcastRoomList();
+        refreshAutomationForRoom(roomId, result.room());
     }
 
     @MessageMapping("/tienlen.start")
@@ -85,6 +117,7 @@ public class TienLenWebSocketController {
         broadcastRoomState(roomId, result.eventType(), result.room(), "Bat dau van moi");
         sendPrivateStates(roomId);
         broadcastRoomList();
+        refreshAutomationForRoom(roomId, result.room());
     }
 
     @MessageMapping("/tienlen.play")
@@ -114,7 +147,10 @@ public class TienLenWebSocketController {
                 sendPrivateStates(roomId);
             }
             broadcastRoomList();
+            refreshAutomationForRoom(roomId, waitingRoom);
+            return;
         }
+        refreshAutomationForRoom(roomId, result.room());
     }
 
     @MessageMapping("/tienlen.pass")
@@ -136,6 +172,7 @@ public class TienLenWebSocketController {
             return;
         }
         broadcastRoomState(roomId, result.eventType(), result.room(), result.room() == null ? null : result.room().statusMessage());
+        refreshAutomationForRoom(roomId, result.room());
     }
 
     @MessageMapping("/tienlen.surrender")
@@ -163,12 +200,14 @@ public class TienLenWebSocketController {
                 "roomId", roomId,
                 "message", "Phong da dong"
             ));
+            refreshAutomationForRoom(roomId, null);
         } else {
             TienLenRoomService.RoomSnapshot room = result.room() != null ? result.room() : roomService.roomSnapshot(roomId);
             if (room != null) {
                 broadcastRoomState(roomId, "ROOM_STATE", room, "Nguoi choi da dau hang va roi phong");
                 sendPrivateStates(roomId);
             }
+            refreshAutomationForRoom(roomId, room);
         }
         broadcastRoomList();
     }
@@ -192,9 +231,11 @@ public class TienLenWebSocketController {
                 "roomId", roomId,
                 "message", "Phong da dong"
             ));
+            refreshAutomationForRoom(roomId, null);
         } else {
             broadcastRoomState(roomId, "ROOM_STATE", room, "Nguoi choi da roi phong");
             sendPrivateStates(roomId);
+            refreshAutomationForRoom(roomId, room);
         }
         broadcastRoomList();
     }
@@ -221,9 +262,11 @@ public class TienLenWebSocketController {
                 "roomId", presence.roomId(),
                 "message", "Phong da dong"
             ));
+            refreshAutomationForRoom(presence.roomId(), null);
         } else {
             broadcastRoomState(presence.roomId(), "ROOM_STATE", room, "Nguoi choi mat ket noi");
             sendPrivateStates(presence.roomId());
+            refreshAutomationForRoom(presence.roomId(), room);
         }
         broadcastRoomList();
     }
@@ -287,6 +330,173 @@ public class TienLenWebSocketController {
         }
     }
 
+    private void refreshAutomationForRoom(String roomId) {
+        refreshAutomationForRoom(roomId, roomService.roomSnapshot(roomId));
+    }
+
+    private void refreshAutomationForRoom(String roomId, TienLenRoomService.RoomSnapshot room) {
+        String rid = safeTrim(roomId);
+        if (rid == null) {
+            return;
+        }
+        if (room == null) {
+            cancelAutoFillTask(rid);
+            cancelBotTurnTask(rid);
+            return;
+        }
+
+        if (room.started() && !room.gameOver()) {
+            cancelAutoFillTask(rid);
+            if (isBotTurn(room)) {
+                scheduleBotTurnIfNeeded(rid);
+            } else {
+                cancelBotTurnTask(rid);
+            }
+            return;
+        }
+
+        cancelBotTurnTask(rid);
+        if (!room.started() && !room.gameOver() && shouldAutoFillWaitingRoom(room)) {
+            scheduleAutoFillIfNeeded(rid);
+        } else {
+            cancelAutoFillTask(rid);
+        }
+    }
+
+    private boolean shouldAutoFillWaitingRoom(TienLenRoomService.RoomSnapshot room) {
+        if (room == null) {
+            return false;
+        }
+        if (room.playerCount() <= 0 || room.playerCount() >= room.playerLimit()) {
+            return false;
+        }
+        List<TienLenRoomService.PlayerSnapshot> players = room.players();
+        if (players == null || players.isEmpty()) {
+            return false;
+        }
+        return players.stream().anyMatch(player -> player != null && !player.bot());
+    }
+
+    private void scheduleAutoFillIfNeeded(String roomId) {
+        autoFillTasks.compute(roomId, (rid, existing) -> {
+            if (existing != null && !existing.isDone() && !existing.isCancelled()) {
+                return existing;
+            }
+            return automationExecutor.schedule(() -> runAutoFillTask(rid), sanitizedDelay(autoFillWaitMs, DEFAULT_AUTO_FILL_WAIT_MS), TimeUnit.MILLISECONDS);
+        });
+    }
+
+    private void scheduleBotTurnIfNeeded(String roomId) {
+        botTurnTasks.compute(roomId, (rid, existing) -> {
+            if (existing != null && !existing.isDone() && !existing.isCancelled()) {
+                return existing;
+            }
+            return automationExecutor.schedule(() -> runBotTurnTask(rid), sanitizedDelay(botTurnDelayMs, DEFAULT_BOT_TURN_DELAY_MS), TimeUnit.MILLISECONDS);
+        });
+    }
+
+    private void runAutoFillTask(String roomId) {
+        try {
+            autoFillTasks.remove(roomId);
+
+            TienLenRoomService.AutoFillStartResult result = roomService.autoFillBotsAndStart(roomId);
+            if (result == null) {
+                refreshAutomationForRoom(roomId, null);
+                return;
+            }
+
+            if (result.error() != null && !result.error().isBlank()) {
+                log.warn("TienLen auto-fill failed for room {}: {}", roomId, result.error());
+                if (result.room() != null) {
+                    broadcastRoomState(roomId, "ROOM_STATE", result.room(), result.error());
+                }
+                refreshAutomationForRoom(roomId, result.room());
+                return;
+            }
+
+            if (result.changed() && result.started() && result.room() != null) {
+                log.info("TienLen auto-filled {} bot(s) and started room {}", result.addedBotCount(), roomId);
+                broadcastRoomState(roomId, "GAME_STARTED", result.room(), result.room().statusMessage());
+                sendPrivateStates(roomId);
+                broadcastRoomList();
+            }
+
+            refreshAutomationForRoom(roomId, result.room());
+        } catch (RuntimeException ex) {
+            log.error("Unexpected error in TienLen auto-fill task for room {}", roomId, ex);
+            refreshAutomationForRoom(roomId);
+        }
+    }
+
+    private void runBotTurnTask(String roomId) {
+        try {
+            botTurnTasks.remove(roomId);
+
+            TienLenRoomService.ActionResult result = roomService.botTakeTurn(roomId);
+            if (result == null || !result.ok()) {
+                if (result != null && result.error() != null && !result.error().isBlank()) {
+                    log.debug("TienLen bot turn skipped for room {}: {}", roomId, result.error());
+                }
+                refreshAutomationForRoom(roomId, result == null ? null : result.room());
+                return;
+            }
+
+            broadcastRoomState(roomId, result.eventType(), result.room(), result.room() == null ? null : result.room().statusMessage());
+            sendPrivateStates(roomId);
+
+            if ("GAME_OVER".equals(result.eventType())) {
+                TienLenRoomService.RoomSnapshot waitingRoom = roomService.resetToWaitingAfterGame(roomId);
+                if (waitingRoom != null) {
+                    broadcastRoomState(roomId, "ROOM_STATE", waitingRoom, waitingRoom.statusMessage());
+                    sendPrivateStates(roomId);
+                }
+                broadcastRoomList();
+                refreshAutomationForRoom(roomId, waitingRoom);
+                return;
+            }
+
+            refreshAutomationForRoom(roomId, result.room());
+        } catch (RuntimeException ex) {
+            log.error("Unexpected error in TienLen bot turn task for room {}", roomId, ex);
+            refreshAutomationForRoom(roomId);
+        }
+    }
+
+    private void cancelAutoFillTask(String roomId) {
+        cancelTask(autoFillTasks, roomId);
+    }
+
+    private void cancelBotTurnTask(String roomId) {
+        cancelTask(botTurnTasks, roomId);
+    }
+
+    private void cancelTask(Map<String, ScheduledFuture<?>> tasks, String roomId) {
+        if (tasks == null || roomId == null || roomId.isBlank()) {
+            return;
+        }
+        ScheduledFuture<?> future = tasks.remove(roomId);
+        if (future != null) {
+            future.cancel(false);
+        }
+    }
+
+    private boolean isBotTurn(TienLenRoomService.RoomSnapshot room) {
+        if (room == null || room.currentTurnUserId() == null || room.players() == null) {
+            return false;
+        }
+        return room.players().stream()
+            .filter(Objects::nonNull)
+            .anyMatch(player -> Objects.equals(player.userId(), room.currentTurnUserId()) && player.bot());
+    }
+
+    private long sanitizedDelay(long configuredDelayMs, long defaultDelayMs) {
+        long fallback = Math.max(0L, defaultDelayMs);
+        if (configuredDelayMs < 0) {
+            return fallback;
+        }
+        return configuredDelayMs;
+    }
+
     private void rememberRoomPresence(SimpMessageHeaderAccessor headers, String roomId, String userId) {
         String sessionId = headers == null ? null : headers.getSessionId();
         if (sessionId == null || sessionId.isBlank()) {
@@ -300,6 +510,10 @@ public class TienLenWebSocketController {
         TienLenRoomService.RoomSnapshot room = roomService.roomSnapshot(previous.roomId());
         if (room != null) {
             broadcastRoomState(previous.roomId(), "ROOM_STATE", room, "Nguoi choi da chuyen phong");
+            sendPrivateStates(previous.roomId());
+            refreshAutomationForRoom(previous.roomId(), room);
+        } else {
+            refreshAutomationForRoom(previous.roomId(), null);
         }
         broadcastRoomList();
     }

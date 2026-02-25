@@ -8,7 +8,7 @@ spring:
   mail:
     host: ${MAIL_HOST:}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:luckhaikiet@gmail.com}
+    username: ${MAIL_USERNAME:noreply@example.local}
     password: ${MAIL_PASSWORD:}
     properties:
       mail:
@@ -18,7 +18,7 @@ spring:
             enable: ${MAIL_SMTP_STARTTLS:true}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${APP_JPA_DDL_AUTO:validate}
     show-sql: false
   thymeleaf:
     cache: false
@@ -34,18 +34,42 @@ huggingface:
 app:
   email:
     mode: ${APP_EMAIL_MODE:log}
-    from: ${APP_EMAIL_FROM:luckhaikiet@gmail.com}
+    from: ${APP_EMAIL_FROM:noreply@example.local}
   admin:
-    default-email: ${APP_DEFAULT_ADMIN_EMAIL:luckhaikiet@gmail.com}
+    default-email: ${APP_DEFAULT_ADMIN_EMAIL:admin@example.local}
   datasource:
+    kind: ${APP_DATASOURCE_KIND:auto}
     laragon:
       host: ${LARAGON_DB_HOST:127.0.0.1}
-      port: ${LARAGON_DB_PORT:3360}
+      port: ${LARAGON_DB_PORT:3306}
       database: ${LARAGON_DB_NAME:caro}
       username: ${LARAGON_DB_USER:root}
       password: ${LARAGON_DB_PASS:}
+    mysql:
+      host: ${APP_DATASOURCE_MYSQL_HOST:${LARAGON_DB_HOST:127.0.0.1}}
+      port: ${APP_DATASOURCE_MYSQL_PORT:${LARAGON_DB_PORT:3306}}
+      database: ${APP_DATASOURCE_MYSQL_DATABASE:${LARAGON_DB_NAME:caro}}
+      username: ${APP_DATASOURCE_MYSQL_USERNAME:${LARAGON_DB_USER:root}}
+      password: ${APP_DATASOURCE_MYSQL_PASSWORD:${LARAGON_DB_PASS:}}
+    postgres:
+      host: ${APP_DATASOURCE_POSTGRES_HOST:127.0.0.1}
+      port: ${APP_DATASOURCE_POSTGRES_PORT:5432}
+      database: ${APP_DATASOURCE_POSTGRES_DATABASE:caro}
+      username: ${APP_DATASOURCE_POSTGRES_USERNAME:postgres}
+      password: ${APP_DATASOURCE_POSTGRES_PASSWORD:}
+      schema: ${APP_DATASOURCE_POSTGRES_SCHEMA:}
+      ssl-mode: ${APP_DATASOURCE_POSTGRES_SSL_MODE:disable}
+    auto:
+      allow-h2-fallback: ${APP_DATASOURCE_ALLOW_H2_FALLBACK:false}
+      h2-file: ${APP_DATASOURCE_H2_FILE:.data/game-public}
+      h2-username: ${APP_DATASOURCE_H2_USER:sa}
+      h2-password: ${APP_DATASOURCE_H2_PASS:}
   websocket:
-    allowed-origin-patterns: ${WS_ALLOWED_ORIGINS:*}
+    allowed-origin-patterns: ${WS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*,http://j2ee,https://*.trycloudflare.com,http://*.trycloudflare.com}
+  tienlen:
+    automation:
+      auto-fill-wait-ms: ${TIENLEN_AUTO_FILL_WAIT_MS:20000}
+      bot-turn-delay-ms: ${TIENLEN_BOT_TURN_DELAY_MS:1000}
   runtime:
     canonical-url:
       enforce: ${APP_ENFORCE_CANONICAL_URL:true}

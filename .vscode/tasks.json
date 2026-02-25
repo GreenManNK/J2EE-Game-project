@@ -44,6 +44,44 @@
       "problemMatcher": []
     },
     {
+      "label": "Game: Start Public (MySQL Standard)",
+      "type": "shell",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "scripts\\manual-start-public-mysql.cmd",
+        "--no-pause"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Game: Start Public (PostgreSQL)",
+      "type": "shell",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "scripts\\manual-start-public-postgres.cmd",
+        "--no-pause"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Game: Start Local (J2EE)",
       "type": "shell",
       "command": "cmd",
@@ -88,6 +126,25 @@
       "args": [
         "/c",
         "scripts\\manual-stop-all.cmd",
+        "--no-pause"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Game: Verify Public (All-in-One)",
+      "type": "shell",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "scripts\\manual-verify-public-all.cmd",
         "--no-pause"
       ],
       "options": {

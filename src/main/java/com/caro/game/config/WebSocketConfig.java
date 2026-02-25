@@ -13,7 +13,7 @@ import org.springframework.web.socket.server.support.HttpSessionHandshakeInterce
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final SessionPrincipalHandshakeHandler sessionPrincipalHandshakeHandler;
 
-    @Value("${app.websocket.allowed-origin-patterns:*}")
+    @Value("${app.websocket.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*,http://j2ee}")
     private String allowedOriginPatterns;
 
     public WebSocketConfig(SessionPrincipalHandshakeHandler sessionPrincipalHandshakeHandler) {

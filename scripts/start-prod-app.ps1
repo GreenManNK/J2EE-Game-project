@@ -4,6 +4,7 @@ param(
     [string]$JarPath = "",
     [string]$EnvFile = ".env.public.local",
     [switch]$AutoBuild,
+    [switch]$EnableH2Fallback,
     [int]$WaitSeconds = 20
 )
 
@@ -27,6 +28,20 @@ function Load-EnvFile([string]$Path) {
         $name = $trimmed.Substring(0, $idx).Trim()
         $value = $trimmed.Substring($idx + 1)
         [Environment]::SetEnvironmentVariable($name, $value, "Process")
+    }
+}
+
+function Ensure-Java {
+    $java = Get-Command java -ErrorAction SilentlyContinue
+    if (-not $java) {
+        throw "Khong tim thay lenh 'java'. Hay cai JDK/JRE va them vao PATH."
+    }
+}
+
+function Set-EnvDefaultIfMissing([string]$Name, [string]$Value) {
+    $current = [Environment]::GetEnvironmentVariable($Name, "Process")
+    if ([string]::IsNullOrWhiteSpace($current)) {
+        [Environment]::SetEnvironmentVariable($Name, $Value, "Process")
     }
 }
 
@@ -84,6 +99,13 @@ function Get-ListeningPid([int]$AppPort) {
 Push-Location $repoRoot
 try {
     Load-EnvFile -Path (Join-Path $repoRoot $EnvFile)
+    Ensure-Java
+
+    if ($EnableH2Fallback) {
+        Set-EnvDefaultIfMissing -Name "APP_DATASOURCE_ALLOW_H2_FALLBACK" -Value "true"
+        Set-EnvDefaultIfMissing -Name "APP_DATASOURCE_H2_FILE" -Value ".data/game-public"
+        Set-EnvDefaultIfMissing -Name "APP_EMAIL_MODE" -Value "log"
+    }
 
     if ($AutoBuild) {
         & powershell -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "build-prod.ps1")

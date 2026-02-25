@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class TienLenRoomService {
     private static final int PLAYER_LIMIT = 4;
+    private static final String BOT_USER_ID_PREFIX = "bot-tienlen-";
     private final Map<String, RoomState> rooms = new ConcurrentHashMap<>();
     private final Random random;
 
@@ -43,6 +44,9 @@ public class TienLenRoomService {
         if (existing != null) {
             existing.displayName = normalizeDisplayName(displayName, uid);
             existing.avatarPath = normalizeAvatarPath(avatarPath);
+            if (!room.started) {
+                updateWaitingStatus(room);
+            }
             return JoinResult.ok(snapshotOf(room));
         }
 
@@ -54,7 +58,10 @@ public class TienLenRoomService {
         }
 
         int seatIndex = room.players.size();
-        room.players.put(uid, new PlayerState(uid, normalizeDisplayName(displayName, uid), normalizeAvatarPath(avatarPath), seatIndex));
+        room.players.put(uid, new PlayerState(uid, normalizeDisplayName(displayName, uid), normalizeAvatarPath(avatarPath), seatIndex, false));
+        if (!room.started) {
+            updateWaitingStatus(room);
+        }
         return JoinResult.ok(snapshotOf(room));
     }
 
@@ -83,7 +90,18 @@ public class TienLenRoomService {
 
         reseat(room);
 
+        if (!containsHumanPlayer(room)) {
+            rooms.remove(room.roomId);
+            return new LeaveResult(true, null, null, true);
+        }
+
         if (!wasStarted || wasGameOver) {
+            removeBotPlayers(room);
+            if (room.players.isEmpty()) {
+                rooms.remove(room.roomId);
+                return new LeaveResult(true, null, null, true);
+            }
+            reseat(room);
             if (room.players.size() < PLAYER_LIMIT) {
                 resetToWaiting(room, "Phong dang cho them nguoi choi de bat dau ván moi");
             } else {
@@ -176,6 +194,76 @@ public class TienLenRoomService {
         room.statusMessage = "Van da bat dau. Nguoi giu 3♠ danh truoc.";
 
         return ActionResult.ok(snapshotOf(room), "GAME_STARTED");
+    }
+
+    public synchronized AutoFillStartResult autoFillBotsAndStart(String roomId) {
+        RoomState room = rooms.get(normalizeRoomId(roomId));
+        if (room == null || room.started || room.players.isEmpty()) {
+            return AutoFillStartResult.noChange(snapshotOf(room));
+        }
+        if (!containsHumanPlayer(room)) {
+            rooms.remove(room.roomId);
+            return AutoFillStartResult.noChange(null);
+        }
+        if (room.players.size() >= PLAYER_LIMIT) {
+            return AutoFillStartResult.noChange(snapshotOf(room));
+        }
+
+        int addedBotCount = 0;
+        while (room.players.size() < PLAYER_LIMIT) {
+            String botId = nextBotUserId(room);
+            String botName = "Bot " + (countBots(room) + 1);
+            room.players.put(botId, new PlayerState(botId, botName, "/uploads/avatars/default-opponent.jpg", room.players.size(), true));
+            addedBotCount++;
+        }
+        reseat(room);
+
+        String starterUserId = room.players.keySet().stream().findFirst().orElse(null);
+        if (starterUserId == null) {
+            return AutoFillStartResult.noChange(snapshotOf(room));
+        }
+
+        ActionResult start = startGame(roomId, starterUserId);
+        if (!start.ok()) {
+            return AutoFillStartResult.error(start.error(), start.room());
+        }
+
+        room.statusMessage = "Cho qua lau, da them " + addedBotCount + " bot de bat dau van.";
+        return AutoFillStartResult.started(addedBotCount, ActionResult.ok(snapshotOf(room), "GAME_STARTED"));
+    }
+
+    public synchronized ActionResult botTakeTurn(String roomId) {
+        RoomState room = rooms.get(normalizeRoomId(roomId));
+        if (room == null) {
+            return ActionResult.error("Room not found", null);
+        }
+        if (!room.started || room.gameOver) {
+            return ActionResult.error("Game is not active", snapshotOf(room));
+        }
+        String currentUserId = room.currentTurnUserId;
+        if (!isBotPlayer(room, currentUserId)) {
+            return ActionResult.error("Current turn is not a bot", snapshotOf(room));
+        }
+
+        List<TienLenCard> hand = room.hands.get(currentUserId);
+        if (hand == null || hand.isEmpty()) {
+            return ActionResult.error("Bot khong co bai hop le", snapshotOf(room));
+        }
+
+        List<String> move = chooseBotMove(room, currentUserId);
+        if (move != null && !move.isEmpty()) {
+            return playCards(roomId, currentUserId, move);
+        }
+
+        if (room.currentCombination != null && !currentUserId.equals(room.controlUserId)) {
+            return passTurn(roomId, currentUserId);
+        }
+
+        String fallbackCode = hand.stream().sorted(TienLenCard.NATURAL_ORDER).findFirst().map(TienLenCard::code).orElse(null);
+        if (fallbackCode == null) {
+            return ActionResult.error("Bot khong tim thay nuoc di", snapshotOf(room));
+        }
+        return playCards(roomId, currentUserId, List.of(fallbackCode));
     }
 
     public synchronized ActionResult playCards(String roomId, String userId, List<String> cardCodes) {
@@ -322,10 +410,12 @@ public class TienLenRoomService {
         if (room == null) {
             return null;
         }
+        removeBotPlayers(room);
         if (room.players.isEmpty()) {
             rooms.remove(roomId);
             return null;
         }
+        reseat(room);
         resetToWaiting(room, "Ván dau da ket thuc. Dang cho nguoi choi moi gia nhap.");
         return snapshotOf(room);
     }
@@ -358,6 +448,7 @@ public class TienLenRoomService {
                 p.displayName,
                 p.avatarPath,
                 p.seatIndex,
+                p.bot,
                 room.hands.getOrDefault(p.userId, List.of()).size()
             ))
             .toList();
@@ -392,6 +483,183 @@ public class TienLenRoomService {
         );
     }
 
+    private boolean containsHumanPlayer(RoomState room) {
+        if (room == null) {
+            return false;
+        }
+        return room.players.values().stream().anyMatch(player -> !player.bot);
+    }
+
+    private int countBots(RoomState room) {
+        if (room == null) {
+            return 0;
+        }
+        return (int) room.players.values().stream().filter(player -> player.bot).count();
+    }
+
+    private void removeBotPlayers(RoomState room) {
+        if (room == null || room.players.isEmpty()) {
+            return;
+        }
+        boolean clearCurrentTurn = isBotPlayer(room, room.currentTurnUserId);
+        boolean clearControl = isBotPlayer(room, room.controlUserId);
+        boolean clearTrickOwner = isBotPlayer(room, room.currentTrickOwnerUserId);
+        List<String> botIds = room.players.entrySet().stream()
+            .filter(entry -> entry.getValue().bot)
+            .map(Map.Entry::getKey)
+            .toList();
+        if (botIds.isEmpty()) {
+            return;
+        }
+        for (String botId : botIds) {
+            room.players.remove(botId);
+            room.hands.remove(botId);
+            room.passedUsers.remove(botId);
+        }
+        if (clearCurrentTurn) {
+            room.currentTurnUserId = null;
+        }
+        if (clearControl) {
+            room.controlUserId = null;
+        }
+        if (clearTrickOwner) {
+            room.currentTrickOwnerUserId = null;
+            room.currentCombination = null;
+            room.currentTrickCards = List.of();
+        }
+    }
+
+    private void updateWaitingStatus(RoomState room) {
+        if (room == null || room.started) {
+            return;
+        }
+        int currentPlayers = room.players.size();
+        if (currentPlayers <= 0) {
+            room.statusMessage = "Cho du 4 nguoi de bat dau";
+            return;
+        }
+        if (currentPlayers >= PLAYER_LIMIT) {
+            room.statusMessage = "Da du 4 nguoi. San sang bat dau.";
+            return;
+        }
+        int missing = PLAYER_LIMIT - currentPlayers;
+        room.statusMessage = "Dang co " + currentPlayers + "/" + PLAYER_LIMIT + " nguoi. Con thieu " + missing + " nguoi de bat dau.";
+    }
+
+    private String nextBotUserId(RoomState room) {
+        int index = 1;
+        while (true) {
+            String candidate = BOT_USER_ID_PREFIX + index;
+            if (room == null || !room.players.containsKey(candidate)) {
+                return candidate;
+            }
+            index++;
+        }
+    }
+
+    private boolean isBotPlayer(RoomState room, String userId) {
+        if (room == null || userId == null) {
+            return false;
+        }
+        PlayerState player = room.players.get(userId);
+        return player != null && player.bot;
+    }
+
+    private List<String> chooseBotMove(RoomState room, String userId) {
+        if (room == null || userId == null) {
+            return null;
+        }
+        List<TienLenCard> hand = room.hands.get(userId);
+        if (hand == null || hand.isEmpty()) {
+            return null;
+        }
+
+        List<Combination> candidates = allBotCandidates(hand);
+        if (candidates.isEmpty()) {
+            return null;
+        }
+
+        if (room.currentCombination == null) {
+            if (room.playCount == 0) {
+                candidates = candidates.stream()
+                    .filter(combo -> combo.cards().stream().anyMatch(card -> "3S".equals(card.code())))
+                    .toList();
+                if (candidates.isEmpty()) {
+                    return null;
+                }
+            }
+            Combination opening = candidates.getFirst();
+            return opening.cards().stream().map(TienLenCard::code).toList();
+        }
+
+        Combination current = room.currentCombination;
+        List<Combination> beaters = candidates.stream()
+            .filter(combo -> combo.canBeat(current))
+            .toList();
+        if (beaters.isEmpty()) {
+            return null;
+        }
+
+        Comparator<Combination> beatingComparator = Comparator
+            .comparing((Combination combo) -> combo.type() != current.type() || combo.length() != current.length())
+            .thenComparing(this::botComboSortKey);
+        Combination choice = beaters.stream().sorted(beatingComparator).findFirst().orElse(beaters.getFirst());
+        return choice.cards().stream().map(TienLenCard::code).toList();
+    }
+
+    private List<Combination> allBotCandidates(List<TienLenCard> hand) {
+        List<TienLenCard> sortedHand = hand.stream().sorted(TienLenCard.NATURAL_ORDER).toList();
+        int n = sortedHand.size();
+        if (n == 0) {
+            return List.of();
+        }
+        List<Combination> candidates = new ArrayList<>();
+        int subsetCount = 1 << n;
+        for (int mask = 1; mask < subsetCount; mask++) {
+            List<TienLenCard> subset = new ArrayList<>();
+            for (int i = 0; i < n; i++) {
+                if ((mask & (1 << i)) != 0) {
+                    subset.add(sortedHand.get(i));
+                }
+            }
+            Combination combo = parseCombination(subset);
+            if (combo != null) {
+                candidates.add(combo);
+            }
+        }
+        candidates.sort(Comparator.comparing(this::botComboSortKey));
+        return candidates;
+    }
+
+    private String botComboSortKey(Combination combo) {
+        if (combo == null) {
+            return "9";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(botTypeOrder(combo.type())).append('|');
+        sb.append(String.format(Locale.ROOT, "%02d", combo.length())).append('|');
+        sb.append(String.format(Locale.ROOT, "%02d", combo.highestRank())).append('|');
+        sb.append(String.format(Locale.ROOT, "%02d", combo.highestSuit())).append('|');
+        for (TienLenCard card : combo.cards()) {
+            sb.append(String.format(Locale.ROOT, "%02d%02d", card.rankValue(), card.suitOrder())).append(',');
+        }
+        return sb.toString();
+    }
+
+    private int botTypeOrder(CombinationType type) {
+        if (type == null) {
+            return 9;
+        }
+        return switch (type) {
+            case SINGLE -> 0;
+            case PAIR -> 1;
+            case TRIPLE -> 2;
+            case STRAIGHT -> 3;
+            case FOUR_KIND -> 4;
+            case DOUBLE_STRAIGHT -> 5;
+        };
+    }
+
     private void clearCurrentTrick(RoomState room) {
         room.currentCombination = null;
         room.currentTrickCards = List.of();
@@ -411,7 +679,10 @@ public class TienLenRoomService {
         room.passedUsers.clear();
         room.playCount = 0;
         room.hands.clear();
-        room.statusMessage = message;
+        updateWaitingStatus(room);
+        if (message != null && !message.isBlank()) {
+            room.statusMessage = message;
+        }
     }
 
     private void reseat(RoomState room) {
@@ -734,12 +1005,14 @@ public class TienLenRoomService {
 
     private static final class PlayerState {
         private final String userId;
+        private final boolean bot;
         private String displayName;
         private String avatarPath;
         private int seatIndex;
 
-        private PlayerState(String userId, String displayName, String avatarPath, int seatIndex) {
+        private PlayerState(String userId, String displayName, String avatarPath, int seatIndex, boolean bot) {
             this.userId = userId;
+            this.bot = bot;
             this.displayName = displayName;
             this.avatarPath = avatarPath;
             this.seatIndex = seatIndex;
@@ -780,6 +1053,28 @@ public class TienLenRoomService {
     public record LeaveResult(boolean ok, String error, RoomSnapshot room, boolean roomClosed) {
     }
 
+    public record AutoFillStartResult(
+        boolean changed,
+        boolean started,
+        int addedBotCount,
+        String error,
+        RoomSnapshot room
+    ) {
+        public static AutoFillStartResult noChange(RoomSnapshot room) {
+            return new AutoFillStartResult(false, false, 0, null, room);
+        }
+
+        public static AutoFillStartResult error(String error, RoomSnapshot room) {
+            return new AutoFillStartResult(false, false, 0, error, room);
+        }
+
+        public static AutoFillStartResult started(int addedBotCount, ActionResult startResult) {
+            RoomSnapshot room = startResult == null ? null : startResult.room();
+            String error = startResult == null ? null : startResult.error();
+            return new AutoFillStartResult(true, true, Math.max(0, addedBotCount), error, room);
+        }
+    }
+
     public record ActionResult(boolean ok, String error, String eventType, RoomSnapshot room) {
         public static ActionResult ok(RoomSnapshot room, String eventType) {
             return new ActionResult(true, null, eventType, room);
@@ -813,6 +1108,7 @@ public class TienLenRoomService {
         String displayName,
         String avatarPath,
         int seatIndex,
+        boolean bot,
         int handCount
     ) {
     }

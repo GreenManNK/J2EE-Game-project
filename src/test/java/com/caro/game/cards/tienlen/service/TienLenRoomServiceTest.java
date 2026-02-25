@@ -162,6 +162,70 @@ class TienLenRoomServiceTest {
         assertEquals(null, invalid);
     }
 
+    @Test
+    void autoFillBotsShouldStartGameWhenWaitingTooLong() {
+        TienLenRoomService service = new TienLenRoomService(new Random(8));
+        assertTrue(service.joinRoom("rb1", "u1", "Human", "").ok());
+
+        TienLenRoomService.AutoFillStartResult result = service.autoFillBotsAndStart("rb1");
+
+        assertTrue(result.changed());
+        assertTrue(result.started());
+        assertEquals(3, result.addedBotCount());
+        assertNotNull(result.room());
+        assertTrue(result.room().started());
+        assertEquals(4, result.room().playerCount());
+        assertEquals(3, result.room().players().stream().filter(TienLenRoomService.PlayerSnapshot::bot).count());
+        assertNotNull(service.privateState("rb1", "u1"));
+        assertEquals(13, service.privateState("rb1", "u1").hand().size());
+    }
+
+    @Test
+    void botTakeTurnShouldProduceValidActionWhenBotTurn() {
+        TienLenRoomService service = new TienLenRoomService(new Random(9));
+        assertTrue(service.joinRoom("rb2", "u1", "Human", "").ok());
+
+        TienLenRoomService.AutoFillStartResult start = service.autoFillBotsAndStart("rb2");
+        assertTrue(start.started());
+
+        TienLenRoomService.RoomSnapshot room = start.room();
+        assertNotNull(room);
+
+        if ("u1".equals(room.currentTurnUserId())) {
+            TienLenRoomService.ActionResult humanOpen = service.playCards("rb2", "u1", List.of("3S"));
+            assertTrue(humanOpen.ok());
+            room = humanOpen.room();
+        }
+
+        assertNotNull(room);
+        assertNotNull(room.currentTurnUserId());
+        String currentTurnUserId = room.currentTurnUserId();
+        assertTrue(room.players().stream().anyMatch(p -> p.userId().equals(currentTurnUserId) && p.bot()));
+
+        TienLenRoomService.ActionResult botAction = service.botTakeTurn("rb2");
+
+        assertTrue(botAction.ok());
+        assertNotNull(botAction.room());
+        assertTrue(List.of("PLAYED", "PASSED", "ROUND_RESET", "GAME_OVER").contains(botAction.eventType()));
+    }
+
+    @Test
+    void resetToWaitingAfterGameShouldRemoveBotsAndKeepHumans() {
+        TienLenRoomService service = new TienLenRoomService(new Random(10));
+        assertTrue(service.joinRoom("rb3", "u1", "Human", "").ok());
+        TienLenRoomService.AutoFillStartResult start = service.autoFillBotsAndStart("rb3");
+        assertTrue(start.started());
+
+        TienLenRoomService.RoomSnapshot waiting = service.resetToWaitingAfterGame("rb3");
+
+        assertNotNull(waiting);
+        assertFalse(waiting.started());
+        assertEquals(1, waiting.playerCount());
+        assertEquals(1, waiting.players().size());
+        assertEquals("u1", waiting.players().getFirst().userId());
+        assertFalse(waiting.players().stream().anyMatch(TienLenRoomService.PlayerSnapshot::bot));
+    }
+
     private static void joinFour(TienLenRoomService service, String roomId) {
         assertTrue(service.joinRoom(roomId, "u1", "P1", "").ok());
         assertTrue(service.joinRoom(roomId, "u2", "P2", "").ok());

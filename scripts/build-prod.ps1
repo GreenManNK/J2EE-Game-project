@@ -5,12 +5,27 @@ param(
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 
+function Resolve-MavenCommand {
+    $mvnw = Join-Path $repoRoot "mvnw.cmd"
+    if (Test-Path $mvnw) {
+        return $mvnw
+    }
+
+    $mvn = Get-Command mvn -ErrorAction SilentlyContinue
+    if ($mvn) {
+        return $mvn.Source
+    }
+
+    throw "Khong tim thay Maven (`mvn`/`mvnw.cmd`). Cai Maven hoac them Maven Wrapper vao project."
+}
+
 Push-Location $repoRoot
 try {
+    $mavenCmd = Resolve-MavenCommand
     if ($SkipTests) {
-        & mvn "-DskipTests" clean package
+        & $mavenCmd "-DskipTests" clean package
     } else {
-        & mvn clean package
+        & $mavenCmd clean package
     }
     if ($LASTEXITCODE -ne 0) {
         exit $LASTEXITCODE
