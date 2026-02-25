@@ -1,5 +1,19 @@
-﻿window.connection = new signalR.HubConnectionBuilder()
-    .withUrl("/gamehub")
+﻿const appPath = (window.CaroUrl && typeof window.CaroUrl.path === "function")
+    ? window.CaroUrl.path
+    : (value) => value;
+const ui = window.CaroUi || {};
+function notify(message, type) {
+    const text = String(message || "");
+    if (ui.toast) {
+        ui.toast(text, { type: type || "info" });
+    } else if (typeof window !== "undefined" && typeof window["alert"] === "function") {
+        window["alert"](text);
+    } else {
+        console.log(text);
+    }
+}
+window.connection = new signalR.HubConnectionBuilder()
+    .withUrl(appPath("/gamehub"))
     .build();
 
 const connection = window.connection;
@@ -56,7 +70,7 @@ function toggleMatchmaking() {
         const avatarPath = localStorage.getItem("avatarPath");
 
         if (!userId) {
-            alert("Không đủ thông tin người chơi. Hãy đăng nhập lại.");
+            notify("Không đủ thông tin người chơi. Hãy đăng nhập lại.");
             return;
         }
 
@@ -76,7 +90,7 @@ function toggleMatchmaking() {
             })
             .catch(err => {
                 console.error("❌ Lỗi khi tìm trận:", err);
-                alert("Lỗi khi gửi yêu cầu tìm trận.");
+                notify("Lỗi khi gửi yêu cầu tìm trận.");
             });
 
     } else {
@@ -105,14 +119,14 @@ connection.on("RoomCreated", function (roomId) {
 connection.on("JoinRoom", function (roomId) {
     console.log(`Tham gia phòng: ${roomId}`);
     clearInterval(matchmakingInterval);
-    window.location.href = `/game?roomId=${roomId}`;
+    window.location.href = appPath(`/game?roomId=${roomId}`);
 });
 
 // Trận đấu bắt đầu
 connection.on("GameStarted", function (data) {
     console.log("Trận đấu bắt đầu:", data);
     clearInterval(matchmakingInterval);
-    window.location.href = `/game?roomId=${data.roomId}`;
+    window.location.href = appPath(`/game?roomId=${data.roomId}`);
 });
 
 // Hủy tìm trận từ server
@@ -124,7 +138,7 @@ connection.on("MatchmakingCanceled", function () {
 // Khi đối thủ đã vào
 connection.on("OpponentJoined", function (data) {
     console.log("Đối thủ đã vào:", data.displayName);
-    alert(`Đối thủ ${data.displayName} đã vào phòng!`);
+    notify(`Đối thủ ${data.displayName} đã vào phòng!`);
 });
 
 // Chờ đối thủ
@@ -137,7 +151,7 @@ function createRoom() {
     let roomId = document.getElementById("roomIdInput").value.trim();
 
     if (!roomId) {
-        alert("Vui lòng nhập mã phòng!");
+        notify("Vui lòng nhập mã phòng!");
         return;
     }
 
@@ -147,17 +161,18 @@ function createRoom() {
         roomId.toLowerCase().startsWith("challenge_") ||
         roomId.toLowerCase().startsWith("normal_")
     ) {
-        alert("Không thể tạo phòng với mã bắt đầu bằng 'Ranked_', 'Challenge_' hoặc 'Normal_'");
+        notify("Không thể tạo phòng với mã bắt đầu bằng 'Ranked_', 'Challenge_' hoặc 'Normal_'");
         return;
     }
 
     // ✅ Gắn tiền tố sau khi đã kiểm tra
     roomId = `Normal_${roomId}`;
 
-    window.location.href = `/Game/Index?roomId=${roomId}`;
+    window.location.href = appPath(`/game?roomId=${roomId}`);
 }
 
 // Hàm tham gia phòng từ danh sách
 function joinRoom(roomId) {
-    window.location.href = `/Game/Index?roomId=${roomId}`;
+    window.location.href = appPath(`/game?roomId=${roomId}`);
 }
+

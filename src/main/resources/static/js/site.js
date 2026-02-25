@@ -163,10 +163,132 @@
     clear: clearCurrentUser
   };
 
+  function ensureToastContainer() {
+    let container = document.getElementById('caroToastContainer');
+    if (container) {
+      return container;
+    }
+    container = document.createElement('div');
+    container.id = 'caroToastContainer';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '1085';
+    document.body.appendChild(container);
+    return container;
+  }
+
+  function normalizeToastVariant(type) {
+    const value = String(type || 'info').trim().toLowerCase();
+    if (value === 'error') {
+      return 'danger';
+    }
+    if (['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'].includes(value)) {
+      return value;
+    }
+    return 'info';
+  }
+
+  function setStatusMessage(el, message, ok) {
+    if (!el) {
+      return;
+    }
+    const text = String(message || '').trim();
+    el.textContent = text;
+    el.classList.remove('text-danger', 'text-success', 'text-muted');
+    if (!text) {
+      return;
+    }
+    el.classList.add(ok === true ? 'text-success' : (ok === false ? 'text-danger' : 'text-muted'));
+  }
+
+  function showToast(message, options) {
+    const opts = (typeof options === 'string') ? { type: options } : (options || {});
+    const text = String(message || '').trim();
+    if (!text) {
+      return;
+    }
+    const variant = normalizeToastVariant(opts.type);
+    const delay = Number.isFinite(Number(opts.delay)) ? Number(opts.delay) : 2800;
+    const container = ensureToastContainer();
+
+    const toastEl = document.createElement('div');
+    toastEl.className = 'toast border-0';
+    toastEl.setAttribute('role', 'status');
+    toastEl.setAttribute('aria-live', 'polite');
+    toastEl.setAttribute('aria-atomic', 'true');
+
+    const body = document.createElement('div');
+    body.className = 'toast-header';
+    if (variant === 'danger') {
+      body.classList.add('text-bg-danger');
+    } else if (variant === 'success') {
+      body.classList.add('text-bg-success');
+    } else if (variant === 'warning') {
+      body.classList.add('text-bg-warning');
+    } else if (variant === 'info') {
+      body.classList.add('text-bg-info');
+    }
+
+    const title = document.createElement('strong');
+    title.className = 'me-auto';
+    title.textContent = opts.title || (variant === 'danger' ? 'Loi' : 'Thong bao');
+    body.appendChild(title);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'btn-close' + (
+      variant === 'danger' || variant === 'success' ? ' btn-close-white' : ''
+    );
+    closeBtn.setAttribute('data-bs-dismiss', 'toast');
+    closeBtn.setAttribute('aria-label', 'Close');
+    body.appendChild(closeBtn);
+    toastEl.appendChild(body);
+
+    const content = document.createElement('div');
+    content.className = 'toast-body';
+    content.textContent = text;
+    toastEl.appendChild(content);
+
+    container.appendChild(toastEl);
+
+    if (window.bootstrap && window.bootstrap.Toast) {
+      const instance = window.bootstrap.Toast.getOrCreateInstance(toastEl, { delay, autohide: true });
+      toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove(), { once: true });
+      instance.show();
+      return;
+    }
+
+    setTimeout(() => toastEl.remove(), delay);
+  }
+
+  function reportApiResult(data, options) {
+    const opts = options || {};
+    const success = !!(data && data.success);
+    const successMessage = opts.successMessage || data?.message || 'Thao tac thanh cong';
+    const errorMessage = opts.errorMessage || data?.error || data?.message || 'Thao tac that bai';
+    const message = success ? successMessage : errorMessage;
+    showToast(message, {
+      type: success ? (opts.successType || 'success') : (opts.errorType || 'danger'),
+      title: opts.title
+    });
+    if (opts.statusEl) {
+      setStatusMessage(opts.statusEl, message, success);
+    }
+    return success;
+  }
+
+  window.CaroUi = {
+    toast: showToast,
+    apiResult: reportApiResult,
+    setStatus: setStatusMessage
+  };
+
   document.addEventListener('DOMContentLoaded', () => {
     const user = getCurrentUser();
     const badges = document.querySelectorAll('[data-current-user-badge]');
     const logoutBtn = document.getElementById('logoutBtn');
+    const authOnly = document.querySelectorAll('[data-auth-only]');
+    const guestOnly = document.querySelectorAll('[data-guest-only]');
+    const roleOnly = document.querySelectorAll('[data-role-allowed]');
 
     badges.forEach((el) => {
       if (user) {
@@ -174,6 +296,27 @@
       } else {
         el.textContent = 'Chua dang nhap';
       }
+    });
+
+    authOnly.forEach((el) => {
+      el.style.display = user ? '' : 'none';
+    });
+    guestOnly.forEach((el) => {
+      el.style.display = user ? 'none' : '';
+    });
+    roleOnly.forEach((el) => {
+      if (!user || !user.role) {
+        el.style.display = 'none';
+        return;
+      }
+      const allowed = String(el.getAttribute('data-role-allowed') || '')
+        .split(',')
+        .map((v) => v.trim().toLowerCase())
+        .filter(Boolean);
+      if (allowed.length === 0) {
+        return;
+      }
+      el.style.display = allowed.includes(String(user.role).trim().toLowerCase()) ? '' : 'none';
     });
 
     if (window.axios && window.axios.defaults && window.axios.defaults.headers) {
@@ -185,7 +328,6 @@
     }
 
     if (logoutBtn) {
-      logoutBtn.style.display = user ? '' : 'none';
       logoutBtn.addEventListener('click', async () => {
         const current = getCurrentUser();
         if (!current || !current.userId) {

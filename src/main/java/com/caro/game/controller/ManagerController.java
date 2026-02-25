@@ -71,7 +71,8 @@ public class ManagerController {
         user.setEmail(request.email());
         user.setDisplayName(request.displayName());
         user.setScore(request.score());
-        user.setRole(request.role() == null || request.role().isBlank() ? "User" : request.role());
+        // Managers can create accounts but cannot elevate roles.
+        user.setRole("User");
         user.setAvatarPath(request.avatarPath() == null || request.avatarPath().isBlank()
             ? "/uploads/avatars/default-avatar.jpg" : request.avatarPath());
         user.setPassword(passwordEncoder.encode(request.password()));
@@ -110,7 +111,6 @@ public class ManagerController {
 
         if (request.displayName() != null) user.setDisplayName(request.displayName());
         if (request.score() != null) user.setScore(request.score());
-        if (request.role() != null && !request.role().isBlank()) user.setRole(request.role());
         if (request.avatarPath() != null && !request.avatarPath().isBlank()) user.setAvatarPath(request.avatarPath());
 
         userAccountRepository.save(user);

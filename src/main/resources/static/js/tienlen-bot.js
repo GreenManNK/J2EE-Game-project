@@ -29,7 +29,11 @@
     message: '-',
     status: 'Dang khoi tao van...',
     moveLog: [],
-    botTimer: null
+    botTimer: null,
+    pendingHandDealAnim: false,
+    pendingTrickAnim: false,
+    pendingTurnFlashUserId: '',
+    lastActionType: ''
   };
 
   const me = {
@@ -55,7 +59,9 @@
     els.difficultyLabel = document.getElementById('tlBotDifficultyLabel');
     els.statusText = document.getElementById('tlBotStatusText');
     els.messageText = document.getElementById('tlBotMessageText');
+    els.statusTimeline = document.getElementById('tlBotStatusTimeline');
     els.newGameBtn = document.getElementById('tlBotNewGameBtn');
+    els.surrenderBtn = document.getElementById('tlBotSurrenderBtn');
     els.turnText = document.getElementById('tlBotTurnText');
     els.controlText = document.getElementById('tlBotControlText');
     els.currentTrickLabel = document.getElementById('tlBotCurrentTrickLabel');
@@ -72,10 +78,12 @@
     els.selectedCount = document.getElementById('tlBotSelectedCount');
     els.handCount = document.getElementById('tlBotHandCount');
     els.moveLog = document.getElementById('tlBotMoveLog');
+    els.playerSlots = Array.from(document.querySelectorAll('#tlBotPlayersBoard .tienlen-bot-player-slot'));
   }
 
   function bindActions() {
     els.newGameBtn?.addEventListener('click', () => startNewGame());
+    els.surrenderBtn?.addEventListener('click', () => surrenderGame());
     els.playBtn?.addEventListener('click', () => onHumanPlaySelected());
     els.passBtn?.addEventListener('click', () => onHumanPass());
     els.clearBtn?.addEventListener('click', () => {
@@ -121,10 +129,14 @@
     state.passedIds.clear();
     state.selectedCodes.clear();
     state.moveLog = [];
+    state.pendingHandDealAnim = true;
+    state.pendingTrickAnim = false;
 
     const firstPlayer = state.players.find((p) => p.hand.some((c) => c.code === '3S')) || state.players[0];
     state.currentTurnId = firstPlayer.id;
     state.controlUserId = firstPlayer.id;
+    state.pendingTurnFlashUserId = firstPlayer.id;
+    state.lastActionType = 'GAME_STARTED';
     setStatus('Van moi da bat dau');
     setMessage(firstPlayer.name + ' giu 3S va danh truoc');
     pushMoveLog('Van moi bat dau. ' + firstPlayer.name + ' giu 3S.');
@@ -163,6 +175,39 @@
     }
     renderAll();
     scheduleBotTurnIfNeeded();
+  }
+
+  function surrenderGame() {
+    if (!state.started || state.gameOver) {
+      setMessage('Khong co van dau dang dien ra de dau hang');
+      renderAll();
+      return;
+    }
+    if (!window.confirm('Ban chac chan muon dau hang van Tien len nay?')) {
+      return;
+    }
+
+    clearBotTimer();
+    const human = state.players.find((p) => p.isHuman) || null;
+    const remaining = state.players.filter((p) => !p.isHuman);
+    remaining.sort((a, b) => {
+      if (a.hand.length !== b.hand.length) return a.hand.length - b.hand.length;
+      return a.name.localeCompare(b.name);
+    });
+    const winner = remaining[0] || null;
+
+    state.gameOver = true;
+    state.currentTurnId = null;
+    state.passedIds.clear();
+    state.winnerId = winner ? winner.id : null;
+    state.lastActionType = 'SURRENDER';
+    setStatus('Van dau ket thuc');
+    setMessage('Ban da dau hang.' + (winner ? (' ' + winner.name + ' duoc tinh la thang.') : ''));
+    pushMoveLog((human ? human.name : 'Ban') + ': dau hang');
+    if (winner) {
+      pushMoveLog('Ket thuc van dau: ' + winner.name + ' thang (do dau hang).');
+    }
+    renderAll();
   }
 
   function scheduleBotTurnIfNeeded() {
@@ -340,6 +385,8 @@
       state.gameOver = true;
       state.winnerId = player.id;
       state.currentTurnId = null;
+      state.pendingTrickAnim = true;
+      state.lastActionType = 'GAME_OVER';
       setStatus('Van dau ket thuc');
       setMessage(player.name + ' da het bai va chien thang');
       pushMoveLog('Ket thuc van dau: ' + player.name + ' thang.');
@@ -347,6 +394,9 @@
     }
 
     state.currentTurnId = nextPlayerId(player.id);
+    state.pendingTrickAnim = true;
+    state.pendingTurnFlashUserId = state.currentTurnId || '';
+    state.lastActionType = 'PLAYED';
     setStatus('Dang choi');
     setMessage(player.name + ' danh ' + combo.label);
     return { ok: true, eventType: 'PLAYED' };
@@ -379,6 +429,9 @@
       state.currentTurnId = state.controlUserId;
       state.currentTrick = null;
       state.passedIds.clear();
+      state.pendingTrickAnim = true;
+      state.pendingTurnFlashUserId = state.currentTurnId || '';
+      state.lastActionType = 'ROUND_RESET';
       setStatus('Dang choi');
       setMessage('Tat ca da bo luot. ' + (control ? control.name : 'Nguoi giu vong') + ' mo vong moi');
       pushMoveLog('Mo vong moi.');
@@ -386,6 +439,8 @@
     }
 
     state.currentTurnId = next;
+    state.pendingTurnFlashUserId = next || '';
+    state.lastActionType = 'PASSED';
     setStatus('Dang choi');
     setMessage(player.name + ' bo luot');
     return { ok: true, eventType: 'PASSED' };
@@ -793,42 +848,64 @@
     renderHand();
     renderMoveLog();
     renderSummary();
+    renderStatusTimeline();
     updateActionButtons();
   }
 
   function renderPlayers() {
     if (!els.playersBoard) return;
-    const slots = els.playersBoard.querySelectorAll('.tienlen-bot-player-slot');
+    const slots = els.playerSlots || [];
     slots.forEach((slot, idx) => {
       const p = state.players[idx];
-      slot.classList.remove('is-turn', 'is-control', 'is-passed', 'is-me');
+      slot.classList.remove('is-turn', 'is-control', 'is-passed', 'is-me', 'is-winner');
+      slot.classList.remove('turn-flash');
       slot.innerHTML = '';
       if (!p) {
-        slot.textContent = 'Khong co nguoi choi';
+        slot.innerHTML =
+          '<div class="tl-player-empty">' +
+          '<div class="tl-player-empty__icon">+</div>' +
+          '<div class="tl-player-empty__text">Khong co nguoi choi</div>' +
+          '</div>';
         return;
       }
       if (state.currentTurnId === p.id) slot.classList.add('is-turn');
       if (state.controlUserId === p.id) slot.classList.add('is-control');
       if (state.passedIds.has(p.id)) slot.classList.add('is-passed');
       if (p.isHuman) slot.classList.add('is-me');
+      if (state.winnerId === p.id) slot.classList.add('is-winner');
+      if (state.pendingTurnFlashUserId && state.pendingTurnFlashUserId === p.id && !state.gameOver) {
+        slot.classList.add('turn-flash');
+      }
 
-      const name = document.createElement('div');
-      name.className = 'fw-bold theme-text';
-      name.textContent = (idx + 1) + '. ' + p.name;
-      const meta = document.createElement('div');
-      meta.className = 'small';
-      meta.innerHTML = '<span>Con bai: <strong>' + p.hand.length + '</strong></span>'
-        + (p.isHuman ? ' <span class="badge text-bg-info ms-1">Ban</span>' : ' <span class="badge text-bg-secondary ms-1">Bot</span>');
-      const flags = document.createElement('div');
-      flags.className = 'small text-muted';
-      const parts = [];
-      if (state.currentTurnId === p.id) parts.push('Dang den luot');
-      if (state.controlUserId === p.id) parts.push('Nam vong');
-      if (state.passedIds.has(p.id)) parts.push('Da pass');
-      if (state.winnerId === p.id) parts.push('Thang');
-      flags.textContent = parts.join(' | ') || '-';
-      slot.append(name, meta, flags);
+      const badges = [
+        p.isHuman ? '<span class="tl-seat-badge tl-seat-badge--me">Ban</span>' : '<span class="tl-seat-badge tl-seat-badge--bot">Bot</span>',
+        (state.currentTurnId === p.id && !state.gameOver) ? '<span class="tl-seat-badge tl-seat-badge--turn">Luot</span>' : '',
+        (state.controlUserId === p.id && state.started && !state.gameOver) ? '<span class="tl-seat-badge tl-seat-badge--control">Nam vong</span>' : '',
+        state.passedIds.has(p.id) ? '<span class="tl-seat-badge tl-seat-badge--pass">Pass</span>' : '',
+        (state.winnerId === p.id) ? '<span class="tl-seat-badge tl-seat-badge--win">Thang</span>' : ''
+      ].filter(Boolean).join('');
+
+      const flags = [];
+      if (state.currentTurnId === p.id) flags.push('Dang den luot');
+      if (state.controlUserId === p.id) flags.push('Nam vong');
+      if (state.passedIds.has(p.id)) flags.push('Da pass');
+      if (state.winnerId === p.id) flags.push('Da het bai');
+
+      slot.innerHTML =
+        '<div class="tl-player-slot__head">' +
+          '<div class="tl-player-avatar" aria-hidden="true">' + escapeHtml(initialsOfName(p.name)) + '</div>' +
+          '<div class="tl-player-slot__identity">' +
+            '<div class="tl-player-slot__name">' + escapeHtml((idx + 1) + '. ' + p.name) + '</div>' +
+            '<div class="tl-player-slot__uid">' + escapeHtml(p.id) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="tl-player-slot__meta">' +
+          '<div class="tl-player-slot__chips">' + badges + '</div>' +
+          '<div class="tl-player-slot__count">Con bai <strong>' + p.hand.length + '</strong></div>' +
+        '</div>' +
+        '<div class="tl-player-slot__footer">' + escapeHtml(flags.join(' | ') || 'San sang') + '</div>';
     });
+    state.pendingTurnFlashUserId = '';
   }
 
   function renderTrick() {
@@ -838,17 +915,29 @@
     if (els.trickOwnerTextDup) els.trickOwnerTextDup.textContent = trick ? trick.ownerName : '-';
     if (!els.trickCards) return;
     els.trickCards.innerHTML = '';
+    if (state.pendingTrickAnim) {
+      restartAnimation(els.trickCards, 'tl-trick-pulse');
+    }
     const cards = trick ? trick.cards : [];
     if (!cards || cards.length === 0) {
+      state.pendingTrickAnim = false;
       const muted = document.createElement('div');
       muted.className = 'text-muted small';
       muted.textContent = 'Chua co bo bai nao';
       els.trickCards.appendChild(muted);
       return;
     }
-    for (const card of cards) {
-      els.trickCards.appendChild(renderCardElement(card, false, true));
+    const animateEnter = state.pendingTrickAnim;
+    for (let i = 0; i < cards.length; i++) {
+      const card = cards[i];
+      const cardEl = renderCardElement(card, false, true);
+      if (animateEnter) {
+        cardEl.classList.add('tl-card-enter-play');
+        cardEl.style.animationDelay = String(i * 40) + 'ms';
+      }
+      els.trickCards.appendChild(cardEl);
     }
+    state.pendingTrickAnim = false;
   }
 
   function renderHand() {
@@ -868,10 +957,16 @@
       if (!validCodes.has(code)) state.selectedCodes.delete(code);
     }
 
-    for (const card of mePlayer.hand) {
+    const animateDeal = state.pendingHandDealAnim;
+    for (let idx = 0; idx < mePlayer.hand.length; idx++) {
+      const card = mePlayer.hand[idx];
       const selected = state.selectedCodes.has(card.code);
       const cardEl = renderCardElement(card, selected, false);
       if (!myTurn) cardEl.classList.add('disabled');
+      if (animateDeal) {
+        cardEl.classList.add('tl-card-enter-deal');
+        cardEl.style.animationDelay = String(Math.min(idx, 12) * 24) + 'ms';
+      }
       cardEl.addEventListener('click', () => {
         if (!myTurn) return;
         if (state.selectedCodes.has(card.code)) state.selectedCodes.delete(card.code);
@@ -881,6 +976,7 @@
       });
       els.myHand.appendChild(cardEl);
     }
+    state.pendingHandDealAnim = false;
 
     if (els.handCount) els.handCount.textContent = String(mePlayer.hand.length);
     if (els.selectedCount) els.selectedCount.textContent = String(state.selectedCodes.size);
@@ -890,17 +986,33 @@
     const el = document.createElement(readonly ? 'div' : 'button');
     if (!readonly) el.type = 'button';
     el.className = 'tienlen-bot-card-btn';
-    if (card.red) el.classList.add('red');
+    const visual = cardVisual(card);
+    if (visual.red) el.classList.add('red');
     if (selected) el.classList.add('selected');
+    if (readonly) el.classList.add('readonly');
     el.title = card.code;
+    el.setAttribute('aria-label', visual.rankText + ' ' + visual.suitNameVi);
+    el.dataset.code = card.code;
 
-    const top = document.createElement('div');
-    top.className = 'fw-bold';
-    top.textContent = card.label;
-    const bottom = document.createElement('div');
-    bottom.className = 'small';
-    bottom.textContent = card.code;
-    el.append(top, bottom);
+    const cornerTop = document.createElement('div');
+    cornerTop.className = 'tl-card-corner tl-card-corner--top';
+    cornerTop.innerHTML = '<span class="tl-card-rank">' + escapeHtml(visual.rankText) + '</span><span class="tl-card-suit">' + escapeHtml(visual.suitSymbol) + '</span>';
+
+    const center = document.createElement('div');
+    center.className = 'tl-card-center';
+    center.innerHTML =
+      '<div class="tl-card-center__rank">' + escapeHtml(visual.rankText) + '</div>' +
+      '<div class="tl-card-center__suit">' + escapeHtml(visual.suitSymbol) + '</div>';
+
+    const cornerBottom = document.createElement('div');
+    cornerBottom.className = 'tl-card-corner tl-card-corner--bottom';
+    cornerBottom.innerHTML = '<span class="tl-card-rank">' + escapeHtml(visual.rankText) + '</span><span class="tl-card-suit">' + escapeHtml(visual.suitSymbol) + '</span>';
+
+    const codeChip = document.createElement('div');
+    codeChip.className = 'tl-card-code';
+    codeChip.textContent = card.code;
+
+    el.append(cornerTop, center, cornerBottom, codeChip);
     return el;
   }
 
@@ -955,6 +1067,47 @@
     }
   }
 
+  function renderStatusTimeline() {
+    if (!els.statusTimeline) {
+      return;
+    }
+    const ready = state.players.length === 4;
+    const started = state.started;
+    const dealt = started && state.playCount === 0 && !state.gameOver;
+    const playing = started && !state.gameOver && state.playCount > 0;
+    const ended = state.gameOver;
+    const turnPlayer = getCurrentPlayer();
+    const winnerPlayer = findPlayerById(state.winnerId);
+
+    const steps = [
+      { label: 'San sang', state: ready ? 'done' : 'active' },
+      { label: 'Chia bai', state: dealt ? 'active' : (started ? 'done' : 'off') },
+      { label: 'Dang danh', state: playing ? 'active' : ((started && (ended || dealt)) ? 'done' : 'off') },
+      { label: 'Ket thuc', state: ended ? 'active' : 'off' }
+    ];
+
+    const phaseLabel = ended
+      ? ('Ket thuc - ' + (winnerPlayer ? winnerPlayer.name + ' thang' : 'co nguoi thang'))
+      : started
+        ? ('Dang choi - luot ' + (turnPlayer ? turnPlayer.name : '-'))
+        : 'San sang bat dau van moi';
+    const eventLabel = state.message || '-';
+
+    els.statusTimeline.innerHTML =
+      '<div class="tl-status-timeline__track">' +
+        steps.map((step) =>
+          '<div class="tl-status-step is-' + step.state + '">' +
+            '<span class="tl-status-step__dot" aria-hidden="true"></span>' +
+            '<span class="tl-status-step__label">' + escapeHtml(step.label) + '</span>' +
+          '</div>'
+        ).join('') +
+      '</div>' +
+      '<div class="tl-status-timeline__summary">' +
+        '<span class="tl-status-summary-chip">' + escapeHtml(phaseLabel) + '</span>' +
+        '<span class="tl-status-summary-chip is-muted">' + escapeHtml(eventLabel) + '</span>' +
+      '</div>';
+  }
+
   function updateActionButtons() {
     const mePlayer = state.players.find((p) => p.isHuman);
     const myTurn = !!(mePlayer && state.currentTurnId === mePlayer.id && !state.gameOver);
@@ -964,6 +1117,7 @@
     if (els.playBtn) els.playBtn.disabled = !myTurn || !hasSelection;
     if (els.passBtn) els.passBtn.disabled = !canPass;
     if (els.clearBtn) els.clearBtn.disabled = state.selectedCodes.size === 0;
+    if (els.surrenderBtn) els.surrenderBtn.disabled = !state.started || state.gameOver;
     if (els.selectedCount) els.selectedCount.textContent = String(state.selectedCodes.size);
     if (els.handCount && mePlayer) els.handCount.textContent = String(mePlayer.hand.length);
   }
@@ -998,6 +1152,38 @@
     return RANK_LABELS.get(rankValue) || String(rankValue);
   }
 
+  function initialsOfName(name) {
+    const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  function cardVisual(card) {
+    const code = String(card?.code || '').trim().toUpperCase();
+    const suitCode = String(card?.suitCode || code.slice(-1) || '').toUpperCase();
+    const rankText = code.length >= 2 ? code.slice(0, -1) : (String(card?.label || '').trim() || '?');
+    const suitMeta = suitVisualMeta(suitCode);
+    return {
+      rankText,
+      suitCode,
+      suitSymbol: suitMeta.symbol,
+      suitNameVi: suitMeta.nameVi,
+      red: typeof card?.red === 'boolean' ? card.red : suitMeta.red
+    };
+  }
+
+  function suitVisualMeta(suitCode) {
+    switch (String(suitCode || '').toUpperCase()) {
+      case 'H': return { symbol: '♥', nameVi: 'co', red: true };
+      case 'D': return { symbol: '♦', nameVi: 'ro', red: true };
+      case 'C': return { symbol: '♣', nameVi: 'tep', red: false };
+      case 'S':
+      default:
+        return { symbol: '♠', nameVi: 'bich', red: false };
+    }
+  }
+
   function compareCards(a, b) {
     if (a.rankValue !== b.rankValue) return a.rankValue - b.rankValue;
     return a.suitOrder - b.suitOrder;
@@ -1021,5 +1207,26 @@
 
   function normalizeDifficulty(d) {
     return String(d || '').toLowerCase() === 'hard' ? 'hard' : 'easy';
+  }
+
+  function restartAnimation(el, className) {
+    if (!el) {
+      return;
+    }
+    el.classList.remove(className);
+    void el.offsetWidth;
+    el.classList.add(className);
+    window.setTimeout(() => {
+      el.classList.remove(className);
+    }, 420);
+  }
+
+  function escapeHtml(value) {
+    return String(value || '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
   }
 })();

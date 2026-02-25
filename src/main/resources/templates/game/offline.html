@@ -7,6 +7,11 @@
 <div class="text-center mt-4">
   <h1 class="theme-text">Che do choi Offline</h1>
   <p id="turnStatus" class="theme-text">Luot cua: X</p>
+  <div class="d-flex justify-content-center gap-2 mb-2">
+    <button id="offlineResetBtn" class="btn btn-outline-warning btn-sm" type="button">Choi lai</button>
+    <button id="offlineSurrenderBtn" class="btn btn-outline-danger btn-sm" type="button">Dau hang</button>
+    <a th:href="@{/games/caro}" class="btn btn-outline-secondary btn-sm">Che do Caro</a>
+  </div>
 </div>
 
 <div class="d-flex justify-content-center">
@@ -27,6 +32,8 @@
     line-height: var(--cell-size);
     color: var(--cell-text-color, black);
   }
+  .cell.win { background: rgba(255, 193, 7, 0.3); }
+  .cell.last-move { box-shadow: inset 0 0 0 2px rgba(13, 202, 240, 0.9); }
   .player-x { color: #00aaff; font-weight: bold; }
   .player-o { color: #ff6666; font-weight: bold; }
   body.dark-mode .cell { --cell-border-color: white; --cell-text-color: white; }

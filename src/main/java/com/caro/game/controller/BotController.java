@@ -58,33 +58,62 @@ public class BotController {
             replayEasy(state);
 
             BotEasy.placePlayerMove(move.x(), move.y());
-            boolean playerWin = BotEasy.checkWin('X');
+            BotEasy.WinResult playerWinResult = BotEasy.checkWinResult('X');
 
             state.addPlayerMove(move.x(), move.y());
             state.mark(move.x(), move.y(), 'X');
 
-            if (playerWin) {
+            if (playerWinResult.hasWin()) {
                 Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
                 response.put("x", null);
                 response.put("y", null);
                 response.put("playerWin", true);
                 response.put("botWin", false);
+                response.put("draw", false);
+                response.put("winLine", playerWinResult.winLine());
                 return response;
             }
 
-            BotEasy.Move botMove = BotEasy.getNextMove(move.x(), move.y());
-            boolean botWin = BotEasy.checkWin('O');
-            if (inside(botMove) && !state.isOccupied(botMove.x(), botMove.y())) {
-                state.addBotMove(botMove.x(), botMove.y());
-                state.mark(botMove.x(), botMove.y(), 'O');
+            if (state.isBoardFull()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("x", null);
+                response.put("y", null);
+                response.put("playerWin", false);
+                response.put("botWin", false);
+                response.put("draw", true);
+                response.put("winLine", null);
+                return response;
             }
 
-            return Map.of(
-                "x", botMove.x(),
-                "y", botMove.y(),
-                "playerWin", false,
-                "botWin", botWin
-            );
+            BotEasy.Move botMove = resolveEasyBotMove(BotEasy.getNextMove(move.x(), move.y()), state);
+            if (botMove == null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("x", null);
+                response.put("y", null);
+                response.put("playerWin", false);
+                response.put("botWin", false);
+                response.put("draw", true);
+                response.put("winLine", null);
+                return response;
+            }
+
+            state.addBotMove(botMove.x(), botMove.y());
+            state.mark(botMove.x(), botMove.y(), 'O');
+            BotEasy.WinResult botWinResult = BotEasy.checkWinResult('O');
+            boolean draw = !botWinResult.hasWin() && state.isBoardFull();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("x", botMove.x());
+            response.put("y", botMove.y());
+            response.put("playerWin", false);
+            response.put("botWin", botWinResult.hasWin());
+            response.put("draw", draw);
+            response.put("winLine", botWinResult.hasWin() ? botWinResult.winLine() : null);
+            return response;
         }
     }
 
@@ -112,26 +141,53 @@ public class BotController {
 
             if (playerWinResult.hasWin()) {
                 Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
                 response.put("x", null);
                 response.put("y", null);
                 response.put("playerWin", true);
                 response.put("botWin", false);
+                response.put("draw", false);
                 response.put("winLine", playerWinResult.winLine());
                 return response;
             }
 
-            BotHard.Move botMove = BotHard.getNextMove(move.x(), move.y());
-            BotHard.WinResult botWinResult = BotHard.checkWin('O');
-            if (inside(botMove) && !state.isOccupied(botMove.x(), botMove.y())) {
-                state.addBotMove(botMove.x(), botMove.y());
-                state.mark(botMove.x(), botMove.y(), 'O');
+            if (state.isBoardFull()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("x", null);
+                response.put("y", null);
+                response.put("playerWin", false);
+                response.put("botWin", false);
+                response.put("draw", true);
+                response.put("winLine", null);
+                return response;
             }
 
+            BotHard.Move botMove = resolveHardBotMove(BotHard.getNextMove(move.x(), move.y()), state);
+            if (botMove == null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("x", null);
+                response.put("y", null);
+                response.put("playerWin", false);
+                response.put("botWin", false);
+                response.put("draw", true);
+                response.put("winLine", null);
+                return response;
+            }
+
+            state.addBotMove(botMove.x(), botMove.y());
+            state.mark(botMove.x(), botMove.y(), 'O');
+            BotHard.WinResult botWinResult = BotHard.checkWin('O');
+            boolean draw = !botWinResult.hasWin() && state.isBoardFull();
+
             Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
             response.put("x", botMove.x());
             response.put("y", botMove.y());
             response.put("playerWin", false);
             response.put("botWin", botWinResult.hasWin());
+            response.put("draw", draw);
             if (botWinResult.hasWin()) {
                 response.put("winLine", botWinResult.winLine());
             } else {
@@ -211,6 +267,30 @@ public class BotController {
         }
     }
 
+    private BotEasy.Move resolveEasyBotMove(BotEasy.Move move, BotSessionState state) {
+        if (inside(move) && !state.isOccupied(move.x(), move.y())) {
+            return move;
+        }
+        int[] fallback = state.findFirstEmpty();
+        if (fallback == null) {
+            return null;
+        }
+        BotEasy.placeBotMove(fallback[0], fallback[1]);
+        return new BotEasy.Move(fallback[0], fallback[1]);
+    }
+
+    private BotHard.Move resolveHardBotMove(BotHard.Move move, BotSessionState state) {
+        if (inside(move) && !state.isOccupied(move.x(), move.y())) {
+            return move;
+        }
+        int[] fallback = state.findFirstEmpty();
+        if (fallback == null) {
+            return null;
+        }
+        BotHard.placeBotMove(fallback[0], fallback[1]);
+        return new BotHard.Move(fallback[0], fallback[1]);
+    }
+
     private static final class BotSessionState implements Serializable {
         @Serial
         private static final long serialVersionUID = 1L;
@@ -236,6 +316,21 @@ public class BotController {
                 botMoves = new ArrayList<>();
             }
             botMoves.add(new int[]{x, y});
+        }
+
+        boolean isBoardFull() {
+            return findFirstEmpty() == null;
+        }
+
+        int[] findFirstEmpty() {
+            for (int x = 0; x < SIZE; x++) {
+                for (int y = 0; y < SIZE; y++) {
+                    if (board[x][y] == '\0') {
+                        return new int[]{x, y};
+                    }
+                }
+            }
+            return null;
         }
     }
 }

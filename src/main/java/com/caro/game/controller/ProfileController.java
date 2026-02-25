@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Controller
@@ -35,8 +36,10 @@ public class ProfileController {
         if (userId == null || userId.isBlank() || userAccountRepository.findById(userId).isEmpty()) {
             return "redirect:/";
         }
-        String current = resolveViewerId(userId, viewerId, request);
-        model.addAllAttributes(profileStatsService.buildProfileStats(userId, current));
+        String sessionUserId = sessionUserId(request);
+        Map<String, Object> profile = new HashMap<>(profileStatsService.buildProfileStats(userId, safeViewerId(sessionUserId)));
+        profile.put("isOwner", isOwner(userId, sessionUserId));
+        model.addAllAttributes(profile);
         return "profile/index";
     }
 
@@ -56,8 +59,10 @@ public class ProfileController {
         if (userId == null || userId.isBlank() || userAccountRepository.findById(userId).isEmpty()) {
             return Map.of("success", false, "error", "User not found");
         }
-        String current = resolveViewerId(userId, viewerId, request);
-        return profileStatsService.buildProfileStats(userId, current);
+        String sessionUserId = sessionUserId(request);
+        Map<String, Object> profile = new HashMap<>(profileStatsService.buildProfileStats(userId, safeViewerId(sessionUserId)));
+        profile.put("isOwner", isOwner(userId, sessionUserId));
+        return profile;
     }
 
     @ResponseBody
@@ -100,13 +105,12 @@ public class ProfileController {
         return Map.of("success", true, "user", user);
     }
 
-    private String resolveViewerId(String userId, String viewerId, HttpServletRequest request) {
-        String sessionUserId = sessionUserId(request);
-        if (sessionUserId != null) {
-            return sessionUserId;
-        }
-        // Prevent spoofing owner UI when no authenticated session exists.
-        return "";
+    private String safeViewerId(String sessionUserId) {
+        return sessionUserId == null ? "" : sessionUserId;
+    }
+
+    private boolean isOwner(String profileUserId, String sessionUserId) {
+        return profileUserId != null && profileUserId.equals(sessionUserId);
     }
 
     private String sessionUserId(HttpServletRequest request) {

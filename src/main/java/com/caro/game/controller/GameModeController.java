@@ -23,8 +23,11 @@ public class GameModeController {
     public String botPicker(@RequestParam String game, Model model) {
         GameCatalogItem item = gameCatalogService.findByCode(game)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
-        // Legacy route kept for compatibility: redirect to dedicated mode page per game.
-        return "redirect:/games/" + item.code();
+        model.addAttribute("game", item);
+        model.addAttribute("hasRealBotNow", hasRealBotNow(item.code()));
+        model.addAttribute("easyUrl", botPlayUrl(item.code(), "easy"));
+        model.addAttribute("hardUrl", botPlayUrl(item.code(), "hard"));
+        return "game-mode/bot-picker";
     }
 
     @GetMapping("/bot-play")
@@ -34,6 +37,9 @@ public class GameModeController {
         GameCatalogItem item = gameCatalogService.findByCode(game)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
         String normalizedDifficulty = normalizeDifficulty(difficulty);
+        if ("caro".equalsIgnoreCase(item.code())) {
+            return "redirect:/bot/" + normalizedDifficulty;
+        }
         if ("chess".equalsIgnoreCase(item.code())) {
             return "redirect:/chess/bot?difficulty=" + normalizedDifficulty;
         }
@@ -52,6 +58,9 @@ public class GameModeController {
 
     private String botPlayUrl(String gameCode, String difficulty) {
         String d = normalizeDifficulty(difficulty);
+        if ("caro".equalsIgnoreCase(gameCode)) {
+            return "/bot/" + d;
+        }
         if ("chess".equalsIgnoreCase(gameCode)) {
             return "/chess/bot?difficulty=" + d;
         }
@@ -65,7 +74,8 @@ public class GameModeController {
     }
 
     private boolean hasRealBotNow(String gameCode) {
-        return "chess".equalsIgnoreCase(gameCode)
+        return "caro".equalsIgnoreCase(gameCode)
+            || "chess".equalsIgnoreCase(gameCode)
             || "xiangqi".equalsIgnoreCase(gameCode)
             || "cards".equalsIgnoreCase(gameCode);
     }

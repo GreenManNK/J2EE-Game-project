@@ -83,7 +83,8 @@ public class GameRoomService {
         String symbol = players.get(userId);
         board[x][y] = symbol;
 
-        boolean win = checkWin(board, x, y, symbol);
+        List<BoardPoint> winLine = findWinLine(board, x, y, symbol);
+        boolean win = winLine != null;
         if (win) {
             String loserId = players.keySet().stream().filter(id -> !id.equals(userId)).findFirst().orElse(null);
             int moves = countMoves(board);
@@ -113,10 +114,12 @@ public class GameRoomService {
                 );
             }
 
-            return MoveResult.win(symbol, x, y, userId, loserId, winnerScore, loserScore);
+            currentTurn.remove(roomId);
+            return MoveResult.win(symbol, x, y, userId, loserId, winnerScore, loserScore, winLine);
         }
 
         if (countMoves(board) >= BOARD_SIZE * BOARD_SIZE) {
+            currentTurn.remove(roomId);
             return MoveResult.draw(symbol, x, y);
         }
 
@@ -124,6 +127,47 @@ public class GameRoomService {
         currentTurn.put(roomId, nextPlayer);
 
         return MoveResult.ok(symbol, x, y, nextPlayer);
+    }
+
+    public synchronized SurrenderResult surrender(String roomId, String userId) {
+        Map<String, String> players = roomPlayers.get(roomId);
+        if (players == null || !players.containsKey(userId)) {
+            return SurrenderResult.error("Player does not belong to room");
+        }
+        if (players.size() < 2) {
+            return SurrenderResult.error("Waiting for opponent");
+        }
+
+        String winnerId = players.keySet().stream().filter(id -> !id.equals(userId)).findFirst().orElse(null);
+        if (winnerId == null || winnerId.isBlank()) {
+            return SurrenderResult.error("Opponent not found");
+        }
+
+        String[][] board = boards.get(roomId);
+        int moves = board == null ? 0 : countMoves(board);
+        Integer winnerScoreBefore = userAccountRepository.findById(winnerId).map(UserAccount::getScore).orElse(null);
+        Integer loserScoreBefore = userAccountRepository.findById(userId).map(UserAccount::getScore).orElse(null);
+        String topPlayerIdBeforeMatch = userAccountRepository.findAllByOrderByScoreDesc().stream()
+            .findFirst()
+            .map(UserAccount::getId)
+            .orElse(null);
+
+        persistGameHistory(roomId, players, winnerId, moves);
+
+        Integer winnerScore = null;
+        Integer loserScore = null;
+        if (roomId.startsWith("Ranked_")) {
+            ScoreUpdate update = updateRankedScore(winnerId, userId);
+            winnerScore = update.winnerScore();
+            loserScore = update.loserScore();
+        }
+
+        achievementService.evaluateAfterMatch(
+            roomId, winnerId, userId, moves, winnerScoreBefore, loserScoreBefore, topPlayerIdBeforeMatch
+        );
+
+        currentTurn.remove(roomId);
+        return SurrenderResult.ok(winnerId, userId, winnerScore, loserScore);
     }
 
     public synchronized void leaveRoom(String roomId, String userId) {
@@ -248,21 +292,28 @@ public class GameRoomService {
         return moves;
     }
 
-    private boolean checkWin(String[][] board, int x, int y, String symbol) {
-        return checkDirection(board, x, y, symbol, 1, 0)
-            || checkDirection(board, x, y, symbol, 0, 1)
-            || checkDirection(board, x, y, symbol, 1, 1)
-            || checkDirection(board, x, y, symbol, 1, -1);
+    private List<BoardPoint> findWinLine(String[][] board, int x, int y, String symbol) {
+        List<BoardPoint> line = collectDirectionLine(board, x, y, symbol, 1, 0);
+        if (line != null) return line;
+        line = collectDirectionLine(board, x, y, symbol, 0, 1);
+        if (line != null) return line;
+        line = collectDirectionLine(board, x, y, symbol, 1, 1);
+        if (line != null) return line;
+        return collectDirectionLine(board, x, y, symbol, 1, -1);
     }
 
-    private boolean checkDirection(String[][] board, int x, int y, String symbol, int dx, int dy) {
-        int count = 1;
+    private List<BoardPoint> collectDirectionLine(String[][] board, int x, int y, String symbol, int dx, int dy) {
+        if (symbol == null || !inside(x, y) || !symbol.equals(board[x][y])) {
+            return null;
+        }
+        List<BoardPoint> line = new ArrayList<>();
+        line.add(new BoardPoint(x, y));
 
         for (int i = 1; i < 5; i++) {
             int nx = x + i * dx;
             int ny = y + i * dy;
             if (inside(nx, ny) && symbol.equals(board[nx][ny])) {
-                count++;
+                line.add(new BoardPoint(nx, ny));
             } else {
                 break;
             }
@@ -272,13 +323,13 @@ public class GameRoomService {
             int nx = x - i * dx;
             int ny = y - i * dy;
             if (inside(nx, ny) && symbol.equals(board[nx][ny])) {
-                count++;
+                line.add(0, new BoardPoint(nx, ny));
             } else {
                 break;
             }
         }
 
-        return count >= 5;
+        return line.size() >= 5 ? line : null;
     }
 
     private boolean inside(int x, int y) {
@@ -288,23 +339,39 @@ public class GameRoomService {
     public record JoinResult(boolean ok, String symbol, String error, String currentTurnUserId, int playerCount) {
     }
 
+    public record BoardPoint(int x, int y) {
+    }
+
     public record MoveResult(boolean ok, boolean win, boolean draw, String symbol, int x, int y, String nextTurnUserId,
-                             String winnerUserId, String loserUserId, Integer winnerScore, Integer loserScore, String error) {
+                             String winnerUserId, String loserUserId, Integer winnerScore, Integer loserScore,
+                             List<BoardPoint> winLine, String error) {
         public static MoveResult ok(String symbol, int x, int y, String nextTurnUserId) {
-            return new MoveResult(true, false, false, symbol, x, y, nextTurnUserId, null, null, null, null, null);
+            return new MoveResult(true, false, false, symbol, x, y, nextTurnUserId, null, null, null, null, null, null);
         }
 
         public static MoveResult win(String symbol, int x, int y, String winnerUserId, String loserId,
-                                     Integer winnerScore, Integer loserScore) {
-            return new MoveResult(true, true, false, symbol, x, y, null, winnerUserId, loserId, winnerScore, loserScore, null);
+                                     Integer winnerScore, Integer loserScore, List<BoardPoint> winLine) {
+            return new MoveResult(true, true, false, symbol, x, y, null, winnerUserId, loserId, winnerScore, loserScore, winLine, null);
         }
 
         public static MoveResult draw(String symbol, int x, int y) {
-            return new MoveResult(true, false, true, symbol, x, y, null, null, null, null, null, null);
+            return new MoveResult(true, false, true, symbol, x, y, null, null, null, null, null, null, null);
         }
 
         public static MoveResult error(String error) {
-            return new MoveResult(false, false, false, null, -1, -1, null, null, null, null, null, error);
+            return new MoveResult(false, false, false, null, -1, -1, null, null, null, null, null, null, error);
+        }
+    }
+
+    public record SurrenderResult(boolean ok, String winnerUserId, String loserUserId,
+                                  Integer winnerScore, Integer loserScore, String error) {
+        public static SurrenderResult ok(String winnerUserId, String loserUserId,
+                                         Integer winnerScore, Integer loserScore) {
+            return new SurrenderResult(true, winnerUserId, loserUserId, winnerScore, loserScore, null);
+        }
+
+        public static SurrenderResult error(String error) {
+            return new SurrenderResult(false, null, null, null, null, error);
         }
     }
 

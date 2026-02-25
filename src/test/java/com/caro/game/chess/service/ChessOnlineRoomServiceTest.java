@@ -68,4 +68,25 @@ class ChessOnlineRoomServiceTest {
         assertEquals("CHESS-3", service.availableRooms().getFirst().roomId());
         assertEquals("w", snapshot.players().getFirst().color());
     }
+
+    @Test
+    void surrenderShouldMarkGameOverAndBlockFurtherMoves() {
+        ChessOnlineRoomService service = new ChessOnlineRoomService();
+        service.joinRoom("CHESS-4", "whiteUser", "White", "");
+        service.joinRoom("CHESS-4", "blackUser", "Black", "");
+
+        ChessOnlineRoomService.ActionResult surrender = service.surrenderGame("CHESS-4", "whiteUser");
+
+        assertTrue(surrender.ok());
+        assertEquals("SURRENDER", surrender.eventType());
+        assertNotNull(surrender.room());
+        assertEquals("GAME_OVER", surrender.room().status());
+        assertNull(surrender.room().currentTurnUserId());
+        assertTrue(surrender.room().statusMessage().contains("dau hang"));
+        assertEquals("Trang dau hang", surrender.room().moveHistory().getLast());
+
+        ChessOnlineRoomService.ActionResult moveAfterSurrender = service.move("CHESS-4", "blackUser", 1, 4, 3, 4, null);
+        assertFalse(moveAfterSurrender.ok());
+        assertEquals("Game already ended", moveAfterSurrender.error());
+    }
 }

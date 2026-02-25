@@ -123,6 +123,28 @@ public class XiangqiWebSocketController {
         broadcastRoomState(roomId, "RESET", result.room(), "Van moi da san sang");
     }
 
+    @MessageMapping("/xiangqi.surrender")
+    public void surrender(XiangqiRoomActionMessage message, SimpMessageHeaderAccessor headers) {
+        if (message == null) {
+            return;
+        }
+        String roomId = safeTrim(message.getRoomId());
+        String userId = requireConnectionUser(roomId, message.getUserId(), headers);
+        if (roomId == null || userId == null) {
+            return;
+        }
+        XiangqiOnlineRoomService.ActionResult result = roomService.surrenderGame(roomId, userId);
+        if (!result.ok()) {
+            sendUserError(roomId, userId, result.error());
+            XiangqiOnlineRoomService.RoomSnapshot room = roomService.roomSnapshot(roomId);
+            if (room != null) {
+                broadcastRoomState(roomId, "ROOM_STATE", room, result.error());
+            }
+            return;
+        }
+        broadcastRoomState(roomId, "SURRENDER", result.room(), result.room() == null ? "Nguoi choi da dau hang" : result.room().statusMessage());
+    }
+
     @MessageMapping("/xiangqi.leave")
     public void leave(XiangqiRoomActionMessage message, SimpMessageHeaderAccessor headers) {
         if (message == null) {

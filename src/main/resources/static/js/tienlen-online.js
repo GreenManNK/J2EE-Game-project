@@ -1,8 +1,9 @@
-(function () {
+﻿(function () {
   const boot = window.TienLenBoot || {};
   const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
     ? window.CaroUrl.path
     : (v) => v;
+  const ui = window.CaroUi || {};
 
   const state = {
     connected: false,
@@ -11,7 +12,11 @@
     myHand: [],
     selectedCodes: new Set(),
     roomSub: null,
-    client: null
+    client: null,
+    pendingHandDealAnim: false,
+    pendingTrickAnim: false,
+    pendingTurnFlashUserId: '',
+    lastRoomEventType: ''
   };
 
   const me = {
@@ -37,6 +42,7 @@
     els.roomInput = document.getElementById('tlRoomIdInput');
     els.joinBtn = document.getElementById('tlJoinBtn');
     els.startBtn = document.getElementById('tlStartBtn');
+    els.surrenderBtn = document.getElementById('tlSurrenderBtn');
     els.leaveBtn = document.getElementById('tlLeaveBtn');
     els.playBtn = document.getElementById('tlPlayBtn');
     els.passBtn = document.getElementById('tlPassBtn');
@@ -46,6 +52,7 @@
     els.currentRoomLabel = document.getElementById('tlCurrentRoomLabel');
     els.statusText = document.getElementById('tlStatusText');
     els.messageText = document.getElementById('tlMessageText');
+    els.statusTimeline = document.getElementById('tlStatusTimeline');
     els.roomList = document.getElementById('tlRoomList');
     els.playersBoard = document.getElementById('tlPlayersBoard');
     els.turnText = document.getElementById('tlTurnText');
@@ -55,11 +62,13 @@
     els.myHand = document.getElementById('tlMyHand');
     els.selectedCount = document.getElementById('tlSelectedCount');
     els.handCount = document.getElementById('tlHandCount');
+    els.playerSlots = Array.from(document.querySelectorAll('#tlPlayersBoard .tienlen-player-slot'));
   }
 
   function bindActions() {
     els.joinBtn?.addEventListener('click', () => joinRoomByInput());
     els.startBtn?.addEventListener('click', () => publish('/app/tienlen.start', { roomId: state.roomId, userId: me.userId }));
+    els.surrenderBtn?.addEventListener('click', () => surrenderCurrentRoom());
     els.leaveBtn?.addEventListener('click', () => leaveCurrentRoom());
     els.playBtn?.addEventListener('click', () => playSelectedCards());
     els.passBtn?.addEventListener('click', () => publish('/app/tienlen.pass', { roomId: state.roomId, userId: me.userId }));
@@ -127,7 +136,12 @@
       if (!privateState || privateState.roomId !== state.roomId || privateState.userId !== me.userId) {
         return;
       }
+      const prevSig = handSignature(state.myHand);
       state.myHand = Array.isArray(privateState.hand) ? privateState.hand.slice() : [];
+      const nextSig = handSignature(state.myHand);
+      if (prevSig !== nextSig && shouldAnimateDealFromPrivateState()) {
+        state.pendingHandDealAnim = true;
+      }
       cleanupSelected();
       renderHand();
       updateActionButtons();
@@ -184,11 +198,16 @@
   }
 
   function leaveCurrentRoom() {
+    leaveCurrentRoomWithOptions(null);
+  }
+
+  function leaveCurrentRoomWithOptions(options) {
+    const opts = options || {};
     if (!state.roomId) {
       return;
     }
-    if (state.connected) {
-      publish('/app/tienlen.leave', { roomId: state.roomId, userId: me.userId });
+    if (state.connected && opts.publish !== false) {
+      publish(opts.destination || '/app/tienlen.leave', { roomId: state.roomId, userId: me.userId });
     }
     if (state.roomSub) {
       state.roomSub.unsubscribe();
@@ -199,15 +218,35 @@
     state.myHand = [];
     state.selectedCodes.clear();
     els.currentRoomLabel.textContent = 'Chua vao';
-    setStatus('Da roi phong');
-    setMessage('-');
+    setStatus(opts.statusText || 'Da roi phong');
+    setMessage(opts.messageText || '-');
     renderAll();
     requestRoomList();
+  }
+
+  function surrenderCurrentRoom() {
+    if (!state.roomId || !state.room || !playerExistsInRoom(me.userId)) {
+      setMessage('Ban chua o trong phong');
+      return;
+    }
+    if (!state.room.started || state.room.gameOver) {
+      setMessage('Chi co the dau hang khi van dau dang dien ra');
+      return;
+    }
+    if (!window.confirm('Ban chac chan muon dau hang va roi phong?')) {
+      return;
+    }
+    leaveCurrentRoomWithOptions({
+      destination: '/app/tienlen.surrender',
+      statusText: 'Da dau hang va roi phong',
+      messageText: 'Ban da dau hang va roi phong'
+    });
   }
 
   function onRoomMessage(message) {
     const payload = safeParse(message.body);
     if (!payload) return;
+    state.lastRoomEventType = String(payload.type || '');
 
     if (payload.type === 'ERROR' && payload.userId === me.userId && payload.error) {
       setMessage(payload.error);
@@ -215,11 +254,12 @@
 
     if (payload.type === 'ROOM_CLOSED') {
       setMessage(payload.message || 'Phong da dong');
-      leaveCurrentRoom();
+      leaveCurrentRoomWithOptions({ publish: false, statusText: 'Phong da dong', messageText: payload.message || 'Phong da dong' });
       return;
     }
 
     if (payload.room) {
+      queueRoomAnimations(payload);
       state.room = payload.room;
       if (payload.room.roomId && payload.room.roomId !== state.roomId) {
         return;
@@ -232,7 +272,7 @@
       setStatus(roomStatusText(payload.room));
       if (payload.type === 'GAME_OVER' && payload.room.winnerUserId) {
         const youWin = payload.room.winnerUserId === me.userId;
-        window.setTimeout(() => alert(youWin ? 'Ban da thang van Tien len!' : 'Van dau ket thuc. Co nguoi da het bai.'), 50);
+        window.setTimeout(() => { if (ui.toast) { ui.toast(youWin ? 'Ban da thang van Tien len!' : 'Van dau ket thuc. Co nguoi da het bai.', { type: youWin ? 'success' : 'warning' }); } else if (typeof window !== 'undefined' && typeof window['alert'] === 'function') { window['alert'](youWin ? 'Ban da thang van Tien len!' : 'Van dau ket thuc. Co nguoi da het bai.'); } }, 50);
       }
       renderAll();
     }
@@ -268,6 +308,7 @@
     renderPlayers();
     renderTrick();
     renderHand();
+    renderStatusTimeline();
     updateActionButtons();
     if (els.selfName) els.selfName.textContent = me.displayName || 'Guest';
     if (els.selfUserId) els.selfUserId.textContent = me.userId || '-';
@@ -277,20 +318,25 @@
   function renderRoomList(rooms) {
     if (!els.roomList) return;
     if (!rooms || rooms.length === 0) {
-      els.roomList.innerHTML = '<div class="text-muted">Chua co phong dang cho</div>';
+      els.roomList.innerHTML = '<div class="text-muted tl-empty-note">Chua co phong dang cho</div>';
       return;
     }
     els.roomList.innerHTML = '';
     rooms.forEach((room) => {
       const row = document.createElement('div');
-      row.className = 'd-flex justify-content-between align-items-center border rounded p-2 gap-2';
+      row.className = 'tl-room-item';
       const left = document.createElement('div');
-      left.className = 'small';
-      left.innerHTML = '<div><strong>' + escapeHtml(room.roomId || '') + '</strong></div>'
-        + '<div class="text-muted">' + Number(room.playerCount || 0) + '/' + Number(room.playerLimit || 4) + ' nguoi</div>';
+      left.className = 'small flex-grow-1';
+      const playerCount = Number(room.playerCount || 0);
+      const playerLimit = Math.max(1, Number(room.playerLimit || 4));
+      const fillPct = Math.min(100, Math.max(0, Math.round((playerCount / playerLimit) * 100)));
+      left.innerHTML =
+        '<div class="tl-room-item__title"><strong>' + escapeHtml(room.roomId || '') + '</strong></div>'
+        + '<div class="tl-room-item__meta text-muted">' + playerCount + '/' + playerLimit + ' nguoi</div>'
+        + '<div class="tl-room-item__meter" aria-hidden="true"><span style="width:' + fillPct + '%"></span></div>';
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'btn btn-sm theme-outline-btn';
+      btn.className = 'btn btn-sm theme-outline-btn tl-room-item__btn';
       btn.textContent = 'Vao';
       btn.addEventListener('click', () => {
         if (els.roomInput) {
@@ -308,33 +354,56 @@
     const room = state.room;
     const players = Array.isArray(room?.players) ? room.players.slice().sort((a, b) => Number(a.seatIndex) - Number(b.seatIndex)) : [];
     const passed = new Set(Array.isArray(room?.passedUserIds) ? room.passedUserIds : []);
-    const slotEls = els.playersBoard.querySelectorAll('.tienlen-player-slot');
+    const slotEls = els.playerSlots || [];
 
     slotEls.forEach((slotEl, idx) => {
       const p = players[idx];
-      slotEl.classList.remove('is-turn', 'is-control', 'is-passed', 'is-me');
+      slotEl.classList.remove('is-turn', 'is-control', 'is-passed', 'is-me', 'is-winner');
+      slotEl.classList.remove('turn-flash');
       slotEl.innerHTML = '';
       if (!p) {
-        slotEl.textContent = 'Chua co nguoi choi';
+        slotEl.innerHTML =
+          '<div class="tl-player-empty">' +
+          '<div class="tl-player-empty__icon">+</div>' +
+          '<div class="tl-player-empty__text">Chua co nguoi choi</div>' +
+          '</div>';
         return;
       }
       if (room?.currentTurnUserId === p.userId) slotEl.classList.add('is-turn');
       if (room?.controlUserId === p.userId) slotEl.classList.add('is-control');
       if (passed.has(p.userId)) slotEl.classList.add('is-passed');
       if (p.userId === me.userId) slotEl.classList.add('is-me');
+      if (room?.winnerUserId && room.winnerUserId === p.userId) slotEl.classList.add('is-winner');
+      if (state.pendingTurnFlashUserId && state.pendingTurnFlashUserId === p.userId && !room?.gameOver) {
+        slotEl.classList.add('turn-flash');
+      }
 
-      const name = document.createElement('div');
-      name.className = 'fw-bold theme-text';
-      name.textContent = (idx + 1) + '. ' + (p.displayName || p.userId || 'Player');
-      const meta = document.createElement('div');
-      meta.className = 'small';
-      meta.innerHTML = '<span>Con bai: <strong>' + Number(p.handCount || 0) + '</strong></span>'
-        + (p.userId === me.userId ? ' <span class="badge text-bg-info ms-1">Ban</span>' : '');
-      const uid = document.createElement('div');
-      uid.className = 'small text-muted';
-      uid.textContent = p.userId || '';
-      slotEl.append(name, meta, uid);
+      const displayName = p.displayName || p.userId || 'Player';
+      const badgeHtml = [
+        (p.userId === me.userId) ? '<span class="tl-seat-badge tl-seat-badge--me">Ban</span>' : '',
+        (room?.currentTurnUserId === p.userId && !room?.gameOver) ? '<span class="tl-seat-badge tl-seat-badge--turn">Luot</span>' : '',
+        (room?.controlUserId === p.userId && room?.started && !room?.gameOver) ? '<span class="tl-seat-badge tl-seat-badge--control">Nam vong</span>' : '',
+        (passed.has(p.userId)) ? '<span class="tl-seat-badge tl-seat-badge--pass">Pass</span>' : '',
+        (room?.winnerUserId === p.userId) ? '<span class="tl-seat-badge tl-seat-badge--win">Thang</span>' : ''
+      ].filter(Boolean).join('');
+      const flags = [];
+      flags.push('Ghe ' + (idx + 1));
+      flags.push('Con ' + Number(p.handCount || 0) + ' la');
+      slotEl.innerHTML =
+        '<div class="tl-player-slot__head">' +
+          '<div class="tl-player-avatar" aria-hidden="true">' + escapeHtml(initialsOfName(displayName)) + '</div>' +
+          '<div class="tl-player-slot__identity">' +
+            '<div class="tl-player-slot__name">' + escapeHtml(displayName) + '</div>' +
+            '<div class="tl-player-slot__uid">' + escapeHtml(p.userId || '') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="tl-player-slot__meta">' +
+          '<div class="tl-player-slot__chips">' + badgeHtml + '</div>' +
+          '<div class="tl-player-slot__count">Con bai <strong>' + Number(p.handCount || 0) + '</strong></div>' +
+        '</div>' +
+        '<div class="tl-player-slot__footer">' + escapeHtml(flags.join(' | ')) + '</div>';
     });
+    state.pendingTurnFlashUserId = '';
 
     els.turnText.textContent = currentTurnLabel();
   }
@@ -350,17 +419,28 @@
     }
     if (!els.trickCards) return;
     els.trickCards.innerHTML = '';
+    if (state.pendingTrickAnim) {
+      restartAnimation(els.trickCards, 'tl-trick-pulse');
+    }
     const cards = Array.isArray(trick?.cards) ? trick.cards : [];
     if (cards.length === 0) {
+      state.pendingTrickAnim = false;
       const muted = document.createElement('div');
       muted.className = 'text-muted small';
       muted.textContent = 'Chua co bo bai nao';
       els.trickCards.appendChild(muted);
       return;
     }
-    cards.forEach((card) => {
-      els.trickCards.appendChild(renderCardElement(card, false, true));
+    const animateEnter = state.pendingTrickAnim;
+    cards.forEach((card, idx) => {
+      const el = renderCardElement(card, false, true);
+      if (animateEnter) {
+        el.classList.add('tl-card-enter-play');
+        el.style.animationDelay = String(idx * 40) + 'ms';
+      }
+      els.trickCards.appendChild(el);
     });
+    state.pendingTrickAnim = false;
   }
 
   function renderHand() {
@@ -374,11 +454,16 @@
     }
 
     const isMyTurn = roomTurnIsMine();
-    state.myHand.forEach((card) => {
+    const animateDeal = state.pendingHandDealAnim;
+    state.myHand.forEach((card, idx) => {
       const selected = state.selectedCodes.has(card.code);
       const el = renderCardElement(card, selected, false);
       if (!isMyTurn) {
         el.classList.add('disabled');
+      }
+      if (animateDeal) {
+        el.classList.add('tl-card-enter-deal');
+        el.style.animationDelay = String(Math.min(idx, 12) * 24) + 'ms';
       }
       el.addEventListener('click', () => {
         if (!roomTurnIsMine()) {
@@ -394,6 +479,7 @@
       });
       els.myHand.appendChild(el);
     });
+    state.pendingHandDealAnim = false;
 
     if (els.handCount) els.handCount.textContent = String(state.myHand.length);
     if (els.selectedCount) els.selectedCount.textContent = String(state.selectedCodes.size);
@@ -403,20 +489,34 @@
     const el = document.createElement(readonly ? 'div' : 'button');
     if (!readonly) el.type = 'button';
     el.className = 'tienlen-card-btn';
-    const label = String(card?.label || card?.code || '').trim();
     const code = String(card?.code || '').trim();
-    const isRed = /[♦♥]$/.test(label);
-    if (isRed) el.classList.add('red');
+    const visual = cardVisual(card);
+    if (visual.red) el.classList.add('red');
     if (selected) el.classList.add('selected');
-    el.setAttribute('title', code || label);
+    if (readonly) el.classList.add('readonly');
+    el.setAttribute('title', code || (visual.rankText + visual.suitSymbol));
+    el.setAttribute('aria-label', (visual.rankText || '') + ' ' + (visual.suitNameVi || ''));
+    el.dataset.code = code;
 
-    const top = document.createElement('div');
-    top.className = 'fw-bold';
-    top.textContent = label;
-    const bottom = document.createElement('div');
-    bottom.className = 'small';
-    bottom.textContent = code;
-    el.append(top, bottom);
+    const cornerTop = document.createElement('div');
+    cornerTop.className = 'tl-card-corner tl-card-corner--top';
+    cornerTop.innerHTML = '<span class="tl-card-rank">' + escapeHtml(visual.rankText) + '</span><span class="tl-card-suit">' + escapeHtml(visual.suitSymbol) + '</span>';
+
+    const center = document.createElement('div');
+    center.className = 'tl-card-center';
+    center.innerHTML =
+      '<div class="tl-card-center__rank">' + escapeHtml(visual.rankText) + '</div>' +
+      '<div class="tl-card-center__suit">' + escapeHtml(visual.suitSymbol) + '</div>';
+
+    const cornerBottom = document.createElement('div');
+    cornerBottom.className = 'tl-card-corner tl-card-corner--bottom';
+    cornerBottom.innerHTML = '<span class="tl-card-rank">' + escapeHtml(visual.rankText) + '</span><span class="tl-card-suit">' + escapeHtml(visual.suitSymbol) + '</span>';
+
+    const codeChip = document.createElement('div');
+    codeChip.className = 'tl-card-code';
+    codeChip.textContent = code;
+
+    el.append(cornerTop, center, cornerBottom, codeChip);
     return el;
   }
 
@@ -436,9 +536,11 @@
     const canStart = !!(room && room.canStart && playerExistsInRoom(me.userId));
     const hasSelection = state.selectedCodes.size > 0;
     const canPass = !!(isMine && room && room.currentTrick && room.controlUserId !== me.userId && room.started && !room.gameOver);
+    const canSurrender = !!(state.connected && inRoom && room && room.started && !room.gameOver && playerExistsInRoom(me.userId));
 
     if (els.joinBtn) els.joinBtn.disabled = !state.connected;
     if (els.startBtn) els.startBtn.disabled = !state.connected || !inRoom || !canStart;
+    if (els.surrenderBtn) els.surrenderBtn.disabled = !canSurrender;
     if (els.leaveBtn) els.leaveBtn.disabled = !inRoom;
     if (els.playBtn) els.playBtn.disabled = !state.connected || !inRoom || !isMine || !hasSelection || !(room && room.started && !room.gameOver);
     if (els.passBtn) els.passBtn.disabled = !state.connected || !inRoom || !canPass;
@@ -494,6 +596,145 @@
     }
   }
 
+  function renderStatusTimeline() {
+    if (!els.statusTimeline) {
+      return;
+    }
+    const room = state.room;
+    const inRoom = Boolean(state.roomId && playerExistsInRoom(me.userId));
+    const enoughPlayers = Boolean(room && Number(room.playerCount || 0) >= Number(room.playerLimit || 4));
+    const playing = Boolean(room && room.started && !room.gameOver);
+    const ended = Boolean(room && room.gameOver);
+    const waiting = Boolean(inRoom && room && !room.started && !room.gameOver);
+    const canStart = Boolean(room && room.canStart);
+
+    const steps = [
+      { label: 'Ket noi', state: state.connected ? 'done' : 'active' },
+      { label: 'Vao phong', state: inRoom ? 'done' : (state.connected ? 'active' : 'off') },
+      { label: 'Du 4', state: enoughPlayers ? 'done' : (inRoom ? 'active' : 'off') },
+      { label: 'Dang choi', state: playing ? 'active' : ((room && room.started) ? 'done' : 'off') },
+      { label: 'Ket thuc', state: ended ? 'active' : 'off' }
+    ];
+
+    const phaseLabel = ended
+      ? 'Van dau ket thuc'
+      : playing
+        ? ('Dang choi - luot ' + currentTurnLabel())
+        : waiting
+          ? (canStart ? 'Da du 4 nguoi - san sang bat dau' : 'Dang cho du 4 nguoi')
+          : (inRoom ? 'Dang dong bo phong' : 'Chua vao phong');
+    const eventLabel = room?.statusMessage || '-';
+
+    els.statusTimeline.innerHTML =
+      '<div class="tl-status-timeline__track">' +
+        steps.map((step) =>
+          '<div class="tl-status-step is-' + step.state + '">' +
+            '<span class="tl-status-step__dot" aria-hidden="true"></span>' +
+            '<span class="tl-status-step__label">' + escapeHtml(step.label) + '</span>' +
+          '</div>'
+        ).join('') +
+      '</div>' +
+      '<div class="tl-status-timeline__summary">' +
+        '<span class="tl-status-summary-chip">' + escapeHtml(phaseLabel) + '</span>' +
+        '<span class="tl-status-summary-chip is-muted">' + escapeHtml(eventLabel) + '</span>' +
+      '</div>';
+  }
+
+  function queueRoomAnimations(payload) {
+    const room = payload && payload.room ? payload.room : null;
+    if (!room) {
+      return;
+    }
+    const prevRoom = state.room;
+    const prevStarted = Boolean(prevRoom && prevRoom.started);
+    const nextStarted = Boolean(room.started);
+    const prevTurn = String(prevRoom?.currentTurnUserId || '');
+    const nextTurn = String(room.currentTurnUserId || '');
+    const prevTrick = trickSignature(prevRoom?.currentTrick);
+    const nextTrick = trickSignature(room.currentTrick);
+    const type = String(payload.type || '');
+
+    if (!prevStarted && nextStarted) {
+      state.pendingHandDealAnim = true;
+      state.pendingTurnFlashUserId = nextTurn;
+    }
+    if (prevTurn && nextTurn && prevTurn !== nextTurn && !room.gameOver) {
+      state.pendingTurnFlashUserId = nextTurn;
+    } else if (!prevTurn && nextTurn && (type === 'GAME_STARTED' || type === 'ROOM_STATE')) {
+      state.pendingTurnFlashUserId = nextTurn;
+    }
+    if (prevTrick !== nextTrick && (type === 'PLAYED' || type === 'ROUND_RESET' || type === 'GAME_OVER')) {
+      state.pendingTrickAnim = true;
+    }
+  }
+
+  function shouldAnimateDealFromPrivateState() {
+    const room = state.room;
+    if (!room || !room.started || room.gameOver) {
+      return false;
+    }
+    return Number(room.playCount || 0) <= 0;
+  }
+
+  function handSignature(cards) {
+    if (!Array.isArray(cards) || cards.length === 0) {
+      return '';
+    }
+    return cards.map((c) => String(c?.code || '')).join('|');
+  }
+
+  function trickSignature(trick) {
+    const cards = Array.isArray(trick?.cards) ? trick.cards : [];
+    if (cards.length === 0) {
+      return '';
+    }
+    return cards.map((c) => String(c?.code || '')).join('|') + '|' + String(trick?.playedByUserId || '');
+  }
+
+  function restartAnimation(el, className) {
+    if (!el) {
+      return;
+    }
+    el.classList.remove(className);
+    void el.offsetWidth;
+    el.classList.add(className);
+    window.setTimeout(() => {
+      el.classList.remove(className);
+    }, 420);
+  }
+
+  function initialsOfName(name) {
+    const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  function cardVisual(card) {
+    const code = String(card?.code || '').trim().toUpperCase();
+    const suitCode = code.slice(-1);
+    const rankText = code.length >= 2 ? code.slice(0, -1) : (String(card?.label || '').trim() || '?');
+    const suitMeta = suitVisualMeta(suitCode);
+    return {
+      rankText,
+      suitCode,
+      suitSymbol: suitMeta.symbol,
+      suitNameVi: suitMeta.nameVi,
+      red: suitMeta.red
+    };
+  }
+
+  function suitVisualMeta(suitCode) {
+    switch (String(suitCode || '').toUpperCase()) {
+      case 'H': return { symbol: '♥', nameVi: 'co', red: true };
+      case 'D': return { symbol: '♦', nameVi: 'ro', red: true };
+      case 'C': return { symbol: '♣', nameVi: 'tep', red: false };
+      case 'S':
+      default:
+        return { symbol: '♠', nameVi: 'bich', red: false };
+    }
+  }
+
   function safeParse(json) {
     try {
       return JSON.parse(json || '{}');
@@ -511,3 +752,4 @@
       .replaceAll("'", '&#39;');
   }
 })();
+

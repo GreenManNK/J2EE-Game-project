@@ -1,6 +1,23 @@
 ﻿// Lấy roomId từ URL
 const urlParams = new URLSearchParams(window.location.search);
 const roomId = urlParams.get("roomId");
+const appPath = (window.CaroUrl && typeof window.CaroUrl.path === "function")
+    ? window.CaroUrl.path
+    : (value) => value;
+const ui = window.CaroUi || {};
+
+function notify(message, type) {
+    const text = String(message || "");
+    if (ui.toast) {
+        ui.toast(text, { type: type || "info" });
+    } else {
+        if (typeof window !== "undefined" && typeof window["alert"] === "function") {
+            window["alert"](text);
+        } else {
+            console.log(text);
+        }
+    }
+}
 
 //Lấy userId từ biến toàn cục do Razor truyền vào
 const userId = typeof window.userId !== "undefined" ? window.userId : null;
@@ -9,11 +26,11 @@ const avatarPath = typeof window.avatarPath !== "undefined" ? window.avatarPath 
 
 // Kiểm tra nếu roomId hoặc userId không hợp lệ
 if (!roomId) {
-    alert("❌ Không tìm thấy mã phòng!");
+    notify("❌ Không tìm thấy mã phòng!");
     throw new Error("Room ID không hợp lệ.");
 }
 if (!userId) {
-    alert("❌ Không xác định được tài khoản người chơi!");
+    notify("❌ Không xác định được tài khoản người chơi!");
     throw new Error("User ID không hợp lệ.");
 }
 
@@ -24,7 +41,7 @@ let currentTurnSymbol = "X";
 // Tạo kết nối SignalR (singleton)
 if (!window.connection) {
     window.connection = new signalR.HubConnectionBuilder()
-        .withUrl("/gamehub")
+        .withUrl(appPath("/gamehub"))
         .withAutomaticReconnect()
         .build();
 }
@@ -43,7 +60,7 @@ if (connection.state === signalR.HubConnectionState.Disconnected) {
 // Tham gia phòng với đầy đủ thông tin
 function joinGame(roomId, userId, displayName, avatarPath) {
     if (!roomId || !userId) {
-        alert("Không có roomId hoặc userId.");
+        notify("Không có roomId hoặc userId.");
         return;
     }
 
@@ -72,7 +89,7 @@ function leaveGame() {
 // Xử lý khi người chơi đánh dấu vào ô cờ
 function makeMove(x, y) {
     if (!roomId) {
-        alert("❌ Không tìm thấy Room ID!");
+        notify("❌ Không tìm thấy Room ID!");
         return;
     }
     connection.invoke("MakeMove", roomId, x, y).catch(err => console.error(err));
@@ -165,13 +182,14 @@ connection.on("UpdateSymbol", (symbol) => {
 
 // Cập nhật khi game kết thúc
 connection.on("GameOver", message => {
-    alert(`${message}`);
+    notify(`${message}`);
 
     // Nếu đối thủ rời phòng thì reset lại thông tin
     if (message.includes("Đối thủ đã rời phòng")) {
         const avatar = document.getElementById("opponentAvatar");
         const name = document.getElementById("opponentName");
         const id = document.getElementById("opponentId");
+        const score = document.getElementById("opponentScore");
 
         if (avatar) avatar.src = "/uploads/avatars/default-opponent.jpg";
         if (name) name.textContent = "Đang chờ...";
@@ -188,7 +206,7 @@ connection.on("GameReset", () => {
 
 // Game bắt đầu
 connection.on("GameStarted", () => {
-    alert("Trò chơi bắt đầu!");
+    notify("Trò chơi bắt đầu!");
     resetBoard();
     updateTurnStatus();
 });
@@ -196,7 +214,7 @@ connection.on("GameStarted", () => {
 // Chuyển về sảnh
 connection.on("RedirectToLobby", function () {
     console.log("Nhận sự kiện RedirectToLobby từ server");
-    window.location.href = "/Lobby";
+    window.location.href = appPath("/lobby");
 });
 
 // 🎧 Nhận tin nhắn từ server
@@ -228,9 +246,13 @@ document.getElementById("message-input").addEventListener("keydown", function (e
 
 // Thông báo lỗi
 connection.on("ErrorMessage", message => {
-    alert(`${message}`);
+    notify(`${message}`);
 });
 connection.on("ForceLeave", () => {
     console.log("Nhận yêu cầu rời phòng từ server");
     connection.invoke("LeaveGame");
 });
+
+
+
+

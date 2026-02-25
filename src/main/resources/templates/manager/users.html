@@ -33,6 +33,37 @@
     </div>
   </form>
 
+  <div class="theme-box rounded p-3 mb-3">
+    <h2 class="h5 mb-3 theme-text">Create User</h2>
+    <form id="managerCreateUserForm" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label" for="createEmail">Email</label>
+        <input id="createEmail" class="form-control" type="email" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="createDisplayName">Name</label>
+        <input id="createDisplayName" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="createPassword">Password</label>
+        <input id="createPassword" class="form-control" type="password" required>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="createScore">Score</label>
+        <input id="createScore" class="form-control" type="number" value="0">
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="createAvatarPath">Avatar Path</label>
+        <input id="createAvatarPath" class="form-control" placeholder="/uploads/avatars/default-avatar.jpg">
+      </div>
+      <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
+        <button type="submit" class="btn btn-primary">Create</button>
+        <small class="text-muted">Manager chi tao tai khoan role `User`.</small>
+        <div id="managerCreateUserOut" class="small mb-0 theme-text flex-grow-1" role="status" aria-live="polite"></div>
+      </div>
+    </form>
+  </div>
+
   <div class="d-flex flex-wrap align-items-center gap-2 mb-3 theme-text">
     <a class="btn btn-sm btn-outline-secondary"
        th:if="${page > 0}"
@@ -76,5 +107,6 @@
 </div>
 
 <th:block th:replace="~{fragments :: appScripts('manager-users')}"></th:block>
+<script th:src="@{/js/manager-users.js}"></script>
 </body>
 </html>

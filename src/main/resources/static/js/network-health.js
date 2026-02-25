@@ -1,5 +1,21 @@
 ﻿(function () {
   const BANNER_ID = 'networkStatusBanner';
+  const appPath = (() => {
+    const meta = document.querySelector('meta[name="app-context-path"]');
+    let base = meta?.getAttribute('content') || '';
+    base = String(base).trim();
+    if (!base || base === '/') return '';
+    if (!base.startsWith('/')) base = '/' + base;
+    if (base.length > 1 && base.endsWith('/')) base = base.slice(0, -1);
+    return base;
+  })();
+
+  function toAppPath(path) {
+    const value = String(path || '');
+    if (!appPath || !value.startsWith('/')) return value;
+    if (value === appPath || value.startsWith(appPath + '/')) return value;
+    return appPath + value;
+  }
 
   function ensureBanner() {
     let el = document.getElementById(BANNER_ID);
@@ -57,7 +73,7 @@
     }
 
     try {
-      const res = await fetch('/api/connectivity/ping', {
+      const res = await fetch(toAppPath('/api/connectivity/ping'), {
         method: 'GET',
         cache: 'no-store'
       });

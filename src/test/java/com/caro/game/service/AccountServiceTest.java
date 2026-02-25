@@ -1,13 +1,20 @@
 package com.caro.game.service;
 
+import com.caro.game.entity.UserAccount;
+import com.caro.game.repository.UserAccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -18,6 +25,10 @@ class AccountServiceTest {
 
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private UserAccountRepository userAccountRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     @MockBean
     private EmailService emailService;
 
@@ -68,5 +79,42 @@ class AccountServiceTest {
         assertFalse(resendImmediately.success());
         assertTrue(resendImmediately.error().contains("Please wait"));
         verify(emailService).sendEmail(org.mockito.ArgumentMatchers.eq(email), org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString());
+    }
+
+    @Test
+    void loginShouldUseGenericErrorForUnknownAccount() {
+        AccountService.ServiceResult result = accountService.login("unknown-login@test.com", "Pass@123");
+
+        assertFalse(result.success());
+        assertEquals("Invalid email or password", result.error());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void sendResetCodeShouldNotRevealWhetherEmailExists() {
+        String existingEmail = "reset-known@test.com";
+        UserAccount user = new UserAccount();
+        user.setEmail(existingEmail);
+        user.setUsername(existingEmail);
+        user.setDisplayName("Reset Known");
+        user.setPassword(passwordEncoder.encode("Pass@123"));
+        user.setEmailConfirmed(true);
+        userAccountRepository.save(user);
+
+        AccountService.ServiceResult missing = accountService.sendResetCode("reset-missing@test.com");
+        AccountService.ServiceResult existing = accountService.sendResetCode(existingEmail);
+
+        assertTrue(missing.success());
+        assertTrue(existing.success());
+        assertNotNull(missing.data());
+        assertNotNull(existing.data());
+
+        Map<String, Object> missingData = (Map<String, Object>) missing.data();
+        Map<String, Object> existingData = (Map<String, Object>) existing.data();
+
+        assertEquals("If the email exists, a reset code has been sent", missingData.get("message"));
+        assertEquals("If the email exists, a reset code has been sent", existingData.get("message"));
+        assertNull(missingData.get("userId"));
+        assertNull(existingData.get("userId"));
     }
 }

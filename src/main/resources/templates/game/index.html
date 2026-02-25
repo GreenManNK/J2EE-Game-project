@@ -14,6 +14,7 @@
       <div><strong>Ma phong:</strong> <span id="roomIdText" th:text="${roomId}">room</span></div>
       <div><strong>Ky hieu:</strong> <span id="playerSymbol" th:text="${symbol}">?</span></div>
       <div class="mt-2">
+        <button id="surrenderBtn" class="btn btn-outline-warning btn-sm me-2">Dau hang</button>
         <button id="leaveRoomBtn" class="btn btn-outline-danger btn-sm">Roi phong</button>
       </div>
     </div>
@@ -57,6 +58,9 @@
     cursor: pointer;
     user-select: none;
   }
+  .cell.win { background: rgba(255, 193, 7, .25); }
+  .cell.last-move { box-shadow: inset 0 0 0 2px rgba(13, 202, 240, .9); }
+  .cell.disabled { cursor: not-allowed; opacity: .9; }
   .player-x { color: #0d6efd; }
   .player-o { color: #dc3545; }
   #chat-box { display: flex; flex-direction: column; gap: 8px; height: 300px; overflow-y: auto; padding: 8px; }
@@ -117,6 +121,15 @@
     const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
       ? window.CaroUrl.path
       : (value) => value;
+    const ui = window.CaroUi || {};
+    function notify(message, type) {
+      const text = String(message || '');
+      if (ui.toast) {
+        ui.toast(text, { type: type || 'info' });
+      } else {
+        alert(text);
+      }
+    }
     const initialRoomId = /*[[${roomId}]]*/ '';
     const requestedSymbol = /*[[${symbol}]]*/ '';
     const sessionUserId = /*[[${sessionUserId}]]*/ '';
@@ -124,7 +137,7 @@
     const sessionAvatarPath = /*[[${sessionAvatarPath}]]*/ '';
     const roomId = (initialRoomId || '').trim();
     if (!roomId) {
-      alert('Ban chua vao phong. He thong se quay lai sanh.');
+      notify('Ban chua vao phong. He thong se quay lai sanh.', 'warning');
       window.location.href = appPath('/lobby');
       return;
     }
@@ -135,6 +148,7 @@
     const playerNameEl = document.getElementById('playerName');
     const chatBox = document.getElementById('chat-box');
     const messageInput = document.getElementById('message-input');
+    const surrenderBtn = document.getElementById('surrenderBtn');
 
     const userId = (sessionUserId || '').trim();
     const displayName = (sessionDisplayName || (userId ? ('Guest ' + userId.slice(-4).toUpperCase()) : '')).trim();
@@ -142,7 +156,7 @@
     const isGuestUser = /^guest-/i.test(userId);
 
     if (!userId) {
-      alert('Khong xac dinh duoc nguoi choi. He thong se quay lai sanh.');
+      notify('Khong xac dinh duoc nguoi choi. He thong se quay lai sanh.', 'danger');
       window.location.href = appPath('/lobby');
       return;
     }
@@ -158,6 +172,10 @@
     let mySymbol = requestedSymbol || '';
     let myTurnUserId = '';
     let connected = false;
+    let gameOver = false;
+    let currentWinLine = [];
+    let lastMove = null;
+    let roomPlayerCount = 0;
 
     function applyBoardSnapshot(snapshot) {
       if (!Array.isArray(snapshot)) return;
@@ -167,6 +185,46 @@
         }
       }
       renderBoard();
+    }
+
+    function setWinLine(winLine) {
+      if (!Array.isArray(winLine)) {
+        currentWinLine = [];
+        return;
+      }
+      currentWinLine = winLine
+        .filter((p) => typeof p?.x === 'number' && typeof p?.y === 'number')
+        .map((p) => ({ x: p.x, y: p.y }));
+    }
+
+    function isWinningCell(x, y) {
+      return currentWinLine.some((p) => p.x === x && p.y === y);
+    }
+
+    function setLastMove(move) {
+      if (!move || typeof move.x !== 'number' || typeof move.y !== 'number') {
+        lastMove = null;
+        return;
+      }
+      lastMove = { x: move.x, y: move.y };
+    }
+
+    function isLastMoveCell(x, y) {
+      return !!lastMove && lastMove.x === x && lastMove.y === y;
+    }
+
+    function resetDelaySuffix(resetDelayMs) {
+      const ms = Number(resetDelayMs || 0);
+      if (!Number.isFinite(ms) || ms <= 0) return '';
+      const sec = Math.round(ms / 100) / 10;
+      return ' Van moi sau ~' + sec + 's';
+    }
+
+    function updateActionButtons() {
+      if (!surrenderBtn) return;
+      const canSurrender = connected && !gameOver && roomPlayerCount >= 2 && !!myTurnUserId;
+      surrenderBtn.disabled = !canSurrender;
+      surrenderBtn.title = canSurrender ? '' : 'Chi dau hang khi van dau dang dien ra';
     }
 
     function renderBoard() {
@@ -179,6 +237,9 @@
           cell.textContent = value;
           if (value === 'X') cell.classList.add('player-x');
           if (value === 'O') cell.classList.add('player-o');
+          if (isWinningCell(x, y)) cell.classList.add('win');
+          if (isLastMoveCell(x, y)) cell.classList.add('last-move');
+          if (gameOver) cell.classList.add('disabled');
           cell.addEventListener('click', () => makeMove(x, y));
           boardEl.appendChild(cell);
         }
@@ -207,25 +268,36 @@
       onConnect: () => {
         connected = true;
         statusEl.textContent = 'Da ket noi. Dang vao phong...';
+        updateActionButtons();
 
         client.subscribe('/topic/room.' + roomId, (message) => {
           const payload = JSON.parse(message.body || '{}');
           if (payload.type === 'PLAYER_JOINED') {
+            setWinLine([]);
+            setLastMove(null);
             applyBoardSnapshot(payload.board);
             if (payload.userId === userId && payload.symbol) {
               mySymbol = payload.symbol;
               symbolEl.textContent = mySymbol;
             }
             myTurnUserId = payload.currentTurnUserId || myTurnUserId || '';
-            const playerCount = Number(payload.playerCount || 0);
-            if (playerCount >= 2 && myTurnUserId) {
+            roomPlayerCount = Number(payload.playerCount || roomPlayerCount || 0);
+            if (roomPlayerCount >= 2) {
+              gameOver = false;
+            }
+            if (roomPlayerCount >= 2 && myTurnUserId) {
               statusEl.textContent = 'Luot cua: ' + (myTurnUserId === userId ? 'ban' : 'doi thu');
             } else {
               statusEl.textContent = 'Dang cho doi thu vao phong...';
             }
+            renderBoard();
+            updateActionButtons();
           }
           if (payload.type === 'MOVE') {
             if (payload.x >= 0 && payload.y >= 0) {
+              gameOver = false;
+              setWinLine([]);
+              setLastMove({ x: payload.x, y: payload.y });
               board[payload.x][payload.y] = payload.symbol || '';
               renderBoard();
             }
@@ -233,30 +305,61 @@
             statusEl.textContent = myTurnUserId
               ? ('Luot cua: ' + (myTurnUserId === userId ? 'ban' : 'doi thu'))
               : 'Dang cho doi thu';
+            updateActionButtons();
           }
           if (payload.type === 'GAME_OVER') {
+            myTurnUserId = '';
+            gameOver = true;
+            setWinLine(payload.winLine);
+            renderBoard();
             const win = payload.winnerUserId === userId;
-            statusEl.textContent = win ? 'Ban thang!' : 'Ban thua!';
-            setTimeout(() => alert(win ? 'Ban da thang!' : 'Ban da thua!'), 100);
+            const surrenderGame = payload.reason === 'SURRENDER';
+            if (surrenderGame) {
+              const selfSurrender = payload.surrenderUserId === userId;
+              statusEl.textContent = (selfSurrender ? 'Ban da dau hang!' : 'Doi thu dau hang - ban thang!')
+                + resetDelaySuffix(payload.resetDelayMs);
+              setTimeout(() => notify(
+                selfSurrender ? 'Ban da dau hang.' : 'Doi thu da dau hang. Ban thang!',
+                selfSurrender ? 'warning' : 'success'
+              ), 100);
+            } else {
+              statusEl.textContent = (win ? 'Ban thang!' : 'Ban thua!') + resetDelaySuffix(payload.resetDelayMs);
+              setTimeout(() => notify(win ? 'Ban da thang!' : 'Ban da thua!', win ? 'success' : 'warning'), 100);
+            }
+            updateActionButtons();
           }
           if (payload.type === 'DRAW') {
             myTurnUserId = '';
-            statusEl.textContent = 'Hoa co!';
-            setTimeout(() => alert('Van dau hoa!'), 100);
+            gameOver = true;
+            setWinLine([]);
+            renderBoard();
+            statusEl.textContent = 'Hoa co!' + resetDelaySuffix(payload.resetDelayMs);
+            setTimeout(() => notify('Van dau hoa!', 'info'), 100);
+            updateActionButtons();
           }
           if (payload.type === 'RESET') {
+            gameOver = false;
+            setWinLine([]);
+            setLastMove(null);
             applyBoardSnapshot(payload.board);
             myTurnUserId = payload.currentTurnUserId || '';
             statusEl.textContent = myTurnUserId
               ? ('Van moi - luot cua: ' + (myTurnUserId === userId ? 'ban' : 'doi thu'))
               : 'Van moi da san sang';
+            updateActionButtons();
           }
           if (payload.type === 'PLAYER_LEFT') {
+            roomPlayerCount = Math.min(roomPlayerCount, 1);
             myTurnUserId = '';
+            gameOver = true;
+            setWinLine([]);
+            renderBoard();
             statusEl.textContent = 'Doi thu da roi phong';
+            updateActionButtons();
           }
           if (payload.type === 'ERROR' && payload.userId === userId && payload.error) {
             statusEl.textContent = payload.error;
+            updateActionButtons();
           }
           if (payload.type === 'CHAT') {
             appendChat(payload.displayName || 'Unknown', payload.message || '', payload.userId === userId);
@@ -277,19 +380,23 @@
       },
       onStompError: () => {
         statusEl.textContent = 'Loi ket noi STOMP';
+        updateActionButtons();
       },
       onWebSocketError: () => {
         connected = false;
         statusEl.textContent = 'Loi WebSocket - dang thu ket noi lai...';
+        updateActionButtons();
       },
       onWebSocketClose: () => {
         connected = false;
         statusEl.textContent = 'Mat ket noi - dang thu ket noi lai...';
+        updateActionButtons();
       }
     });
 
     function makeMove(x, y) {
       if (!connected) return;
+      if (gameOver) return;
       if (!myTurnUserId) return;
       if (myTurnUserId !== userId) return;
       if (board[x][y]) return;
@@ -323,7 +430,17 @@
       window.location.href = appPath('/lobby');
     });
 
+    surrenderBtn?.addEventListener('click', () => {
+      if (!connected || gameOver || !myTurnUserId) return;
+      if (!window.confirm('Ban chac chan muon dau hang van nay?')) return;
+      client.publish({
+        destination: '/app/game.surrender',
+        body: JSON.stringify({ roomId, userId })
+      });
+    });
+
     renderBoard();
+    updateActionButtons();
     client.activate();
   })();
 </script>

@@ -148,7 +148,7 @@ public class AccountService {
         }
         UserAccount user = userAccountRepository.findByEmail(normalizedEmail).orElse(null);
         if (user == null) {
-            return ServiceResult.error("Account not found");
+            return ServiceResult.error("Invalid email or password");
         }
 
         if (user.isBanned()) {
@@ -156,7 +156,7 @@ public class AccountService {
         }
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            return ServiceResult.error("Invalid credentials");
+            return ServiceResult.error("Invalid email or password");
         }
 
         boolean updated = false;
@@ -207,7 +207,9 @@ public class AccountService {
         String normalizedEmail = normalizeEmail(email);
         if (normalizedEmail == null) return ServiceResult.error("Email is required");
         UserAccount user = userAccountRepository.findByEmail(normalizedEmail).orElse(null);
-        if (user == null) return ServiceResult.error("Email not found");
+        if (user == null) {
+            return ServiceResult.ok(Map.of("message", "If the email exists, a reset code has been sent"));
+        }
 
         String code = String.valueOf(100000 + random.nextInt(900000));
         PasswordResetToken token = new PasswordResetToken();
@@ -223,7 +225,7 @@ public class AccountService {
             passwordResetTokenRepository.delete(token);
             return ServiceResult.error("Cannot send reset code right now. Please try again.");
         }
-        return ServiceResult.ok(Map.of("userId", user.getId(), "message", "Reset code sent"));
+        return ServiceResult.ok(Map.of("message", "If the email exists, a reset code has been sent"));
     }
 
     public ServiceResult verifyResetCode(String userId, String code) {
@@ -234,6 +236,19 @@ public class AccountService {
             return ServiceResult.error("Invalid or expired reset code");
         }
         return ServiceResult.ok(Map.of("message", "Code verified"));
+    }
+
+    public ServiceResult verifyResetCodeByEmail(String email, String code) {
+        String normalizedEmail = normalizeEmail(email);
+        String normalizedCode = trimToNull(code);
+        if (normalizedEmail == null || normalizedCode == null) {
+            return ServiceResult.error("Email and code are required");
+        }
+        UserAccount user = userAccountRepository.findByEmail(normalizedEmail).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("Invalid or expired reset code");
+        }
+        return verifyResetCode(user.getId(), normalizedCode);
     }
 
     public ServiceResult resetPassword(String userId, String code, String newPassword, String confirmPassword) {
@@ -257,6 +272,18 @@ public class AccountService {
         List<PasswordResetToken> tokens = passwordResetTokenRepository.findByUserId(userId);
         passwordResetTokenRepository.deleteAll(tokens);
         return ServiceResult.ok(Map.of("message", "Password reset success"));
+    }
+
+    public ServiceResult resetPasswordByEmail(String email, String code, String newPassword, String confirmPassword) {
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail == null) {
+            return ServiceResult.error("Email is required");
+        }
+        UserAccount user = userAccountRepository.findByEmail(normalizedEmail).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("Invalid or expired reset code");
+        }
+        return resetPassword(user.getId(), code, newPassword, confirmPassword);
     }
 
     public ServiceResult listUsers(String searchTerm, String banFilter) {

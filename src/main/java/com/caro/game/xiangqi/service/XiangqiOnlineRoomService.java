@@ -17,6 +17,7 @@ public class XiangqiOnlineRoomService {
     private static final int PLAYER_LIMIT = 2;
     private static final String STATUS_WAITING = "WAITING";
     private static final String STATUS_PLAYING = "PLAYING";
+    private static final String STATUS_GAME_OVER = "GAME_OVER";
 
     private final Map<String, RoomState> rooms = new ConcurrentHashMap<>();
 
@@ -88,6 +89,9 @@ public class XiangqiOnlineRoomService {
         if (room.players.size() < PLAYER_LIMIT) {
             return ActionResult.error("Waiting for opponent");
         }
+        if (STATUS_GAME_OVER.equals(room.status)) {
+            return ActionResult.error("Game already ended");
+        }
         if (!STATUS_PLAYING.equals(room.status)) {
             room.status = STATUS_PLAYING;
         }
@@ -140,6 +144,43 @@ public class XiangqiOnlineRoomService {
             : "Nuoc di hop le";
 
         return ActionResult.ok("MOVE", snapshotOf(room));
+    }
+
+    public synchronized ActionResult surrenderGame(String roomId, String userId) {
+        RoomState room = rooms.get(normalize(roomId));
+        String normalizedUserId = normalize(userId);
+        if (room == null || normalizedUserId == null) {
+            return ActionResult.error("Room not found");
+        }
+        PlayerSeatState player = room.players.get(normalizedUserId);
+        if (player == null) {
+            return ActionResult.error("Player does not belong to room");
+        }
+        if (room.players.size() < PLAYER_LIMIT) {
+            return ActionResult.error("Waiting for opponent");
+        }
+        if (STATUS_GAME_OVER.equals(room.status)) {
+            return ActionResult.error("Game already ended");
+        }
+
+        String winnerColor = "r".equals(player.color) ? "b" : "r";
+        String winnerUserId = userIdForColor(room, winnerColor);
+        PlayerSeatState winner = winnerUserId == null ? null : room.players.get(winnerUserId);
+        if (winner == null) {
+            return ActionResult.error("Opponent not found");
+        }
+
+        String loserName = displayNameOf(player);
+        String winnerName = displayNameOf(winner);
+        String loserColorLabel = "r".equals(player.color) ? "Do" : "Den";
+
+        room.status = STATUS_GAME_OVER;
+        room.statusMessage = loserName + " da dau hang. " + winnerName + " thang.";
+        room.currentTurnUserId = null;
+        room.currentTurnColor = winnerColor;
+        room.moveHistory.add(loserColorLabel + " dau hang");
+
+        return ActionResult.ok("SURRENDER", snapshotOf(room));
     }
 
     public synchronized ActionResult resetGame(String roomId, String userId) {
@@ -322,6 +363,16 @@ public class XiangqiOnlineRoomService {
             case 'P' -> "Tot";
             default -> "Quan";
         };
+    }
+
+    private String displayNameOf(PlayerSeatState player) {
+        if (player == null) {
+            return "Nguoi choi";
+        }
+        if (player.displayName != null && !player.displayName.isBlank()) {
+            return player.displayName;
+        }
+        return player.userId == null || player.userId.isBlank() ? "Nguoi choi" : player.userId;
     }
 
     private String normalize(String value) {

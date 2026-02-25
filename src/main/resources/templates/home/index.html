@@ -128,6 +128,7 @@
     const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
       ? window.CaroUrl.path
       : (value) => value;
+    const ui = window.CaroUi || {};
     const form = document.getElementById('postForm');
     const contentEl = document.getElementById('postContent');
     const authorLabel = document.getElementById('postAuthorLabel');
@@ -150,6 +151,14 @@
         detailHref: '/games/cards'
       }
     };
+
+    function toast(message, type) {
+      if (ui.toast) {
+        ui.toast(message, { type: type || 'info' });
+      } else {
+        alert(message);
+      }
+    }
 
     function openGameModeModal(gameCode) {
       const config = gameConfigs[gameCode];
@@ -201,11 +210,11 @@
         return;
       }
       if (!currentUser?.userId) {
-        alert('Can dang nhap de dang bai');
+        toast('Can dang nhap de dang bai', 'warning');
         return;
       }
       try {
-        const res = await fetch('/posts', {
+        const res = await fetch(appPath('/posts'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content, author: currentUser.displayName || currentUser.userId, imagePath: '' })
@@ -219,7 +228,7 @@
         }
         window.location.reload();
       } catch (err) {
-        alert(err.message);
+        toast(err.message, 'danger');
       }
     });
 
@@ -227,7 +236,7 @@
       commentForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentUser?.userId) {
-          alert('Can dang nhap de binh luan');
+          toast('Can dang nhap de binh luan', 'warning');
           return;
         }
         const postId = Number(commentForm.querySelector('.commentPostId')?.value || 0);
@@ -237,7 +246,7 @@
           return;
         }
         try {
-          const res = await fetch('/posts/comment', {
+          const res = await fetch(appPath('/posts/comment'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ postId, content, author: currentUser.displayName || currentUser.userId })
@@ -248,7 +257,7 @@
           }
           window.location.reload();
         } catch (err) {
-          alert(err.message);
+          toast(err.message, 'danger');
         }
       });
     });

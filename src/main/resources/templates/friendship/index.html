@@ -21,28 +21,72 @@
         <button type="submit" class="btn btn-primary w-100">Send Request</button>
       </div>
     </form>
-    <pre id="out" class="small mt-3 mb-0 theme-text"></pre>
+    <div id="out" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
   </div>
 
   <div class="row g-3">
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100">
         <h2 class="h5 theme-text">Friends</h2>
-        <ul class="list-group">
-          <li class="list-group-item" th:each="f : ${friends}" th:text="${f.displayName + ' (' + f.email + ')'}"></li>
+        <ul class="list-group" id="friendsList">
+          <li class="list-group-item text-muted small" th:if="${#lists.isEmpty(friendViews)}">Chua co ban be.</li>
+          <li class="list-group-item"
+              th:each="f : ${friendViews}"
+              th:attr="data-friend-id=${f.userId}">
+            <div class="d-flex align-items-start gap-2">
+              <img th:src="@{${f.avatarPath}}"
+                   alt="avatar"
+                   width="40"
+                   height="40"
+                   class="rounded-circle border flex-shrink-0">
+              <div class="flex-grow-1">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <span class="fw-semibold" th:text="${f.displayName}">Friend Name</span>
+                  <span class="badge"
+                        th:classappend="${f.online} ? ' text-bg-success' : ' text-bg-secondary'"
+                        th:text="${f.online} ? 'Online' : 'Offline'">Online</span>
+                  <span class="badge text-bg-light border" th:text="${'Score ' + f.score}">Score 0</span>
+                </div>
+                <div class="small text-muted" th:text="${f.email}">friend@example.com</div>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                  <a class="btn btn-sm btn-outline-primary"
+                     th:href="@{/friendship/user-detail/{id}(id=${f.userId},currentUserId=${currentUserId})}">Xem</a>
+                  <a class="btn btn-sm btn-outline-success"
+                     th:href="@{/chat/private(currentUserId=${currentUserId},friendId=${f.userId})}">Chat</a>
+                  <button class="remove-friend btn btn-sm btn-outline-danger"
+                          type="button"
+                          th:attr="data-friend-id=${f.userId}">Huy ban</button>
+                </div>
+              </div>
+            </div>
+          </li>
         </ul>
       </div>
     </div>
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100">
         <h2 class="h5 theme-text">Pending Requests</h2>
-        <ul class="list-group">
+        <ul class="list-group" id="pendingRequestsList">
+          <li class="list-group-item text-muted small" th:if="${#lists.isEmpty(pendingRequestViews)}">Khong co loi moi dang cho.</li>
           <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2"
-              th:each="p : ${pendingRequests}">
-            <span th:text="${p.requesterId + ' -> ' + p.addresseeId}"></span>
+              th:each="p : ${pendingRequestViews}"
+              th:attr="data-friendship-id=${p.friendshipId},data-requester-id=${p.requesterId}">
+            <div class="d-flex align-items-center gap-2 flex-grow-1">
+              <img th:src="@{${p.requesterAvatarPath}}"
+                   alt="avatar"
+                   width="36"
+                   height="36"
+                   class="rounded-circle border">
+              <div class="small">
+                <div class="fw-semibold" th:text="${p.requesterName}">Requester</div>
+                <div class="text-muted" th:text="${p.requesterEmail}">email@example.com</div>
+              </div>
+            </div>
             <span class="d-flex gap-2">
-              <button class="accept btn btn-sm btn-success" type="button" th:attr="data-id=${p.id}">Accept</button>
-              <button class="decline btn btn-sm btn-outline-secondary" type="button" th:attr="data-id=${p.id}">Decline</button>
+              <a class="btn btn-sm btn-outline-primary"
+                 th:href="@{/friendship/user-detail/{id}(id=${p.requesterId},currentUserId=${currentUserId})}">Xem</a>
+              <button class="accept btn btn-sm btn-success" type="button" th:attr="data-id=${p.friendshipId}">Accept</button>
+              <button class="decline btn btn-sm btn-outline-secondary" type="button" th:attr="data-id=${p.friendshipId}">Decline</button>
             </span>
           </li>
         </ul>
@@ -51,8 +95,30 @@
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100">
         <h2 class="h5 theme-text">Sent Requests</h2>
-        <ul class="list-group">
-          <li class="list-group-item" th:each="s : ${sentRequests}" th:text="${s.requesterId + ' -> ' + s.addresseeId}"></li>
+        <ul class="list-group" id="sentRequestsList">
+          <li class="list-group-item text-muted small" th:if="${#lists.isEmpty(sentRequestViews)}">Khong co loi moi da gui.</li>
+          <li class="list-group-item"
+              th:each="s : ${sentRequestViews}"
+              th:attr="data-friendship-id=${s.friendshipId},data-friend-id=${s.addresseeId}">
+            <div class="d-flex align-items-center gap-2">
+              <img th:src="@{${s.addresseeAvatarPath}}"
+                   alt="avatar"
+                   width="36"
+                   height="36"
+                   class="rounded-circle border">
+              <div class="flex-grow-1">
+                <div class="fw-semibold" th:text="${s.addresseeName}">Target</div>
+                <div class="small text-muted" th:text="${s.addresseeEmail}">target@example.com</div>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                  <a class="btn btn-sm btn-outline-primary"
+                     th:href="@{/friendship/user-detail/{id}(id=${s.addresseeId},currentUserId=${currentUserId})}">Xem</a>
+                  <button class="cancel-sent btn btn-sm btn-outline-danger"
+                          type="button"
+                          th:attr="data-friend-id=${s.addresseeId}">Huy loi moi</button>
+                </div>
+              </div>
+            </div>
+          </li>
         </ul>
       </div>
     </div>

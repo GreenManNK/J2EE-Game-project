@@ -11,14 +11,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class GameModeControllerTest {
 
     @Test
-    void botPickerShouldRedirectToDedicatedGamePage() {
+    void botPickerShouldRenderPickerWithDifficultyLinks() {
         GameModeController controller = new GameModeController(new GameCatalogService());
         ConcurrentModel model = new ConcurrentModel();
 
         String view = controller.botPicker("chess", model);
 
-        assertEquals("redirect:/games/chess", view);
-        assertEquals(0, model.size());
+        assertEquals("game-mode/bot-picker", view);
+        assertEquals(Boolean.TRUE, model.getAttribute("hasRealBotNow"));
+        assertEquals("/chess/bot?difficulty=easy", model.getAttribute("easyUrl"));
+        assertEquals("/chess/bot?difficulty=hard", model.getAttribute("hardUrl"));
     }
 
     @Test
@@ -53,5 +55,14 @@ class GameModeControllerTest {
         String view = controller.botPlayPlaceholder("cards", "hard", new ConcurrentModel());
 
         assertEquals("redirect:/cards/tien-len/bot?difficulty=hard", view);
+    }
+
+    @Test
+    void botPlayPlaceholderShouldRedirectCaroToNativeRoute() {
+        GameModeController controller = new GameModeController(new GameCatalogService());
+
+        String view = controller.botPlayPlaceholder("caro", "easy", new ConcurrentModel());
+
+        assertEquals("redirect:/bot/easy", view);
     }
 }

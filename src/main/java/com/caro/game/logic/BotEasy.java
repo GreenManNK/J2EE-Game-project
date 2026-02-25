@@ -36,7 +36,7 @@ public final class BotEasy {
             if (around != null) {
                 return around;
             }
-            return new Move(0, 0);
+            return findAnyEmpty();
         }
 
         Move block = blockPlayer();
@@ -54,23 +54,37 @@ public final class BotEasy {
             return pattern;
         }
 
-        return new Move(0, 0);
+        return findAnyEmpty();
     }
 
     public static synchronized boolean checkWin(char piece) {
+        return checkWinResult(piece).hasWin();
+    }
+
+    public static synchronized WinResult checkWinResult(char piece) {
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 if (BOARD[i][j] == piece) {
-                    if (countConsecutive(i, j, piece, 1, 0) >= 5
-                        || countConsecutive(i, j, piece, 0, 1) >= 5
-                        || countConsecutive(i, j, piece, 1, 1) >= 5
-                        || countConsecutive(i, j, piece, 1, -1) >= 5) {
-                        return true;
+                    List<Move> line = collectLine(i, j, piece, 1, 0);
+                    if (line.size() >= 5) {
+                        return new WinResult(true, line);
+                    }
+                    line = collectLine(i, j, piece, 0, 1);
+                    if (line.size() >= 5) {
+                        return new WinResult(true, line);
+                    }
+                    line = collectLine(i, j, piece, 1, 1);
+                    if (line.size() >= 5) {
+                        return new WinResult(true, line);
+                    }
+                    line = collectLine(i, j, piece, 1, -1);
+                    if (line.size() >= 5) {
+                        return new WinResult(true, line);
                     }
                 }
             }
         }
-        return false;
+        return new WinResult(false, List.of());
     }
 
     public static synchronized void resetBoard() {
@@ -91,6 +105,16 @@ public final class BotEasy {
         return count;
     }
 
+    private static List<Move> collectLine(int x, int y, char piece, int dx, int dy) {
+        List<Move> line = new ArrayList<>();
+        while (inside(x, y) && BOARD[x][y] == piece) {
+            line.add(new Move(x, y));
+            x += dx;
+            y += dy;
+        }
+        return line;
+    }
+
     private static int countPieces(char piece) {
         int count = 0;
         for (int i = 0; i < SIZE; i++) {
@@ -107,6 +131,18 @@ public final class BotEasy {
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 if (BOARD[i][j] == 'X') {
+                    return new Move(i, j);
+                }
+            }
+        }
+        return new Move(-1, -1);
+    }
+
+    private static Move findAnyEmpty() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                if (BOARD[i][j] == '\0') {
+                    BOARD[i][j] = 'O';
                     return new Move(i, j);
                 }
             }
@@ -316,5 +352,8 @@ public final class BotEasy {
     }
 
     public record Move(int x, int y) {
+    }
+
+    public record WinResult(boolean hasWin, List<Move> winLine) {
     }
 }

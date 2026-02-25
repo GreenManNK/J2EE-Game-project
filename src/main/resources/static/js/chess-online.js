@@ -31,6 +31,7 @@
         moveHistory: [],
         gameOver: false,
         resultText: "Dang cho doi doi thu",
+        roomStatus: "WAITING",
         lastMove: null,
         players: [],
         myColor: "",
@@ -64,13 +65,15 @@
             currentColor: document.getElementById("chessCurrentColor"),
             moveLog: document.getElementById("chessMoveLog"),
             resetBtn: document.getElementById("chessOnlineResetBtn"),
+            surrenderBtn: document.getElementById("chessOnlineSurrenderBtn"),
             leaveBtn: document.getElementById("chessOnlineLeaveBtn"),
             roomLabel: document.getElementById("chessOnlineRoomLabel"),
             userLabel: document.getElementById("chessOnlineUserLabel"),
             myColorLabel: document.getElementById("chessOnlineMyColor"),
             connectionStatus: document.getElementById("chessOnlineConnectionStatus"),
             roomStatus: document.getElementById("chessOnlineStatusText"),
-            playersBox: document.getElementById("chessOnlinePlayers")
+            playersBox: document.getElementById("chessOnlinePlayers"),
+            boardCells: []
         };
 
         if (els.roomLabel) {
@@ -86,14 +89,29 @@
     });
 
     function resetGame() {
-        if (!state.client || !state.connected || !state.roomId || !state.userId) {
-            setGameStatus("Chua the reset van dau khi chua ket noi phong");
+        if (!canResetGame()) {
+            setGameStatus("Chi co the tao van moi khi phong da du 2 nguoi choi.");
             return;
         }
         state.client.publish({
             destination: "/app/chess.reset",
             body: JSON.stringify({ roomId: state.roomId, userId: state.userId })
         });
+    }
+
+    function surrenderGame() {
+        if (!canSurrenderGame()) {
+            setGameStatus("Khong the dau hang luc nay.");
+            return;
+        }
+        if (!window.confirm("Ban chac chan muon dau hang van dau nay?")) {
+            return;
+        }
+        state.client.publish({
+            destination: "/app/chess.surrender",
+            body: JSON.stringify({ roomId: state.roomId, userId: state.userId })
+        });
+        setGameStatus("Dang gui yeu cau dau hang...");
     }
 
     function resetLocalBoardState(statusText) {
@@ -105,6 +123,7 @@
         state.moveHistory = [];
         state.gameOver = false;
         state.resultText = "Dang cho doi doi thu";
+        state.roomStatus = "WAITING";
         state.lastMove = null;
         renderAll();
         renderPlayers();
@@ -141,6 +160,7 @@
                 els.board.appendChild(btn);
             }
         }
+        els.boardCells = Array.from(els.board.querySelectorAll(".chess-cell"));
     }
 
     function onCellClick(row, col) {
@@ -272,7 +292,7 @@
 
     function renderBoard() {
         if (!els.board) return;
-        const cells = els.board.querySelectorAll(".chess-cell");
+        const cells = els.boardCells || [];
         const selected = state.selected;
         const legalMap = new Map(state.legalMoves.map(m => [moveKey(m.to.row, m.to.col), m]));
         const checkedKing = findKing(state.board, state.turn);
@@ -382,7 +402,10 @@
             }
         }
         if (els.resetBtn) {
-            els.resetBtn.disabled = !(state.connected && state.roomId && state.userId);
+            els.resetBtn.disabled = !canResetGame();
+        }
+        if (els.surrenderBtn) {
+            els.surrenderBtn.disabled = !canSurrenderGame();
         }
         if (!els.gameStatus) {
             return;
@@ -602,6 +625,7 @@
 
     function bindPageActions() {
         els.resetBtn?.addEventListener("click", resetGame);
+        els.surrenderBtn?.addEventListener("click", surrenderGame);
         els.leaveBtn?.addEventListener("click", () => leaveAndRedirect());
         window.addEventListener("beforeunload", () => {
             try {
@@ -767,6 +791,7 @@
         state.myColor = me ? me.color : "";
         state.currentTurnUserId = normalizeText(room.currentTurnUserId);
         state.turn = normalizeText(room.currentTurnColor) === "b" ? "b" : "w";
+        state.roomStatus = normalizeText(room.status).toUpperCase();
         state.board = copyBoard(room.board);
         state.moveHistory = Array.isArray(room.moveHistory)
             ? room.moveHistory.map((m) => String(m || "")).filter((m) => m)
@@ -794,6 +819,13 @@
             state.gameOver = false;
             state.resultText = "Dang cho doi doi thu";
             setGameStatus(preferredMessage || "Dang cho doi thu vao phong");
+            return;
+        }
+
+        if (state.roomStatus === "GAME_OVER") {
+            state.gameOver = true;
+            state.resultText = preferredMessage || "Van dau ket thuc";
+            setGameStatus(preferredMessage || "Van dau da ket thuc");
             return;
         }
 
@@ -918,6 +950,29 @@
         if (els.connectionStatus) {
             els.connectionStatus.textContent = text || "-";
         }
+    }
+
+    function canResetGame() {
+        return Boolean(
+            state.client &&
+            state.connected &&
+            state.roomId &&
+            state.userId &&
+            state.players.length >= 2 &&
+            state.myColor
+        );
+    }
+
+    function canSurrenderGame() {
+        return Boolean(
+            state.client &&
+            state.connected &&
+            state.roomId &&
+            state.userId &&
+            state.players.length >= 2 &&
+            state.myColor &&
+            !state.gameOver
+        );
     }
 
     function copyBoard(board) {

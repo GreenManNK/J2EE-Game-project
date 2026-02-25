@@ -13,13 +13,16 @@ import org.springframework.stereotype.Controller;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class GameWebSocketController {
     private static final String AUTH_USER_ID = "AUTH_USER_ID";
     private static final String GUEST_USER_ID = "GUEST_USER_ID";
     private static final String DEFAULT_AVATAR_PATH = "/uploads/avatars/default-avatar.jpg";
+    private static final long ROUND_RESET_DELAY_MS = 1500L;
 
     private final GameRoomService gameRoomService;
     private final SimpMessagingTemplate messagingTemplate;
@@ -97,6 +100,7 @@ public class GameWebSocketController {
             Map<String, Object> gameOverPayload = new HashMap<>();
             gameOverPayload.put("type", "GAME_OVER");
             gameOverPayload.put("winnerUserId", result.winnerUserId());
+            gameOverPayload.put("resetDelayMs", ROUND_RESET_DELAY_MS);
             if (result.loserUserId() != null) {
                 gameOverPayload.put("loserUserId", result.loserUserId());
             }
@@ -106,26 +110,20 @@ public class GameWebSocketController {
             if (result.loserScore() != null) {
                 gameOverPayload.put("loserScore", result.loserScore());
             }
+            if (result.winLine() != null) {
+                gameOverPayload.put("winLine", result.winLine());
+            }
             messagingTemplate.convertAndSend("/topic/room." + message.getRoomId(), gameOverPayload);
-            gameRoomService.resetRoom(message.getRoomId());
-            messagingTemplate.convertAndSend("/topic/room." + message.getRoomId(), Map.of(
-                "type", "RESET",
-                "board", gameRoomService.getBoardSnapshot(message.getRoomId()),
-                "currentTurnUserId", gameRoomService.getCurrentTurnUserId(message.getRoomId())
-            ));
+            scheduleRoundReset(message.getRoomId());
             return;
         }
 
         if (result.draw()) {
-            messagingTemplate.convertAndSend("/topic/room." + message.getRoomId(), Map.of(
-                "type", "DRAW"
-            ));
-            gameRoomService.resetRoom(message.getRoomId());
-            messagingTemplate.convertAndSend("/topic/room." + message.getRoomId(), Map.of(
-                "type", "RESET",
-                "board", gameRoomService.getBoardSnapshot(message.getRoomId()),
-                "currentTurnUserId", gameRoomService.getCurrentTurnUserId(message.getRoomId())
-            ));
+            Map<String, Object> drawPayload = new HashMap<>();
+            drawPayload.put("type", "DRAW");
+            drawPayload.put("resetDelayMs", ROUND_RESET_DELAY_MS);
+            messagingTemplate.convertAndSend("/topic/room." + message.getRoomId(), drawPayload);
+            scheduleRoundReset(message.getRoomId());
         }
     }
 
@@ -148,6 +146,39 @@ public class GameWebSocketController {
             "type", "ROOM_LIST",
             "rooms", gameRoomService.availableRooms()
         ));
+    }
+
+    @MessageMapping("/game.surrender")
+    public void surrender(LeaveGameMessage message, SimpMessageHeaderAccessor headers) {
+        if (message == null) {
+            return;
+        }
+        String userId = requireConnectionUser(message.getRoomId(), message.getUserId(), headers);
+        if (userId == null) {
+            return;
+        }
+
+        GameRoomService.SurrenderResult result = gameRoomService.surrender(message.getRoomId(), userId);
+        if (!result.ok()) {
+            sendUserError(message.getRoomId(), userId, result.error());
+            return;
+        }
+
+        Map<String, Object> gameOverPayload = new HashMap<>();
+        gameOverPayload.put("type", "GAME_OVER");
+        gameOverPayload.put("winnerUserId", result.winnerUserId());
+        gameOverPayload.put("loserUserId", result.loserUserId());
+        gameOverPayload.put("surrenderUserId", userId);
+        gameOverPayload.put("reason", "SURRENDER");
+        gameOverPayload.put("resetDelayMs", ROUND_RESET_DELAY_MS);
+        if (result.winnerScore() != null) {
+            gameOverPayload.put("winnerScore", result.winnerScore());
+        }
+        if (result.loserScore() != null) {
+            gameOverPayload.put("loserScore", result.loserScore());
+        }
+        messagingTemplate.convertAndSend("/topic/room." + message.getRoomId(), gameOverPayload);
+        scheduleRoundReset(message.getRoomId());
     }
 
     @EventListener
@@ -210,6 +241,20 @@ public class GameWebSocketController {
                 "error", error
             ));
         }
+    }
+
+    private void scheduleRoundReset(String roomId) {
+        if (roomId == null || roomId.isBlank()) {
+            return;
+        }
+        CompletableFuture.runAsync(() -> {
+            gameRoomService.resetRoom(roomId);
+            messagingTemplate.convertAndSend("/topic/room." + roomId, Map.of(
+                "type", "RESET",
+                "board", gameRoomService.getBoardSnapshot(roomId),
+                "currentTurnUserId", gameRoomService.getCurrentTurnUserId(roomId)
+            ));
+        }, CompletableFuture.delayedExecutor(ROUND_RESET_DELAY_MS, TimeUnit.MILLISECONDS));
     }
 
     private void rememberRoomPresence(SimpMessageHeaderAccessor headers, String roomId, String userId) {

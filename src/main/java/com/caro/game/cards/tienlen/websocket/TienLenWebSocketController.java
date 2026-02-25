@@ -138,6 +138,41 @@ public class TienLenWebSocketController {
         broadcastRoomState(roomId, result.eventType(), result.room(), result.room() == null ? null : result.room().statusMessage());
     }
 
+    @MessageMapping("/tienlen.surrender")
+    public void surrender(TienLenRoomActionMessage message, SimpMessageHeaderAccessor headers) {
+        if (message == null) {
+            return;
+        }
+        String roomId = safeTrim(message.getRoomId());
+        String userId = requireConnectionUser(roomId, message.getUserId(), headers);
+        if (roomId == null || userId == null) {
+            return;
+        }
+        TienLenRoomService.LeaveResult result = roomService.leaveRoom(roomId, userId);
+        if (!result.ok()) {
+            sendUserError(roomId, userId, result.error());
+            if (result.room() != null) {
+                broadcastRoomState(roomId, "ROOM_STATE", result.room(), result.error());
+            }
+            return;
+        }
+        forgetRoomPresence(headers, roomId, userId);
+        if (result.roomClosed()) {
+            messagingTemplate.convertAndSend("/topic/tienlen.room." + roomId, Map.of(
+                "type", "ROOM_CLOSED",
+                "roomId", roomId,
+                "message", "Phong da dong"
+            ));
+        } else {
+            TienLenRoomService.RoomSnapshot room = result.room() != null ? result.room() : roomService.roomSnapshot(roomId);
+            if (room != null) {
+                broadcastRoomState(roomId, "ROOM_STATE", room, "Nguoi choi da dau hang va roi phong");
+                sendPrivateStates(roomId);
+            }
+        }
+        broadcastRoomList();
+    }
+
     @MessageMapping("/tienlen.leave")
     public void leave(TienLenRoomActionMessage message, SimpMessageHeaderAccessor headers) {
         if (message == null) {

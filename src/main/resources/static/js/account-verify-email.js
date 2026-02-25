@@ -4,6 +4,7 @@
   const emailInput = document.getElementById('email');
   const resendBtn = document.getElementById('resendCodeBtn');
   const out = document.getElementById('out');
+  const ui = window.CaroUi || {};
   const pendingEmail = localStorage.getItem('pendingVerifyEmail');
   if (emailInput && pendingEmail) {
     emailInput.value = pendingEmail;
@@ -11,8 +12,16 @@
   let resendCooldownTimer = null;
 
   function renderOut(data) {
+    if (ui.apiResult) {
+      ui.apiResult(data, {
+        statusEl: out,
+        successMessage: 'Xu ly thanh cong'
+      });
+      return;
+    }
     if (!out) return;
-    out.textContent = JSON.stringify(data, null, 2);
+    const ok = !!(data && data.success);
+    out.textContent = ok ? 'Xu ly thanh cong' : String(data?.error || data?.message || 'That bai');
   }
 
   function startResendCooldown(seconds) {
@@ -46,14 +55,25 @@
     e.preventDefault();
     const email = document.getElementById('email');
     const code = document.getElementById('code');
-    const res = await fetch('/account/verify-email', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({email:email.value,code:code.value})
-    });
-    const data = await res.json();
-    renderOut(data);
-    if (data.success) {
-      localStorage.removeItem('pendingVerifyEmail');
+    try {
+      const res = await fetch('/account/verify-email', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({email:email.value,code:code.value})
+      });
+      const data = await res.json();
+      if (data.success && ui.apiResult) {
+        ui.apiResult(data, { statusEl: out, successMessage: 'Xac thuc email thanh cong' });
+      } else {
+        renderOut(data);
+      }
+      if (data.success) {
+        localStorage.removeItem('pendingVerifyEmail');
+      }
+    } catch (err) {
+      const message = String(err?.message || 'Network error');
+      if (ui.setStatus) ui.setStatus(out, message, false);
+      else if (out) out.textContent = message;
+      ui.toast?.(message, { type: 'danger' });
     }
   });
 
@@ -72,7 +92,11 @@
         body: JSON.stringify({ email })
       });
       const data = await res.json();
-      renderOut(data);
+      if (data.success && ui.apiResult) {
+        ui.apiResult(data, { statusEl: out, successMessage: 'Da gui lai ma xac thuc' });
+      } else {
+        renderOut(data);
+      }
       if (data.success) {
         localStorage.setItem('pendingVerifyEmail', email);
         startResendCooldown(30);
@@ -81,7 +105,9 @@
         resendBtn.textContent = originalText || 'Gui lai ma';
       }
     } catch (err) {
-      renderOut({ success: false, error: err?.message || 'Network error' });
+      const message = err?.message || 'Network error';
+      renderOut({ success: false, error: message });
+      ui.toast?.(message, { type: 'danger' });
       resendBtn.disabled = false;
       resendBtn.textContent = originalText || 'Gui lai ma';
     }

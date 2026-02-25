@@ -9,6 +9,7 @@
   <p id="botStatus" class="theme-text">Ban danh X. Chon o de danh.</p>
   <div class="d-flex justify-content-center gap-2 mb-3">
     <button id="resetBtn" class="btn btn-outline-warning">Choi lai</button>
+    <button id="botSurrenderBtn" class="btn btn-outline-danger">Dau hang</button>
     <a th:href="@{/single-player}" class="btn btn-outline-secondary">Quay lai</a>
   </div>
 
@@ -42,6 +43,7 @@
   .bot-cell.x { color: #0d6efd; }
   .bot-cell.o { color: #dc3545; }
   .bot-cell.win { background: rgba(255, 193, 7, .25); }
+  .bot-cell.last-move { box-shadow: inset 0 0 0 2px rgba(13, 202, 240, .9); }
   @media (max-width: 576px) {
     .bot-board { width: 96vw; }
   }
@@ -50,13 +52,20 @@
 <th:block th:replace="~{fragments :: appScripts('bot-play')}"></th:block>
 <script th:inline="javascript">
   (function () {
+    const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+      ? window.CaroUrl.path
+      : (value) => value;
+    const ui = window.CaroUi || {};
     const mode = /*[[${mode}]]*/ 'easy';
     const boardSize = 15;
     const board = Array.from({ length: boardSize }, () => Array(boardSize).fill(''));
     const boardEl = document.getElementById('botBoard');
     const statusEl = document.getElementById('botStatus');
+    const surrenderBtn = document.getElementById('botSurrenderBtn');
     let busy = false;
     let gameOver = false;
+    let currentWinLine = [];
+    let lastMove = null;
 
     function cellId(x, y) {
       return 'bot-cell-' + x + '-' + y;
@@ -74,12 +83,21 @@
             el.textContent = value;
             el.classList.add(value.toLowerCase());
           }
+          if (isWinningCell(x, y)) {
+            el.classList.add('win');
+          }
+          if (isLastMoveCell(x, y)) {
+            el.classList.add('last-move');
+          }
           if (busy || gameOver) {
             el.classList.add('disabled');
           }
           el.addEventListener('click', () => handlePlayerMove(x, y));
           boardEl.appendChild(el);
         }
+      }
+      if (surrenderBtn) {
+        surrenderBtn.disabled = busy || gameOver;
       }
     }
 
@@ -89,25 +107,47 @@
       const el = document.getElementById(cellId(x, y));
       if (!el) return;
       el.textContent = value;
-      el.classList.remove('x', 'o');
+      el.classList.remove('x', 'o', 'win', 'last-move');
       if (value) el.classList.add(value.toLowerCase());
+      if (isWinningCell(x, y)) el.classList.add('win');
+      if (isLastMoveCell(x, y)) el.classList.add('last-move');
     }
 
-    function highlightWinLine(winLine) {
-      if (!Array.isArray(winLine)) return;
-      winLine.forEach((m) => {
-        if (typeof m?.x !== 'number' || typeof m?.y !== 'number') return;
-        document.getElementById(cellId(m.x, m.y))?.classList.add('win');
-      });
+    function setWinLine(winLine) {
+      if (!Array.isArray(winLine)) {
+        currentWinLine = [];
+        return;
+      }
+      currentWinLine = winLine
+        .filter((m) => typeof m?.x === 'number' && typeof m?.y === 'number')
+        .map((m) => ({ x: m.x, y: m.y }));
+    }
+
+    function isWinningCell(x, y) {
+      return currentWinLine.some((m) => m.x === x && m.y === y);
+    }
+
+    function setLastMove(move) {
+      if (!move || typeof move.x !== 'number' || typeof move.y !== 'number') {
+        lastMove = null;
+        return;
+      }
+      lastMove = { x: move.x, y: move.y };
+    }
+
+    function isLastMoveCell(x, y) {
+      return !!lastMove && lastMove.x === x && lastMove.y === y;
     }
 
     async function callReset() {
-      await fetch('/bot/reset', { method: 'POST' });
+      await fetch(appPath('/bot/reset'), { method: 'POST' });
     }
 
     async function resetGame() {
       busy = true;
       gameOver = false;
+      currentWinLine = [];
+      lastMove = null;
       for (let x = 0; x < boardSize; x++) {
         for (let y = 0; y < boardSize; y++) {
           board[x][y] = '';
@@ -133,12 +173,13 @@
       if (board[x][y]) return;
 
       busy = true;
+      setLastMove({ x, y });
       setCell(x, y, 'X');
       statusEl.textContent = 'Bot dang tinh nuoc...';
       renderBoard();
 
       try {
-        const endpoint = mode === 'hard' ? '/bot/hard-move' : '/bot/easy-move';
+        const endpoint = mode === 'hard' ? appPath('/bot/hard-move') : appPath('/bot/easy-move');
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -152,29 +193,38 @@
         if (data && data.success === false) {
           throw new Error(data.error || 'Loi xu ly nuoc di');
         }
+        setWinLine(data?.winLine);
         if (typeof data.x === 'number' && typeof data.y === 'number' && data.x >= 0 && data.y >= 0) {
+          if (board[data.x][data.y]) {
+            throw new Error('Bot tra nuoc di khong hop le');
+          }
+          setLastMove({ x: data.x, y: data.y });
           setCell(data.x, data.y, 'O');
-        }
-        if (Array.isArray(data.winLine)) {
-          highlightWinLine(data.winLine);
         }
 
         if (data.playerWin) {
           gameOver = true;
           statusEl.textContent = 'Ban thang!';
-          setTimeout(() => alert('Ban thang!'), 50);
+          ui.toast?.('Ban thang!', { type: 'success' });
           return;
         }
         if (data.botWin) {
           gameOver = true;
           statusEl.textContent = 'Bot thang!';
-          setTimeout(() => alert('Bot thang!'), 50);
+          ui.toast?.('Bot thang!', { type: 'warning' });
+          return;
+        }
+        if (data.draw) {
+          gameOver = true;
+          statusEl.textContent = 'Hoa co!';
+          ui.toast?.('Van dau hoa!', { type: 'info' });
           return;
         }
 
         statusEl.textContent = 'Ban danh X. Chon o de danh.';
       } catch (err) {
-        board[x][y] = '';
+        setWinLine([]);
+        setLastMove(null);
         setCell(x, y, '');
         statusEl.textContent = err?.message || 'Loi khong xac dinh';
       } finally {
@@ -184,6 +234,17 @@
     }
 
     document.getElementById('resetBtn')?.addEventListener('click', resetGame);
+    surrenderBtn?.addEventListener('click', () => {
+      if (busy || gameOver) return;
+      if (typeof window.confirm === 'function' && !window.confirm('Ban chac chan muon dau hang?')) {
+        return;
+      }
+      gameOver = true;
+      setWinLine([]);
+      statusEl.textContent = 'Ban da dau hang! Bot thang.';
+      ui.toast?.('Ban da dau hang!', { type: 'warning' });
+      renderBoard();
+    });
 
     renderBoard();
     resetGame();

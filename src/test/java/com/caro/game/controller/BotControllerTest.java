@@ -8,6 +8,7 @@ import org.springframework.mock.web.MockHttpSession;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,7 +47,37 @@ class BotControllerTest {
         assertFalse(result.get("botWin") instanceof Boolean b && b);
         assertNull(result.get("x"));
         assertNull(result.get("y"));
+        assertTrue(result.get("winLine") instanceof List<?> line && line.size() >= 5);
         assertEquals(5, countPlayerMoves(state));
+    }
+
+    @Test
+    void easyMoveShouldReturnDrawWhenBoardBecomesFullAfterPlayerMove() throws Exception {
+        BotController controller = new BotController();
+        MockHttpSession session = new MockHttpSession();
+        Object state = newBotSessionState();
+        int emptyX = 14;
+        int emptyY = 14;
+
+        for (int x = 0; x < 15; x++) {
+            for (int y = 0; y < 15; y++) {
+                if (x == emptyX && y == emptyY) {
+                    continue;
+                }
+                mark(state, x, y, ((x + y) % 2 == 0) ? 'X' : 'O');
+            }
+        }
+
+        session.setAttribute("BOT_EASY_STATE", state);
+
+        Map<String, Object> result = controller.easyMove(new BotController.MoveRequest(emptyX, emptyY), session);
+
+        assertTrue(result.get("success") instanceof Boolean b && b);
+        assertTrue(result.get("draw") instanceof Boolean b && b);
+        assertFalse(result.get("playerWin") instanceof Boolean b && b);
+        assertFalse(result.get("botWin") instanceof Boolean b && b);
+        assertNull(result.get("x"));
+        assertNull(result.get("y"));
     }
 
     private static Object newBotSessionState() throws Exception {

@@ -67,16 +67,25 @@
     const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
       ? window.CaroUrl.path
       : (value) => value;
+    const ui = window.CaroUi || {};
     const input = document.getElementById('roomIdInput');
     const btn = document.getElementById('createRoomBtn');
     const roomList = document.getElementById('roomList');
     const siteMusic = document.getElementById('siteMusic');
     const siteToggleBtn = document.getElementById('siteMusicToggleBtn');
 
+    function notify(message, type) {
+      if (ui.toast) {
+        ui.toast(message, { type: type || 'info' });
+      } else {
+        alert(message);
+      }
+    }
+
     btn?.addEventListener('click', () => {
       const roomId = (input?.value || '').trim();
       if (!roomId) {
-        alert('Vui long nhap ma phong');
+        notify('Vui long nhap ma phong', 'warning');
         return;
       }
       window.location.href = appPath('/game') + '?roomId=' + encodeURIComponent(roomId);
@@ -104,7 +113,7 @@
 
     async function refreshRoomsByApi() {
       try {
-        const res = await fetch('/lobby/api', { cache: 'no-store' });
+        const res = await fetch(appPath('/lobby/api'), { cache: 'no-store' });
         if (!res.ok) return;
         const data = await res.json();
         renderRooms(data.availableRooms || []);

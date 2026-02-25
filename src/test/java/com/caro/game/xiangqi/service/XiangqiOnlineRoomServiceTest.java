@@ -68,4 +68,25 @@ class XiangqiOnlineRoomServiceTest {
         assertEquals("XQ-3", service.availableRooms().getFirst().roomId());
         assertEquals("r", snapshot.players().getFirst().color());
     }
+
+    @Test
+    void surrenderShouldMarkGameOverAndBlockFurtherMoves() {
+        XiangqiOnlineRoomService service = new XiangqiOnlineRoomService();
+        service.joinRoom("XQ-4", "redUser", "Red", "");
+        service.joinRoom("XQ-4", "blackUser", "Black", "");
+
+        XiangqiOnlineRoomService.ActionResult surrender = service.surrenderGame("XQ-4", "redUser");
+
+        assertTrue(surrender.ok());
+        assertEquals("SURRENDER", surrender.eventType());
+        assertNotNull(surrender.room());
+        assertEquals("GAME_OVER", surrender.room().status());
+        assertNull(surrender.room().currentTurnUserId());
+        assertTrue(surrender.room().statusMessage().contains("dau hang"));
+        assertEquals("Do dau hang", surrender.room().moveHistory().getLast());
+
+        XiangqiOnlineRoomService.ActionResult moveAfterSurrender = service.move("XQ-4", "blackUser", 0, 0, 1, 0, null);
+        assertFalse(moveAfterSurrender.ok());
+        assertEquals("Game already ended", moveAfterSurrender.error());
+    }
 }

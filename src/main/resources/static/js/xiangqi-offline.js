@@ -52,10 +52,13 @@
             moveCount: document.getElementById("xiangqiMoveCount"),
             currentColor: document.getElementById("xiangqiCurrentColor"),
             moveLog: document.getElementById("xiangqiMoveLog"),
-            resetBtn: document.getElementById("xiangqiResetBtn")
+            resetBtn: document.getElementById("xiangqiResetBtn"),
+            surrenderBtn: document.getElementById("xiangqiSurrenderBtn"),
+            boardCells: []
         };
         initBoardUi();
         els.resetBtn?.addEventListener("click", resetGame);
+        els.surrenderBtn?.addEventListener("click", surrenderGame);
         resetGame();
     });
 
@@ -114,6 +117,7 @@
                 els.board.appendChild(btn);
             }
         }
+        els.boardCells = Array.from(els.board.querySelectorAll(".xiangqi-cell"));
     }
 
     function onCellClick(row, col) {
@@ -221,7 +225,7 @@
 
     function renderBoard() {
         if (!els.board) return;
-        const cells = els.board.querySelectorAll(".xiangqi-cell");
+        const cells = els.boardCells || [];
         const selected = state.selected;
         const legalMap = new Map(state.legalMoves.map((m) => [key(m.to.row, m.to.col), m]));
         const checkedGeneral = findGeneral(state.board, state.turn);
@@ -310,9 +314,38 @@
         if (els.resultLabel) els.resultLabel.textContent = state.resultText;
         if (els.moveCount) els.moveCount.textContent = String(state.moveHistory.length);
         if (els.currentColor) els.currentColor.textContent = currentName;
+        if (els.surrenderBtn) {
+            els.surrenderBtn.disabled = state.gameOver;
+        }
         if (state.gameOver && els.gameStatus && !els.gameStatus.textContent) {
             els.gameStatus.textContent = state.resultText;
         }
+    }
+
+    function surrenderGame() {
+        if (state.gameOver) {
+            return;
+        }
+        const surrenderSide = state.botEnabled ? humanSide() : state.turn;
+        if (!surrenderSide) {
+            return;
+        }
+        const surrenderLabel = colorName(surrenderSide);
+        const winnerSide = surrenderSide === "r" ? "b" : "r";
+        const winnerLabel = colorName(winnerSide);
+        const messagePrefix = state.botEnabled ? "Ban" : surrenderLabel;
+        if (!window.confirm(messagePrefix + " chac chan muon dau hang?")) {
+            return;
+        }
+
+        state.selected = null;
+        state.legalMoves = [];
+        state.gameOver = true;
+        state.botThinking = false;
+        state.resultText = winnerLabel + " thang";
+        state.moveHistory.push(surrenderLabel + " dau hang");
+        setGameStatus(messagePrefix + " da dau hang. " + winnerLabel + " thang.");
+        renderAll();
     }
 
     function setGameStatus(text) {
@@ -695,6 +728,11 @@
 
     function isBotTurn() {
         return state.botEnabled && !state.gameOver && state.turn === state.botSide;
+    }
+
+    function humanSide() {
+        if (!state.botEnabled) return "";
+        return state.botSide === "r" ? "b" : "r";
     }
 
     function inside(row, col) {

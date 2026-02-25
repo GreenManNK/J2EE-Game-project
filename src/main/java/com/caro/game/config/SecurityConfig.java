@@ -38,7 +38,7 @@ public class SecurityConfig {
                 .authenticationEntryPoint(authenticationEntryPoint())
                 .accessDeniedHandler(accessDeniedHandler()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/admin/**", "/notification-admin/**").hasRole("ADMIN")
+                .requestMatchers("/admin/**", "/notification-admin/**", "/account/users").hasRole("ADMIN")
                 .requestMatchers("/manager/**").hasAnyRole("MANAGER", "ADMIN")
                 .anyRequest().permitAll())
             .httpBasic(httpBasic -> httpBasic.disable())
@@ -57,7 +57,7 @@ public class SecurityConfig {
             if (wantsJson(request)) {
                 writeJson(response, HttpServletResponse.SC_UNAUTHORIZED, "Login required");
             } else {
-                response.sendRedirect("/account/login-page");
+                response.sendRedirect(loginPageUrl(request));
             }
         };
     }
@@ -74,11 +74,25 @@ public class SecurityConfig {
 
     private boolean wantsJson(HttpServletRequest request) {
         String path = request.getRequestURI();
+        String method = request.getMethod();
         String accept = request.getHeader("Accept");
         String requestedWith = request.getHeader("X-Requested-With");
+        String contentType = request.getContentType();
+        boolean nonPageMethod = method != null
+            && !("GET".equalsIgnoreCase(method) || "HEAD".equalsIgnoreCase(method));
         return (path != null && path.contains("/api"))
             || (accept != null && accept.contains("application/json"))
-            || "XMLHttpRequest".equalsIgnoreCase(requestedWith);
+            || (contentType != null && contentType.contains("application/json"))
+            || "XMLHttpRequest".equalsIgnoreCase(requestedWith)
+            || nonPageMethod;
+    }
+
+    private String loginPageUrl(HttpServletRequest request) {
+        String contextPath = request == null ? null : request.getContextPath();
+        if (contextPath == null || contextPath.isBlank() || "/".equals(contextPath)) {
+            return "/account/login-page";
+        }
+        return contextPath + "/account/login-page";
     }
 
     private void writeJson(HttpServletResponse response, int status, String error) throws IOException {

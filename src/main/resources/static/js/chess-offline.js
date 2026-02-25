@@ -50,11 +50,14 @@
             moveCount: document.getElementById("chessMoveCount"),
             currentColor: document.getElementById("chessCurrentColor"),
             moveLog: document.getElementById("chessMoveLog"),
-            resetBtn: document.getElementById("chessResetBtn")
+            resetBtn: document.getElementById("chessResetBtn"),
+            surrenderBtn: document.getElementById("chessSurrenderBtn"),
+            boardCells: []
         };
 
         initBoardUi();
         els.resetBtn?.addEventListener("click", resetGame);
+        els.surrenderBtn?.addEventListener("click", surrenderGame);
         resetGame();
     });
 
@@ -100,6 +103,7 @@
                 els.board.appendChild(btn);
             }
         }
+        els.boardCells = Array.from(els.board.querySelectorAll(".chess-cell"));
     }
 
     function onCellClick(row, col) {
@@ -214,7 +218,7 @@
 
     function renderBoard() {
         if (!els.board) return;
-        const cells = els.board.querySelectorAll(".chess-cell");
+        const cells = els.boardCells || [];
         const selected = state.selected;
         const legalMap = new Map(state.legalMoves.map(m => [moveKey(m.to.row, m.to.col), m]));
         const checkedKing = findKing(state.board, state.turn);
@@ -311,12 +315,41 @@
         if (els.currentColor) {
             els.currentColor.textContent = currentName;
         }
+        if (els.surrenderBtn) {
+            els.surrenderBtn.disabled = state.gameOver;
+        }
         if (!els.gameStatus) {
             return;
         }
         if (state.gameOver && !els.gameStatus.textContent) {
             els.gameStatus.textContent = state.resultText;
         }
+    }
+
+    function surrenderGame() {
+        if (state.gameOver) {
+            return;
+        }
+        const surrenderSide = state.botEnabled ? humanSide() : state.turn;
+        if (!surrenderSide) {
+            return;
+        }
+        const surrenderLabel = colorName(surrenderSide);
+        const winnerSide = surrenderSide === "w" ? "b" : "w";
+        const winnerLabel = colorName(winnerSide);
+        const messagePrefix = state.botEnabled ? "Ban" : surrenderLabel;
+        if (!window.confirm(messagePrefix + " chac chan muon dau hang?")) {
+            return;
+        }
+
+        state.selected = null;
+        state.legalMoves = [];
+        state.gameOver = true;
+        state.botThinking = false;
+        state.resultText = winnerLabel + " thang";
+        state.moveHistory.push(surrenderLabel + " dau hang");
+        setGameStatus(messagePrefix + " da dau hang. " + winnerLabel + " thang.");
+        renderAll();
     }
 
     function setGameStatus(text) {
@@ -529,6 +562,13 @@
 
     function isBotTurn() {
         return state.botEnabled && !state.gameOver && state.turn === state.botSide;
+    }
+
+    function humanSide() {
+        if (!state.botEnabled) {
+            return "";
+        }
+        return state.botSide === "w" ? "b" : "w";
     }
 
     function maybeQueueBotMove() {

@@ -93,13 +93,26 @@ public class AccountController {
 
     @PostMapping("/verify-reset-code")
     public Object verifyResetCode(@RequestBody VerifyResetRequest request) {
-        return toResponse(accountService.verifyResetCode(request.userId(), request.code()));
+        if (request == null) {
+            return Map.of("success", false, "error", "Email/UserId and code are required");
+        }
+        if (request.userId() != null && !request.userId().isBlank()) {
+            return toResponse(accountService.verifyResetCode(request.userId(), request.code()));
+        }
+        return toResponse(accountService.verifyResetCodeByEmail(request.email(), request.code()));
     }
 
     @PostMapping("/reset-password")
     public Object resetPassword(@RequestBody ResetPasswordRequest request) {
-        return toResponse(accountService.resetPassword(
-            request.userId(), request.code(), request.newPassword(), request.confirmPassword()));
+        if (request == null) {
+            return Map.of("success", false, "error", "Invalid request");
+        }
+        if (request.userId() != null && !request.userId().isBlank()) {
+            return toResponse(accountService.resetPassword(
+                request.userId(), request.code(), request.newPassword(), request.confirmPassword()));
+        }
+        return toResponse(accountService.resetPasswordByEmail(
+            request.email(), request.code(), request.newPassword(), request.confirmPassword()));
     }
 
     @GetMapping("/ban-notification")
@@ -145,9 +158,9 @@ public class AccountController {
     public record SendResetRequest(String email) {
     }
 
-    public record VerifyResetRequest(String userId, String code) {
+    public record VerifyResetRequest(String userId, String email, String code) {
     }
 
-    public record ResetPasswordRequest(String userId, String code, String newPassword, String confirmPassword) {
+    public record ResetPasswordRequest(String userId, String email, String code, String newPassword, String confirmPassword) {
     }
 }

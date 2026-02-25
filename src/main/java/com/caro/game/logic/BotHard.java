@@ -53,7 +53,7 @@ public final class BotHard {
         }
 
         lastBotMove = bestMove;
-        if (inside(bestMove.x(), bestMove.y())) {
+        if (inside(bestMove.x(), bestMove.y()) && BOARD[bestMove.x()][bestMove.y()] == '\0') {
             BOARD[bestMove.x()][bestMove.y()] = 'O';
         }
         return bestMove;
@@ -110,7 +110,10 @@ public final class BotHard {
         }
 
         if (moves.isEmpty()) {
-            moves.add(new Move(SIZE / 2, SIZE / 2));
+            Move fallback = findAnyEmpty();
+            if (fallback != null) {
+                moves.add(fallback);
+            }
         }
 
         return new ArrayList<>(moves);
@@ -118,6 +121,17 @@ public final class BotHard {
 
     private static boolean inside(int x, int y) {
         return x >= 0 && x < SIZE && y >= 0 && y < SIZE;
+    }
+
+    private static Move findAnyEmpty() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                if (BOARD[i][j] == '\0') {
+                    return new Move(i, j);
+                }
+            }
+        }
+        return null;
     }
 
     private static int minimax(int depth, boolean maximizing, int alpha, int beta) {

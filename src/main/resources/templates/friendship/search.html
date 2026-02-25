@@ -4,31 +4,61 @@
 <body>
 <div th:replace="~{fragments :: appShell('friend-search')}"></div>
 
-<div class="container mt-4">
+<div class="container mt-4" id="friendshipSearchRoot" th:attr="data-current-user-id=${currentUserId}">
   <h1>Ket qua tim kiem</h1>
   <p>Tu khoa: <strong th:text="${query}"></strong></p>
 
   <h3>Khop chinh xac</h3>
   <div class="list-group mb-4">
-    <div class="list-group-item d-flex justify-content-between align-items-center" th:each="u : ${exactMatches}">
-      <span th:text="${u.displayName + ' - ' + u.email}"></span>
-      <a class="btn btn-sm btn-outline-primary" th:href="@{/friendship/user-detail/{id}(id=${u.id}, currentUserId=${currentUserId})}">Xem</a>
+    <div class="list-group-item d-flex justify-content-between align-items-center gap-2" th:each="u : ${exactMatches}">
+      <div class="d-flex align-items-center gap-2 flex-grow-1">
+        <img th:src="@{${u.avatarPath != null and !#strings.isEmpty(u.avatarPath) ? u.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
+             alt="avatar" width="32" height="32" class="rounded-circle border">
+        <div class="small">
+          <div class="fw-semibold" th:text="${u.displayName}">Name</div>
+          <div class="text-muted" th:text="${u.email}">mail@example.com</div>
+          <div class="text-muted" th:text="${'Score: ' + u.score}">Score</div>
+        </div>
+      </div>
+      <span class="d-flex gap-2 align-items-center">
+        <button type="button"
+                class="btn btn-sm btn-primary quick-add"
+                th:if="${currentUserId != null and !#strings.isEmpty(currentUserId) and currentUserId != u.id}"
+                th:attr="data-user-id=${u.id}">Ket ban</button>
+        <a class="btn btn-sm btn-outline-primary" th:href="@{/friendship/user-detail/{id}(id=${u.id}, currentUserId=${currentUserId})}">Xem</a>
+      </span>
     </div>
     <div class="text-muted" th:if="${#lists.isEmpty(exactMatches)}">Khong co ket qua khop chinh xac.</div>
   </div>
 
   <h3>Khop tuong tu</h3>
   <div class="list-group">
-    <div class="list-group-item d-flex justify-content-between align-items-center" th:each="u : ${similarMatches}">
-      <span th:text="${u.displayName + ' - ' + u.email}"></span>
-      <a class="btn btn-sm btn-outline-primary" th:href="@{/friendship/user-detail/{id}(id=${u.id}, currentUserId=${currentUserId})}">Xem</a>
+    <div class="list-group-item d-flex justify-content-between align-items-center gap-2" th:each="u : ${similarMatches}">
+      <div class="d-flex align-items-center gap-2 flex-grow-1">
+        <img th:src="@{${u.avatarPath != null and !#strings.isEmpty(u.avatarPath) ? u.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
+             alt="avatar" width="32" height="32" class="rounded-circle border">
+        <div class="small">
+          <div class="fw-semibold" th:text="${u.displayName}">Name</div>
+          <div class="text-muted" th:text="${u.email}">mail@example.com</div>
+          <div class="text-muted" th:text="${'Score: ' + u.score}">Score</div>
+        </div>
+      </div>
+      <span class="d-flex gap-2 align-items-center">
+        <button type="button"
+                class="btn btn-sm btn-primary quick-add"
+                th:if="${currentUserId != null and !#strings.isEmpty(currentUserId) and currentUserId != u.id}"
+                th:attr="data-user-id=${u.id}">Ket ban</button>
+        <a class="btn btn-sm btn-outline-primary" th:href="@{/friendship/user-detail/{id}(id=${u.id}, currentUserId=${currentUserId})}">Xem</a>
+      </span>
     </div>
     <div class="text-muted" th:if="${#lists.isEmpty(similarMatches)}">Khong co ket qua tuong tu.</div>
   </div>
 
   <a class="btn btn-link mt-3" th:href="@{/friendship(currentUserId=${currentUserId})}">Quay lai trang ban be</a>
+  <div id="friendshipSearchOut" class="small mt-2 mb-0" role="status" aria-live="polite"></div>
 </div>
 
 <th:block th:replace="~{fragments :: appScripts('friend-search')}"></th:block>
+<script th:src="@{/js/friendship-search.js}"></script>
 </body>
 </html>

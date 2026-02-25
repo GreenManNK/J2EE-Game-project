@@ -48,6 +48,9 @@ public class RoleGuardInterceptor implements HandlerInterceptor {
         if (path.startsWith("/notification-admin")) {
             return Set.of("Admin");
         }
+        if (path.startsWith("/account/users")) {
+            return Set.of("Admin");
+        }
         if (path.startsWith("/manager")) {
             return Set.of("Manager", "Admin");
         }
@@ -58,7 +61,7 @@ public class RoleGuardInterceptor implements HandlerInterceptor {
         if (wantsJson(request)) {
             writeJson(response, HttpServletResponse.SC_UNAUTHORIZED, "Login required");
         } else {
-            response.sendRedirect("/account/login-page");
+            response.sendRedirect(loginPageUrl(request));
         }
         return false;
     }
@@ -74,11 +77,17 @@ public class RoleGuardInterceptor implements HandlerInterceptor {
 
     private boolean wantsJson(HttpServletRequest request) {
         String path = request.getRequestURI();
+        String method = request.getMethod();
         String accept = request.getHeader("Accept");
         String requestedWith = request.getHeader("X-Requested-With");
+        String contentType = request.getContentType();
+        boolean nonPageMethod = method != null
+            && !("GET".equalsIgnoreCase(method) || "HEAD".equalsIgnoreCase(method));
         return (path != null && path.contains("/api"))
             || (accept != null && accept.contains(MediaType.APPLICATION_JSON_VALUE))
-            || "XMLHttpRequest".equalsIgnoreCase(requestedWith);
+            || (contentType != null && contentType.contains(MediaType.APPLICATION_JSON_VALUE))
+            || "XMLHttpRequest".equalsIgnoreCase(requestedWith)
+            || nonPageMethod;
     }
 
     private void writeJson(HttpServletResponse response, int status, String error) throws IOException {
@@ -90,5 +99,13 @@ public class RoleGuardInterceptor implements HandlerInterceptor {
 
     private String asString(Object value) {
         return value == null ? null : String.valueOf(value);
+    }
+
+    private String loginPageUrl(HttpServletRequest request) {
+        String contextPath = request == null ? null : request.getContextPath();
+        if (contextPath == null || contextPath.isBlank() || "/".equals(contextPath)) {
+            return "/account/login-page";
+        }
+        return contextPath + "/account/login-page";
     }
 }
