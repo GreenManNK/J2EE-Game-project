@@ -57,24 +57,28 @@
           <h2 class="h5 theme-text mb-0">Ban choi</h2>
           <div class="small">
             <span class="me-3"><strong>Luot:</strong> <span id="tlTurnText">-</span></span>
-            <span><strong>Bo hien tai:</strong> <span id="tlCurrentTrickLabel">Chua co</span></span>
+            <span class="text-muted">Bo bai hien tai hien thi o giua ban</span>
           </div>
         </div>
 
         <div id="tlPlayersBoard" class="tienlen-players-board tl-table-stage">
-          <div class="tienlen-player-slot" data-slot="0">Chua co nguoi choi</div>
-          <div class="tienlen-player-slot" data-slot="1">Chua co nguoi choi</div>
-          <div class="tienlen-player-slot" data-slot="2">Chua co nguoi choi</div>
-          <div class="tienlen-player-slot" data-slot="3">Chua co nguoi choi</div>
-        </div>
+          <div class="tienlen-player-slot tl-seat-slot tl-seat-slot--top" data-slot="0" data-table-pos="top">Chua co nguoi choi</div>
+          <div class="tienlen-player-slot tl-seat-slot tl-seat-slot--right" data-slot="1" data-table-pos="right">Chua co nguoi choi</div>
+          <div class="tienlen-player-slot tl-seat-slot tl-seat-slot--bottom" data-slot="2" data-table-pos="bottom">Chua co nguoi choi</div>
+          <div class="tienlen-player-slot tl-seat-slot tl-seat-slot--left" data-slot="3" data-table-pos="left">Chua co nguoi choi</div>
 
-        <div class="mt-3 p-2 border rounded tl-trick-well">
-          <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
-            <div class="theme-text fw-bold">Bo bai tren ban</div>
-            <div class="small text-muted">Nguoi danh gan nhat: <span id="tlTrickOwnerText">-</span></div>
-          </div>
-          <div id="tlTrickCards" class="tienlen-cards-row tl-trick-cards">
-            <div class="text-muted small">Chua co bo bai nao</div>
+          <div class="tl-table-center" aria-live="polite">
+            <div class="tl-table-center__header">
+              <div class="tl-table-center__title">Bo bai tren ban</div>
+              <div class="tl-table-center__sub">
+                <span class="tl-table-chip">Bo: <strong id="tlCurrentTrickLabel">Chua co</strong></span>
+                <span class="tl-table-chip">Nguoi danh: <strong id="tlTrickOwnerText">-</strong></span>
+              </div>
+            </div>
+            <div id="tlTrickCards" class="tienlen-cards-row tl-trick-cards">
+              <div class="text-muted small">Chua co bo bai nao</div>
+            </div>
+            <div class="tl-table-center__hint">Ban cua ban luon duoc sap xep o vi tri phia duoi</div>
           </div>
         </div>
       </div>
@@ -183,9 +187,14 @@
 
   .tienlen-players-board.tl-table-stage {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    padding: 10px;
+    grid-template-columns: minmax(180px, 1fr) minmax(260px, 1.4fr) minmax(180px, 1fr);
+    grid-template-rows: minmax(112px, auto) minmax(188px, auto) minmax(118px, auto);
+    grid-template-areas:
+      ". top ."
+      "left center right"
+      ". bottom .";
+    gap: 12px;
+    padding: 14px;
     border-radius: 16px;
     border: 1px solid rgba(14, 79, 59, 0.18);
     background:
@@ -196,6 +205,7 @@
       inset 0 0 0 1px rgba(255,255,255,0.03),
       inset 0 16px 28px rgba(255,255,255,0.03),
       0 14px 28px rgba(5, 30, 23, 0.18);
+    position: relative;
   }
 
   .tienlen-player-slot {
@@ -214,6 +224,114 @@
     color: #eefbf4;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
     transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .18s ease;
+    overflow: hidden;
+  }
+
+  .tl-seat-slot--top { grid-area: top; }
+  .tl-seat-slot--right { grid-area: right; }
+  .tl-seat-slot--bottom { grid-area: bottom; }
+  .tl-seat-slot--left { grid-area: left; }
+
+  .tl-seat-slot--top,
+  .tl-seat-slot--bottom {
+    width: 100%;
+    max-width: 560px;
+    justify-self: center;
+  }
+
+  .tl-seat-slot--left,
+  .tl-seat-slot--right {
+    min-height: 188px;
+    align-self: stretch;
+    justify-content: flex-start;
+  }
+
+  .tl-seat-slot--left .tl-player-slot__head,
+  .tl-seat-slot--right .tl-player-slot__head {
+    gap: 8px;
+  }
+
+  .tl-seat-slot--left .tl-player-slot__meta,
+  .tl-seat-slot--right .tl-player-slot__meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .tl-seat-slot--left .tl-player-slot__footer,
+  .tl-seat-slot--right .tl-player-slot__footer {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.2;
+  }
+
+  .tl-table-center {
+    grid-area: center;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background:
+      radial-gradient(circle at 26% 14%, rgba(255,255,255,0.08), transparent 42%),
+      radial-gradient(circle at 78% 82%, rgba(255, 221, 164, 0.12), transparent 45%),
+      rgba(6, 42, 31, 0.58);
+    color: #effaf4;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 188px;
+  }
+
+  .tl-table-center__header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .tl-table-center__title {
+    font-weight: 700;
+    color: #f2fff8;
+    letter-spacing: .01em;
+  }
+
+  .tl-table-center__sub {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tl-table-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 999px;
+    padding: 4px 9px;
+    font-size: 0.74rem;
+    color: rgba(239, 250, 244, 0.95);
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+  }
+
+  .tl-table-center .tl-trick-cards {
+    min-height: 108px;
+    border-radius: 12px;
+    border: 1px dashed rgba(255,255,255,0.18);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)),
+      rgba(0,0,0,0.10);
+    padding: 8px 6px;
+  }
+
+  .tl-table-center .tl-trick-cards .text-muted {
+    color: rgba(226, 243, 235, 0.78) !important;
+  }
+
+  .tl-table-center__hint {
+    margin-top: auto;
+    font-size: 0.72rem;
+    color: rgba(225, 244, 234, 0.72);
+    text-align: center;
   }
 
   .tienlen-player-slot::before {
@@ -330,6 +448,12 @@
     background: rgba(255, 224, 136, 0.16);
     border-color: rgba(255, 224, 136, 0.38);
     color: #ffe08a;
+  }
+
+  .tl-seat-badge--bot {
+    background: rgba(186, 146, 255, 0.14);
+    border-color: rgba(186, 146, 255, 0.30);
+    color: #dfc9ff;
   }
 
   .tl-seat-badge--turn {
@@ -751,9 +875,55 @@
     .tienlen-main-grid {
       grid-template-columns: 1fr;
     }
+
+    .tienlen-players-board.tl-table-stage {
+      grid-template-columns: minmax(130px, 1fr) minmax(220px, 1.35fr) minmax(130px, 1fr);
+      grid-template-rows: minmax(104px, auto) minmax(172px, auto) minmax(110px, auto);
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .tl-seat-slot--left,
+    .tl-seat-slot--right {
+      min-height: 172px;
+    }
+
+    .tl-seat-slot--left .tl-player-slot__uid,
+    .tl-seat-slot--right .tl-player-slot__uid,
+    .tl-seat-slot--left .tl-player-slot__footer,
+    .tl-seat-slot--right .tl-player-slot__footer {
+      display: none;
+    }
+
+    .tl-table-center {
+      min-height: 172px;
+      padding: 10px;
+    }
+
+    .tl-table-center__hint {
+      display: none;
+    }
   }
 
   @media (max-width: 575.98px) {
+    .tienlen-players-board.tl-table-stage {
+      grid-template-columns: minmax(86px, 1fr) minmax(150px, 1.2fr) minmax(86px, 1fr);
+      grid-template-rows: minmax(92px, auto) minmax(152px, auto) minmax(98px, auto);
+      gap: 6px;
+      padding: 8px;
+      border-radius: 14px;
+    }
+
+    .tl-seat-slot--top,
+    .tl-seat-slot--bottom {
+      max-width: none;
+    }
+
+    .tl-seat-slot--left,
+    .tl-seat-slot--right {
+      min-height: 152px;
+    }
+
     .tl-status-timeline__track {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -768,14 +938,53 @@
     }
 
     .tienlen-player-slot {
-      min-height: 108px;
-      padding: 9px;
+      min-height: 90px;
+      padding: 8px;
+      gap: 6px;
     }
 
     .tl-player-avatar {
-      width: 36px;
-      height: 36px;
-      font-size: 0.82rem;
+      width: 32px;
+      height: 32px;
+      font-size: 0.76rem;
+    }
+
+    .tl-player-slot__name {
+      font-size: 0.84rem;
+    }
+
+    .tl-player-slot__uid,
+    .tl-player-slot__footer {
+      display: none;
+    }
+
+    .tl-player-slot__count {
+      font-size: 0.72rem;
+    }
+
+    .tl-seat-badge {
+      font-size: 0.62rem;
+      padding: 2px 6px;
+    }
+
+    .tl-table-center {
+      min-height: 152px;
+      padding: 8px;
+      gap: 8px;
+    }
+
+    .tl-table-center__title {
+      font-size: 0.84rem;
+    }
+
+    .tl-table-chip {
+      font-size: 0.65rem;
+      padding: 3px 7px;
+    }
+
+    .tl-table-center .tl-trick-cards {
+      min-height: 84px;
+      padding: 6px 4px;
     }
 
     .tienlen-card-btn {
@@ -813,7 +1022,8 @@
     .tienlen-card-btn,
     .tienlen-player-slot,
     .tl-status-step__dot,
-    .tl-trick-cards {
+    .tl-trick-cards,
+    .tl-table-center {
       transition: none;
       animation: none !important;
     }

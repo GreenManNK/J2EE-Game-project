@@ -352,12 +352,14 @@
   function renderPlayers() {
     if (!els.playersBoard) return;
     const room = state.room;
-    const players = Array.isArray(room?.players) ? room.players.slice().sort((a, b) => Number(a.seatIndex) - Number(b.seatIndex)) : [];
+    const seatPlayers = Array.isArray(room?.players) ? room.players.slice().sort((a, b) => Number(a.seatIndex) - Number(b.seatIndex)) : [];
+    const players = playersForTableOrder(seatPlayers);
     const passed = new Set(Array.isArray(room?.passedUserIds) ? room.passedUserIds : []);
     const slotEls = els.playerSlots || [];
 
     slotEls.forEach((slotEl, idx) => {
       const p = players[idx];
+      const tablePos = String(slotEl?.dataset?.tablePos || tablePositionKey(idx));
       slotEl.classList.remove('is-turn', 'is-control', 'is-passed', 'is-me', 'is-winner');
       slotEl.classList.remove('turn-flash');
       slotEl.innerHTML = '';
@@ -365,7 +367,7 @@
         slotEl.innerHTML =
           '<div class="tl-player-empty">' +
           '<div class="tl-player-empty__icon">+</div>' +
-          '<div class="tl-player-empty__text">Chua co nguoi choi</div>' +
+          '<div class="tl-player-empty__text">Cho vi tri ' + escapeHtml(tablePositionLabel(tablePos)) + '</div>' +
           '</div>';
         return;
       }
@@ -381,13 +383,15 @@
       const displayName = p.displayName || p.userId || 'Player';
       const badgeHtml = [
         (p.userId === me.userId) ? '<span class="tl-seat-badge tl-seat-badge--me">Ban</span>' : '',
+        (p.bot) ? '<span class="tl-seat-badge tl-seat-badge--bot">Bot</span>' : '',
         (room?.currentTurnUserId === p.userId && !room?.gameOver) ? '<span class="tl-seat-badge tl-seat-badge--turn">Luot</span>' : '',
         (room?.controlUserId === p.userId && room?.started && !room?.gameOver) ? '<span class="tl-seat-badge tl-seat-badge--control">Nam vong</span>' : '',
         (passed.has(p.userId)) ? '<span class="tl-seat-badge tl-seat-badge--pass">Pass</span>' : '',
         (room?.winnerUserId === p.userId) ? '<span class="tl-seat-badge tl-seat-badge--win">Thang</span>' : ''
       ].filter(Boolean).join('');
       const flags = [];
-      flags.push('Ghe ' + (idx + 1));
+      flags.push(tablePositionLabel(tablePos));
+      flags.push('Ghe ' + (Number(p.seatIndex || 0) + 1));
       flags.push('Con ' + Number(p.handCount || 0) + ' la');
       slotEl.innerHTML =
         '<div class="tl-player-slot__head">' +
@@ -406,6 +410,77 @@
     state.pendingTurnFlashUserId = '';
 
     els.turnText.textContent = currentTurnLabel();
+  }
+
+  function playersForTableOrder(seatPlayers) {
+    const ordered = [null, null, null, null]; // top, right, bottom, left
+    const players = Array.isArray(seatPlayers) ? seatPlayers.slice(0, 4) : [];
+    if (players.length === 0) {
+      return ordered;
+    }
+
+    const mePlayer = players.find((p) => p && p.userId === me.userId);
+    const anchorSeat = normalizeSeatIndex(mePlayer?.seatIndex, 0);
+    const used = new Set();
+
+    players.forEach((player) => {
+      if (!player) return;
+      const seat = normalizeSeatIndex(player.seatIndex, -1);
+      if (seat < 0) return;
+      const delta = mod4(seat - anchorSeat);
+      const tableIndex = deltaToTableIndex(delta);
+      if (tableIndex < 0 || tableIndex >= ordered.length || ordered[tableIndex]) {
+        return;
+      }
+      ordered[tableIndex] = player;
+      used.add(player.userId);
+    });
+
+    let fillIdx = 0;
+    players.forEach((player) => {
+      if (!player || used.has(player.userId)) return;
+      while (fillIdx < ordered.length && ordered[fillIdx]) fillIdx += 1;
+      if (fillIdx < ordered.length) {
+        ordered[fillIdx] = player;
+      }
+    });
+
+    return ordered;
+  }
+
+  function deltaToTableIndex(delta) {
+    switch (mod4(delta)) {
+      case 0: return 2; // me -> bottom
+      case 1: return 1; // next clockwise -> right
+      case 2: return 0; // opposite -> top
+      case 3: return 3; // previous -> left
+      default: return -1;
+    }
+  }
+
+  function mod4(value) {
+    const n = Number(value) || 0;
+    return ((n % 4) + 4) % 4;
+  }
+
+  function normalizeSeatIndex(value, fallback) {
+    const n = Number(value);
+    return Number.isFinite(n) ? Math.max(0, Math.trunc(n)) : fallback;
+  }
+
+  function tablePositionKey(idx) {
+    return ['top', 'right', 'bottom', 'left'][Number(idx) || 0] || 'bottom';
+  }
+
+  function tablePositionLabel(pos) {
+    switch (String(pos || '').toLowerCase()) {
+      case 'top': return 'Phia tren';
+      case 'right': return 'Ben phai';
+      case 'left': return 'Ben trai';
+      case 'bottom':
+      default:
+        return 'Phia duoi';
+    }
   }
 
   function renderTrick() {

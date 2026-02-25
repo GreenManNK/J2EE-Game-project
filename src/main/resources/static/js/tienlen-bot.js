@@ -65,6 +65,7 @@
     els.turnText = document.getElementById('tlBotTurnText');
     els.controlText = document.getElementById('tlBotControlText');
     els.currentTrickLabel = document.getElementById('tlBotCurrentTrickLabel');
+    els.currentTrickLabelDup = document.getElementById('tlBotCurrentTrickLabelDup');
     els.trickOwnerText = document.getElementById('tlBotTrickOwnerText');
     els.trickOwnerTextDup = document.getElementById('tlBotTrickOwnerTextDup');
     els.moveCount = document.getElementById('tlBotMoveCount');
@@ -95,10 +96,10 @@
 
   function initPlayers() {
     state.players = [
-      { id: me.id, name: me.name, isHuman: true, hand: [] },
-      { id: 'bot-1', name: 'Bot 1', isHuman: false, hand: [] },
-      { id: 'bot-2', name: 'Bot 2', isHuman: false, hand: [] },
-      { id: 'bot-3', name: 'Bot 3', isHuman: false, hand: [] }
+      { id: me.id, name: me.name, isHuman: true, hand: [], seatIndex: 0 },
+      { id: 'bot-1', name: 'Bot 1', isHuman: false, hand: [], seatIndex: 1 },
+      { id: 'bot-2', name: 'Bot 2', isHuman: false, hand: [], seatIndex: 2 },
+      { id: 'bot-3', name: 'Bot 3', isHuman: false, hand: [], seatIndex: 3 }
     ];
     if (els.selfName) {
       els.selfName.textContent = me.name;
@@ -855,8 +856,10 @@
   function renderPlayers() {
     if (!els.playersBoard) return;
     const slots = els.playerSlots || [];
+    const players = playersForTableOrder(state.players);
     slots.forEach((slot, idx) => {
-      const p = state.players[idx];
+      const p = players[idx];
+      const tablePos = String(slot?.dataset?.tablePos || tablePositionKey(idx));
       slot.classList.remove('is-turn', 'is-control', 'is-passed', 'is-me', 'is-winner');
       slot.classList.remove('turn-flash');
       slot.innerHTML = '';
@@ -864,7 +867,7 @@
         slot.innerHTML =
           '<div class="tl-player-empty">' +
           '<div class="tl-player-empty__icon">+</div>' +
-          '<div class="tl-player-empty__text">Khong co nguoi choi</div>' +
+          '<div class="tl-player-empty__text">Cho vi tri ' + escapeHtml(tablePositionLabel(tablePos)) + '</div>' +
           '</div>';
         return;
       }
@@ -886,6 +889,8 @@
       ].filter(Boolean).join('');
 
       const flags = [];
+      flags.push(tablePositionLabel(tablePos));
+      flags.push('Ghe ' + (Number(p.seatIndex || 0) + 1));
       if (state.currentTurnId === p.id) flags.push('Dang den luot');
       if (state.controlUserId === p.id) flags.push('Nam vong');
       if (state.passedIds.has(p.id)) flags.push('Da pass');
@@ -895,7 +900,7 @@
         '<div class="tl-player-slot__head">' +
           '<div class="tl-player-avatar" aria-hidden="true">' + escapeHtml(initialsOfName(p.name)) + '</div>' +
           '<div class="tl-player-slot__identity">' +
-            '<div class="tl-player-slot__name">' + escapeHtml((idx + 1) + '. ' + p.name) + '</div>' +
+            '<div class="tl-player-slot__name">' + escapeHtml((Number(p.seatIndex || 0) + 1) + '. ' + p.name) + '</div>' +
             '<div class="tl-player-slot__uid">' + escapeHtml(p.id) + '</div>' +
           '</div>' +
         '</div>' +
@@ -908,9 +913,74 @@
     state.pendingTurnFlashUserId = '';
   }
 
+  function playersForTableOrder(seatPlayers) {
+    const ordered = [null, null, null, null]; // top, right, bottom, left
+    const players = Array.isArray(seatPlayers) ? seatPlayers.slice(0, 4) : [];
+    if (players.length === 0) return ordered;
+
+    const human = players.find((p) => p && p.isHuman) || players[0];
+    const anchorSeat = normalizeSeatIndex(human?.seatIndex, 0);
+    const used = new Set();
+
+    for (const player of players) {
+      if (!player) continue;
+      const seat = normalizeSeatIndex(player.seatIndex, -1);
+      if (seat < 0) continue;
+      const delta = mod4(seat - anchorSeat);
+      const tableIndex = deltaToTableIndex(delta);
+      if (tableIndex < 0 || tableIndex >= ordered.length || ordered[tableIndex]) continue;
+      ordered[tableIndex] = player;
+      used.add(player.id);
+    }
+
+    let fillIdx = 0;
+    for (const player of players) {
+      if (!player || used.has(player.id)) continue;
+      while (fillIdx < ordered.length && ordered[fillIdx]) fillIdx++;
+      if (fillIdx < ordered.length) ordered[fillIdx] = player;
+    }
+    return ordered;
+  }
+
+  function deltaToTableIndex(delta) {
+    switch (mod4(delta)) {
+      case 0: return 2; // human -> bottom
+      case 1: return 1; // next -> right
+      case 2: return 0; // opposite -> top
+      case 3: return 3; // previous -> left
+      default: return -1;
+    }
+  }
+
+  function mod4(value) {
+    const n = Number(value) || 0;
+    return ((n % 4) + 4) % 4;
+  }
+
+  function normalizeSeatIndex(value, fallback) {
+    const n = Number(value);
+    return Number.isFinite(n) ? Math.max(0, Math.trunc(n)) : fallback;
+  }
+
+  function tablePositionKey(idx) {
+    return ['top', 'right', 'bottom', 'left'][Number(idx) || 0] || 'bottom';
+  }
+
+  function tablePositionLabel(pos) {
+    switch (String(pos || '').toLowerCase()) {
+      case 'top': return 'Phia tren';
+      case 'right': return 'Ben phai';
+      case 'left': return 'Ben trai';
+      case 'bottom':
+      default:
+        return 'Phia duoi';
+    }
+  }
+
   function renderTrick() {
     const trick = state.currentTrick;
     if (els.currentTrickLabel) els.currentTrickLabel.textContent = trick ? trick.combo.label : 'Chua co';
+    if (els.currentTrickLabelDup) els.currentTrickLabelDup.textContent = trick ? trick.combo.label : 'Chua co';
     if (els.trickOwnerText) els.trickOwnerText.textContent = trick ? trick.ownerName : '-';
     if (els.trickOwnerTextDup) els.trickOwnerTextDup.textContent = trick ? trick.ownerName : '-';
     if (!els.trickCards) return;
