@@ -272,7 +272,8 @@
       setStatus(roomStatusText(payload.room));
       if (payload.type === 'GAME_OVER' && payload.room.winnerUserId) {
         const youWin = payload.room.winnerUserId === me.userId;
-        window.setTimeout(() => { if (ui.toast) { ui.toast(youWin ? 'Ban da thang van Tien len!' : 'Van dau ket thuc. Co nguoi da het bai.', { type: youWin ? 'success' : 'warning' }); } else if (typeof window !== 'undefined' && typeof window['alert'] === 'function') { window['alert'](youWin ? 'Ban da thang van Tien len!' : 'Van dau ket thuc. Co nguoi da het bai.'); } }, 50);
+        const endMessage = youWin ? 'Ban da thang van Tien len!' : (payload.room.statusMessage || 'Van dau ket thuc.');
+        window.setTimeout(() => { if (ui.toast) { ui.toast(endMessage, { type: youWin ? 'success' : 'warning' }); } else if (typeof window !== 'undefined' && typeof window['alert'] === 'function') { window['alert'](endMessage); } }, 50);
       }
       renderAll();
     }
@@ -387,12 +388,25 @@
         (room?.currentTurnUserId === p.userId && !room?.gameOver) ? '<span class="tl-seat-badge tl-seat-badge--turn">Luot</span>' : '',
         (room?.controlUserId === p.userId && room?.started && !room?.gameOver) ? '<span class="tl-seat-badge tl-seat-badge--control">Nam vong</span>' : '',
         (passed.has(p.userId)) ? '<span class="tl-seat-badge tl-seat-badge--pass">Pass</span>' : '',
-        (room?.winnerUserId === p.userId) ? '<span class="tl-seat-badge tl-seat-badge--win">Thang</span>' : ''
+        (room?.winnerUserId === p.userId) ? '<span class="tl-seat-badge tl-seat-badge--win">Thang</span>' : '',
+        (p.lastRoundCong) ? '<span class="tl-seat-badge tl-seat-badge--pass">Cong</span>' : '',
+        (Number(p.lastRoundTwos || 0) > 0) ? ('<span class="tl-seat-badge tl-seat-badge--control">Thoi ' + Number(p.lastRoundTwos || 0) + ' heo</span>') : '',
+        (Number(p.lastRoundSpecialPenalty || 0) > 0) ? '<span class="tl-seat-badge tl-seat-badge--turn">Thoi hang</span>' : ''
       ].filter(Boolean).join('');
       const flags = [];
       flags.push(tablePositionLabel(tablePos));
       flags.push('Ghe ' + (Number(p.seatIndex || 0) + 1));
       flags.push('Con ' + Number(p.handCount || 0) + ' la');
+      const score = Number(p.score || 0);
+      const roundDelta = Number(p.lastRoundDelta || 0);
+      const chopDelta = Number(p.lastRoundChopDelta || 0);
+      flags.push('Diem ' + (score >= 0 ? '+' : '') + score);
+      if (roundDelta !== 0) {
+        flags.push('Van nay ' + (roundDelta > 0 ? '+' : '') + roundDelta);
+      }
+      if (chopDelta !== 0) {
+        flags.push('Chat ' + (chopDelta > 0 ? '+' : '') + chopDelta);
+      }
       slotEl.innerHTML =
         '<div class="tl-player-slot__head">' +
           '<div class="tl-player-avatar" aria-hidden="true">' + escapeHtml(initialsOfName(displayName)) + '</div>' +
@@ -403,7 +417,7 @@
         '</div>' +
         '<div class="tl-player-slot__meta">' +
           '<div class="tl-player-slot__chips">' + badgeHtml + '</div>' +
-          '<div class="tl-player-slot__count">Con bai <strong>' + Number(p.handCount || 0) + '</strong></div>' +
+          '<div class="tl-player-slot__count">Con bai <strong>' + Number(p.handCount || 0) + '</strong> | Diem <strong>' + (score > 0 ? '+' : '') + score + '</strong></div>' +
         '</div>' +
         '<div class="tl-player-slot__footer">' + escapeHtml(flags.join(' | ')) + '</div>';
     });

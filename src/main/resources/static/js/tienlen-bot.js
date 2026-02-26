@@ -13,6 +13,10 @@
     [10, '10'], [11, 'J'], [12, 'Q'], [13, 'K'], [14, 'A'], [15, '2']
   ]);
   const TYPE_ORDER = { SINGLE: 1, PAIR: 2, TRIPLE: 3, STRAIGHT: 4, DOUBLE_STRAIGHT: 5, FOUR_KIND: 6 };
+  const PENALTY_TWO_BLACK = 5;
+  const PENALTY_TWO_RED = 10;
+  const PENALTY_CONG_BONUS = 13;
+  const PENALTY_LEFTOVER_FOUR_KIND = 8;
 
   const state = {
     difficulty: normalizeDifficulty(boot.botDifficulty),
@@ -25,9 +29,12 @@
     controlUserId: null,
     currentTrick: null,
     playCount: 0,
+    roundNumber: 0,
     passedIds: new Set(),
     message: '-',
     status: 'Dang khoi tao van...',
+    lastRoundSummary: '',
+    roundPenaltyEvents: [],
     moveLog: [],
     botTimer: null,
     pendingHandDealAnim: false,
@@ -96,10 +103,10 @@
 
   function initPlayers() {
     state.players = [
-      { id: me.id, name: me.name, isHuman: true, hand: [], seatIndex: 0 },
-      { id: 'bot-1', name: 'Bot 1', isHuman: false, hand: [], seatIndex: 1 },
-      { id: 'bot-2', name: 'Bot 2', isHuman: false, hand: [], seatIndex: 2 },
-      { id: 'bot-3', name: 'Bot 3', isHuman: false, hand: [], seatIndex: 3 }
+      { id: me.id, name: me.name, isHuman: true, hand: [], seatIndex: 0, score: 0, lastRoundDelta: 0, lastRoundChopDelta: 0, lastRoundPenalty: 0, lastRoundCong: false, lastRoundTwos: 0, lastRoundSpecialPenalty: 0, roundPlayedCardCount: 0, roundSideBetDelta: 0 },
+      { id: 'bot-1', name: 'Bot 1', isHuman: false, hand: [], seatIndex: 1, score: 0, lastRoundDelta: 0, lastRoundChopDelta: 0, lastRoundPenalty: 0, lastRoundCong: false, lastRoundTwos: 0, lastRoundSpecialPenalty: 0, roundPlayedCardCount: 0, roundSideBetDelta: 0 },
+      { id: 'bot-2', name: 'Bot 2', isHuman: false, hand: [], seatIndex: 2, score: 0, lastRoundDelta: 0, lastRoundChopDelta: 0, lastRoundPenalty: 0, lastRoundCong: false, lastRoundTwos: 0, lastRoundSpecialPenalty: 0, roundPlayedCardCount: 0, roundSideBetDelta: 0 },
+      { id: 'bot-3', name: 'Bot 3', isHuman: false, hand: [], seatIndex: 3, score: 0, lastRoundDelta: 0, lastRoundChopDelta: 0, lastRoundPenalty: 0, lastRoundCong: false, lastRoundTwos: 0, lastRoundSpecialPenalty: 0, roundPlayedCardCount: 0, roundSideBetDelta: 0 }
     ];
     if (els.selfName) {
       els.selfName.textContent = me.name;
@@ -127,11 +134,29 @@
     state.winnerId = null;
     state.currentTrick = null;
     state.playCount = 0;
+    state.roundNumber = Number(state.roundNumber || 0) + 1;
     state.passedIds.clear();
     state.selectedCodes.clear();
     state.moveLog = [];
     state.pendingHandDealAnim = true;
     state.pendingTrickAnim = false;
+    resetRoundTrackingForNewGame();
+
+    const instantWin = detectInstantWinWinner(state.players);
+    if (instantWin) {
+      state.gameOver = true;
+      state.winnerId = instantWin.player.id;
+      state.currentTurnId = null;
+      state.controlUserId = null;
+      state.lastActionType = 'GAME_OVER';
+      applyRoundSettlementForWinner(instantWin.player.id);
+      setStatus('Van dau ket thuc');
+      setMessage(instantWin.player.name + ' toi trang (' + instantWin.rule.label + '). ' + (state.lastRoundSummary || ''));
+      pushMoveLog('Ket thuc van dau: ' + instantWin.player.name + ' toi trang (' + instantWin.rule.label + ').');
+      if (state.lastRoundSummary) pushMoveLog(state.lastRoundSummary);
+      renderAll();
+      return;
+    }
 
     const firstPlayer = state.players.find((p) => p.hand.some((c) => c.code === '3S')) || state.players[0];
     state.currentTurnId = firstPlayer.id;
@@ -144,6 +169,69 @@
 
     renderAll();
     scheduleBotTurnIfNeeded();
+  }
+
+  function resetRoundTrackingForNewGame() {
+    state.lastRoundSummary = '';
+    state.roundPenaltyEvents = [];
+    for (const p of state.players) {
+      p.lastRoundDelta = 0;
+      p.lastRoundChopDelta = 0;
+      p.lastRoundPenalty = 0;
+      p.lastRoundCong = false;
+      p.lastRoundTwos = 0;
+      p.lastRoundSpecialPenalty = 0;
+      p.roundPlayedCardCount = 0;
+      p.roundSideBetDelta = 0;
+    }
+  }
+
+  function applyRoundSettlementForWinner(winnerId) {
+    const winner = state.players.find((p) => p.id === winnerId);
+    if (!winner) return;
+
+    let winnerGain = 0;
+    const loserParts = [];
+    const chopEvents = Array.isArray(state.roundPenaltyEvents) ? state.roundPenaltyEvents.slice() : [];
+    for (const p of state.players) {
+      p.lastRoundDelta = Number(p.roundSideBetDelta || 0);
+      p.lastRoundChopDelta = Number(p.roundSideBetDelta || 0);
+      p.lastRoundPenalty = 0;
+      p.lastRoundCong = false;
+      p.lastRoundTwos = 0;
+      p.lastRoundSpecialPenalty = 0;
+    }
+
+    for (const p of state.players) {
+      if (p.id === winnerId) continue;
+      const penalty = calculateLoserPenalty(p.hand, Number(p.roundPlayedCardCount || 0) <= 0);
+      p.lastRoundPenalty = penalty.total;
+      p.lastRoundCong = penalty.cong;
+      p.lastRoundTwos = penalty.twoCount;
+      p.lastRoundSpecialPenalty = penalty.specialPenalty;
+      p.lastRoundDelta -= penalty.total;
+      p.score = Number(p.score || 0) + p.lastRoundDelta;
+      winnerGain += penalty.total;
+
+      const part = p.name + ' -' + penalty.total +
+        ' (con ' + p.hand.length + ' la' +
+        (penalty.cong ? ', cong x2 +13' : '') +
+        (penalty.twoCount > 0 ? (', thoi ' + penalty.twoCount + ' heo') : '') +
+        (penalty.specialPenalty > 0 ? (', thoi hang +' + penalty.specialPenalty) : '') +
+        ')';
+      loserParts.push(part);
+    }
+
+    winner.lastRoundDelta = Number(winner.lastRoundDelta || 0) + winnerGain;
+    winner.lastRoundChopDelta = Number(winner.roundSideBetDelta || 0);
+    winner.score = Number(winner.score || 0) + winner.lastRoundDelta;
+    state.lastRoundSummary = 'Tinh diem van: ' + winner.name + ' +' + winnerGain +
+      (chopEvents.length ? (' | Chat: ' + chopEvents.join(' ; ')) : '') +
+      (loserParts.length ? (' | ' + loserParts.join(' ; ')) : '');
+
+    for (const p of state.players) {
+      p.roundPlayedCardCount = 0;
+    }
   }
 
   function onHumanPlaySelected() {
@@ -202,12 +290,16 @@
     state.passedIds.clear();
     state.winnerId = winner ? winner.id : null;
     state.lastActionType = 'SURRENDER';
+    if (winner) {
+      applyRoundSettlementForWinner(winner.id);
+    }
     setStatus('Van dau ket thuc');
-    setMessage('Ban da dau hang.' + (winner ? (' ' + winner.name + ' duoc tinh la thang.') : ''));
+    setMessage('Ban da dau hang.' + (winner ? (' ' + winner.name + ' duoc tinh la thang.') : '') + (state.lastRoundSummary ? (' ' + state.lastRoundSummary) : ''));
     pushMoveLog((human ? human.name : 'Ban') + ': dau hang');
     if (winner) {
       pushMoveLog('Ket thuc van dau: ' + winner.name + ' thang (do dau hang).');
     }
+    if (state.lastRoundSummary) pushMoveLog(state.lastRoundSummary);
     renderAll();
   }
 
@@ -367,9 +459,13 @@
     if (state.currentTrick && !comboCanBeat(combo, state.currentTrick.combo)) {
       return { ok: false, error: 'Bo bai khong de hon bo bai hien tai' };
     }
+    const specialBeatPenalty = state.currentTrick
+      ? detectSpecialBeatPenalty(combo, state.currentTrick.combo, state.currentTrick.cards, state.currentTrick.ownerId)
+      : null;
 
     removeCardsFromHand(player.hand, selected);
     player.hand.sort(compareCards);
+    player.roundPlayedCardCount = Number(player.roundPlayedCardCount || 0) + selected.length;
 
     state.currentTrick = {
       ownerId: player.id,
@@ -381,6 +477,7 @@
     state.passedIds.clear();
     state.playCount += 1;
     pushMoveLog(player.name + ': ' + combo.label);
+    const specialBeatMessage = specialBeatPenalty ? recordSpecialBeatPenalty(player.id, specialBeatPenalty) : '';
 
     if (player.hand.length === 0) {
       state.gameOver = true;
@@ -388,9 +485,11 @@
       state.currentTurnId = null;
       state.pendingTrickAnim = true;
       state.lastActionType = 'GAME_OVER';
+      applyRoundSettlementForWinner(player.id);
       setStatus('Van dau ket thuc');
-      setMessage(player.name + ' da het bai va chien thang');
+      setMessage(player.name + ' da het bai va chien thang. ' + (state.lastRoundSummary || ''));
       pushMoveLog('Ket thuc van dau: ' + player.name + ' thang.');
+      if (state.lastRoundSummary) pushMoveLog(state.lastRoundSummary);
       return { ok: true, eventType: 'GAME_OVER' };
     }
 
@@ -399,7 +498,7 @@
     state.pendingTurnFlashUserId = state.currentTurnId || '';
     state.lastActionType = 'PLAYED';
     setStatus('Dang choi');
-    setMessage(player.name + ' danh ' + combo.label);
+    setMessage(player.name + ' danh ' + combo.label + (specialBeatMessage ? ('. ' + specialBeatMessage) : ''));
     return { ok: true, eventType: 'PLAYED' };
   }
 
@@ -607,6 +706,206 @@
     }
     dfs(0);
     return result;
+  }
+
+  function detectInstantWinWinner(players) {
+    if (!Array.isArray(players)) return null;
+    for (const player of players) {
+      const rule = detectInstantWinRule(player?.hand);
+      if (rule) {
+        return { player, rule };
+      }
+    }
+    return null;
+  }
+
+  function detectInstantWinRule(hand) {
+    if (!Array.isArray(hand) || hand.length !== 13) return null;
+    const counts = rankCountsArray(hand);
+    if (hasDragonStraightThreeToAce(counts)) {
+      return { key: 'DRAGON_STRAIGHT', label: 'sanh rong 3-A' };
+    }
+    if (hasConsecutivePairs(counts, 5)) {
+      return { key: 'FIVE_CONSECUTIVE_PAIRS', label: '5 doi thong' };
+    }
+    if (countPairs(counts) >= 6) {
+      return { key: 'SIX_PAIRS', label: '6 doi' };
+    }
+    if ((counts[15] || 0) === 4) {
+      return { key: 'FOUR_TWOS', label: 'tu quy 2' };
+    }
+    return null;
+  }
+
+  function rankCountsArray(hand) {
+    const counts = new Array(16).fill(0);
+    for (const card of hand) {
+      const rank = Number(card?.rankValue || 0);
+      if (rank >= 0 && rank < counts.length) {
+        counts[rank] += 1;
+      }
+    }
+    return counts;
+  }
+
+  function hasDragonStraightThreeToAce(counts) {
+    for (let rank = 3; rank <= 14; rank++) {
+      if ((counts[rank] || 0) <= 0) return false;
+    }
+    return true;
+  }
+
+  function hasConsecutivePairs(counts, requiredPairs) {
+    if (!Array.isArray(counts) || requiredPairs <= 0) return false;
+    let streak = 0;
+    for (let rank = 3; rank <= 14; rank++) {
+      if ((counts[rank] || 0) >= 2) {
+        streak += 1;
+        if (streak >= requiredPairs) return true;
+      } else {
+        streak = 0;
+      }
+    }
+    return false;
+  }
+
+  function countPairs(counts) {
+    if (!Array.isArray(counts)) return 0;
+    let total = 0;
+    for (let rank = 3; rank <= 15; rank++) {
+      total += Math.floor((counts[rank] || 0) / 2);
+    }
+    return total;
+  }
+
+  function calculateLoserPenalty(hand, cong) {
+    const cards = Array.isArray(hand) ? hand : [];
+    const base = cards.length;
+    const baseAfterCongMultiplier = cong ? (base * 2) : base;
+    const twoCount = countRankValue(cards, 15);
+    const twoPenalty = twoPenaltyPoints(cards);
+    const specialPenalty = countLeftoverSpecialPenalty(cards);
+    const congPenalty = cong ? PENALTY_CONG_BONUS : 0;
+    return {
+      total: baseAfterCongMultiplier + congPenalty + twoPenalty + specialPenalty,
+      cong: Boolean(cong),
+      twoCount,
+      specialPenalty
+    };
+  }
+
+  function countLeftoverSpecialPenalty(hand) {
+    if (!Array.isArray(hand) || hand.length === 0) return 0;
+    const counts = rankCountsArray(hand);
+    let penalty = 0;
+    for (let rank = 3; rank <= 15; rank++) {
+      if ((counts[rank] || 0) >= 4) {
+        penalty += PENALTY_LEFTOVER_FOUR_KIND;
+      }
+    }
+    let streak = 0;
+    for (let rank = 3; rank <= 14; rank++) {
+      if ((counts[rank] || 0) >= 2) {
+        streak += 1;
+      } else {
+        if (streak >= 3) penalty += doubleStraightLeftoverPenaltyPoints(streak);
+        streak = 0;
+      }
+    }
+    if (streak >= 3) penalty += doubleStraightLeftoverPenaltyPoints(streak);
+    return penalty;
+  }
+
+  function doubleStraightLeftoverPenaltyPoints(pairCount) {
+    const n = Number(pairCount || 0);
+    if (n >= 5) return 15;
+    if (n === 4) return 10;
+    if (n === 3) return 6;
+    return 0;
+  }
+
+  function countRankValue(hand, rankValue) {
+    if (!Array.isArray(hand) || hand.length === 0) return 0;
+    let total = 0;
+    for (const card of hand) {
+      if (Number(card?.rankValue || 0) === Number(rankValue)) {
+        total += 1;
+      }
+    }
+    return total;
+  }
+
+  function twoPenaltyPoints(hand) {
+    if (!Array.isArray(hand) || hand.length === 0) return 0;
+    let total = 0;
+    for (const card of hand) {
+      total += twoCardPenaltyPoints(card);
+    }
+    return total;
+  }
+
+  function detectSpecialBeatPenalty(challenger, current, currentCards, currentOwnerId) {
+    if (!challenger || !current || !Array.isArray(currentCards)) return null;
+    if (current.type === 'SINGLE' && current.highestRank === 15) {
+      const points = singleTwoPenaltyPoints(currentCards);
+      return points > 0 ? { points, label: 'chat 1 heo', victimUserId: currentOwnerId } : null;
+    }
+    if (current.type === 'PAIR' && current.highestRank === 15) {
+      const points = pairTwoPenaltyPoints(currentCards);
+      return points > 0 ? { points, label: 'chat doi heo', victimUserId: currentOwnerId } : null;
+    }
+    if (current.type === 'FOUR_KIND' && challenger.type === 'DOUBLE_STRAIGHT' && Number(challenger.length || 0) >= 8) {
+      const pairCount = Math.floor(Number(challenger.length || 0) / 2);
+      return { points: pairCount >= 5 ? 20 : 16, label: 'chat tu quy', victimUserId: currentOwnerId };
+    }
+    if (current.type === 'FOUR_KIND' && challenger.type === 'FOUR_KIND') {
+      return { points: PENALTY_LEFTOVER_FOUR_KIND, label: 'chat tu quy', victimUserId: currentOwnerId };
+    }
+    if (current.type === 'DOUBLE_STRAIGHT' && challenger.type === 'DOUBLE_STRAIGHT' && Number(challenger.length || 0) > Number(current.length || 0)) {
+      const pairCount = Math.max(3, Math.floor(Number(current.length || 0) / 2));
+      return { points: pairCount * 3, label: 'chat doi thong ' + pairCount + ' doi', victimUserId: currentOwnerId };
+    }
+    return null;
+  }
+
+  function singleTwoPenaltyPoints(cards) {
+    if (!Array.isArray(cards) || cards.length === 0) return 0;
+    return twoCardPenaltyPoints(cards[0]);
+  }
+
+  function pairTwoPenaltyPoints(cards) {
+    if (!Array.isArray(cards) || cards.length === 0) return 0;
+    let sum = 0;
+    for (const card of cards) {
+      if (Number(card?.rankValue || 0) === 15) {
+        sum += twoCardPenaltyPoints(card);
+      }
+    }
+    return sum;
+  }
+
+  function twoCardPenaltyPoints(card) {
+    if (!card || Number(card.rankValue || 0) !== 15) return 0;
+    return Number(card.suitOrder || 0) >= 2 ? PENALTY_TWO_RED : PENALTY_TWO_BLACK;
+  }
+
+  function recordSpecialBeatPenalty(chopperUserId, penalty) {
+    if (!penalty || Number(penalty.points || 0) <= 0) return '';
+    const victimUserId = String(penalty.victimUserId || '');
+    if (!victimUserId || victimUserId === chopperUserId) return '';
+
+    const chopper = findPlayerById(chopperUserId);
+    const victim = findPlayerById(victimUserId);
+    if (!chopper || !victim) return '';
+
+    chopper.roundSideBetDelta = Number(chopper.roundSideBetDelta || 0) + Number(penalty.points || 0);
+    victim.roundSideBetDelta = Number(victim.roundSideBetDelta || 0) - Number(penalty.points || 0);
+
+    const message = chopper.name + ' ' + String(penalty.label || 'chat bai') + ' cua ' + victim.name + ' (+' + Number(penalty.points || 0) + ')';
+    if (!Array.isArray(state.roundPenaltyEvents)) state.roundPenaltyEvents = [];
+    state.roundPenaltyEvents.push(message);
+    pushMoveLog(message);
+    return message;
   }
 
   function parseCombination(cards) {
@@ -885,7 +1184,10 @@
         (state.currentTurnId === p.id && !state.gameOver) ? '<span class="tl-seat-badge tl-seat-badge--turn">Luot</span>' : '',
         (state.controlUserId === p.id && state.started && !state.gameOver) ? '<span class="tl-seat-badge tl-seat-badge--control">Nam vong</span>' : '',
         state.passedIds.has(p.id) ? '<span class="tl-seat-badge tl-seat-badge--pass">Pass</span>' : '',
-        (state.winnerId === p.id) ? '<span class="tl-seat-badge tl-seat-badge--win">Thang</span>' : ''
+        (state.winnerId === p.id) ? '<span class="tl-seat-badge tl-seat-badge--win">Thang</span>' : '',
+        p.lastRoundCong ? '<span class="tl-seat-badge tl-seat-badge--pass">Cong</span>' : '',
+        (Number(p.lastRoundTwos || 0) > 0) ? ('<span class="tl-seat-badge tl-seat-badge--control">Thoi ' + Number(p.lastRoundTwos || 0) + ' heo</span>') : '',
+        (Number(p.lastRoundSpecialPenalty || 0) > 0) ? '<span class="tl-seat-badge tl-seat-badge--turn">Thoi hang</span>' : ''
       ].filter(Boolean).join('');
 
       const flags = [];
@@ -895,6 +1197,12 @@
       if (state.controlUserId === p.id) flags.push('Nam vong');
       if (state.passedIds.has(p.id)) flags.push('Da pass');
       if (state.winnerId === p.id) flags.push('Da het bai');
+      const score = Number(p.score || 0);
+      const roundDelta = Number(p.lastRoundDelta || 0);
+      const chopDelta = Number(p.lastRoundChopDelta || 0);
+      flags.push('Diem ' + (score >= 0 ? '+' : '') + score);
+      if (roundDelta !== 0) flags.push('Van nay ' + (roundDelta > 0 ? '+' : '') + roundDelta);
+      if (chopDelta !== 0) flags.push('Chat ' + (chopDelta > 0 ? '+' : '') + chopDelta);
 
       slot.innerHTML =
         '<div class="tl-player-slot__head">' +
@@ -906,7 +1214,7 @@
         '</div>' +
         '<div class="tl-player-slot__meta">' +
           '<div class="tl-player-slot__chips">' + badges + '</div>' +
-          '<div class="tl-player-slot__count">Con bai <strong>' + p.hand.length + '</strong></div>' +
+          '<div class="tl-player-slot__count">Con bai <strong>' + p.hand.length + '</strong> | Diem <strong>' + (score > 0 ? '+' : '') + score + '</strong></div>' +
         '</div>' +
         '<div class="tl-player-slot__footer">' + escapeHtml(flags.join(' | ') || 'San sang') + '</div>';
     });

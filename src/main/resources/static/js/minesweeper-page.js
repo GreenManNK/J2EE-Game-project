@@ -13,6 +13,8 @@
     minDensityPercent: 6,
     maxDensityPercent: 40
   };
+  const LONG_PRESS_MS = 420;
+  const LONG_PRESS_MOVE_CANCEL_PX = 12;
 
   const state = {
     level: 'beginner',
@@ -37,7 +39,18 @@
       baseConfig: null,
       nextConfig: null,
       canAdvance: false
-    }
+    },
+    longPress: {
+      pointerId: null,
+      timerId: null,
+      row: -1,
+      col: -1,
+      startX: 0,
+      startY: 0,
+      triggered: false
+    },
+    suppressNextClickKey: '',
+    suppressNextClickUntil: 0
   };
 
   const refs = {
@@ -322,8 +335,10 @@
       mine: false,
       revealed: false,
       flagged: false,
+      questioned: false,
       adjacent: 0,
-      exploded: false
+      exploded: false,
+      wrongFlagged: false
     };
   }
 
@@ -436,6 +451,12 @@
     } else if (cell.flagged) {
       el.classList.add('flagged');
       el.textContent = 'F';
+    } else if (cell.questioned) {
+      el.classList.add('questioned');
+      el.textContent = '?';
+    } else if (cell.wrongFlagged) {
+      el.classList.add('wrong-flag');
+      el.textContent = 'X';
     }
 
     if (cell.exploded) {
@@ -489,9 +510,14 @@
         const cell = state.board[r][c];
         if (cell.mine) {
           cell.revealed = true;
+          cell.questioned = false;
           if (r === explodedRow && c === explodedCol) {
             cell.exploded = true;
           }
+        } else if (cell.flagged) {
+          cell.flagged = false;
+          cell.wrongFlagged = true;
+          cell.questioned = false;
         }
       }
     }
@@ -590,23 +616,129 @@
     checkWin();
   }
 
-  function toggleFlag(row, col) {
+  function cycleMark(row, col) {
     if (state.gameOver) return;
     const cell = state.board[row][col];
     if (cell.revealed) return;
 
-    cell.flagged = !cell.flagged;
-    state.flagsPlaced += cell.flagged ? 1 : -1;
+    if (cell.flagged) {
+      cell.flagged = false;
+      cell.questioned = true;
+      state.flagsPlaced = Math.max(0, state.flagsPlaced - 1);
+    } else if (cell.questioned) {
+      cell.questioned = false;
+    } else {
+      cell.flagged = true;
+      cell.questioned = false;
+      state.flagsPlaced += 1;
+    }
     renderCell(row, col);
     updateCounters();
   }
 
-  function handlePrimaryAction(row, col) {
-    if (state.flagMode) {
-      toggleFlag(row, col);
-    } else {
-      revealCell(row, col);
+  function setFlagged(row, col, flagged) {
+    const cell = state.board[row][col];
+    if (!cell || cell.revealed) return false;
+    const nextFlagged = !!flagged;
+    if (nextFlagged) {
+      if (cell.flagged) return false;
+      cell.flagged = true;
+      cell.questioned = false;
+      state.flagsPlaced += 1;
+      renderCell(row, col);
+      return true;
     }
+    if (!cell.flagged) return false;
+    cell.flagged = false;
+    state.flagsPlaced = Math.max(0, state.flagsPlaced - 1);
+    renderCell(row, col);
+    return true;
+  }
+
+  function collectNeighborInfo(row, col) {
+    const info = {
+      flaggedCount: 0,
+      hiddenUnflagged: [],
+      hiddenAny: []
+    };
+    eachNeighbor(row, col, (nr, nc) => {
+      const neighbor = state.board[nr][nc];
+      if (!neighbor) return;
+      if (neighbor.flagged) {
+        info.flaggedCount += 1;
+      }
+      if (!neighbor.revealed) {
+        info.hiddenAny.push([nr, nc]);
+        if (!neighbor.flagged) {
+          info.hiddenUnflagged.push([nr, nc]);
+        }
+      }
+    });
+    return info;
+  }
+
+  function chordReveal(row, col) {
+    if (state.gameOver || state.firstMove) return false;
+    const cell = state.board[row][col];
+    if (!cell || !cell.revealed || cell.mine || cell.adjacent <= 0) return false;
+
+    const info = collectNeighborInfo(row, col);
+    if (info.flaggedCount !== cell.adjacent) return false;
+
+    let changed = false;
+    for (const [nr, nc] of info.hiddenUnflagged) {
+      const neighbor = state.board[nr][nc];
+      if (!neighbor || neighbor.revealed || neighbor.flagged) continue;
+      changed = true;
+      if (neighbor.mine) {
+        revealAllMines(nr, nc);
+        finishGame(false);
+        updateCounters();
+        return true;
+      }
+      revealConnectedZeros(nr, nc);
+    }
+    if (changed) {
+      checkWin();
+      updateCounters();
+    }
+    return changed;
+  }
+
+  function autoFlagNeighbors(row, col) {
+    if (state.gameOver || state.firstMove) return false;
+    const cell = state.board[row][col];
+    if (!cell || !cell.revealed || cell.mine || cell.adjacent <= 0) return false;
+
+    const info = collectNeighborInfo(row, col);
+    if (info.hiddenUnflagged.length <= 0) return false;
+    if (info.flaggedCount + info.hiddenUnflagged.length !== cell.adjacent) return false;
+
+    let changed = false;
+    for (const [nr, nc] of info.hiddenUnflagged) {
+      changed = setFlagged(nr, nc, true) || changed;
+    }
+    if (changed) {
+      updateCounters();
+    }
+    return changed;
+  }
+
+  function handlePrimaryAction(row, col) {
+    const cell = state.board[row][col];
+    if (!cell) return;
+
+    if (state.flagMode) {
+      cycleMark(row, col);
+      return;
+    }
+
+    if (cell.revealed) {
+      chordReveal(row, col);
+      return;
+    }
+
+    revealCell(row, col);
     updateCounters();
   }
 
@@ -627,6 +759,9 @@
     state.revealedSafeCells = 0;
     state.flagsPlaced = 0;
     state.timerSeconds = 0;
+    state.suppressNextClickKey = '';
+    state.suppressNextClickUntil = 0;
+    clearLongPressGesture();
 
     createBoardDom();
     renderBoard();
@@ -698,7 +833,23 @@
     if (!cellBtn) return;
     const row = Number(cellBtn.dataset.row);
     const col = Number(cellBtn.dataset.col);
+    const clickKey = row + ',' + col;
+    if (state.suppressNextClickKey && state.suppressNextClickKey === clickKey && Date.now() <= Number(state.suppressNextClickUntil || 0)) {
+      state.suppressNextClickKey = '';
+      state.suppressNextClickUntil = 0;
+      event.preventDefault();
+      return;
+    }
     handlePrimaryAction(row, col);
+  }
+
+  function handleSecondaryAction(row, col) {
+    const cell = state.board[row]?.[col];
+    if (cell && cell.revealed) {
+      autoFlagNeighbors(row, col);
+      return;
+    }
+    cycleMark(row, col);
   }
 
   function handleBoardContextMenu(event) {
@@ -707,7 +858,78 @@
     event.preventDefault();
     const row = Number(cellBtn.dataset.row);
     const col = Number(cellBtn.dataset.col);
-    toggleFlag(row, col);
+    handleSecondaryAction(row, col);
+  }
+
+  function clearLongPressGesture() {
+    const lp = state.longPress;
+    if (lp.timerId) {
+      window.clearTimeout(lp.timerId);
+    }
+    lp.timerId = null;
+    lp.pointerId = null;
+    lp.row = -1;
+    lp.col = -1;
+    lp.startX = 0;
+    lp.startY = 0;
+    lp.triggered = false;
+  }
+
+  function handleBoardPointerDown(event) {
+    if (!event || event.pointerType !== 'touch') return;
+    const cellBtn = event.target.closest('.ms-cell');
+    if (!cellBtn) return;
+
+    clearLongPressGesture();
+    const row = Number(cellBtn.dataset.row);
+    const col = Number(cellBtn.dataset.col);
+    const lp = state.longPress;
+    lp.pointerId = event.pointerId;
+    lp.row = row;
+    lp.col = col;
+    lp.startX = Number(event.clientX || 0);
+    lp.startY = Number(event.clientY || 0);
+    lp.triggered = false;
+    lp.timerId = window.setTimeout(() => {
+      lp.timerId = null;
+      if (lp.pointerId == null) return;
+      lp.triggered = true;
+      state.suppressNextClickKey = lp.row + ',' + lp.col;
+      state.suppressNextClickUntil = Date.now() + 1000;
+      handleSecondaryAction(lp.row, lp.col);
+    }, LONG_PRESS_MS);
+  }
+
+  function cancelLongPressIfMoved(event) {
+    const lp = state.longPress;
+    if (!event || lp.pointerId == null || lp.pointerId !== event.pointerId || lp.triggered) {
+      return;
+    }
+    const dx = Math.abs(Number(event.clientX || 0) - lp.startX);
+    const dy = Math.abs(Number(event.clientY || 0) - lp.startY);
+    if (dx > LONG_PRESS_MOVE_CANCEL_PX || dy > LONG_PRESS_MOVE_CANCEL_PX) {
+      clearLongPressGesture();
+    }
+  }
+
+  function handleBoardPointerEnd(event) {
+    const lp = state.longPress;
+    if (!event || lp.pointerId == null || lp.pointerId !== event.pointerId) {
+      return;
+    }
+    if (lp.timerId) {
+      window.clearTimeout(lp.timerId);
+      lp.timerId = null;
+    }
+    if (lp.triggered) {
+      event.preventDefault();
+    }
+    lp.pointerId = null;
+    lp.row = -1;
+    lp.col = -1;
+    lp.startX = 0;
+    lp.startY = 0;
+    lp.triggered = false;
   }
 
   function readInitialConfigFromUrl() {
@@ -740,6 +962,10 @@
   function bindEvents() {
     refs.board.addEventListener('click', handleBoardClick);
     refs.board.addEventListener('contextmenu', handleBoardContextMenu);
+    refs.board.addEventListener('pointerdown', handleBoardPointerDown);
+    refs.board.addEventListener('pointermove', cancelLongPressIfMoved);
+    refs.board.addEventListener('pointerup', handleBoardPointerEnd);
+    refs.board.addEventListener('pointercancel', handleBoardPointerEnd);
 
     refs.restartBtn.addEventListener('click', restartCurrentBoard);
     refs.flagModeBtn.addEventListener('click', () => {
@@ -763,6 +989,7 @@
 
   function boot() {
     bindEvents();
+    clearLongPressGesture();
     state.flagMode = false;
     updateFlagModeUi();
     updateProgressiveUi();

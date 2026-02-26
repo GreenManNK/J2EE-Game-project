@@ -37,6 +37,12 @@ if (!userId) {
 // Biến toàn cục lưu ký hiệu và lượt chơi
 let currentSymbol = null;
 let currentTurnSymbol = "X";
+let gameActive = false;
+const occupiedCells = new Set();
+
+function cellKey(x, y) {
+    return `${x},${y}`;
+}
 
 // Tạo kết nối SignalR (singleton)
 if (!window.connection) {
@@ -92,6 +98,26 @@ function makeMove(x, y) {
         notify("❌ Không tìm thấy Room ID!");
         return;
     }
+    if (connection.state !== signalR.HubConnectionState.Connected) {
+        notify("❌ Mất kết nối, vui lòng thử lại.");
+        return;
+    }
+    if (!gameActive) {
+        notify("⏳ Ván đấu chưa bắt đầu hoặc đã kết thúc.");
+        return;
+    }
+    if (!currentSymbol) {
+        notify("⏳ Đang chờ hệ thống gán ký hiệu cho bạn.");
+        return;
+    }
+    if (currentSymbol !== currentTurnSymbol) {
+        notify("⏳ Chưa đến lượt của bạn.");
+        return;
+    }
+    if (occupiedCells.has(cellKey(x, y))) {
+        notify("⚠️ Ô này đã được đánh.");
+        return;
+    }
     connection.invoke("MakeMove", roomId, x, y).catch(err => console.error(err));
 }
 
@@ -107,6 +133,16 @@ function updatePlayerSymbol() {
 function updateTurnStatus() {
     let turnStatusElement = document.getElementById("turnStatus");
     if (turnStatusElement) {
+        if (!gameActive) {
+            turnStatusElement.textContent = occupiedCells.size > 0
+                ? "🏁 Ván đấu đã kết thúc"
+                : "⏳ Đang chờ bắt đầu...";
+            return;
+        }
+        if (!currentSymbol) {
+            turnStatusElement.textContent = "⏳ Đang chờ gán ký hiệu...";
+            return;
+        }
         turnStatusElement.textContent = currentSymbol === currentTurnSymbol
             ? "✅ Lượt của bạn"
             : "⏳ Đợi đối thủ...";
@@ -137,6 +173,8 @@ function resetBoard() {
         cell.textContent = "";
         cell.classList.remove("player-x", "player-o");
     });
+    occupiedCells.clear();
+    gameActive = true;
     currentTurnSymbol = "X";
     updateTurnStatus();
 }
@@ -149,6 +187,8 @@ connection.on("ReceiveMove", (x, y, symbol) => {
         cell.textContent = symbol;
         cell.classList.add(symbol === "X" ? "player-x" : "player-o");
     }
+    occupiedCells.add(cellKey(x, y));
+    gameActive = true;
 
     currentTurnSymbol = symbol === "X" ? "O" : "X";
     updateTurnStatus();
@@ -182,6 +222,8 @@ connection.on("UpdateSymbol", (symbol) => {
 
 // Cập nhật khi game kết thúc
 connection.on("GameOver", message => {
+    gameActive = false;
+    updateTurnStatus();
     notify(`${message}`);
 
     // Nếu đối thủ rời phòng thì reset lại thông tin
@@ -220,14 +262,24 @@ connection.on("RedirectToLobby", function () {
 // 🎧 Nhận tin nhắn từ server
 connection.on("ReceiveMessage", function (userId, displayName, avatarPath, message) {
     const chatBox = document.getElementById("chat-box");
+    if (!chatBox) return;
     const msgElement = document.createElement("div");
     msgElement.className = "chat-message";
-    msgElement.innerHTML = `
-        <div style="margin-bottom: 5px;">
-            <img src="${avatarPath}" alt="avatar" style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle;">
-            <strong style="margin-left: 5px;">${displayName}</strong>: ${message}
-        </div>
-    `;
+    const wrapper = document.createElement("div");
+    wrapper.style.marginBottom = "5px";
+    const img = document.createElement("img");
+    img.src = String(avatarPath || "/uploads/avatars/default.jpg");
+    img.alt = "avatar";
+    img.style.width = "24px";
+    img.style.height = "24px";
+    img.style.borderRadius = "50%";
+    img.style.verticalAlign = "middle";
+    const strong = document.createElement("strong");
+    strong.style.marginLeft = "5px";
+    strong.textContent = String(displayName || "Nguoi choi");
+    const text = document.createTextNode(": " + String(message || ""));
+    wrapper.append(img, strong, text);
+    msgElement.appendChild(wrapper);
     chatBox.appendChild(msgElement);
     chatBox.scrollTop = chatBox.scrollHeight;
 });
@@ -237,12 +289,15 @@ connection.on("UpdateScore", function (newScore) {
 });
 
 // gửi tin nhắn bằng phím Enter
-document.getElementById("message-input").addEventListener("keydown", function (event) {
-    if (event.key === "Enter") {
-        event.preventDefault(); 
-        sendMessage();          
-    }
-});
+const messageInputEl = document.getElementById("message-input");
+if (messageInputEl) {
+    messageInputEl.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+}
 
 // Thông báo lỗi
 connection.on("ErrorMessage", message => {
@@ -250,6 +305,8 @@ connection.on("ErrorMessage", message => {
 });
 connection.on("ForceLeave", () => {
     console.log("Nhận yêu cầu rời phòng từ server");
+    gameActive = false;
+    updateTurnStatus();
     connection.invoke("LeaveGame");
 });
 

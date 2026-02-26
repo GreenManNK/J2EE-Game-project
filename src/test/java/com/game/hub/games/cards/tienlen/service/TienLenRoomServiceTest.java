@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TienLenRoomServiceTest {
@@ -226,6 +227,91 @@ class TienLenRoomServiceTest {
         assertFalse(waiting.players().stream().anyMatch(TienLenRoomService.PlayerSnapshot::bot));
     }
 
+    @Test
+    void detectInstantWinRuleShouldRecognizeTienLenMienNamPatterns() throws Exception {
+        TienLenRoomService service = new TienLenRoomService(new Random(11));
+
+        assertEquals("DRAGON_STRAIGHT", detectInstantWinRuleName(service,
+            "3S", "4S", "5S", "6S", "7S", "8S", "9S", "10S", "JS", "QS", "KS", "AS", "2S"));
+
+        assertEquals("FIVE_CONSECUTIVE_PAIRS", detectInstantWinRuleName(service,
+            "3S", "3C", "4S", "4C", "5S", "5C", "6S", "6C", "7S", "7C", "9S", "JH", "2D"));
+
+        assertEquals("SIX_PAIRS", detectInstantWinRuleName(service,
+            "3S", "3C", "4S", "4C", "6S", "6C", "8S", "8C", "10S", "10C", "QS", "QC", "2D"));
+
+        assertEquals("FOUR_TWOS", detectInstantWinRuleName(service,
+            "2S", "2C", "2D", "2H", "3S", "4C", "5D", "6H", "7S", "8C", "9D", "10H", "JS"));
+    }
+
+    @Test
+    void detectInstantWinRuleShouldReturnNullForNormalHand() throws Exception {
+        TienLenRoomService service = new TienLenRoomService(new Random(12));
+
+        assertNull(detectInstantWinRuleName(service,
+            "3S", "4C", "5D", "6H", "8S", "9C", "10D", "JH", "QS", "KC", "AH", "2H", "3D"));
+    }
+
+    @Test
+    void calculateLoserPenaltyShouldIncludeCongThoiHaiAndThoiHang() throws Exception {
+        TienLenRoomService service = new TienLenRoomService(new Random(13));
+
+        Object penalty = calculatePenalty(service, true,
+            "2S", "2C", "3S", "3C", "4S", "4C", "5S", "5C", "7S", "8C");
+
+        assertNotNull(penalty);
+        assertTrue(penaltyCong(penalty));
+        assertEquals(2, penaltyTwoCount(penalty));
+        assertEquals(6, penaltySpecialPenalty(penalty)); // 3 doi thong (3-4-5)
+        assertEquals(49, penaltyTotal(penalty)); // (10 la *2) + cong 13 + 2 heo den*5 + thoi hang 6
+    }
+
+    @Test
+    void calculateLoserPenaltyShouldCountRedAndBlackTwosDifferently() throws Exception {
+        TienLenRoomService service = new TienLenRoomService(new Random(15));
+
+        Object penalty = calculatePenalty(service, false,
+            "2S", "2H", "3S", "4C", "5D");
+
+        assertNotNull(penalty);
+        assertFalse(penaltyCong(penalty));
+        assertEquals(2, penaltyTwoCount(penalty));
+        assertEquals(0, penaltySpecialPenalty(penalty));
+        assertEquals(20, penaltyTotal(penalty)); // 5 la + heo den 5 + heo do 10
+    }
+
+    @Test
+    void detectSpecialBeatPenaltyShouldRecognizeChopHeoAndChopHang() throws Exception {
+        TienLenRoomService service = new TienLenRoomService(new Random(14));
+
+        Object fourKind = parseCombo(service, "10S", "10C", "10D", "10H");
+        Object singleRedTwo = parseCombo(service, "2H");
+        Object ds4 = parseCombo(service, "6S", "6C", "7S", "7C", "8S", "8C", "9S", "9C");
+        Object ds3 = parseCombo(service, "3S", "3C", "4S", "4C", "5S", "5C");
+
+        Object chopSingleTwo = detectSpecialBeatPenalty(service, fourKind, singleRedTwo, "2H");
+        assertNotNull(chopSingleTwo);
+        assertEquals(10, specialBeatPoints(chopSingleTwo));
+        assertEquals("chat 1 heo", specialBeatLabel(chopSingleTwo));
+
+        Object chopDoubleStraight = detectSpecialBeatPenalty(service, ds4, ds3, "3S", "3C", "4S", "4C", "5S", "5C");
+        assertNotNull(chopDoubleStraight);
+        assertEquals(9, specialBeatPoints(chopDoubleStraight));
+        assertEquals("chat doi thong 3 doi", specialBeatLabel(chopDoubleStraight));
+
+        Object lowerFourKind = parseCombo(service, "9S", "9C", "9D", "9H");
+        Object higherFourKind = parseCombo(service, "JS", "JC", "JD", "JH");
+        Object chopFourKind = detectSpecialBeatPenalty(service, higherFourKind, lowerFourKind, "9S", "9C", "9D", "9H");
+        assertNotNull(chopFourKind);
+        assertEquals(8, specialBeatPoints(chopFourKind));
+        assertEquals("chat tu quy", specialBeatLabel(chopFourKind));
+
+        Object ds5 = parseCombo(service, "5S", "5C", "6S", "6C", "7S", "7C", "8S", "8C", "9S", "9C");
+        Object chopFourKindBy5Ds = detectSpecialBeatPenalty(service, ds5, lowerFourKind, "9S", "9C", "9D", "9H");
+        assertNotNull(chopFourKindBy5Ds);
+        assertEquals(20, specialBeatPoints(chopFourKindBy5Ds));
+    }
+
     private static void joinFour(TienLenRoomService service, String roomId) {
         assertTrue(service.joinRoom(roomId, "u1", "P1", "").ok());
         assertTrue(service.joinRoom(roomId, "u2", "P2", "").ok());
@@ -259,5 +345,73 @@ class TienLenRoomServiceTest {
         Method canBeat = candidate.getClass().getDeclaredMethod("canBeat", candidate.getClass());
         canBeat.setAccessible(true);
         return (boolean) canBeat.invoke(candidate, current);
+    }
+
+    private static String detectInstantWinRuleName(TienLenRoomService service, String... codes) throws Exception {
+        Method detect = TienLenRoomService.class.getDeclaredMethod("detectInstantWinRule", List.class);
+        detect.setAccessible(true);
+        List<TienLenCard> hand = java.util.Arrays.stream(codes)
+            .map(TienLenCard::parseCode)
+            .toList();
+        Object rule = detect.invoke(service, hand);
+        return rule == null ? null : String.valueOf(rule);
+    }
+
+    private static Object calculatePenalty(TienLenRoomService service, boolean cong, String... codes) throws Exception {
+        Method method = TienLenRoomService.class.getDeclaredMethod("calculateLoserPenalty", List.class, boolean.class);
+        method.setAccessible(true);
+        List<TienLenCard> hand = java.util.Arrays.stream(codes)
+            .map(TienLenCard::parseCode)
+            .toList();
+        return method.invoke(service, hand, cong);
+    }
+
+    private static int penaltyTotal(Object penalty) throws Exception {
+        Method m = penalty.getClass().getDeclaredMethod("total");
+        m.setAccessible(true);
+        return (int) m.invoke(penalty);
+    }
+
+    private static boolean penaltyCong(Object penalty) throws Exception {
+        Method m = penalty.getClass().getDeclaredMethod("cong");
+        m.setAccessible(true);
+        return (boolean) m.invoke(penalty);
+    }
+
+    private static int penaltyTwoCount(Object penalty) throws Exception {
+        Method m = penalty.getClass().getDeclaredMethod("twoCount");
+        m.setAccessible(true);
+        return (int) m.invoke(penalty);
+    }
+
+    private static int penaltySpecialPenalty(Object penalty) throws Exception {
+        Method m = penalty.getClass().getDeclaredMethod("specialPenalty");
+        m.setAccessible(true);
+        return (int) m.invoke(penalty);
+    }
+
+    private static Object detectSpecialBeatPenalty(TienLenRoomService service,
+                                                   Object challenger,
+                                                   Object current,
+                                                   String... currentCodes) throws Exception {
+        Class<?> comboClass = challenger.getClass();
+        Method method = TienLenRoomService.class.getDeclaredMethod("detectSpecialBeatPenalty", comboClass, comboClass, List.class);
+        method.setAccessible(true);
+        List<TienLenCard> currentCards = java.util.Arrays.stream(currentCodes)
+            .map(TienLenCard::parseCode)
+            .toList();
+        return method.invoke(service, challenger, current, currentCards);
+    }
+
+    private static int specialBeatPoints(Object specialBeat) throws Exception {
+        Method m = specialBeat.getClass().getDeclaredMethod("points");
+        m.setAccessible(true);
+        return (int) m.invoke(specialBeat);
+    }
+
+    private static String specialBeatLabel(Object specialBeat) throws Exception {
+        Method m = specialBeat.getClass().getDeclaredMethod("label");
+        m.setAccessible(true);
+        return String.valueOf(m.invoke(specialBeat));
     }
 }

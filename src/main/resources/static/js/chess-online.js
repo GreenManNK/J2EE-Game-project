@@ -41,7 +41,8 @@
         botEnabled: Boolean(boot.botEnabled),
         botSide: (boot.botSide === "w" ? "w" : "b"),
         botDifficulty: String(boot.botDifficulty || "easy").toLowerCase() === "hard" ? "hard" : "easy",
-        botThinking: false
+        botThinking: false,
+        pendingMove: false
     };
 
     const PIECE_VALUES = {
@@ -125,6 +126,7 @@
         state.resultText = "Dang cho doi doi thu";
         state.roomStatus = "WAITING";
         state.lastMove = null;
+        state.pendingMove = false;
         renderAll();
         renderPlayers();
         if (statusText) {
@@ -186,6 +188,10 @@
         }
         if (!isMyTurn()) {
             setGameStatus("Chua den luot cua ban");
+            return;
+        }
+        if (state.pendingMove) {
+            setGameStatus("Dang cho server xac nhan nuoc di...");
             return;
         }
 
@@ -692,6 +698,7 @@
                         return;
                     }
                     if (payload.error) {
+                        state.pendingMove = false;
                         setGameStatus(String(payload.error));
                     }
                 });
@@ -701,18 +708,21 @@
             },
             onStompError: () => {
                 state.connected = false;
+                state.pendingMove = false;
                 setConnectionStatus("Loi STOMP");
                 setGameStatus("Loi STOMP - dang thu ket noi lai...");
                 updateStatusText();
             },
             onWebSocketError: () => {
                 state.connected = false;
+                state.pendingMove = false;
                 setConnectionStatus("Loi WebSocket");
                 setGameStatus("Loi WebSocket - dang thu ket noi lai...");
                 updateStatusText();
             },
             onWebSocketClose: () => {
                 state.connected = false;
+                state.pendingMove = false;
                 setConnectionStatus("Mat ket noi - dang thu lai");
                 setGameStatus("Mat ket noi - dang thu ket noi lai...");
                 updateStatusText();
@@ -743,6 +753,7 @@
         }
         if (payload.type === "ROOM_CLOSED") {
             state.connected = false;
+            state.pendingMove = false;
             setConnectionStatus("Phong da dong");
             setGameStatus(String(payload.message || "Phong da dong"));
             updateStatusText();
@@ -750,6 +761,7 @@
         }
         if (payload.type === "ERROR") {
             if (!payload.userId || payload.userId === state.userId) {
+                state.pendingMove = false;
                 setGameStatus(String(payload.error || "Loi"));
             }
             return;
@@ -808,6 +820,7 @@
 
         state.selected = null;
         state.legalMoves = [];
+        state.pendingMove = false;
         refreshLocalGameState(normalizeText(messageText) || normalizeText(room.statusMessage));
         renderAll();
         renderPlayers();
@@ -899,6 +912,10 @@
             setGameStatus("Chua ket noi server");
             return;
         }
+        if (state.pendingMove) {
+            setGameStatus("Dang cho server xac nhan nuoc di...");
+            return;
+        }
         const piece = state.board[move.from.row]?.[move.from.col];
         if (!piece) {
             return;
@@ -916,12 +933,18 @@
         }
         state.selected = null;
         state.legalMoves = [];
+        state.pendingMove = true;
         renderBoard();
         setGameStatus("Dang gui nuoc di...");
-        state.client.publish({
-            destination: "/app/chess.move",
-            body: JSON.stringify(payload)
-        });
+        try {
+            state.client.publish({
+                destination: "/app/chess.move",
+                body: JSON.stringify(payload)
+            });
+        } catch (_) {
+            state.pendingMove = false;
+            setGameStatus("Khong gui duoc nuoc di. Vui long thu lai.");
+        }
     }
 
     function leaveAndRedirect() {

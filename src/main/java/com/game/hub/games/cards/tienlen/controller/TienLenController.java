@@ -50,11 +50,11 @@ public class TienLenController {
         boolean hard = "hard".equals(botDifficulty);
         model.addAttribute("botDifficulty", botDifficulty);
         model.addAttribute("pageTitle", "Tien len Bot");
-        model.addAttribute("pageHeading", "TIEN LEN VOI BOT (" + (hard ? "HARD" : "EASY") + ") - MVP");
+        model.addAttribute("pageHeading", "TIEN LEN MIEN NAM VOI BOT (" + (hard ? "HARD" : "EASY") + ")");
         model.addAttribute("pageSubtitle", "1 nguoi choi + 3 bot tren cung thiet bi. Khong can dang nhap.");
         model.addAttribute("pageNote", hard
-            ? "Bot hard uu tien danh bo bai hop le co gia tri tot hon va giu the chu dong. Da ho tro doi thong va chat 2 co ban (tu quy / doi thong); cac luat nang cao khac dang bo sung."
-            : "Bot easy danh ngau nhien trong cac nuoc hop le (uu tien bo bai nho/de danh). Da ho tro doi thong va chat 2 co ban (tu quy / doi thong); cac luat nang cao khac dang bo sung.");
+            ? "Bot hard uu tien giu the chu dong va danh bo bai hop le co gia tri tot hon. Ho tro TLMN co ban, chat 2 (tu quy/doi thong) va toi trang (sanh rong 3-A, 5 doi thong, 6 doi, tu quy 2)."
+            : "Bot easy danh ngau nhien trong cac nuoc hop le (uu tien bo bai nho/de danh). Ho tro TLMN co ban, chat 2 (tu quy/doi thong) va toi trang (sanh rong 3-A, 5 doi thong, 6 doi, tu quy 2).");
         return "cards/tien-len-bot";
     }
 

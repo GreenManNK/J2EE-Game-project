@@ -116,6 +116,16 @@ public class TienLenWebSocketController {
         }
         broadcastRoomState(roomId, result.eventType(), result.room(), "Bat dau van moi");
         sendPrivateStates(roomId);
+        if ("GAME_OVER".equals(result.eventType())) {
+            TienLenRoomService.RoomSnapshot waitingRoom = roomService.resetToWaitingAfterGame(roomId);
+            if (waitingRoom != null) {
+                broadcastRoomState(roomId, "ROOM_STATE", waitingRoom, waitingRoom.statusMessage());
+                sendPrivateStates(roomId);
+            }
+            broadcastRoomList();
+            refreshAutomationForRoom(roomId, waitingRoom);
+            return;
+        }
         broadcastRoomList();
         refreshAutomationForRoom(roomId, result.room());
     }
@@ -416,8 +426,19 @@ public class TienLenWebSocketController {
 
             if (result.changed() && result.started() && result.room() != null) {
                 log.info("TienLen auto-filled {} bot(s) and started room {}", result.addedBotCount(), roomId);
-                broadcastRoomState(roomId, "GAME_STARTED", result.room(), result.room().statusMessage());
+                String eventType = result.room().gameOver() ? "GAME_OVER" : "GAME_STARTED";
+                broadcastRoomState(roomId, eventType, result.room(), result.room().statusMessage());
                 sendPrivateStates(roomId);
+                if ("GAME_OVER".equals(eventType)) {
+                    TienLenRoomService.RoomSnapshot waitingRoom = roomService.resetToWaitingAfterGame(roomId);
+                    if (waitingRoom != null) {
+                        broadcastRoomState(roomId, "ROOM_STATE", waitingRoom, waitingRoom.statusMessage());
+                        sendPrivateStates(roomId);
+                    }
+                    broadcastRoomList();
+                    refreshAutomationForRoom(roomId, waitingRoom);
+                    return;
+                }
                 broadcastRoomList();
             }
 
