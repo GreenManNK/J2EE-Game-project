@@ -19,6 +19,8 @@ $tunnelStartScript = Join-Path $PSScriptRoot "start-remote-quick-tunnel.ps1"
 $cfErrLog = Join-Path $repoRoot "cloudflared.err.log"
 $appOutLog = Join-Path $repoRoot "run-prod-public.out.log"
 $appErrLog = Join-Path $repoRoot "run-prod-public.err.log"
+$appPidFile = Join-Path $repoRoot "app-prod.pid"
+$tunnelPidFile = Join-Path $repoRoot "cloudflared.pid"
 $publicUrlFilePath = if ([System.IO.Path]::IsPathRooted($PublicUrlFile)) { $PublicUrlFile } else { Join-Path $repoRoot $PublicUrlFile }
 $bootstrapScript = Join-Path $PSScriptRoot "dev-env-bootstrap.ps1"
 
@@ -41,6 +43,22 @@ function Wait-HttpOk([string]$Url, [int]$TimeoutSeconds) {
         Start-Sleep -Milliseconds 700
     }
     return $false
+}
+
+function Test-ProcessAliveByPidFile([string]$PidFilePath) {
+    if (-not (Test-Path $PidFilePath)) {
+        return $false
+    }
+    try {
+        $rawPid = Get-Content $PidFilePath -ErrorAction SilentlyContinue | Select-Object -First 1
+        if (-not $rawPid) {
+            return $false
+        }
+        $null = Get-Process -Id ([int]$rawPid) -ErrorAction Stop
+        return $true
+    } catch {
+        return $false
+    }
 }
 
 function Get-QuickTunnelBaseUrl([string]$LogPath) {
@@ -106,8 +124,9 @@ try {
     }
 
     $localGameUrl = "http://127.0.0.1:$Port/Game"
+    $localPingUrl = "http://127.0.0.1:$Port/Game/api/connectivity/ping"
     $localWsInfoUrl = "http://127.0.0.1:$Port/Game/ws/info?t=1"
-    $localAppOk = Wait-HttpOk -Url $localGameUrl -TimeoutSeconds $WaitSeconds
+    $localAppOk = Wait-HttpOk -Url $localPingUrl -TimeoutSeconds $WaitSeconds
     $localWsOk = Wait-HttpOk -Url $localWsInfoUrl -TimeoutSeconds 10
 
     Write-Output "STEP=START_TUNNEL"
@@ -119,19 +138,31 @@ try {
     }
 
     $publicGameUrl = $publicBaseUrl.TrimEnd("/") + "/Game"
+    $publicPingUrl = $publicBaseUrl.TrimEnd("/") + "/Game/api/connectivity/ping"
     $publicWsInfoUrl = $publicBaseUrl.TrimEnd("/") + "/Game/ws/info?t=1"
 
-    $publicGameOk = Wait-HttpOk -Url $publicGameUrl -TimeoutSeconds $WaitSeconds
-    $publicWsOk = Wait-HttpOk -Url $publicWsInfoUrl -TimeoutSeconds 15
+    # Quick Tunnel can print the URL before edge routing is fully ready.
+    # Use a light ping endpoint and give the public edge more grace time.
+    $publicProbeTimeoutSeconds = [Math]::Max($WaitSeconds, 75)
+    $publicGameOk = Wait-HttpOk -Url $publicPingUrl -TimeoutSeconds $publicProbeTimeoutSeconds
+    $publicWsOk = Wait-HttpOk -Url $publicWsInfoUrl -TimeoutSeconds ([Math]::Max(20, [Math]::Min(120, $publicProbeTimeoutSeconds + 15)))
+    $publicPageOk = Wait-HttpOk -Url $publicGameUrl -TimeoutSeconds 12
 
     if (-not $localAppOk) {
-        throw "App local khong san sang tai $localGameUrl"
+        throw "App local khong san sang tai $localPingUrl"
     }
     if (-not $localWsOk) {
         throw "WebSocket endpoint local khong san sang tai $localWsInfoUrl"
     }
     if (-not $publicGameOk) {
-        throw "Quick tunnel da tao nhung URL public khong truy cap duoc: $publicGameUrl"
+        $tunnelAlive = Test-ProcessAliveByPidFile -PidFilePath $tunnelPidFile
+        $appAlive = Test-ProcessAliveByPidFile -PidFilePath $appPidFile
+        $hint = if ($tunnelAlive -and $appAlive) {
+            " (tunnel/app van dang chay; co the edge chua on dinh, thu lai sau 10-30s)"
+        } else {
+            ""
+        }
+        throw "Quick tunnel da tao nhung URL public khong truy cap duoc: $publicGameUrl (probe: $publicPingUrl)$hint"
     }
     if (-not $publicWsOk) {
         throw "Quick tunnel URL public truy cap duoc web nhung endpoint ws/info chua san sang: $publicWsInfoUrl"
@@ -154,10 +185,12 @@ try {
     Write-Output "SESSION_READY=1"
     Write-Output "LOCAL_GAME_URL=$localGameUrl"
     Write-Output "PUBLIC_GAME_URL=$publicGameUrl"
+    Write-Output "PUBLIC_PING_URL=$publicPingUrl"
     Write-Output "LOCAL_GAME_OK=$([int]$localAppOk)"
     Write-Output "LOCAL_WS_OK=$([int]$localWsOk)"
     Write-Output "PUBLIC_GAME_OK=$([int]$publicGameOk)"
     Write-Output "PUBLIC_WS_OK=$([int]$publicWsOk)"
+    Write-Output "PUBLIC_PAGE_OK=$([int]$publicPageOk)"
     Write-Output "APP_LOG_OUT=$appOutLog"
     Write-Output "APP_LOG_ERR=$appErrLog"
     Write-Output "TUNNEL_LOG_ERR=$cfErrLog"
