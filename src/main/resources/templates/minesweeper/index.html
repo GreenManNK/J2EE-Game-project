@@ -63,6 +63,53 @@
       <p class="small text-muted mb-0 mt-3">
         Desktop: click trai de mo o, click phai de cam co. Mobile/tablet: bat "Che do dat co" de dat/go co.
       </p>
+
+      <div class="row g-3 mt-1">
+        <div class="col-12 col-lg-6">
+          <div class="ms-control-panel h-100">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+              <h3 class="h6 mb-0 theme-text">Che do leo thang</h3>
+              <span id="msProgressiveStateBadge" class="badge text-bg-secondary">Tat</span>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              <button type="button" id="msProgressiveModeBtn" class="btn btn-outline-secondary btn-sm">Bat leo thang</button>
+              <button type="button" id="msNextRoundBtn" class="btn btn-outline-secondary btn-sm" disabled>Van tiep theo</button>
+            </div>
+            <div class="small text-muted d-grid gap-1">
+              <div>Van hien tai: <strong id="msProgressiveRound" class="theme-text">1</strong></div>
+              <div>Chuoi thang: <strong id="msWinStreak" class="theme-text">0</strong></div>
+              <div>Vong tiep theo: <span id="msNextRoundPreview">-</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+          <div class="ms-control-panel h-100">
+            <h3 class="h6 mb-2 theme-text">Tuy chinh van choi (2 huong)</h3>
+            <div class="row g-2">
+              <div class="col-6">
+                <label for="msCustomRowsInput" class="form-label small mb-1">So hang (doc)</label>
+                <input id="msCustomRowsInput" class="form-control form-control-sm" type="number" min="5" max="30" step="1" value="9">
+              </div>
+              <div class="col-6">
+                <label for="msCustomColsInput" class="form-label small mb-1">So cot (ngang)</label>
+                <input id="msCustomColsInput" class="form-control form-control-sm" type="number" min="5" max="40" step="1" value="9">
+              </div>
+              <div class="col-12">
+                <label for="msCustomDensityInput" class="form-label small mb-1">Mat do min (%)</label>
+                <input id="msCustomDensityInput" class="form-control form-control-sm" type="number" min="6" max="40" step="1" value="16">
+              </div>
+              <div class="col-12 d-flex flex-wrap gap-2">
+                <button type="button" id="msApplyCustomBtn" class="btn theme-outline-btn btn-sm">Ap dung tuy chinh</button>
+                <button type="button" id="msApplyCustomProgressiveBtn" class="btn btn-outline-secondary btn-sm">Ap dung + Leo thang</button>
+              </div>
+            </div>
+            <p class="small text-muted mb-0 mt-2">
+              Ban co the thiet ke ban co theo 2 huong (hang/cot). Mat do min giup can bang do kho cho kich thuoc tuy chinh.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -100,6 +147,13 @@
     border-radius: 10px;
     padding: 8px;
     background: rgba(255, 255, 255, 0.45);
+  }
+
+  .ms-control-panel {
+    border: 1px solid var(--border-color, #d0d7de);
+    border-radius: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.38);
   }
 
   .ms-board-wrap {
@@ -192,412 +246,6 @@
     initialLevel: /*[[${initialLevel}]]*/ 'beginner'
   };
 </script>
-<script>
-  (() => {
-    const LEVELS = {
-      beginner: { rows: 9, cols: 9, mines: 10, label: 'De' },
-      intermediate: { rows: 16, cols: 16, mines: 40, label: 'Trung binh' },
-      expert: { rows: 16, cols: 30, mines: 99, label: 'Kho' }
-    };
-
-    const state = {
-      level: 'beginner',
-      rows: 0,
-      cols: 0,
-      mines: 0,
-      board: [],
-      cellEls: [],
-      firstMove: true,
-      gameOver: false,
-      win: false,
-      revealedSafeCells: 0,
-      flagsPlaced: 0,
-      timerSeconds: 0,
-      timerId: null,
-      flagMode: false
-    };
-
-    const refs = {
-      board: document.getElementById('msBoard'),
-      boardMeta: document.getElementById('msBoardMeta'),
-      minesLeft: document.getElementById('msMinesLeft'),
-      timer: document.getElementById('msTimer'),
-      statusText: document.getElementById('msStatusText'),
-      statusPill: document.getElementById('msStatusPill'),
-      levelPill: document.getElementById('msLevelPill'),
-      restartBtn: document.getElementById('msRestartBtn'),
-      flagModeBtn: document.getElementById('msFlagModeBtn'),
-      levelButtons: Array.from(document.querySelectorAll('.js-ms-level'))
-    };
-
-    function normalizeLevel(level) {
-      return Object.prototype.hasOwnProperty.call(LEVELS, level) ? level : 'beginner';
-    }
-
-    function stopTimer() {
-      if (state.timerId) {
-        clearInterval(state.timerId);
-        state.timerId = null;
-      }
-    }
-
-    function startTimer() {
-      stopTimer();
-      state.timerId = window.setInterval(() => {
-        state.timerSeconds += 1;
-        refs.timer.textContent = state.timerSeconds + 's';
-      }, 1000);
-    }
-
-    function setStatus(text, pillType) {
-      refs.statusText.textContent = text;
-      refs.statusPill.textContent = text;
-      refs.statusPill.classList.remove('text-bg-primary', 'text-bg-success', 'text-bg-danger', 'text-bg-warning', 'text-bg-secondary');
-      refs.statusPill.classList.add(pillType || 'text-bg-primary');
-    }
-
-    function updateLevelButtons() {
-      refs.levelButtons.forEach((btn) => {
-        const active = btn.dataset.level === state.level;
-        btn.classList.toggle('active', active);
-        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
-      });
-    }
-
-    function updateFlagModeUi() {
-      refs.flagModeBtn.setAttribute('aria-pressed', state.flagMode ? 'true' : 'false');
-      refs.flagModeBtn.textContent = 'Che do dat co: ' + (state.flagMode ? 'Bat' : 'Tat');
-      refs.flagModeBtn.classList.toggle('btn-outline-secondary', !state.flagMode);
-      refs.flagModeBtn.classList.toggle('btn-warning', state.flagMode);
-    }
-
-    function updateCounters() {
-      refs.minesLeft.textContent = String(state.mines - state.flagsPlaced);
-      refs.timer.textContent = state.timerSeconds + 's';
-      const cfg = LEVELS[state.level];
-      refs.levelPill.textContent = cfg.label;
-      refs.boardMeta.textContent = cfg.rows + ' x ' + cfg.cols + ' - ' + cfg.mines + ' min';
-    }
-
-    function createCell() {
-      return {
-        mine: false,
-        revealed: false,
-        flagged: false,
-        adjacent: 0,
-        exploded: false
-      };
-    }
-
-    function buildEmptyBoard(rows, cols) {
-      return Array.from({ length: rows }, () => Array.from({ length: cols }, () => createCell()));
-    }
-
-    function eachNeighbor(row, col, callback) {
-      for (let dr = -1; dr <= 1; dr += 1) {
-        for (let dc = -1; dc <= 1; dc += 1) {
-          if (dr === 0 && dc === 0) continue;
-          const nr = row + dr;
-          const nc = col + dc;
-          if (nr < 0 || nr >= state.rows || nc < 0 || nc >= state.cols) continue;
-          callback(nr, nc);
-        }
-      }
-    }
-
-    function placeMines(firstRow, firstCol) {
-      const candidates = [];
-      const safeZone = new Set();
-      eachNeighbor(firstRow, firstCol, (nr, nc) => safeZone.add(nr + ',' + nc));
-      safeZone.add(firstRow + ',' + firstCol);
-
-      for (let r = 0; r < state.rows; r += 1) {
-        for (let c = 0; c < state.cols; c += 1) {
-          const key = r + ',' + c;
-          if (!safeZone.has(key)) {
-            candidates.push([r, c]);
-          }
-        }
-      }
-
-      if (candidates.length < state.mines) {
-        candidates.length = 0;
-        for (let r = 0; r < state.rows; r += 1) {
-          for (let c = 0; c < state.cols; c += 1) {
-            if (r === firstRow && c === firstCol) continue;
-            candidates.push([r, c]);
-          }
-        }
-      }
-
-      for (let i = candidates.length - 1; i > 0; i -= 1) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const tmp = candidates[i];
-        candidates[i] = candidates[j];
-        candidates[j] = tmp;
-      }
-
-      for (let i = 0; i < state.mines; i += 1) {
-        const [r, c] = candidates[i];
-        state.board[r][c].mine = true;
-      }
-
-      for (let r = 0; r < state.rows; r += 1) {
-        for (let c = 0; c < state.cols; c += 1) {
-          if (state.board[r][c].mine) continue;
-          let count = 0;
-          eachNeighbor(r, c, (nr, nc) => {
-            if (state.board[nr][nc].mine) count += 1;
-          });
-          state.board[r][c].adjacent = count;
-        }
-      }
-    }
-
-    function createBoardDom() {
-      refs.board.innerHTML = '';
-      refs.board.style.setProperty('--ms-cols', String(state.cols));
-      state.cellEls = Array.from({ length: state.rows }, () => Array(state.cols));
-
-      const frag = document.createDocumentFragment();
-      for (let r = 0; r < state.rows; r += 1) {
-        for (let c = 0; c < state.cols; c += 1) {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'ms-cell';
-          btn.dataset.row = String(r);
-          btn.dataset.col = String(c);
-          btn.setAttribute('role', 'gridcell');
-          btn.setAttribute('aria-label', 'O ' + (r + 1) + ',' + (c + 1));
-          frag.appendChild(btn);
-          state.cellEls[r][c] = btn;
-        }
-      }
-      refs.board.appendChild(frag);
-    }
-
-    function renderCell(row, col) {
-      const cell = state.board[row][col];
-      const el = state.cellEls[row][col];
-      if (!el) return;
-
-      el.className = 'ms-cell';
-      el.textContent = '';
-
-      if (cell.revealed) {
-        el.classList.add('revealed');
-        if (cell.mine) {
-          el.classList.add('mine');
-          el.textContent = '*';
-        } else if (cell.adjacent > 0) {
-          el.textContent = String(cell.adjacent);
-          el.classList.add('n' + cell.adjacent);
-        } else {
-          el.innerHTML = '&nbsp;';
-        }
-      } else if (cell.flagged) {
-        el.classList.add('flagged');
-        el.textContent = 'F';
-      }
-
-      if (cell.exploded) {
-        el.classList.add('exploded');
-        el.textContent = '*';
-      }
-    }
-
-    function renderBoard() {
-      for (let r = 0; r < state.rows; r += 1) {
-        for (let c = 0; c < state.cols; c += 1) {
-          renderCell(r, c);
-        }
-      }
-    }
-
-    function revealConnectedZeros(startRow, startCol) {
-      const queue = [[startRow, startCol]];
-      const seen = new Set();
-
-      while (queue.length > 0) {
-        const [row, col] = queue.shift();
-        const key = row + ',' + col;
-        if (seen.has(key)) continue;
-        seen.add(key);
-
-        const cell = state.board[row][col];
-        if (cell.revealed || cell.flagged) continue;
-        if (cell.mine) continue;
-
-        cell.revealed = true;
-        state.revealedSafeCells += 1;
-        renderCell(row, col);
-
-        if (cell.adjacent !== 0) {
-          continue;
-        }
-
-        eachNeighbor(row, col, (nr, nc) => {
-          const n = state.board[nr][nc];
-          if (!n.revealed && !n.flagged && !n.mine) {
-            queue.push([nr, nc]);
-          }
-        });
-      }
-    }
-
-    function revealAllMines(explodedRow, explodedCol) {
-      for (let r = 0; r < state.rows; r += 1) {
-        for (let c = 0; c < state.cols; c += 1) {
-          const cell = state.board[r][c];
-          if (cell.mine) {
-            cell.revealed = true;
-            if (r === explodedRow && c === explodedCol) {
-              cell.exploded = true;
-            }
-          }
-        }
-      }
-      renderBoard();
-    }
-
-    function finishGame(win) {
-      state.gameOver = true;
-      state.win = !!win;
-      stopTimer();
-      if (win) {
-        setStatus('Ban thang', 'text-bg-success');
-      } else {
-        setStatus('Ban da thua', 'text-bg-danger');
-      }
-    }
-
-    function checkWin() {
-      const safeCells = state.rows * state.cols - state.mines;
-      if (state.revealedSafeCells >= safeCells) {
-        finishGame(true);
-      }
-    }
-
-    function revealCell(row, col) {
-      if (state.gameOver) return;
-      const cell = state.board[row][col];
-      if (cell.revealed || cell.flagged) return;
-
-      if (state.firstMove) {
-        placeMines(row, col);
-        state.firstMove = false;
-        setStatus('Dang choi', 'text-bg-primary');
-        startTimer();
-      }
-
-      if (cell.mine) {
-        revealAllMines(row, col);
-        finishGame(false);
-        return;
-      }
-
-      revealConnectedZeros(row, col);
-      checkWin();
-    }
-
-    function toggleFlag(row, col) {
-      if (state.gameOver) return;
-      const cell = state.board[row][col];
-      if (cell.revealed) return;
-
-      cell.flagged = !cell.flagged;
-      state.flagsPlaced += cell.flagged ? 1 : -1;
-      renderCell(row, col);
-      updateCounters();
-    }
-
-    function handlePrimaryAction(row, col) {
-      if (state.flagMode) {
-        toggleFlag(row, col);
-      } else {
-        revealCell(row, col);
-      }
-      updateCounters();
-    }
-
-    function resetBoard(level) {
-      const normalizedLevel = normalizeLevel(level);
-      const cfg = LEVELS[normalizedLevel];
-
-      stopTimer();
-
-      state.level = normalizedLevel;
-      state.rows = cfg.rows;
-      state.cols = cfg.cols;
-      state.mines = cfg.mines;
-      state.board = buildEmptyBoard(cfg.rows, cfg.cols);
-      state.cellEls = [];
-      state.firstMove = true;
-      state.gameOver = false;
-      state.win = false;
-      state.revealedSafeCells = 0;
-      state.flagsPlaced = 0;
-      state.timerSeconds = 0;
-
-      createBoardDom();
-      renderBoard();
-      updateCounters();
-      updateLevelButtons();
-      setStatus('San sang', 'text-bg-secondary');
-      refs.statusText.textContent = 'Cho nuoc dau';
-
-      refs.levelPill.textContent = cfg.label;
-      refs.boardMeta.textContent = cfg.rows + ' x ' + cfg.cols + ' - ' + cfg.mines + ' min';
-      refs.timer.textContent = '0s';
-      refs.minesLeft.textContent = String(cfg.mines);
-
-      const url = new URL(window.location.href);
-      url.searchParams.set('level', normalizedLevel);
-      window.history.replaceState(null, '', url.pathname + url.search);
-    }
-
-    function handleBoardClick(event) {
-      const cellBtn = event.target.closest('.ms-cell');
-      if (!cellBtn) return;
-      const row = Number(cellBtn.dataset.row);
-      const col = Number(cellBtn.dataset.col);
-      handlePrimaryAction(row, col);
-    }
-
-    function handleBoardContextMenu(event) {
-      const cellBtn = event.target.closest('.ms-cell');
-      if (!cellBtn) return;
-      event.preventDefault();
-      const row = Number(cellBtn.dataset.row);
-      const col = Number(cellBtn.dataset.col);
-      toggleFlag(row, col);
-    }
-
-    function bindEvents() {
-      refs.board.addEventListener('click', handleBoardClick);
-      refs.board.addEventListener('contextmenu', handleBoardContextMenu);
-
-      refs.restartBtn.addEventListener('click', () => resetBoard(state.level));
-      refs.flagModeBtn.addEventListener('click', () => {
-        state.flagMode = !state.flagMode;
-        updateFlagModeUi();
-      });
-
-      refs.levelButtons.forEach((btn) => {
-        btn.addEventListener('click', () => resetBoard(btn.dataset.level || 'beginner'));
-      });
-    }
-
-    function boot() {
-      bindEvents();
-      state.flagMode = false;
-      updateFlagModeUi();
-      const initialLevel = normalizeLevel((window.MinesweeperBoot && window.MinesweeperBoot.initialLevel) || 'beginner');
-      resetBoard(initialLevel);
-    }
-
-    boot();
-  })();
-</script>
+<script th:src="@{/js/minesweeper-page.js}"></script>
 </body>
 </html>
