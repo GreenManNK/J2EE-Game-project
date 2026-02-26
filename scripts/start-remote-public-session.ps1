@@ -4,7 +4,11 @@ param(
     [int]$WaitSeconds = 30,
     [string]$PublicUrlFile = "public-game-url.txt",
     [string]$AppEnvFile = ".env.public.local",
-    [switch]$OpenBrowser
+    [switch]$OpenBrowser,
+    [switch]$SkipBootstrap,
+    [switch]$ForceBootstrap,
+    [ValidateSet("auto", "h2", "mysql", "postgres")]
+    [string]$BootstrapDb = "auto"
 )
 
 $ErrorActionPreference = "Stop"
@@ -16,6 +20,7 @@ $cfErrLog = Join-Path $repoRoot "cloudflared.err.log"
 $appOutLog = Join-Path $repoRoot "run-prod-public.out.log"
 $appErrLog = Join-Path $repoRoot "run-prod-public.err.log"
 $publicUrlFilePath = if ([System.IO.Path]::IsPathRooted($PublicUrlFile)) { $PublicUrlFile } else { Join-Path $repoRoot $PublicUrlFile }
+$bootstrapScript = Join-Path $PSScriptRoot "dev-env-bootstrap.ps1"
 
 function Require-Script([string]$Path) {
     if (-not (Test-Path $Path)) {
@@ -53,11 +58,46 @@ function Get-QuickTunnelBaseUrl([string]$LogPath) {
     return $last.Matches[$last.Matches.Count - 1].Value
 }
 
+function Resolve-BootstrapDbKind([string]$ExplicitDb, [string]$EnvFilePath) {
+    $valid = @("auto", "h2", "mysql", "postgres")
+    $explicit = [string]$ExplicitDb
+    if (-not [string]::IsNullOrWhiteSpace($explicit)) {
+        $e = $explicit.Trim().ToLowerInvariant()
+        if (($valid -contains $e) -and $e -ne "auto") { return $e }
+    }
+    $envKind = [string]([Environment]::GetEnvironmentVariable("APP_DATASOURCE_KIND", "Process"))
+    if (-not [string]::IsNullOrWhiteSpace($envKind)) {
+        $k = $envKind.Trim().ToLowerInvariant()
+        if ($valid -contains $k) { return $k }
+    }
+    $name = [string]([System.IO.Path]::GetFileName($EnvFilePath))
+    $n = $name.ToLowerInvariant()
+    if ($n.Contains(".mysql.")) { return "mysql" }
+    if ($n.Contains(".postgres.")) { return "postgres" }
+    return "auto"
+}
+
 Require-Script $appStartScript
 Require-Script $tunnelStartScript
+if (-not $SkipBootstrap) {
+    Require-Script $bootstrapScript
+}
 
 Push-Location $repoRoot
 try {
+    if (-not $SkipBootstrap) {
+        $bootstrapDbKind = Resolve-BootstrapDbKind -ExplicitDb $BootstrapDb -EnvFilePath $AppEnvFile
+        Write-Output "STEP=BOOTSTRAP_ENV"
+        if ($ForceBootstrap) {
+            & $bootstrapScript -Mode public -Db $bootstrapDbKind -Force | Out-Host
+        } else {
+            & $bootstrapScript -Mode public -Db $bootstrapDbKind | Out-Host
+        }
+        if ($LASTEXITCODE -ne 0) {
+            throw "Bootstrap moi truong that bai (exit code $LASTEXITCODE)"
+        }
+    }
+
     Write-Output "STEP=START_APP"
     if ($AutoBuild) {
         & $appStartScript -AutoBuild -Port $Port -EnvFile $AppEnvFile -EnableH2Fallback | Out-Host

@@ -12,6 +12,76 @@ Tai lieu nay giup ban tu chay/dung project bang cach don gian tren Windows, khon
   - endpoint websocket qua public URL san sang
 - Neu may khong co MySQL local, script public se tu dong fallback sang H2 file local de van chay duoc tren may khac.
 
+## Chay da nen tang (Windows / macOS / Linux) - script moi
+
+Bo script moi giup check moi truong, phat hien thieu cong cu va co the thu cai tu dong (best effort) tren nhieu he dieu hanh.
+
+### 1) Kiem tra moi truong (khong cai)
+
+Windows (PowerShell):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-env-doctor.ps1 -Mode local -Db auto -CheckOnly
+```
+
+macOS / Linux (bash):
+
+```bash
+bash ./scripts/dev-env-doctor.sh --mode local --db auto --check-only
+```
+
+### 2) Tu dong cai cong cu thieu (best effort)
+
+Windows (PowerShell):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-env-setup.ps1 -Mode local -Db auto
+```
+
+macOS / Linux (bash):
+
+```bash
+bash ./scripts/dev-env-setup.sh --mode local --db auto
+```
+
+Ghi chu:
+- Script se co gang cai `Java 21+`, `Maven`, `Git`, `Node.js` (khuyen nghi), va `cloudflared` neu chon `Mode public`.
+- Viec cai tu dong phu thuoc package manager cua may (`winget/choco/scoop`, `brew`, `apt/dnf/yum/pacman/zypper`).
+- Neu script bao da cai xong nhung terminal van khong nhan lenh, hay mo terminal moi va chay lai script.
+
+### 3) Chay local da nen tang (Maven + H2 fallback)
+
+Windows (PowerShell):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-run-local.ps1
+```
+
+macOS / Linux (bash):
+
+```bash
+bash ./scripts/dev-run-local.sh
+```
+
+Script local moi se:
+- tu dong `bootstrap` moi truong o lan chay dau tien (doctor + auto-install best effort)
+- ghi file trang thai vao `.data/dev-env/` de cac lan sau bo qua buoc chuan doan/cai dat
+- co the bo qua bootstrap bang `-SkipDoctor` / `--skip-doctor` (giu tuong thich ten cu)
+- co the ep bootstrap lai bang `-ForceBootstrap` (PowerShell) / `--force-bootstrap` (bash)
+- tu tao thu muc `.data/`
+- bat `H2 fallback` + `APP_EMAIL_MODE=log` de de chay tren may moi
+- chay app bang `mvn spring-boot:run` (profile `prod`)
+
+Vi du ep chay lai bootstrap:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-run-local.ps1 -ForceBootstrap
+```
+
+```bash
+bash ./scripts/dev-run-local.sh --force-bootstrap
+```
+
 ## Chay bang nut bam trong IntelliJ (khuyen nghi)
 
 Project da co san run configurations dung chung trong thu muc `.run/`.
@@ -30,6 +100,10 @@ Run configurations da them:
 - `Start Local (J2EE)` (chi test may nay / LAN)
 - `Status (App + Tunnel)` (xem PID/trang thai/link hien tai)
 - `Stop All (App + Tunnel)` (dung app + tunnel)
+
+Tu ban cap nhat hien tai:
+- Khi bam cac nut `Start ...`, he thong se tu `bootstrap` moi truong lan dau (kiem tra + co gang cai thieu).
+- Cac lan chay sau se bo qua bootstrap neu da co state trong `.data/dev-env/`.
 
 Luu y:
 - Neu IntelliJ yeu cau plugin `Shell Script`, hay bat plugin nay (thuong da co san).
@@ -58,6 +132,7 @@ Meo:
 - Co the mo `Command Palette` (`Ctrl+Shift+P`) -> `Tasks: Run Task`
 - Task se mo terminal va hien log/URL public de ban copy gui nguoi choi
 - VS Code tasks cung chi goi cac file `scripts/manual-*.cmd`, nen giong cach chay thu cong
+- Tuong tu IntelliJ, cac task `Start ...` nay da duoc huong co che bootstrap-moi-truong-lan-dau.
 
 Luu y:
 - Thu muc `.vscode/` dang bi ignore trong `.gitignore`, nen file nay chu yeu dung local.
