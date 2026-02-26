@@ -4,72 +4,242 @@
 <body>
 <div th:replace="~{fragments :: appShell('games-cards')}"></div>
 
-<main class="container py-4">
-  <section class="card shadow-sm theme-box mb-3">
-    <div class="card-body">
-      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-        <div>
-          <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-suit-spade-fill fs-3 theme-text"></i>
-            <h1 class="h3 mb-0 theme-text">DANH BAI (TIEN LEN) - CHON CHE DO</h1>
-          </div>
-          <p class="theme-text mb-0 mt-2">
-            Trang mode rieng cho module Danh bai. Hien tai da co Tien len online 4 nguoi (MVP) va bot Easy/Hard (MVP).
-          </p>
-        </div>
-        <span class="badge text-bg-success fs-6">Tien len MVP</span>
+<main class="hub-portal-shell" style="--gp-primary:#0f766e; --gp-secondary:#f59e0b; --gp-primary-deep:#0b5b55;">
+  <section class="hub-portal-hero">
+    <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
+    <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
+
+    <div class="hub-portal-hero__main">
+      <div class="hub-portal-eyebrow">
+        <i class="bi bi-suit-spade-fill"></i>
+        <span>CARDS / TIEN LEN MIEN NAM</span>
+      </div>
+
+      <h1 class="hub-portal-title">
+        <span th:text="${game != null ? game.displayName : 'Danh bai'}">Danh bai</span>
+        Tien Len Mien Nam online va bot
+      </h1>
+
+      <p class="hub-portal-subtitle">
+        Trang mode cho module Danh bai (Tien Len Mien Nam) duoc dong bo giao dien portal.
+        Ho tro online 4 nguoi (MVP) va che do bot Easy/Hard tren cung thiet bi.
+      </p>
+
+      <div class="hub-portal-chip-row">
+        <span class="hub-portal-chip is-live"><i class="bi bi-broadcast"></i> TLMN gameplay nang cao</span>
+        <span class="hub-portal-chip"><i class="bi bi-people-fill"></i> Online 4 nguoi</span>
+        <span class="hub-portal-chip"><i class="bi bi-cpu-fill"></i> Bot Easy / Hard</span>
+        <span class="hub-portal-chip"><i class="bi bi-chat-dots-fill"></i> Chat / diem / penalty</span>
+      </div>
+
+      <div class="hub-portal-action-grid">
+        <a th:href="@{/online-hub(game='cards')}" class="hub-portal-action hub-portal-action--primary">
+          <span class="hub-portal-action__icon"><i class="bi bi-globe2"></i></span>
+          <span class="hub-portal-action__text">
+            <strong>Tien len Online Hub</strong>
+            <small>Tao / tim phong 4 nguoi</small>
+          </span>
+          <i class="bi bi-arrow-right"></i>
+        </a>
+
+        <a th:href="@{/cards/tien-len}" class="hub-portal-action hub-portal-action--accent">
+          <span class="hub-portal-action__icon"><i class="bi bi-broadcast-pin"></i></span>
+          <span class="hub-portal-action__text">
+            <strong>Mo ban online truc tiep</strong>
+            <small>Nhap roomId hoac doi start trong phong</small>
+          </span>
+          <i class="bi bi-arrow-right"></i>
+        </a>
+
+        <a th:href="@{/cards/tien-len/bot(difficulty='easy')}" class="hub-portal-action hub-portal-action--soft">
+          <span class="hub-portal-action__icon"><i class="bi bi-cpu"></i></span>
+          <span class="hub-portal-action__text">
+            <strong>Bot Easy</strong>
+            <small>1 nguoi + 3 bot tren cung may</small>
+          </span>
+          <i class="bi bi-arrow-right"></i>
+        </a>
+
+        <a th:href="@{/cards/tien-len/bot(difficulty='hard')}" class="hub-portal-action hub-portal-action--soft">
+          <span class="hub-portal-action__icon"><i class="bi bi-cpu-fill"></i></span>
+          <span class="hub-portal-action__text">
+            <strong>Bot Hard</strong>
+            <small>Bot uu tien giu the chu dong hon</small>
+          </span>
+          <i class="bi bi-arrow-right"></i>
+        </a>
       </div>
     </div>
+
+    <aside class="hub-portal-hero__side">
+      <section class="hub-portal-panel">
+        <div class="hub-portal-panel__head">
+          <div>
+            <div class="hub-portal-panel__label">Preview van bai</div>
+            <div class="hub-portal-panel__title">TLMN round snapshot</div>
+          </div>
+          <span class="hub-portal-pill">Score + penalty</span>
+        </div>
+
+        <div class="hub-portal-preview">
+          <div class="hub-portal-preview-grid" aria-hidden="true">
+            <div class="hub-portal-preview-cell is-accent-a">A</div>
+            <div class="hub-portal-preview-cell">2</div>
+            <div class="hub-portal-preview-cell is-accent-b">K</div>
+            <div class="hub-portal-preview-cell">Q</div>
+            <div class="hub-portal-preview-cell is-accent-a">J</div>
+            <div class="hub-portal-preview-cell">10</div>
+            <div class="hub-portal-preview-cell">TT</div>
+            <div class="hub-portal-preview-cell is-accent-b">4DT</div>
+            <div class="hub-portal-preview-cell">+5</div>
+            <div class="hub-portal-preview-cell is-accent-a">CONG</div>
+            <div class="hub-portal-preview-cell">CHAT</div>
+            <div class="hub-portal-preview-cell is-accent-b">WIN</div>
+          </div>
+        </div>
+
+        <div class="hub-portal-meta-list">
+          <div class="hub-portal-meta-item"><span>Luat</span><strong>Tien Len Mien Nam</strong></div>
+          <div class="hub-portal-meta-item"><span>Online</span><strong>4 nguoi / room</strong></div>
+          <div class="hub-portal-meta-item"><span>Settlement</span><strong>Diem + phat theo van</strong></div>
+        </div>
+      </section>
+
+      <div class="hub-portal-mini-grid">
+        <section class="hub-portal-mini-card">
+          <div class="hub-portal-mini-card__title">Gameplay da bo sung</div>
+          <ol class="hub-portal-inline-list mb-0">
+            <li><span>Toi trang / thang trang</span><strong>Co</strong></li>
+            <li><span>Thoi heo / thoi hang / cong</span><strong>Co</strong></li>
+            <li><span>Phat chat heo / chat hang</span><strong>Co</strong></li>
+          </ol>
+        </section>
+
+        <section class="hub-portal-mini-card">
+          <div class="hub-portal-mini-card__title">Dieu huong</div>
+          <div class="hub-portal-inline-actions">
+            <a th:href="@{/games}" class="hub-portal-inline-btn">Thu vien</a>
+            <a th:href="@{/cards/tien-len}" class="hub-portal-inline-btn">Online</a>
+            <a th:href="@{/cards/tien-len/bot(difficulty='easy')}" class="hub-portal-inline-btn">Bot</a>
+          </div>
+        </section>
+      </div>
+    </aside>
   </section>
 
-  <div class="row g-3">
-    <div class="col-12 col-xl-6">
-      <section class="card shadow-sm theme-box h-100">
-        <div class="card-body d-flex flex-column">
-          <h2 class="h5 theme-text mb-2">Tien len voi bot</h2>
-          <p class="theme-text small mb-3">
-            1 nguoi choi + 3 bot tren cung thiet bi. Chon do kho ngay tai trang rieng cua module Danh bai.
-          </p>
-          <div class="d-grid gap-2 mt-auto">
-            <a th:href="@{/cards/tien-len/bot(difficulty='easy')}" class="btn theme-outline-btn btn-lg">Bot De (Easy)</a>
-            <a th:href="@{/cards/tien-len/bot(difficulty='hard')}" class="btn theme-outline-btn">Bot Kho (Hard)</a>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <div class="col-12 col-xl-6">
-      <section class="card shadow-sm theme-box h-100">
-        <div class="card-body d-flex flex-column">
-          <h2 class="h5 theme-text mb-2">Tien len online 4 nguoi</h2>
-          <p class="theme-text small mb-3">
-            Dung trang phong online de tao/tim/moi nguoi choi. Van dau chi bat dau khi du 4 nguoi.
-          </p>
-          <div class="d-grid gap-2 mt-auto">
-            <a th:href="@{/online-hub(game='cards')}" class="btn theme-outline-btn btn-lg">Tien len Online Hub</a>
-            <a th:href="@{/cards/tien-len}" class="btn btn-outline-secondary">Mo ban Tien len online truc tiep</a>
-          </div>
-        </div>
-      </section>
-    </div>
-  </div>
-
-  <section class="card shadow-sm theme-box mt-3">
-    <div class="card-body">
-      <h2 class="h5 theme-text mb-2">Luu y hien tai</h2>
-      <ul class="mb-0 theme-text">
-        <li>Luat MVP dang ho tro: don, doi, sam, tu quy, sanh, doi thong, pass va reset vong.</li>
-        <li>Da co chat 2 co ban (tu quy / doi thong); cac luat nang cao khac dang bo sung.</li>
-        <li>Trang nay la trang mode rieng cho Danh bai, khong dung chung layout dieu huong mode voi 3 game con lai.</li>
-      </ul>
-      <div class="d-flex flex-wrap gap-2 mt-3">
-        <a th:href="@{/}" class="btn theme-outline-btn">Ve trang chu</a>
-        <a th:href="@{/games}" class="btn theme-outline-btn">Thu vien game</a>
+  <section class="hub-portal-highlights">
+    <article class="hub-portal-highlight">
+      <div class="hub-portal-highlight__icon"><i class="bi bi-trophy-fill"></i></div>
+      <div>
+        <h2>TLMN toi trang</h2>
+        <p>Ho tro cac case toi trang nhu sanh rong 3-A, 5 doi thong, 6 doi, tu quy 2.</p>
       </div>
+    </article>
+    <article class="hub-portal-highlight">
+      <div class="hub-portal-highlight__icon"><i class="bi bi-calculator-fill"></i></div>
+      <div>
+        <h2>Diem va phat theo van</h2>
+        <p>Co tinh cong, thoi heo, thoi hang va delta do chat heo/chat hang trong settlement.</p>
+      </div>
+    </article>
+    <article class="hub-portal-highlight">
+      <div class="hub-portal-highlight__icon"><i class="bi bi-broadcast-pin"></i></div>
+      <div>
+        <h2>Dong bo online + bot</h2>
+        <p>Rule va hien thi penalty/score duoc dong bo ca o online va bot mode.</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="hub-portal-layout">
+    <div class="hub-portal-main">
+      <section class="hub-portal-card">
+        <div class="hub-portal-card__head">
+          <h2>Cac che do Tien Len</h2>
+          <span class="hub-portal-tag">Modes</span>
+        </div>
+        <div class="hub-portal-rule-grid">
+          <div class="hub-portal-rule-item"><strong>1.</strong><span>Online Hub: tao/tim phong 4 nguoi.</span></div>
+          <div class="hub-portal-rule-item"><strong>2.</strong><span>Mo ban online truc tiep theo roomId.</span></div>
+          <div class="hub-portal-rule-item"><strong>3.</strong><span>Bot Easy: 1 nguoi + 3 bot.</span></div>
+          <div class="hub-portal-rule-item"><strong>4.</strong><span>Bot Hard: uu tien nuoc tot hon.</span></div>
+        </div>
+      </section>
+
+      <section class="hub-portal-card">
+        <div class="hub-portal-card__head">
+          <h2>Luu y gameplay TLMN</h2>
+          <span class="hub-portal-tag">Gameplay</span>
+        </div>
+        <ul class="hub-portal-bullet-list">
+          <li>Luat co ban: don, doi, sam, sanh, tu quy, doi thong, pass va reset vong.</li>
+          <li>Da bo sung toi trang, phat cong/thoi heo/thoi hang, phat chat heo/chat hang.</li>
+          <li>UI hien diem tong, delta vong va badge penalty de theo doi van dau.</li>
+          <li>Cac bien the luat co the tiep tuc mo rong theo config phong.</li>
+        </ul>
+      </section>
+
+      <section class="hub-portal-card" th:if="${game != null and game.roadmapItems != null}">
+        <div class="hub-portal-card__head">
+          <h2>Roadmap module</h2>
+          <span class="hub-portal-tag">Roadmap</span>
+        </div>
+        <ul class="hub-portal-bullet-list">
+          <li th:each="item : ${game.roadmapItems}" th:text="${item}">Roadmap item</li>
+        </ul>
+      </section>
     </div>
+
+    <aside class="hub-portal-side">
+      <section class="hub-portal-card">
+        <h3>Vao che do nhanh</h3>
+        <div class="hub-portal-side-actions">
+          <a th:href="@{/online-hub(game='cards')}" class="hub-portal-side-action">
+            <i class="bi bi-globe2"></i>
+            <div><strong>Online Hub</strong><small>Phong Tien Len 4 nguoi</small></div>
+          </a>
+          <a th:href="@{/cards/tien-len/bot(difficulty='easy')}" class="hub-portal-side-action">
+            <i class="bi bi-cpu"></i>
+            <div><strong>Bot Easy</strong><small>1 nguoi + 3 bot</small></div>
+          </a>
+          <a th:href="@{/cards/tien-len}" class="hub-portal-side-action">
+            <i class="bi bi-broadcast-pin"></i>
+            <div><strong>Ban online</strong><small>Vao room truc tiep</small></div>
+          </a>
+        </div>
+      </section>
+
+      <section class="hub-portal-card">
+        <h3>Tinh nang hien co</h3>
+        <ul class="hub-portal-check-list">
+          <li><i class="bi bi-check-circle-fill"></i> Online 4 nguoi + bot mode</li>
+          <li><i class="bi bi-check-circle-fill"></i> Toi trang / thang trang</li>
+          <li><i class="bi bi-check-circle-fill"></i> Cong / thoi heo / thoi hang</li>
+          <li><i class="bi bi-check-circle-fill"></i> Phat chat heo / chat hang</li>
+          <li><i class="bi bi-check-circle-fill"></i> Scoreboard + delta round</li>
+        </ul>
+      </section>
+
+      <section class="hub-portal-card">
+        <h3>Game lien quan</h3>
+        <div class="hub-portal-related-list">
+          <a th:each="g : ${allGames}"
+             th:if="${g.code != game.code}"
+             th:href="@{/games/{code}(code=${g.code})}"
+             class="hub-portal-related-item">
+            <i class="bi" th:classappend="${g.iconClass}"></i>
+            <div>
+              <strong th:text="${g.displayName}">Game</strong>
+              <small th:text="${g.description}">Mo ta</small>
+            </div>
+          </a>
+        </div>
+      </section>
+    </aside>
   </section>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('games-cards')}"></th:block>
 </body>
 </html>
+
