@@ -48,12 +48,31 @@
       pointer-events: auto;
     }
     .app-shell-sidebar-scroll {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+      min-height: 0;
       min-height: calc(100% - 8px);
+    }
+    .app-shell-sidebar-menu {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .app-shell-sidebar-friends {
+      width: 100%;
+      flex: 0 0 auto;
     }
     .sidebar-toggle-btn {
       position: fixed;
       top: 50%;
-      left: 10px;
+      left: 8px;
       transform: translateY(-50%);
       background-color: #0ff;
       border: none;
@@ -70,7 +89,7 @@
       pointer-events: none;
     }
     body.sidebar-open .sidebar-toggle-btn {
-      left: calc(var(--app-sidebar-width) - 6px);
+      left: calc(var(--app-sidebar-width) - 18px);
       transform: translateY(-50%);
     }
     #friendListInlineContainer {
@@ -81,8 +100,9 @@
       border-radius: 8px;
       padding: 10px;
       font-size: 0.85rem;
-      max-height: min(36vh, 360px);
-      overflow-y: auto;
+      min-height: 190px;
+      max-height: min(34vh, 300px);
+      overflow: hidden;
       z-index: auto;
       box-shadow: none;
     }
@@ -94,7 +114,8 @@
         padding-right: 14px;
       }
       #friendListInlineContainer {
-        max-height: min(34vh, 300px);
+        min-height: 170px;
+        max-height: min(30vh, 240px);
       }
       #backButton {
         bottom: 12px;
@@ -116,10 +137,11 @@
         transform: none;
       }
       body.sidebar-open .sidebar-toggle-btn {
-        left: calc(var(--app-sidebar-width) - 6px);
+        left: calc(var(--app-sidebar-width) - 18px);
         transform: none;
       }
       #friendListInlineContainer {
+        min-height: 150px;
         max-height: min(34vh, 220px);
         font-size: 0.8rem;
       }
@@ -134,7 +156,7 @@
 
 <div th:fragment="appShell(pageKey)">
   <div id="friendSidebar" class="theme-text">
-    <div class="app-shell-sidebar-scroll d-flex flex-column gap-2 px-1 justify-content-center align-items-center">
+    <div class="app-shell-sidebar-scroll d-flex flex-column px-1">
       <div class="app-shell-sidebar-brand">
         <div class="app-shell-sidebar-brand__badge">
           <i class="bi bi-controller"></i>
@@ -143,45 +165,49 @@
         <div class="app-shell-sidebar-brand__title">Control Center</div>
         <div class="app-shell-sidebar-brand__meta">Choi nhanh, quan ly ban be va theo doi bang xep hang.</div>
       </div>
-      <a class="btn theme-outline-btn w-100 text-start fw-bold theme-text" th:href="@{/}"><i class="bi bi-house-fill me-2"></i> Trang chủ</a>
-      <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-controller me-2"></i> Thu vien game</a>
-      <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/leaderboard}"><i class="bi bi-bar-chart-fill me-2"></i> Bảng xếp hạng</a>
-      <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/history}" data-require-user-id="true" data-user-param="userId"><i class="bi bi-clock-history me-2"></i> Lịch sử đấu</a>
-      <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship}" data-require-user-id="true"><i class="bi bi-people-fill me-2"></i> Bạn bè</a>
-      <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship/notifications}" data-require-user-id="true"><i class="bi bi-bell-fill me-2"></i> Thông báo</a>
-      <a id="myProfileLink" class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true"><i class="bi bi-person-circle me-2"></i> Hồ sơ của tôi</a>
-      <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/chat-bot}"><i class="bi bi-robot me-2"></i> Chat Bot</a>
-      <a class="btn theme-outline-btn w-100 text-start theme-text"
-         th:href="@{/manager/users}"
-         data-auth-only="true"
-         data-role-allowed="Manager,Admin"><i class="bi bi-people me-2"></i> Manager Users</a>
-      <a class="btn theme-outline-btn w-100 text-start theme-text"
-         th:href="@{/admin/users}"
-         data-auth-only="true"
-         data-role-allowed="Admin"><i class="bi bi-shield-lock me-2"></i> Admin Users</a>
-      <a class="btn theme-outline-btn w-100 text-start theme-text"
-         th:href="@{/notification-admin}"
-         data-auth-only="true"
-         data-role-allowed="Admin"><i class="bi bi-megaphone me-2"></i> System Notices</a>
-      <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/login-page}" data-guest-only="true"><i class="bi bi-box-arrow-in-right me-2"></i> Đăng nhập</a>
-      <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/register-page}" data-guest-only="true"><i class="bi bi-person-plus-fill me-2"></i> Đăng ký</a>
-      <button id="logoutBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true"><i class="bi bi-box-arrow-right me-2"></i> Đăng xuất</button>
-      <form id="friendSearchForm" class="d-flex w-100">
-        <input id="friendSearchInput" class="form-control me-2" placeholder="Tìm bạn...">
-        <button class="btn theme-outline-btn theme-text" type="submit">Tìm</button>
-      </form>
-      <small class="text-muted" data-current-user-badge="true">Chua dang nhap</small>
-      <button id="toggle-theme" class="btn theme-outline-btn w-100 text-start theme-text"><i class="bi bi-circle-half me-2"></i> Chuyển giao diện</button>
+      <div class="app-shell-sidebar-menu">
+        <a class="btn theme-outline-btn w-100 text-start fw-bold theme-text" th:href="@{/}"><i class="bi bi-house-fill me-2"></i> Trang chủ</a>
+        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-controller me-2"></i> Thu vien game</a>
+        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/leaderboard}"><i class="bi bi-bar-chart-fill me-2"></i> Bảng xếp hạng</a>
+        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/history}" data-require-user-id="true" data-user-param="userId"><i class="bi bi-clock-history me-2"></i> Lịch sử đấu</a>
+        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship}" data-require-user-id="true"><i class="bi bi-people-fill me-2"></i> Bạn bè</a>
+        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship/notifications}" data-require-user-id="true"><i class="bi bi-bell-fill me-2"></i> Thông báo</a>
+        <a id="myProfileLink" class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true"><i class="bi bi-person-circle me-2"></i> Hồ sơ của tôi</a>
+        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/chat-bot}"><i class="bi bi-robot me-2"></i> Chat Bot</a>
+        <a class="btn theme-outline-btn w-100 text-start theme-text"
+           th:href="@{/manager/users}"
+           data-auth-only="true"
+           data-role-allowed="Manager,Admin"><i class="bi bi-people me-2"></i> Manager Users</a>
+        <a class="btn theme-outline-btn w-100 text-start theme-text"
+           th:href="@{/admin/users}"
+           data-auth-only="true"
+           data-role-allowed="Admin"><i class="bi bi-shield-lock me-2"></i> Admin Users</a>
+        <a class="btn theme-outline-btn w-100 text-start theme-text"
+           th:href="@{/notification-admin}"
+           data-auth-only="true"
+           data-role-allowed="Admin"><i class="bi bi-megaphone me-2"></i> System Notices</a>
+        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/login-page}" data-guest-only="true"><i class="bi bi-box-arrow-in-right me-2"></i> Đăng nhập</a>
+        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/register-page}" data-guest-only="true"><i class="bi bi-person-plus-fill me-2"></i> Đăng ký</a>
+        <button id="logoutBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true"><i class="bi bi-box-arrow-right me-2"></i> Đăng xuất</button>
+        <form id="friendSearchForm" class="d-flex w-100">
+          <input id="friendSearchInput" class="form-control me-2" placeholder="Tìm bạn...">
+          <button class="btn theme-outline-btn theme-text" type="submit">Tìm</button>
+        </form>
+        <small class="text-muted" data-current-user-badge="true">Chua dang nhap</small>
+        <button id="toggle-theme" class="btn theme-outline-btn w-100 text-start theme-text"><i class="bi bi-circle-half me-2"></i> Chuyển giao diện</button>
+      </div>
 
-      <div id="friendListInlineContainer" class="theme-box">
-        <div class="app-shell-friends-head">
-          <div>
-            <div class="app-shell-friends-head__title">Ban be</div>
-            <div class="app-shell-friends-head__meta">Trang thai online cap nhat dinh ky</div>
+      <div class="app-shell-sidebar-friends">
+        <div id="friendListInlineContainer" class="theme-box">
+          <div class="app-shell-friends-head">
+            <div>
+              <div class="app-shell-friends-head__title">Ban be</div>
+              <div class="app-shell-friends-head__meta">Trang thai online cap nhat dinh ky</div>
+            </div>
+            <i class="bi bi-people-fill"></i>
           </div>
-          <i class="bi bi-people-fill"></i>
+          <div id="friendListContainer" class="small text-muted">Dang tai danh sach ban be...</div>
         </div>
-        <div id="friendListContainer" class="small text-muted">Dang tai danh sach ban be...</div>
       </div>
     </div>
   </div>

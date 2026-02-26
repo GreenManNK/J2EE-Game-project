@@ -388,6 +388,20 @@ body.dark-mode #friendSidebar {
   gap: 12px;
 }
 
+#friendSidebar .app-shell-sidebar-menu {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#friendSidebar .app-shell-sidebar-friends {
+  flex: 0 0 auto;
+}
+
 #friendSidebar .d-flex.flex-column {
   gap: 12px !important;
   height: 100%;
@@ -529,6 +543,12 @@ body.dark-mode #friendListInlineContainer {
   box-shadow: none !important;
 }
 
+#friendSidebar #friendListContainer {
+  max-height: clamp(120px, 24vh, 220px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
 #friendSidebar #friendListContainer > a:hover {
   transform: translateX(1px);
 }
@@ -576,12 +596,12 @@ body.dark-mode #friendListInlineContainer {
 }
 
 .sidebar-toggle-btn {
-  width: 42px;
-  height: 54px;
+  width: 46px;
+  height: 58px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0 14px 14px 0 !important;
+  border-radius: 0 16px 16px 0 !important;
   border: 1px solid color-mix(in srgb, var(--gx-accent) 26%, var(--gx-border)) !important;
   border-left: 0 !important;
   background:
@@ -591,6 +611,7 @@ body.dark-mode #friendListInlineContainer {
   cursor: pointer;
   pointer-events: auto;
   z-index: 2005 !important;
+  backdrop-filter: blur(10px);
 }
 
 .sidebar-toggle-btn i {
@@ -598,6 +619,21 @@ body.dark-mode #friendListInlineContainer {
   align-items: center;
   justify-content: center;
   font-size: 1.02rem;
+}
+
+body:not(.sidebar-open) .sidebar-toggle-btn {
+  background: linear-gradient(180deg, #0ea5e9, #1d4ed8) !important;
+  border-color: rgba(56, 189, 248, 0.35) !important;
+  color: #eff8ff !important;
+  box-shadow: 10px 16px 30px rgba(14, 165, 233, 0.28);
+}
+
+body:not(.sidebar-open) .sidebar-toggle-btn i {
+  color: #eff8ff;
+}
+
+body.sidebar-open .sidebar-toggle-btn {
+  box-shadow: 10px 16px 30px rgba(15, 23, 42, 0.2);
 }
 
 .sidebar-toggle-btn:hover {
@@ -1881,6 +1917,10 @@ body.dark-mode .hub-portal-action--accent {
   .scroll-posts {
     max-height: none;
   }
+
+  #friendSidebar #friendListContainer {
+    max-height: clamp(110px, 20vh, 180px);
+  }
 }
 
 @media (max-width: 767.98px) {
@@ -1899,6 +1939,10 @@ body.dark-mode .hub-portal-action--accent {
   #friendListInlineContainer {
     border-radius: 14px !important;
     padding: 10px !important;
+  }
+
+  #friendSidebar #friendListContainer {
+    max-height: clamp(96px, 18vh, 148px);
   }
 
   .home-dashboard {
