@@ -142,9 +142,14 @@ Luu y:
 
 Chay file:
 
+- `RUN.cmd` (alias moi, mac dinh = PUBLIC, khuyen nghi de "bam Run" nhanh)
 - `RUN_PUBLIC.cmd` (khuyen nghi nhat, bam truc tiep tai root project)
 - `scripts/manual-start.cmd` (mac dinh, khuyen nghi)
 - `scripts/manual-start-public.cmd`
+
+Neu dung PowerShell:
+
+- `.\RUN.ps1`
 
 Script se:
 - tu `AutoBuild` de lay code giao dien/chuc nang moi nhat

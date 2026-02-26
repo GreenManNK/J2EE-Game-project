@@ -12,13 +12,13 @@ if not "%ERRORLEVEL%"=="0" (
   if /I not "%~1"=="--no-pause" pause
   exit /b %RC%
 )
-powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\start-prod-app.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\start-prod-app.ps1" -AutoBuild -EnableH2Fallback
 set "RC=%ERRORLEVEL%"
 
 echo.
 if "%RC%"=="0" (
-  echo Local URL (J2EE): http://J2EE/Game
-  echo Local URL (localhost): http://127.0.0.1:8080/Game
+  echo Local URL ^(J2EE^): http://J2EE/Game
+  echo Local URL ^(localhost^): http://127.0.0.1:8080/Game
 ) else (
   echo Co loi khi chay app. Kiem tra log:
   echo   run-prod-public.out.log
