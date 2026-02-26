@@ -168,7 +168,9 @@
     }
     playerNameEl.textContent = displayName;
 
-    const board = Array.from({ length: 10 }, () => Array(10).fill(''));
+    const BOARD_SIZE = 10;
+    const board = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(''));
+    const cellRefs = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(null));
     let mySymbol = requestedSymbol || '';
     let myTurnUserId = '';
     let connected = false;
@@ -179,8 +181,8 @@
 
     function applyBoardSnapshot(snapshot) {
       if (!Array.isArray(snapshot)) return;
-      for (let x = 0; x < 10; x++) {
-        for (let y = 0; y < 10; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        for (let y = 0; y < BOARD_SIZE; y++) {
           board[x][y] = (snapshot[x] && snapshot[x][y]) || '';
         }
       }
@@ -227,21 +229,41 @@
       surrenderBtn.title = canSurrender ? '' : 'Chi dau hang khi van dau dang dien ra';
     }
 
-    function renderBoard() {
+    function initBoardUi() {
+      if (!boardEl) return;
+      if (boardEl.childElementCount === BOARD_SIZE * BOARD_SIZE) return;
       boardEl.innerHTML = '';
-      for (let x = 0; x < 10; x++) {
-        for (let y = 0; y < 10; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        for (let y = 0; y < BOARD_SIZE; y++) {
           const cell = document.createElement('div');
           cell.className = 'cell';
-          const value = board[x][y];
-          cell.textContent = value;
-          if (value === 'X') cell.classList.add('player-x');
-          if (value === 'O') cell.classList.add('player-o');
-          if (isWinningCell(x, y)) cell.classList.add('win');
-          if (isLastMoveCell(x, y)) cell.classList.add('last-move');
-          if (gameOver) cell.classList.add('disabled');
+          cell.dataset.x = String(x);
+          cell.dataset.y = String(y);
           cell.addEventListener('click', () => makeMove(x, y));
+          cellRefs[x][y] = cell;
           boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    function renderBoard() {
+      initBoardUi();
+      const winKeys = new Set(currentWinLine.map((p) => p.x + ':' + p.y));
+      const lastMoveKey = lastMove ? (lastMove.x + ':' + lastMove.y) : null;
+
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        for (let y = 0; y < BOARD_SIZE; y++) {
+          const cell = cellRefs[x][y];
+          if (!cell) continue;
+          const value = board[x][y] || '';
+          if (cell.textContent !== value) {
+            cell.textContent = value;
+          }
+          cell.classList.toggle('player-x', value === 'X');
+          cell.classList.toggle('player-o', value === 'O');
+          cell.classList.toggle('win', winKeys.has(x + ':' + y));
+          cell.classList.toggle('last-move', lastMoveKey === (x + ':' + y));
+          cell.classList.toggle('disabled', gameOver);
         }
       }
     }
@@ -439,6 +461,7 @@
       });
     });
 
+    initBoardUi();
     renderBoard();
     updateActionButtons();
     client.activate();
