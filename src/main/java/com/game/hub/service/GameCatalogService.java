@@ -70,6 +70,23 @@ public class GameCatalogService {
                 )
             ),
             new GameCatalogItem(
+                "minesweeper",
+                "Do min",
+                "Minesweeper",
+                "Game giai do offline co ban voi cac muc de/trung binh/kho. Ho tro cam co, mo o lan dau an toan va tinh trang thai thang/thua tren client.",
+                "bi-asterisk",
+                true,
+                false,
+                true,
+                true,
+                "Mo Minesweeper",
+                "/minesweeper",
+                List.of(
+                    "Them bang diem tot nhat theo muc do.",
+                    "Them tuy chon kich thuoc ban va so min."
+                )
+            ),
+            new GameCatalogItem(
                 "cards",
                 "Danh bai",
                 "Cards",

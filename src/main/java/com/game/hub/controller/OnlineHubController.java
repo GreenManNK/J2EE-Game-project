@@ -1,11 +1,11 @@
 package com.game.hub.controller;
 
-import com.game.hub.cards.tienlen.service.TienLenRoomService;
-import com.game.hub.chess.service.ChessOnlineRoomService;
-import com.game.hub.xiangqi.service.XiangqiOnlineRoomService;
+import com.game.hub.games.cards.tienlen.service.TienLenRoomService;
+import com.game.hub.games.chess.service.ChessOnlineRoomService;
+import com.game.hub.games.xiangqi.service.XiangqiOnlineRoomService;
 import com.game.hub.service.GameCatalogItem;
 import com.game.hub.service.GameCatalogService;
-import com.game.hub.caro.service.GameRoomService;
+import com.game.hub.games.caro.service.GameRoomService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

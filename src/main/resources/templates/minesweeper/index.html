@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Minesweeper')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('minesweeper')}"></div>
+
+<main class="container py-4">
+  <section class="card shadow-sm theme-box mb-3">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-asterisk fs-3 theme-text"></i>
+          <h1 class="h3 mb-0 theme-text">MINESWEEPER</h1>
+        </div>
+        <p class="theme-text mb-0 mt-2">
+          Mo o an toan, danh dau vi tri nghi co min, va hoan thanh ban co nhanh nhat co the.
+        </p>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <span id="msStatusPill" class="badge text-bg-primary fs-6">San sang</span>
+        <span id="msLevelPill" class="badge text-bg-secondary fs-6">De</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card shadow-sm theme-box mb-3">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-12 col-xl-7">
+          <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn theme-outline-btn js-ms-level" data-level="beginner">De</button>
+            <button type="button" class="btn theme-outline-btn js-ms-level" data-level="intermediate">Trung binh</button>
+            <button type="button" class="btn theme-outline-btn js-ms-level" data-level="expert">Kho</button>
+            <button type="button" id="msRestartBtn" class="btn btn-outline-secondary">Choi lai</button>
+            <button type="button" id="msFlagModeBtn" class="btn btn-outline-secondary" aria-pressed="false">
+              Che do dat co: Tat
+            </button>
+          </div>
+        </div>
+        <div class="col-12 col-xl-5">
+          <div class="row g-2 text-center">
+            <div class="col-4">
+              <div class="ms-stat-box">
+                <div class="small text-muted">Min con lai</div>
+                <div id="msMinesLeft" class="fw-bold theme-text">0</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="ms-stat-box">
+                <div class="small text-muted">Thoi gian</div>
+                <div id="msTimer" class="fw-bold theme-text">0s</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="ms-stat-box">
+                <div class="small text-muted">Trang thai</div>
+                <div id="msStatusText" class="fw-bold theme-text">Cho nuoc dau</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="small text-muted mb-0 mt-3">
+        Desktop: click trai de mo o, click phai de cam co. Mobile/tablet: bat "Che do dat co" de dat/go co.
+      </p>
+    </div>
+  </section>
+
+  <section class="card shadow-sm theme-box mb-3">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h2 class="h5 theme-text mb-0">Ban choi</h2>
+        <small id="msBoardMeta" class="text-muted">9 x 9 - 10 min</small>
+      </div>
+      <div class="ms-board-wrap">
+        <div id="msBoard" class="ms-board" role="grid" aria-label="Minesweeper board"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card shadow-sm theme-box">
+    <div class="card-body">
+      <h2 class="h5 theme-text mb-2">Muc tieu</h2>
+      <ul class="mb-0 theme-text">
+        <li>So tren o cho biet co bao nhieu min xung quanh o do.</li>
+        <li>O trong (0) se tu dong mo lan sang vung xung quanh.</li>
+        <li>Ban thang khi mo het o khong co min.</li>
+      </ul>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <a th:href="@{/games/minesweeper}" class="btn theme-outline-btn">Ve trang chi tiet game</a>
+        <a th:href="@{/games}" class="btn theme-outline-btn">Thu vien game</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<style>
+  .ms-stat-box {
+    border: 1px solid var(--border-color, #d0d7de);
+    border-radius: 10px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.45);
+  }
+
+  .ms-board-wrap {
+    overflow: auto;
+    border: 1px solid var(--border-color, #d0d7de);
+    border-radius: 12px;
+    padding: 10px;
+    background:
+      radial-gradient(circle at 10% 10%, rgba(0, 255, 255, 0.08), transparent 55%),
+      radial-gradient(circle at 90% 10%, rgba(255, 255, 0, 0.08), transparent 50%),
+      rgba(255, 255, 255, 0.35);
+  }
+
+  .ms-board {
+    --ms-cols: 9;
+    --ms-cell-size: 30px;
+    display: grid;
+    grid-template-columns: repeat(var(--ms-cols), var(--ms-cell-size));
+    gap: 4px;
+    min-width: min-content;
+  }
+
+  .ms-cell {
+    width: var(--ms-cell-size);
+    height: var(--ms-cell-size);
+    border: 1px solid #7f8c8d;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #f2f7f7, #d9e7e7);
+    color: #102a43;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    user-select: none;
+    touch-action: manipulation;
+  }
+
+  .ms-cell:hover:not(:disabled) {
+    filter: brightness(0.97);
+  }
+
+  .ms-cell.revealed {
+    background: #eef2f6;
+    border-color: #b8c3cc;
+  }
+
+  .ms-cell.mine {
+    background: #ffe3e3;
+    border-color: #e03131;
+    color: #a61e1e;
+  }
+
+  .ms-cell.exploded {
+    background: #ff8787;
+    border-color: #c92a2a;
+    color: #fff;
+  }
+
+  .ms-cell.flagged {
+    color: #c92a2a;
+  }
+
+  .ms-cell.n1 { color: #1971c2; }
+  .ms-cell.n2 { color: #2b8a3e; }
+  .ms-cell.n3 { color: #c92a2a; }
+  .ms-cell.n4 { color: #5f3dc4; }
+  .ms-cell.n5 { color: #a61e4d; }
+  .ms-cell.n6 { color: #0b7285; }
+  .ms-cell.n7 { color: #343a40; }
+  .ms-cell.n8 { color: #495057; }
+
+  @media (max-width: 767.98px) {
+    .ms-board {
+      --ms-cell-size: 26px;
+      gap: 3px;
+    }
+    .ms-cell {
+      font-size: 0.85rem;
+      border-radius: 5px;
+    }
+  }
+</style>
+
+<th:block th:replace="~{fragments :: appScripts('minesweeper')}"></th:block>
+<script th:inline="javascript">
+  window.MinesweeperBoot = {
+    initialLevel: /*[[${initialLevel}]]*/ 'beginner'
+  };
+</script>
+<script>
+  (() => {
+    const LEVELS = {
+      beginner: { rows: 9, cols: 9, mines: 10, label: 'De' },
+      intermediate: { rows: 16, cols: 16, mines: 40, label: 'Trung binh' },
+      expert: { rows: 16, cols: 30, mines: 99, label: 'Kho' }
+    };
+
+    const state = {
+      level: 'beginner',
+      rows: 0,
+      cols: 0,
+      mines: 0,
+      board: [],
+      cellEls: [],
+      firstMove: true,
+      gameOver: false,
+      win: false,
+      revealedSafeCells: 0,
+      flagsPlaced: 0,
+      timerSeconds: 0,
+      timerId: null,
+      flagMode: false
+    };
+
+    const refs = {
+      board: document.getElementById('msBoard'),
+      boardMeta: document.getElementById('msBoardMeta'),
+      minesLeft: document.getElementById('msMinesLeft'),
+      timer: document.getElementById('msTimer'),
+      statusText: document.getElementById('msStatusText'),
+      statusPill: document.getElementById('msStatusPill'),
+      levelPill: document.getElementById('msLevelPill'),
+      restartBtn: document.getElementById('msRestartBtn'),
+      flagModeBtn: document.getElementById('msFlagModeBtn'),
+      levelButtons: Array.from(document.querySelectorAll('.js-ms-level'))
+    };
+
+    function normalizeLevel(level) {
+      return Object.prototype.hasOwnProperty.call(LEVELS, level) ? level : 'beginner';
+    }
+
+    function stopTimer() {
+      if (state.timerId) {
+        clearInterval(state.timerId);
+        state.timerId = null;
+      }
+    }
+
+    function startTimer() {
+      stopTimer();
+      state.timerId = window.setInterval(() => {
+        state.timerSeconds += 1;
+        refs.timer.textContent = state.timerSeconds + 's';
+      }, 1000);
+    }
+
+    function setStatus(text, pillType) {
+      refs.statusText.textContent = text;
+      refs.statusPill.textContent = text;
+      refs.statusPill.classList.remove('text-bg-primary', 'text-bg-success', 'text-bg-danger', 'text-bg-warning', 'text-bg-secondary');
+      refs.statusPill.classList.add(pillType || 'text-bg-primary');
+    }
+
+    function updateLevelButtons() {
+      refs.levelButtons.forEach((btn) => {
+        const active = btn.dataset.level === state.level;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+    }
+
+    function updateFlagModeUi() {
+      refs.flagModeBtn.setAttribute('aria-pressed', state.flagMode ? 'true' : 'false');
+      refs.flagModeBtn.textContent = 'Che do dat co: ' + (state.flagMode ? 'Bat' : 'Tat');
+      refs.flagModeBtn.classList.toggle('btn-outline-secondary', !state.flagMode);
+      refs.flagModeBtn.classList.toggle('btn-warning', state.flagMode);
+    }
+
+    function updateCounters() {
+      refs.minesLeft.textContent = String(state.mines - state.flagsPlaced);
+      refs.timer.textContent = state.timerSeconds + 's';
+      const cfg = LEVELS[state.level];
+      refs.levelPill.textContent = cfg.label;
+      refs.boardMeta.textContent = cfg.rows + ' x ' + cfg.cols + ' - ' + cfg.mines + ' min';
+    }
+
+    function createCell() {
+      return {
+        mine: false,
+        revealed: false,
+        flagged: false,
+        adjacent: 0,
+        exploded: false
+      };
+    }
+
+    function buildEmptyBoard(rows, cols) {
+      return Array.from({ length: rows }, () => Array.from({ length: cols }, () => createCell()));
+    }
+
+    function eachNeighbor(row, col, callback) {
+      for (let dr = -1; dr <= 1; dr += 1) {
+        for (let dc = -1; dc <= 1; dc += 1) {
+          if (dr === 0 && dc === 0) continue;
+          const nr = row + dr;
+          const nc = col + dc;
+          if (nr < 0 || nr >= state.rows || nc < 0 || nc >= state.cols) continue;
+          callback(nr, nc);
+        }
+      }
+    }
+
+    function placeMines(firstRow, firstCol) {
+      const candidates = [];
+      const safeZone = new Set();
+      eachNeighbor(firstRow, firstCol, (nr, nc) => safeZone.add(nr + ',' + nc));
+      safeZone.add(firstRow + ',' + firstCol);
+
+      for (let r = 0; r < state.rows; r += 1) {
+        for (let c = 0; c < state.cols; c += 1) {
+          const key = r + ',' + c;
+          if (!safeZone.has(key)) {
+            candidates.push([r, c]);
+          }
+        }
+      }
+
+      if (candidates.length < state.mines) {
+        candidates.length = 0;
+        for (let r = 0; r < state.rows; r += 1) {
+          for (let c = 0; c < state.cols; c += 1) {
+            if (r === firstRow && c === firstCol) continue;
+            candidates.push([r, c]);
+          }
+        }
+      }
+
+      for (let i = candidates.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = candidates[i];
+        candidates[i] = candidates[j];
+        candidates[j] = tmp;
+      }
+
+      for (let i = 0; i < state.mines; i += 1) {
+        const [r, c] = candidates[i];
+        state.board[r][c].mine = true;
+      }
+
+      for (let r = 0; r < state.rows; r += 1) {
+        for (let c = 0; c < state.cols; c += 1) {
+          if (state.board[r][c].mine) continue;
+          let count = 0;
+          eachNeighbor(r, c, (nr, nc) => {
+            if (state.board[nr][nc].mine) count += 1;
+          });
+          state.board[r][c].adjacent = count;
+        }
+      }
+    }
+
+    function createBoardDom() {
+      refs.board.innerHTML = '';
+      refs.board.style.setProperty('--ms-cols', String(state.cols));
+      state.cellEls = Array.from({ length: state.rows }, () => Array(state.cols));
+
+      const frag = document.createDocumentFragment();
+      for (let r = 0; r < state.rows; r += 1) {
+        for (let c = 0; c < state.cols; c += 1) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'ms-cell';
+          btn.dataset.row = String(r);
+          btn.dataset.col = String(c);
+          btn.setAttribute('role', 'gridcell');
+          btn.setAttribute('aria-label', 'O ' + (r + 1) + ',' + (c + 1));
+          frag.appendChild(btn);
+          state.cellEls[r][c] = btn;
+        }
+      }
+      refs.board.appendChild(frag);
+    }
+
+    function renderCell(row, col) {
+      const cell = state.board[row][col];
+      const el = state.cellEls[row][col];
+      if (!el) return;
+
+      el.className = 'ms-cell';
+      el.textContent = '';
+
+      if (cell.revealed) {
+        el.classList.add('revealed');
+        if (cell.mine) {
+          el.classList.add('mine');
+          el.textContent = '*';
+        } else if (cell.adjacent > 0) {
+          el.textContent = String(cell.adjacent);
+          el.classList.add('n' + cell.adjacent);
+        } else {
+          el.innerHTML = '&nbsp;';
+        }
+      } else if (cell.flagged) {
+        el.classList.add('flagged');
+        el.textContent = 'F';
+      }
+
+      if (cell.exploded) {
+        el.classList.add('exploded');
+        el.textContent = '*';
+      }
+    }
+
+    function renderBoard() {
+      for (let r = 0; r < state.rows; r += 1) {
+        for (let c = 0; c < state.cols; c += 1) {
+          renderCell(r, c);
+        }
+      }
+    }
+
+    function revealConnectedZeros(startRow, startCol) {
+      const queue = [[startRow, startCol]];
+      const seen = new Set();
+
+      while (queue.length > 0) {
+        const [row, col] = queue.shift();
+        const key = row + ',' + col;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        const cell = state.board[row][col];
+        if (cell.revealed || cell.flagged) continue;
+        if (cell.mine) continue;
+
+        cell.revealed = true;
+        state.revealedSafeCells += 1;
+        renderCell(row, col);
+
+        if (cell.adjacent !== 0) {
+          continue;
+        }
+
+        eachNeighbor(row, col, (nr, nc) => {
+          const n = state.board[nr][nc];
+          if (!n.revealed && !n.flagged && !n.mine) {
+            queue.push([nr, nc]);
+          }
+        });
+      }
+    }
+
+    function revealAllMines(explodedRow, explodedCol) {
+      for (let r = 0; r < state.rows; r += 1) {
+        for (let c = 0; c < state.cols; c += 1) {
+          const cell = state.board[r][c];
+          if (cell.mine) {
+            cell.revealed = true;
+            if (r === explodedRow && c === explodedCol) {
+              cell.exploded = true;
+            }
+          }
+        }
+      }
+      renderBoard();
+    }
+
+    function finishGame(win) {
+      state.gameOver = true;
+      state.win = !!win;
+      stopTimer();
+      if (win) {
+        setStatus('Ban thang', 'text-bg-success');
+      } else {
+        setStatus('Ban da thua', 'text-bg-danger');
+      }
+    }
+
+    function checkWin() {
+      const safeCells = state.rows * state.cols - state.mines;
+      if (state.revealedSafeCells >= safeCells) {
+        finishGame(true);
+      }
+    }
+
+    function revealCell(row, col) {
+      if (state.gameOver) return;
+      const cell = state.board[row][col];
+      if (cell.revealed || cell.flagged) return;
+
+      if (state.firstMove) {
+        placeMines(row, col);
+        state.firstMove = false;
+        setStatus('Dang choi', 'text-bg-primary');
+        startTimer();
+      }
+
+      if (cell.mine) {
+        revealAllMines(row, col);
+        finishGame(false);
+        return;
+      }
+
+      revealConnectedZeros(row, col);
+      checkWin();
+    }
+
+    function toggleFlag(row, col) {
+      if (state.gameOver) return;
+      const cell = state.board[row][col];
+      if (cell.revealed) return;
+
+      cell.flagged = !cell.flagged;
+      state.flagsPlaced += cell.flagged ? 1 : -1;
+      renderCell(row, col);
+      updateCounters();
+    }
+
+    function handlePrimaryAction(row, col) {
+      if (state.flagMode) {
+        toggleFlag(row, col);
+      } else {
+        revealCell(row, col);
+      }
+      updateCounters();
+    }
+
+    function resetBoard(level) {
+      const normalizedLevel = normalizeLevel(level);
+      const cfg = LEVELS[normalizedLevel];
+
+      stopTimer();
+
+      state.level = normalizedLevel;
+      state.rows = cfg.rows;
+      state.cols = cfg.cols;
+      state.mines = cfg.mines;
+      state.board = buildEmptyBoard(cfg.rows, cfg.cols);
+      state.cellEls = [];
+      state.firstMove = true;
+      state.gameOver = false;
+      state.win = false;
+      state.revealedSafeCells = 0;
+      state.flagsPlaced = 0;
+      state.timerSeconds = 0;
+
+      createBoardDom();
+      renderBoard();
+      updateCounters();
+      updateLevelButtons();
+      setStatus('San sang', 'text-bg-secondary');
+      refs.statusText.textContent = 'Cho nuoc dau';
+
+      refs.levelPill.textContent = cfg.label;
+      refs.boardMeta.textContent = cfg.rows + ' x ' + cfg.cols + ' - ' + cfg.mines + ' min';
+      refs.timer.textContent = '0s';
+      refs.minesLeft.textContent = String(cfg.mines);
+
+      const url = new URL(window.location.href);
+      url.searchParams.set('level', normalizedLevel);
+      window.history.replaceState(null, '', url.pathname + url.search);
+    }
+
+    function handleBoardClick(event) {
+      const cellBtn = event.target.closest('.ms-cell');
+      if (!cellBtn) return;
+      const row = Number(cellBtn.dataset.row);
+      const col = Number(cellBtn.dataset.col);
+      handlePrimaryAction(row, col);
+    }
+
+    function handleBoardContextMenu(event) {
+      const cellBtn = event.target.closest('.ms-cell');
+      if (!cellBtn) return;
+      event.preventDefault();
+      const row = Number(cellBtn.dataset.row);
+      const col = Number(cellBtn.dataset.col);
+      toggleFlag(row, col);
+    }
+
+    function bindEvents() {
+      refs.board.addEventListener('click', handleBoardClick);
+      refs.board.addEventListener('contextmenu', handleBoardContextMenu);
+
+      refs.restartBtn.addEventListener('click', () => resetBoard(state.level));
+      refs.flagModeBtn.addEventListener('click', () => {
+        state.flagMode = !state.flagMode;
+        updateFlagModeUi();
+      });
+
+      refs.levelButtons.forEach((btn) => {
+        btn.addEventListener('click', () => resetBoard(btn.dataset.level || 'beginner'));
+      });
+    }
+
+    function boot() {
+      bindEvents();
+      state.flagMode = false;
+      updateFlagModeUi();
+      const initialLevel = normalizeLevel((window.MinesweeperBoot && window.MinesweeperBoot.initialLevel) || 'beginner');
+      resetBoard(initialLevel);
+    }
+
+    boot();
+  })();
+</script>
+</body>
+</html>

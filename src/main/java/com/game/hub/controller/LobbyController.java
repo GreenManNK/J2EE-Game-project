@@ -1,6 +1,6 @@
 package com.game.hub.controller;
 
-import com.game.hub.caro.service.GameRoomService;
+import com.game.hub.games.caro.service.GameRoomService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

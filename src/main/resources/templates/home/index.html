@@ -24,6 +24,9 @@
     <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="cards" data-game-name="Danh bai">
       <i class="bi bi-suit-spade-fill me-2"></i>Danh bai
     </button>
+    <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="minesweeper" data-game-name="Minesweeper">
+      <i class="bi bi-asterisk me-2"></i>Minesweeper
+    </button>
   </div>
 
   <div class="mb-3">
@@ -86,7 +89,7 @@
 
 <style>
   .home-main-actions {
-    max-width: 920px;
+    max-width: 1120px;
     margin-left: auto;
     margin-right: auto;
   }
@@ -149,6 +152,9 @@
       },
       cards: {
         detailHref: '/games/cards'
+      },
+      minesweeper: {
+        detailHref: '/games/minesweeper'
       }
     };
 

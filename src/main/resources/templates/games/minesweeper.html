@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Do min - Chon che do')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-minesweeper')}"></div>
+
+<main class="container py-4">
+  <section class="card shadow-sm theme-box mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-asterisk fs-3 theme-text"></i>
+            <h1 class="h3 mb-0 theme-text">MINESWEEPER (DO MIN)</h1>
+          </div>
+          <p class="theme-text mb-0 mt-2">
+            Game offline giai do co dien. Mo cac o an toan, cam co o nghi co min, va hoan thanh ban co ma khong kich no.
+          </p>
+        </div>
+        <span class="badge text-bg-success fs-6">Offline san sang</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="row g-3">
+    <div class="col-12 col-xl-6">
+      <section class="card shadow-sm theme-box h-100">
+        <div class="card-body d-flex flex-column">
+          <h2 class="h5 theme-text mb-2">Choi ngay</h2>
+          <p class="theme-text small mb-3">
+            Ho tro 3 muc do co ban (de/trung binh/kho), mo o lan dau an toan, cam co va tu dong mo vung rong khi gap o trong.
+          </p>
+          <div class="d-grid gap-2 mt-auto">
+            <a th:href="@{/minesweeper(level='beginner')}" class="btn theme-outline-btn btn-lg">Bat dau - De (9x9 / 10 min)</a>
+            <a th:href="@{/minesweeper(level='intermediate')}" class="btn btn-outline-secondary">Trung binh (16x16 / 40 min)</a>
+            <a th:href="@{/minesweeper(level='expert')}" class="btn btn-outline-secondary">Kho (16x30 / 99 min)</a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-12 col-xl-6">
+      <section class="card shadow-sm theme-box h-100">
+        <div class="card-body d-flex flex-column">
+          <h2 class="h5 theme-text mb-2">Cach choi nhanh</h2>
+          <ul class="theme-text small mb-3">
+            <li>Click trai de mo o.</li>
+            <li>Click phai de cam co (desktop).</li>
+            <li>Mobile/tablet dung nut "Che do dat co" de chuyen thao tac.</li>
+            <li>Thang khi mo het o khong co min.</li>
+          </ul>
+          <div class="d-flex flex-wrap gap-2 mt-auto">
+            <a th:href="@{/}" class="btn theme-outline-btn">Ve trang chu</a>
+            <a th:href="@{/games}" class="btn theme-outline-btn">Thu vien game</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card shadow-sm theme-box mt-3">
+    <div class="card-body">
+      <h2 class="h5 theme-text mb-2">Ghi chu</h2>
+      <ul class="mb-0 theme-text">
+        <li>Minesweeper hien tai la game offline client-side, khong can dang nhap.</li>
+        <li>Co the doi muc do ngay trong trang choi ma khong can quay lai.</li>
+        <li>Da duoc dua vao Game Hub de truy cap thong nhat tu Trang chu va Thu vien game.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-minesweeper')}"></th:block>
+</body>
+</html>

@@ -41,6 +41,7 @@ class GameCatalogControllerTest {
         assertEquals("games/caro", controller.detail("caro", new ConcurrentModel()));
         assertEquals("games/chess", controller.detail("chess", new ConcurrentModel()));
         assertEquals("games/xiangqi", controller.detail("xiangqi", new ConcurrentModel()));
+        assertEquals("games/minesweeper", controller.detail("minesweeper", new ConcurrentModel()));
         assertEquals("games/cards", controller.detail("cards", new ConcurrentModel()));
     }
 }

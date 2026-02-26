@@ -12,16 +12,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class GameCatalogServiceTest {
 
     @Test
-    void shouldExposeCaroAndThreeAdditionalGames() {
+    void shouldExposeCaroAndFourAdditionalGames() {
         GameCatalogService service = new GameCatalogService();
 
         var games = service.findAll();
         Set<String> codes = games.stream().map(GameCatalogItem::code).collect(Collectors.toSet());
 
-        assertEquals(4, games.size());
+        assertEquals(5, games.size());
         assertTrue(codes.contains("caro"));
         assertTrue(codes.contains("chess"));
         assertTrue(codes.contains("xiangqi"));
+        assertTrue(codes.contains("minesweeper"));
         assertTrue(codes.contains("cards"));
         assertTrue(service.findByCode("CARO").isPresent());
         var chess = service.findByCode("chess").orElseThrow();
@@ -41,5 +42,12 @@ class GameCatalogServiceTest {
         assertTrue(xiangqi.supportsOffline());
         assertTrue(xiangqi.supportsOnline());
         assertEquals("/online-hub?game=xiangqi", xiangqi.primaryActionUrl());
+
+        var minesweeper = service.findByCode("minesweeper").orElseThrow();
+        assertTrue(minesweeper.availableNow());
+        assertTrue(minesweeper.supportsOffline());
+        assertTrue(minesweeper.supportsGuest());
+        assertEquals(false, minesweeper.supportsOnline());
+        assertEquals("/minesweeper", minesweeper.primaryActionUrl());
     }
 }

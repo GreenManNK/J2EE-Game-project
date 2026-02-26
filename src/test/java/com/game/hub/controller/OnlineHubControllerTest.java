@@ -1,10 +1,10 @@
 package com.game.hub.controller;
 
-import com.game.hub.cards.tienlen.service.TienLenRoomService;
-import com.game.hub.chess.service.ChessOnlineRoomService;
-import com.game.hub.xiangqi.service.XiangqiOnlineRoomService;
+import com.game.hub.games.cards.tienlen.service.TienLenRoomService;
+import com.game.hub.games.chess.service.ChessOnlineRoomService;
+import com.game.hub.games.xiangqi.service.XiangqiOnlineRoomService;
 import com.game.hub.service.GameCatalogService;
-import com.game.hub.caro.service.GameRoomService;
+import com.game.hub.games.caro.service.GameRoomService;
 import org.junit.jupiter.api.Test;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.web.server.ResponseStatusException;
