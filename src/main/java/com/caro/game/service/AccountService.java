@@ -193,6 +193,9 @@ public class AccountService {
     public ServiceResult changePassword(String userId, String currentPassword, String newPassword) {
         UserAccount user = userAccountRepository.findById(userId).orElse(null);
         if (user == null) return ServiceResult.error("User not found");
+        if (currentPassword == null || currentPassword.isBlank() || newPassword == null || newPassword.isBlank()) {
+            return ServiceResult.error("Current password and new password are required");
+        }
 
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             return ServiceResult.error("Current password incorrect");
@@ -252,6 +255,9 @@ public class AccountService {
     }
 
     public ServiceResult resetPassword(String userId, String code, String newPassword, String confirmPassword) {
+        if (newPassword == null || newPassword.isBlank() || confirmPassword == null || confirmPassword.isBlank()) {
+            return ServiceResult.error("New password and confirmation are required");
+        }
         if (!newPassword.equals(confirmPassword)) {
             return ServiceResult.error("Password confirmation does not match");
         }

@@ -52,6 +52,37 @@ class ChessOnlineRoomServiceTest {
     }
 
     @Test
+    void moveShouldRejectIllegalPieceMovement() {
+        ChessOnlineRoomService service = new ChessOnlineRoomService();
+        service.joinRoom("CHESS-ILLEGAL", "whiteUser", "W", "");
+        service.joinRoom("CHESS-ILLEGAL", "blackUser", "B", "");
+
+        ChessOnlineRoomService.ActionResult result = service.move("CHESS-ILLEGAL", "whiteUser", 7, 0, 5, 1, null);
+
+        assertFalse(result.ok());
+        assertEquals("Illegal move", result.error());
+    }
+
+    @Test
+    void foolsMateShouldMarkGameOver() {
+        ChessOnlineRoomService service = new ChessOnlineRoomService();
+        service.joinRoom("CHESS-MATE", "whiteUser", "White", "");
+        service.joinRoom("CHESS-MATE", "blackUser", "Black", "");
+
+        assertTrue(service.move("CHESS-MATE", "whiteUser", 6, 5, 5, 5, null).ok()); // f2-f3
+        assertTrue(service.move("CHESS-MATE", "blackUser", 1, 4, 3, 4, null).ok()); // e7-e5
+        assertTrue(service.move("CHESS-MATE", "whiteUser", 6, 6, 4, 6, null).ok()); // g2-g4
+
+        ChessOnlineRoomService.ActionResult mate = service.move("CHESS-MATE", "blackUser", 0, 3, 4, 7, null); // Qd8-h4#
+
+        assertTrue(mate.ok());
+        assertNotNull(mate.room());
+        assertEquals("GAME_OVER", mate.room().status());
+        assertNull(mate.room().currentTurnUserId());
+        assertTrue(mate.room().statusMessage().contains("Chieu het"));
+    }
+
+    @Test
     void leaveRoomShouldKeepRoomWaitingForNewOpponent() {
         ChessOnlineRoomService service = new ChessOnlineRoomService();
         service.joinRoom("CHESS-3", "u2", "U2", "");

@@ -46,7 +46,10 @@ public class GameRoomService {
             return new JoinResult(false, null, "Room is full", currentTurn.get(roomId), players.size());
         }
 
-        String symbol = players.isEmpty() ? "X" : "O";
+        String symbol = nextAvailableSymbol(players);
+        if (symbol == null) {
+            return new JoinResult(false, null, "Room is full", currentTurn.get(roomId), players.size());
+        }
         players.put(userId, symbol);
 
         boards.computeIfAbsent(roomId, k -> new String[BOARD_SIZE][BOARD_SIZE]);
@@ -184,8 +187,9 @@ public class GameRoomService {
             return;
         }
 
-        String next = players.keySet().iterator().next();
-        currentTurn.put(roomId, next);
+        // Keep the room waiting for a fresh round when the next player joins.
+        boards.put(roomId, new String[BOARD_SIZE][BOARD_SIZE]);
+        currentTurn.remove(roomId);
     }
 
     public synchronized List<String> availableRooms() {
@@ -334,6 +338,17 @@ public class GameRoomService {
 
     private boolean inside(int x, int y) {
         return x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE;
+    }
+
+    private String nextAvailableSymbol(Map<String, String> players) {
+        if (players == null || players.isEmpty()) {
+            return "X";
+        }
+        boolean hasX = players.values().stream().anyMatch("X"::equals);
+        boolean hasO = players.values().stream().anyMatch("O"::equals);
+        if (!hasX) return "X";
+        if (!hasO) return "O";
+        return null;
     }
 
     public record JoinResult(boolean ok, String symbol, String error, String currentTurnUserId, int playerCount) {

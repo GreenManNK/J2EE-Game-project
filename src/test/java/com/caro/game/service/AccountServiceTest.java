@@ -117,4 +117,28 @@ class AccountServiceTest {
         assertNull(missingData.get("userId"));
         assertNull(existingData.get("userId"));
     }
+
+    @Test
+    void changePasswordShouldRejectBlankNewPassword() {
+        UserAccount user = new UserAccount();
+        user.setEmail("change-pass@test.com");
+        user.setUsername("change-pass@test.com");
+        user.setDisplayName("Change Pass");
+        user.setPassword(passwordEncoder.encode("OldPass@123"));
+        user.setEmailConfirmed(true);
+        userAccountRepository.save(user);
+
+        AccountService.ServiceResult result = accountService.changePassword(user.getId(), "OldPass@123", "   ");
+
+        assertFalse(result.success());
+        assertEquals("Current password and new password are required", result.error());
+    }
+
+    @Test
+    void resetPasswordShouldRejectMissingNewPasswordWithoutThrowing() {
+        AccountService.ServiceResult result = accountService.resetPassword("user-id", "123456", null, "new-pass");
+
+        assertFalse(result.success());
+        assertEquals("New password and confirmation are required", result.error());
+    }
 }

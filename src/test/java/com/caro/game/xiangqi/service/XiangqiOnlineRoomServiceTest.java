@@ -2,6 +2,10 @@ package com.caro.game.xiangqi.service;
 
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -52,6 +56,34 @@ class XiangqiOnlineRoomServiceTest {
     }
 
     @Test
+    void moveShouldRejectIllegalPieceMovement() {
+        XiangqiOnlineRoomService service = new XiangqiOnlineRoomService();
+        service.joinRoom("XQ-ILLEGAL", "redUser", "R", "");
+        service.joinRoom("XQ-ILLEGAL", "blackUser", "B", "");
+
+        XiangqiOnlineRoomService.ActionResult result = service.move("XQ-ILLEGAL", "redUser", 9, 0, 8, 1, null);
+
+        assertFalse(result.ok());
+        assertEquals("Illegal move", result.error());
+    }
+
+    @Test
+    void flyingGeneralCaptureShouldMarkGameOver() {
+        XiangqiOnlineRoomService service = new XiangqiOnlineRoomService();
+        service.joinRoom("XQ-MATE", "redUser", "Red", "");
+        service.joinRoom("XQ-MATE", "blackUser", "Black", "");
+        forceMinimalFlyingGeneralBoard(service, "XQ-MATE", "blackUser");
+
+        XiangqiOnlineRoomService.ActionResult win = service.move("XQ-MATE", "blackUser", 0, 4, 9, 4, null); // flying general capture
+
+        assertTrue(win.ok());
+        assertNotNull(win.room());
+        assertEquals("GAME_OVER", win.room().status());
+        assertNull(win.room().currentTurnUserId());
+        assertTrue(win.room().statusMessage().contains("an Tuong"));
+    }
+
+    @Test
     void leaveRoomShouldKeepRoomWaitingForNewOpponent() {
         XiangqiOnlineRoomService service = new XiangqiOnlineRoomService();
         service.joinRoom("XQ-3", "u2", "U2", "");
@@ -88,5 +120,57 @@ class XiangqiOnlineRoomServiceTest {
         XiangqiOnlineRoomService.ActionResult moveAfterSurrender = service.move("XQ-4", "blackUser", 0, 0, 1, 0, null);
         assertFalse(moveAfterSurrender.ok());
         assertEquals("Game already ended", moveAfterSurrender.error());
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void forceMinimalFlyingGeneralBoard(XiangqiOnlineRoomService service,
+                                                       String roomId,
+                                                       String currentTurnUserId) {
+        try {
+            Field roomsField = XiangqiOnlineRoomService.class.getDeclaredField("rooms");
+            roomsField.setAccessible(true);
+            Map rooms = (Map) roomsField.get(service);
+            Object roomState = rooms.get(roomId);
+            if (roomState == null) {
+                throw new IllegalStateException("Room not found: " + roomId);
+            }
+
+            String[][] board = new String[10][9];
+            board[0][4] = "bG";
+            board[9][4] = "rG";
+
+            Field boardField = roomState.getClass().getDeclaredField("board");
+            boardField.setAccessible(true);
+            boardField.set(roomState, board);
+
+            Field statusField = roomState.getClass().getDeclaredField("status");
+            statusField.setAccessible(true);
+            statusField.set(roomState, "PLAYING");
+
+            Field statusMessageField = roomState.getClass().getDeclaredField("statusMessage");
+            statusMessageField.setAccessible(true);
+            statusMessageField.set(roomState, "Test setup");
+
+            Field currentTurnUserIdField = roomState.getClass().getDeclaredField("currentTurnUserId");
+            currentTurnUserIdField.setAccessible(true);
+            currentTurnUserIdField.set(roomState, currentTurnUserId);
+
+            Field currentTurnColorField = roomState.getClass().getDeclaredField("currentTurnColor");
+            currentTurnColorField.setAccessible(true);
+            currentTurnColorField.set(roomState, "b");
+
+            Field moveHistoryField = roomState.getClass().getDeclaredField("moveHistory");
+            moveHistoryField.setAccessible(true);
+            Object moveHistory = moveHistoryField.get(roomState);
+            if (moveHistory instanceof List<?> list) {
+                ((List) list).clear();
+            }
+
+            Field lastMoveField = roomState.getClass().getDeclaredField("lastMove");
+            lastMoveField.setAccessible(true);
+            lastMoveField.set(roomState, null);
+        } catch (ReflectiveOperationException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

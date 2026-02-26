@@ -124,6 +124,9 @@ public class ChessOnlineRoomService {
         if (target != null && !target.isBlank() && target.startsWith(player.color)) {
             return ActionResult.error("Cannot capture your own piece");
         }
+        if (!ChessMoveRules.isLegalMove(board, fromRow, fromCol, toRow, toCol, player.color)) {
+            return ActionResult.error("Illegal move");
+        }
 
         String movedPiece = piece;
         String requestedPromotion = normalizePromotion(promotion);
@@ -142,9 +145,35 @@ public class ChessOnlineRoomService {
         room.currentTurnColor = nextColor;
         room.currentTurnUserId = userIdForColor(room, nextColor);
         room.status = STATUS_PLAYING;
+
+        String winnerColor = player.color;
+        if (!ChessMoveRules.hasKing(board, nextColor)) {
+            room.status = STATUS_GAME_OVER;
+            room.currentTurnUserId = null;
+            room.currentTurnColor = winnerColor;
+            room.statusMessage = colorLabel(winnerColor) + " da an Vua va chien thang!";
+            return ActionResult.ok("MOVE", snapshotOf(room));
+        }
+
+        boolean opponentInCheck = ChessMoveRules.isKingInCheck(board, nextColor);
+        boolean opponentHasMove = ChessMoveRules.hasAnyLegalMove(board, nextColor);
+        if (!opponentHasMove && opponentInCheck) {
+            room.status = STATUS_GAME_OVER;
+            room.currentTurnUserId = null;
+            room.currentTurnColor = winnerColor;
+            room.statusMessage = "Chieu het. " + colorLabel(winnerColor) + " thang.";
+            return ActionResult.ok("MOVE", snapshotOf(room));
+        }
+        if (!opponentHasMove) {
+            room.status = STATUS_GAME_OVER;
+            room.currentTurnUserId = null;
+            room.statusMessage = "Hoa co (stalemate)";
+            return ActionResult.ok("MOVE", snapshotOf(room));
+        }
+
         room.statusMessage = room.currentTurnUserId == null
             ? "Dang cho doi thu ket noi lai"
-            : "Nuoc di hop le";
+            : (opponentInCheck ? (colorLabel(nextColor) + " dang bi chieu!") : "Nuoc di hop le");
 
         return ActionResult.ok("MOVE", snapshotOf(room));
     }
@@ -385,6 +414,10 @@ public class ChessOnlineRoomService {
             case 'P' -> "Tot";
             default -> "Quan";
         };
+    }
+
+    private String colorLabel(String color) {
+        return "b".equalsIgnoreCase(color) ? "Den" : "Trang";
     }
 
     private String displayNameOf(PlayerSeatState player) {

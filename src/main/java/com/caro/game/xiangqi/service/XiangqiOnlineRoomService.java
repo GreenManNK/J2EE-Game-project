@@ -125,6 +125,9 @@ public class XiangqiOnlineRoomService {
         if (target != null && !target.isBlank() && target.startsWith(player.color)) {
             return ActionResult.error("Cannot capture your own piece");
         }
+        if (!XiangqiMoveRules.isLegalMove(board, fromRow, fromCol, toRow, toCol, player.color)) {
+            return ActionResult.error("Illegal move");
+        }
 
         String movedPiece = piece;
 
@@ -139,9 +142,35 @@ public class XiangqiOnlineRoomService {
         room.currentTurnColor = nextColor;
         room.currentTurnUserId = userIdForColor(room, nextColor);
         room.status = STATUS_PLAYING;
+
+        String winnerColor = player.color;
+        if (!XiangqiMoveRules.hasGeneral(board, nextColor)) {
+            room.status = STATUS_GAME_OVER;
+            room.currentTurnUserId = null;
+            room.currentTurnColor = winnerColor;
+            room.statusMessage = colorLabel(winnerColor) + " da an Tuong va chien thang!";
+            return ActionResult.ok("MOVE", snapshotOf(room));
+        }
+
+        boolean opponentInCheck = XiangqiMoveRules.isGeneralInCheck(board, nextColor);
+        boolean opponentHasMove = XiangqiMoveRules.hasAnyLegalMove(board, nextColor);
+        if (!opponentHasMove && opponentInCheck) {
+            room.status = STATUS_GAME_OVER;
+            room.currentTurnUserId = null;
+            room.currentTurnColor = winnerColor;
+            room.statusMessage = "Chieu bi! " + colorLabel(winnerColor) + " thang.";
+            return ActionResult.ok("MOVE", snapshotOf(room));
+        }
+        if (!opponentHasMove) {
+            room.status = STATUS_GAME_OVER;
+            room.currentTurnUserId = null;
+            room.statusMessage = "Het nuoc di hop le - hoa.";
+            return ActionResult.ok("MOVE", snapshotOf(room));
+        }
+
         room.statusMessage = room.currentTurnUserId == null
             ? "Dang cho doi thu ket noi lai"
-            : "Nuoc di hop le";
+            : (opponentInCheck ? (colorLabel(nextColor) + " dang bi chieu!") : "Nuoc di hop le");
 
         return ActionResult.ok("MOVE", snapshotOf(room));
     }
@@ -363,6 +392,10 @@ public class XiangqiOnlineRoomService {
             case 'P' -> "Tot";
             default -> "Quan";
         };
+    }
+
+    private String colorLabel(String color) {
+        return "b".equalsIgnoreCase(color) ? "Den" : "Do";
     }
 
     private String displayNameOf(PlayerSeatState player) {
