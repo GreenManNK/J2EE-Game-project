@@ -4,22 +4,43 @@
 <body>
 <div th:replace="~{fragments :: appShell('chat-bot')}"></div>
 
-<div class="container py-4 theme-text">
-  <h1 class="h3 mb-3 theme-text">Chat Bot</h1>
+<main class="gx-page-shell gx-page-shell--compact theme-text">
+  <section class="gx-page-hero theme-box">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-robot"></i>
+          <span>Assistant / Chat Bot</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Chat Bot</h1>
+        <p class="gx-page-subtitle">Hoi dap nhanh trong game hub. Su dung o day de test cau hoi va luong UI chat co ban.</p>
+      </div>
+    </div>
+  </section>
 
-  <div class="theme-box rounded p-3 mb-3">
+  <section class="theme-box rounded p-3 gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Dat cau hoi</h2>
+      <div class="gx-section-card__meta">Nhap noi dung va gui den bot</div>
+    </div>
     <form id="chatForm" class="d-flex flex-wrap gap-2">
       <input id="message" class="form-control flex-grow-1" placeholder="Nhap cau hoi..." required>
       <button class="btn btn-primary" type="submit">Send</button>
     </form>
-  </div>
+  </section>
 
-  <div class="theme-box rounded p-3 mb-3">
+  <section class="theme-box rounded p-3 gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Phan hoi</h2>
+      <div class="gx-section-card__meta">Trang thai request / response</div>
+    </div>
     <div id="out" class="mb-0 small theme-text" role="status" aria-live="polite"></div>
-  </div>
+  </section>
 
-  <a class="btn theme-outline-btn" th:href="@{/}">Home</a>
-</div>
+  <div class="gx-inline-actions">
+    <a class="btn theme-outline-btn" th:href="@{/}">Home</a>
+  </div>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('chat-bot')}"></th:block>
 <script th:src="@{/js/chat-bot.js}"></script>

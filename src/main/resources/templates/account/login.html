@@ -4,31 +4,49 @@
 <body>
 <div th:replace="~{fragments :: appShell('account-login')}"></div>
 
-<div class="card theme-box mx-auto mt-5" style="max-width: 450px;">
-  <div class="card-header">
-    <h4 class="mb-0 theme-text">Dang nhap</h4>
+<main class="auth-shell">
+  <div class="auth-shell__grid">
+    <div class="card theme-box mx-auto mt-5 w-100 auth-card-sm">
+      <div class="card-header">
+        <h4 class="mb-0 theme-text">Dang nhap</h4>
+      </div>
+      <div class="card-body theme-text">
+        <form id="loginForm">
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input id="email" class="form-control" type="email" placeholder="Nhap email" required>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Mat khau</label>
+            <div class="input-group">
+              <input id="password" class="form-control" type="password" placeholder="Nhap mat khau" required>
+              <button class="btn btn-outline-secondary" id="togglePasswordBtn" type="button">👁</button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Dang nhap</button>
+          <div class="text-center mt-2">
+            <a th:href="@{/account/reset-page}" class="btn btn-link">Quen mat khau?</a>
+          </div>
+        </form>
+        <div id="out" class="small mt-3" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <aside class="theme-box auth-side-panel">
+      <div class="home-dashboard__eyebrow">
+        <i class="bi bi-shield-check"></i>
+        <span>Account Access</span>
+      </div>
+      <h2 class="theme-text mt-2">Dang nhap de mo tinh nang day du</h2>
+      <p>Dong bo profile, lich su dau, bang xep hang va he thong ban be/chat rieng.</p>
+      <ul class="auth-side-list">
+        <li><strong>Quick access</strong>Vao nhanh cac mode choi va lobby online.</li>
+        <li><strong>Social layer</strong>Quan ly ban be, thong bao va chat rieng.</li>
+        <li><strong>Progress</strong>Luu diem, rank va thanh tich.</li>
+      </ul>
+    </aside>
   </div>
-  <div class="card-body theme-text">
-    <form id="loginForm">
-      <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input id="email" class="form-control" type="email" placeholder="Nhap email" required>
-      </div>
-      <div class="mb-3">
-        <label for="password" class="form-label">Mat khau</label>
-        <div class="input-group">
-          <input id="password" class="form-control" type="password" placeholder="Nhap mat khau" required>
-          <button class="btn btn-outline-secondary" id="togglePasswordBtn" type="button">👁</button>
-        </div>
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Dang nhap</button>
-      <div class="text-center mt-2">
-        <a th:href="@{/account/reset-page}" class="btn btn-link">Quen mat khau?</a>
-      </div>
-    </form>
-    <div id="out" class="small mt-3" role="status" aria-live="polite"></div>
-  </div>
-</div>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('account-login')}"></th:block>
 <script th:src="@{/js/account-login.js}"></script>

@@ -4,31 +4,46 @@
 <body>
 <div th:replace="~{fragments :: appShell('friendship-index')}"></div>
 
-<div class="container py-4 theme-text" id="friendshipRoot" th:attr="data-current-user-id=${currentUserId}">
-  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h1 class="h3 mb-0 theme-text">Friendship</h1>
-    <a class="btn theme-outline-btn" th:href="@{/friendship/notifications(currentUserId=${currentUserId})}">Notifications</a>
-  </div>
+<main class="gx-page-shell theme-text" id="friendshipRoot" th:attr="data-current-user-id=${currentUserId}">
+  <section class="gx-page-hero theme-box">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-people-fill"></i>
+          <span>Social / Friendship</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Friendship</h1>
+        <p class="gx-page-subtitle">Quan ly ban be, loi moi ket ban va thao tac chat rieng tu mot trang tong hop.</p>
+      </div>
+      <div class="gx-inline-actions">
+        <span class="gx-page-badge"><i class="bi bi-person-circle"></i><span th:text="${currentUserId}">user</span></span>
+        <a class="btn theme-outline-btn" th:href="@{/friendship/notifications(currentUserId=${currentUserId})}">Notifications</a>
+      </div>
+    </div>
 
-  <div class="theme-box rounded p-3 mb-3">
-    <p class="mb-3">Current user: <strong th:text="${currentUserId}"></strong></p>
-    <form id="sendByEmailForm" class="row g-2 align-items-end">
-      <div class="col-md-8">
-        <label class="form-label" for="email">Friend email</label>
-        <input id="email" class="form-control" placeholder="friend email">
+    <div class="gx-section-card theme-box">
+      <div class="gx-section-card__head">
+        <h2 class="gx-section-card__title theme-text mb-0">Gui loi moi bang email</h2>
+        <div class="gx-section-card__meta">Tim va them ban nhanh</div>
       </div>
-      <div class="col-md-4">
-        <button type="submit" class="btn btn-primary w-100">Send Request</button>
-      </div>
-    </form>
-    <div id="out" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
-  </div>
+      <form id="sendByEmailForm" class="row g-2 align-items-end">
+        <div class="col-md-8">
+          <label class="form-label" for="email">Friend email</label>
+          <input id="email" class="form-control" placeholder="friend email">
+        </div>
+        <div class="col-md-4">
+          <button type="submit" class="btn btn-primary w-100">Send Request</button>
+        </div>
+      </form>
+      <div id="out" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
+    </div>
+  </section>
 
   <div class="row g-3">
     <div class="col-lg-4">
-      <div class="theme-box rounded p-3 h-100">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
         <h2 class="h5 theme-text">Friends</h2>
-        <ul class="list-group" id="friendsList">
+        <ul class="list-group list-group-flush" id="friendsList">
           <li class="list-group-item text-muted small" th:if="${#lists.isEmpty(friendViews)}">Chua co ban be.</li>
           <li class="list-group-item"
               th:each="f : ${friendViews}"
@@ -64,9 +79,9 @@
       </div>
     </div>
     <div class="col-lg-4">
-      <div class="theme-box rounded p-3 h-100">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
         <h2 class="h5 theme-text">Pending Requests</h2>
-        <ul class="list-group" id="pendingRequestsList">
+        <ul class="list-group list-group-flush" id="pendingRequestsList">
           <li class="list-group-item text-muted small" th:if="${#lists.isEmpty(pendingRequestViews)}">Khong co loi moi dang cho.</li>
           <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2"
               th:each="p : ${pendingRequestViews}"
@@ -93,9 +108,9 @@
       </div>
     </div>
     <div class="col-lg-4">
-      <div class="theme-box rounded p-3 h-100">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
         <h2 class="h5 theme-text">Sent Requests</h2>
-        <ul class="list-group" id="sentRequestsList">
+        <ul class="list-group list-group-flush" id="sentRequestsList">
           <li class="list-group-item text-muted small" th:if="${#lists.isEmpty(sentRequestViews)}">Khong co loi moi da gui.</li>
           <li class="list-group-item"
               th:each="s : ${sentRequestViews}"
@@ -127,7 +142,7 @@
   <div class="mt-3">
     <a class="btn theme-outline-btn" th:href="@{/}">Home</a>
   </div>
-</div>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('friendship-index')}"></th:block>
 <script th:src="@{/js/friendship-index.js}"></script>

@@ -4,35 +4,53 @@
 <body>
 <div th:replace="~{fragments :: appShell('account-register')}"></div>
 
-<div class="card theme-box mx-auto mt-5" style="max-width: 450px;">
-  <div class="card-header">
-    <h4 class="mb-0 theme-text">Dang ky tai khoan</h4>
-  </div>
-  <div class="card-body theme-text">
-    <form id="regForm">
-      <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input id="email" class="form-control" type="email" placeholder="Nhap email" required>
+<main class="auth-shell">
+  <div class="auth-shell__grid">
+    <div class="card theme-box mx-auto mt-5 w-100 auth-card-sm">
+      <div class="card-header">
+        <h4 class="mb-0 theme-text">Dang ky tai khoan</h4>
       </div>
-      <div class="mb-3">
-        <label for="password" class="form-label">Mat khau</label>
-        <div class="input-group">
-          <input id="password" class="form-control" type="password" placeholder="Tao mat khau" required>
-          <button class="btn btn-outline-secondary" id="toggleRegPasswordBtn" type="button">👁</button>
+      <div class="card-body theme-text">
+        <form id="regForm">
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input id="email" class="form-control" type="email" placeholder="Nhap email" required>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Mat khau</label>
+            <div class="input-group">
+              <input id="password" class="form-control" type="password" placeholder="Tao mat khau" required>
+              <button class="btn btn-outline-secondary" id="toggleRegPasswordBtn" type="button">👁</button>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="displayName" class="form-label">Ten hien thi</label>
+            <input id="displayName" class="form-control" placeholder="Ten hien thi" required>
+          </div>
+          <button type="submit" class="btn btn-success w-100">Gui ma xac thuc</button>
+        </form>
+        <div class="text-center mt-2">
+          <a th:href="@{/account/verify-email-page}" class="btn btn-link">Da co ma? Xac thuc email</a>
         </div>
+        <div id="out" class="small mt-3" role="status" aria-live="polite"></div>
       </div>
-      <div class="mb-3">
-        <label for="displayName" class="form-label">Ten hien thi</label>
-        <input id="displayName" class="form-control" placeholder="Ten hien thi" required>
-      </div>
-      <button type="submit" class="btn btn-success w-100">Gui ma xac thuc</button>
-    </form>
-    <div class="text-center mt-2">
-      <a th:href="@{/account/verify-email-page}" class="btn btn-link">Da co ma? Xac thuc email</a>
     </div>
-    <div id="out" class="small mt-3" role="status" aria-live="polite"></div>
+
+    <aside class="theme-box auth-side-panel">
+      <div class="home-dashboard__eyebrow">
+        <i class="bi bi-person-plus"></i>
+        <span>New Account</span>
+      </div>
+      <h2 class="theme-text mt-2">Tao tai khoan moi</h2>
+      <p>Dang ky bang email va xac thuc de mo khoa day du cac tinh nang cua Game Hub.</p>
+      <ul class="auth-side-list">
+        <li><strong>Buoc 1</strong>Nhap email, mat khau va ten hien thi.</li>
+        <li><strong>Buoc 2</strong>Nhan ma xac thuc email.</li>
+        <li><strong>Buoc 3</strong>Hoan tat xac thuc va dang nhap.</li>
+      </ul>
+    </aside>
   </div>
-</div>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('account-register')}"></th:block>
 <script th:src="@{/js/account-register.js}"></script>

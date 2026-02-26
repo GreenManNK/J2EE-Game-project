@@ -4,15 +4,29 @@
 <body>
 <div th:replace="~{fragments :: appShell('admin-users')}"></div>
 
-<div class="container-fluid py-4 theme-text">
-  <div class="theme-box rounded p-3 mb-3">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-      <h1 class="h3 mb-0 theme-text">Admin - Users</h1>
-      <a class="btn theme-outline-btn" th:href="@{/admin/export-users-csv}">Export CSV</a>
+<main class="gx-page-shell theme-text">
+  <section class="gx-page-hero theme-box">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-shield-lock"></i>
+          <span>Admin / User Management</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Admin - Users</h1>
+        <p class="gx-page-subtitle">Quan ly danh sach user, loc theo trang thai, tao moi tai khoan va dieu huong den trang chi tiet.</p>
+      </div>
+      <div class="gx-inline-actions">
+        <span class="gx-page-badge"><i class="bi bi-people-fill"></i><span th:text="${totalItems} + ' users'">0 users</span></span>
+        <a class="btn theme-outline-btn" th:href="@{/admin/export-users-csv}">Export CSV</a>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <form method="get" th:action="@{/admin/users}" class="theme-box rounded p-3 mb-3">
+  <form method="get" th:action="@{/admin/users}" class="theme-box rounded p-3 mb-3 gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Filter users</h2>
+      <div class="gx-section-card__meta">Loc nhanh theo ten / trang thai ban</div>
+    </div>
     <div class="row g-2 align-items-end">
       <div class="col-md-5">
         <label class="form-label" for="searchTerm">Search</label>
@@ -36,8 +50,11 @@
     </div>
   </form>
 
-  <div class="theme-box rounded p-3 mb-3">
-    <h2 class="h5 mb-3 theme-text">Create User</h2>
+  <section class="theme-box rounded p-3 mb-3 gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Create User</h2>
+      <div class="gx-section-card__meta">Admin co the chon role khi tao</div>
+    </div>
     <form id="adminCreateUserForm" class="row g-2 align-items-end">
       <div class="col-md-3">
         <label class="form-label" for="createEmail">Email</label>
@@ -72,9 +89,9 @@
         <div id="adminCreateUserOut" class="small mb-0 theme-text flex-grow-1" role="status" aria-live="polite"></div>
       </div>
     </form>
-  </div>
+  </section>
 
-  <div class="d-flex flex-wrap align-items-center gap-2 mb-3 theme-text">
+  <div class="gx-inline-actions mb-0 theme-text">
     <a class="btn btn-sm btn-outline-secondary"
        th:if="${page > 0}"
        th:href="@{/admin/users(searchTerm=${searchTerm},banFilter=${banFilter},page=${page-1},size=${size})}">Prev</a>
@@ -84,37 +101,43 @@
        th:href="@{/admin/users(searchTerm=${searchTerm},banFilter=${banFilter},page=${page+1},size=${size})}">Next</a>
   </div>
 
-  <div class="theme-box rounded p-2 table-responsive">
-    <table class="table table-bordered table-hover align-middle mb-0">
-      <thead>
-      <tr class="theme-table-header">
-        <th>ID</th>
-        <th>Email</th>
-        <th>Name</th>
-        <th>Score</th>
-        <th>Role</th>
-        <th>Action</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="u : ${users}">
-        <td th:text="${u.id}"></td>
-        <td th:text="${u.email}"></td>
-        <td th:text="${u.displayName}"></td>
-        <td th:text="${u.score}"></td>
-        <td th:text="${u.role}"></td>
-        <td>
-          <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/users/{id}(id=${u.id})}">Detail</a>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
+  <section class="theme-box rounded p-2 gx-section-card gx-table-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">User list</h2>
+      <div class="gx-section-card__meta">Trang hien tai: <span th:text="${page+1}">1</span></div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle mb-0">
+        <thead>
+        <tr class="theme-table-header">
+          <th>ID</th>
+          <th>Email</th>
+          <th>Name</th>
+          <th>Score</th>
+          <th>Role</th>
+          <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="u : ${users}">
+          <td th:text="${u.id}"></td>
+          <td th:text="${u.email}"></td>
+          <td th:text="${u.displayName}"></td>
+          <td th:text="${u.score}"></td>
+          <td th:text="${u.role}"></td>
+          <td>
+            <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/users/{id}(id=${u.id})}">Detail</a>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-  <div class="mt-3">
+  <div class="gx-inline-actions">
     <a class="btn theme-outline-btn" th:href="@{/}">Home</a>
   </div>
-</div>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('admin-users')}"></th:block>
 <script th:src="@{/js/admin-users.js}"></script>

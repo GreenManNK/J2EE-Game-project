@@ -4,16 +4,31 @@
 <body>
 <div th:replace="~{fragments :: appShell('friendship-notifications')}"></div>
 
-<div class="container py-4 theme-text"
-     id="friendshipNotificationsRoot"
-     th:attr="data-current-user-id=${currentUserId}">
-  <h1 class="h3 mb-3 theme-text">Notifications</h1>
+<main class="gx-page-shell theme-text"
+      id="friendshipNotificationsRoot"
+      th:attr="data-current-user-id=${currentUserId}">
+  <section class="gx-page-hero theme-box">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-bell"></i>
+          <span>Social / Notifications</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Notifications</h1>
+        <p class="gx-page-subtitle">Tong hop loi moi ket ban, thong bao achievement va thong diep he thong.</p>
+      </div>
+      <div class="gx-page-badge">
+        <i class="bi bi-person-circle"></i>
+        <span th:text="${currentUserId}">user</span>
+      </div>
+    </div>
+  </section>
 
   <div class="row g-3">
     <div class="col-lg-4">
-      <div class="theme-box rounded p-3 h-100">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
         <h2 class="h5 theme-text">Friend Requests</h2>
-        <ul class="list-group" id="friendRequestList">
+        <ul class="list-group list-group-flush" id="friendRequestList">
           <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2"
               th:each="f : ${friendRequestViews}"
               th:attr="data-friendship-id=${f.friendshipId}">
@@ -40,28 +55,28 @@
       </div>
     </div>
     <div class="col-lg-4">
-      <div class="theme-box rounded p-3 h-100">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
         <h2 class="h5 theme-text">Achievement</h2>
-        <ul class="list-group">
+        <ul class="list-group list-group-flush">
           <li class="list-group-item" th:each="a : ${achievementNotifications}" th:text="${a.achievementName + ' - ' + a.createdAt}"></li>
         </ul>
       </div>
     </div>
     <div class="col-lg-4">
-      <div class="theme-box rounded p-3 h-100">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
         <h2 class="h5 theme-text">System</h2>
-        <ul class="list-group">
+        <ul class="list-group list-group-flush">
           <li class="list-group-item" th:each="s : ${systemNotifications}" th:text="${s.content + ' - ' + s.createdAt}"></li>
         </ul>
       </div>
     </div>
   </div>
 
-  <div class="mt-3">
+  <div class="gx-inline-actions">
     <a class="btn theme-outline-btn" th:href="@{/friendship(currentUserId=${currentUserId})}">Back Friendship</a>
   </div>
   <div id="friendshipNotificationsOut" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
-</div>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('friendship-notifications')}"></th:block>
 <script th:src="@{/js/friendship-notifications.js}"></script>

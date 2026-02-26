@@ -4,7 +4,8 @@
 <body>
 <div th:replace="~{fragments :: appShell('games')}"></div>
 
-<main class="hub-portal-shell" style="--gp-primary:#3556d7; --gp-secondary:#00c29a; --gp-primary-deep:#1f3ea8;">
+<main class="hub-portal-shell"
+      th:classappend="${game != null and game.code != null} ? ' hub-portal-theme-' + game.code : ' hub-portal-theme-detail'">
   <section class="hub-portal-hero">
     <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
     <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>

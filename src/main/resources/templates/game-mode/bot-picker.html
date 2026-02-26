@@ -4,9 +4,13 @@
 <body>
 <div th:replace="~{fragments :: appShell('game-mode-bot')}"></div>
 
-<main class="container py-4">
-  <section class="card shadow-sm theme-box">
+<main class="gx-page-shell gx-page-shell--compact theme-text">
+  <section class="card shadow-sm theme-box gx-page-hero">
     <div class="card-body">
+      <div class="home-dashboard__eyebrow">
+        <i class="bi bi-cpu"></i>
+        <span>Bot Mode Picker</span>
+      </div>
       <h1 class="h3 theme-text mb-2">
         CHON BOT - <span th:text="${game.displayName}">Game</span>
       </h1>
@@ -20,7 +24,7 @@
         Game nay da co khung chon Easy/Hard; engine bot chi tiet dang duoc trien khai tiep.
       </p>
 
-      <div class="d-grid gap-2" style="max-width: 520px;">
+      <div class="d-grid gap-2 mode-picker-stack">
         <a th:href="@{${easyUrl}}" class="btn theme-outline-btn btn-lg">Bot De (Easy)</a>
         <a th:href="@{${hardUrl}}" class="btn theme-outline-btn btn-lg">Bot Kho (Hard)</a>
       </div>

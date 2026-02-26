@@ -4,24 +4,41 @@
 <body>
 <div th:replace="~{fragments :: appShell('account-verify')}"></div>
 
-<div class="card theme-box mx-auto mt-5" style="max-width: 450px;">
-  <div class="card-header"><h4 class="mb-0 theme-text">Xac thuc Email</h4></div>
-  <div class="card-body theme-text">
-    <form id="verifyForm">
-      <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input id="email" type="email" class="form-control" required>
+<main class="auth-shell">
+  <div class="auth-shell__grid">
+    <div class="card theme-box mx-auto mt-5 w-100 auth-card-sm">
+      <div class="card-header"><h4 class="mb-0 theme-text">Xac thuc Email</h4></div>
+      <div class="card-body theme-text">
+        <form id="verifyForm">
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input id="email" type="email" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="code" class="form-label">Ma xac thuc</label>
+            <input id="code" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Xac thuc</button>
+        </form>
+        <button id="resendCodeBtn" type="button" class="btn btn-outline-secondary w-100 mt-2">Gui lai ma</button>
+        <div id="out" class="small mt-3" role="status" aria-live="polite"></div>
       </div>
-      <div class="mb-3">
-        <label for="code" class="form-label">Ma xac thuc</label>
-        <input id="code" class="form-control" required>
+    </div>
+
+    <aside class="theme-box auth-side-panel">
+      <div class="home-dashboard__eyebrow">
+        <i class="bi bi-envelope-check"></i>
+        <span>Email Verify</span>
       </div>
-      <button type="submit" class="btn btn-primary w-100">Xac thuc</button>
-    </form>
-    <button id="resendCodeBtn" type="button" class="btn btn-outline-secondary w-100 mt-2">Gui lai ma</button>
-    <div id="out" class="small mt-3" role="status" aria-live="polite"></div>
+      <h2 class="theme-text mt-2">Hoan tat kich hoat tai khoan</h2>
+      <p>Nhap email va ma xac thuc da nhan de kich hoat tai khoan truoc khi dang nhap.</p>
+      <ul class="auth-side-list">
+        <li><strong>Neu chua co ma</strong>Hay quay lai trang dang ky hoac dung nut gui lai ma.</li>
+        <li><strong>Ma het han</strong>Yeu cau gui lai ma moi roi xac thuc lai.</li>
+      </ul>
+    </aside>
   </div>
-</div>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('account-verify')}"></th:block>
 <script th:src="@{/js/account-verify-email.js}"></script>

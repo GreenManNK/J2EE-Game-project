@@ -12,6 +12,48 @@
   color: var(--gp-ink);
 }
 
+.hub-portal-theme-catalog {
+  --gp-primary: #0b6fd8;
+  --gp-secondary: #ff7f45;
+  --gp-primary-deep: #094ba3;
+}
+
+.hub-portal-theme-detail {
+  --gp-primary: #3556d7;
+  --gp-secondary: #00c29a;
+  --gp-primary-deep: #1f3ea8;
+}
+
+.hub-portal-theme-caro {
+  --gp-primary: #0b6fd8;
+  --gp-secondary: #00c2a8;
+  --gp-primary-deep: #094ba3;
+}
+
+.hub-portal-theme-chess {
+  --gp-primary: #2f5fd6;
+  --gp-secondary: #9f7aea;
+  --gp-primary-deep: #2146a6;
+}
+
+.hub-portal-theme-xiangqi {
+  --gp-primary: #c0392b;
+  --gp-secondary: #f39c12;
+  --gp-primary-deep: #9f2b20;
+}
+
+.hub-portal-theme-minesweeper {
+  --gp-primary: #2563eb;
+  --gp-secondary: #ef4444;
+  --gp-primary-deep: #1d4ed8;
+}
+
+.hub-portal-theme-cards {
+  --gp-primary: #0f766e;
+  --gp-secondary: #f59e0b;
+  --gp-primary-deep: #0b5b55;
+}
+
 .hub-portal-shell * {
   box-sizing: border-box;
 }
@@ -847,4 +889,3 @@
     font-size: 0.92rem;
   }
 }
-

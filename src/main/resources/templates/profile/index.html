@@ -4,43 +4,86 @@
 <body>
 <div th:replace="~{fragments :: appShell('profile')}"></div>
 
-<div class="container py-4 theme-text">
-  <div class="theme-box rounded p-3 mb-3">
-    <h1 class="h3 mb-3 theme-text">Profile</h1>
-    <div class="row g-2">
-      <div class="col-md-6"><strong>User:</strong> <span th:text="${user.displayName}"></span></div>
-      <div class="col-md-6"><strong>Email:</strong> <span th:text="${user.email}"></span></div>
-      <div class="col-md-4"><strong>Score:</strong> <span th:text="${user.score}"></span></div>
-      <div class="col-md-4"><strong>WinRate:</strong> <span th:text="${winRate}"></span>%</div>
-      <div class="col-md-4"><strong>Total Games:</strong> <span th:text="${totalGames}"></span></div>
-      <div class="col-md-4"><strong>Win Count:</strong> <span th:text="${winCount}"></span></div>
-      <div class="col-md-4"><strong>Rank:</strong> <span th:text="${rank}"></span></div>
-      <div class="col-md-4"><strong>Best Streak:</strong> <span th:text="${bestStreak}"></span></div>
-      <div class="col-md-4"><strong>Win Fast Ranked:</strong> <span th:text="${winFastRanked}"></span></div>
+<main class="gx-page-shell theme-text">
+  <section class="gx-page-hero theme-box">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-person-badge"></i>
+          <span>Player Profile</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Profile</h1>
+        <p class="gx-page-subtitle">
+          Tong hop thong tin tai khoan, chi so thi dau, danh hieu va khu vuc cap nhat thong tin ca nhan.
+        </p>
+      </div>
+      <div class="gx-page-badge">
+        <i class="bi bi-star-fill"></i>
+        <span th:text="${'Rank #' + rank}">Rank #0</span>
+      </div>
     </div>
-  </div>
+
+    <div class="profile-summary-grid">
+      <div class="profile-summary-item">
+        <small>User</small>
+        <strong th:text="${user.displayName}">Player</strong>
+      </div>
+      <div class="profile-summary-item">
+        <small>Email</small>
+        <strong th:text="${user.email}">email@example.com</strong>
+      </div>
+      <div class="profile-summary-item">
+        <small>Score</small>
+        <strong th:text="${user.score}">0</strong>
+      </div>
+      <div class="profile-summary-item">
+        <small>Win Rate</small>
+        <strong><span th:text="${winRate}">0</span>%</strong>
+      </div>
+      <div class="profile-summary-item">
+        <small>Total Games</small>
+        <strong th:text="${totalGames}">0</strong>
+      </div>
+      <div class="profile-summary-item">
+        <small>Win Count</small>
+        <strong th:text="${winCount}">0</strong>
+      </div>
+      <div class="profile-summary-item">
+        <small>Rank</small>
+        <strong th:text="${rank}">0</strong>
+      </div>
+      <div class="profile-summary-item">
+        <small>Best Streak</small>
+        <strong th:text="${bestStreak}">0</strong>
+      </div>
+      <div class="profile-summary-item">
+        <small>Win Fast Ranked</small>
+        <strong th:text="${winFastRanked}">0</strong>
+      </div>
+    </div>
+  </section>
 
   <div class="row g-3">
     <div class="col-lg-4">
-      <div class="theme-box rounded p-3 h-100">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
         <h2 class="h5 theme-text">Danh hieu</h2>
-        <ul class="list-group">
+        <ul class="list-group list-group-flush">
           <li class="list-group-item" th:each="d : ${danhHieu}" th:text="${d}"></li>
         </ul>
       </div>
     </div>
     <div class="col-lg-4">
-      <div class="theme-box rounded p-3 h-100">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
         <h2 class="h5 theme-text">Diem Achievements</h2>
-        <ul class="list-group">
+        <ul class="list-group list-group-flush">
           <li class="list-group-item" th:each="a : ${diemAchievements}" th:text="${a}"></li>
         </ul>
       </div>
     </div>
     <div class="col-lg-4">
-      <div class="theme-box rounded p-3 h-100">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
         <h2 class="h5 theme-text">Locked</h2>
-        <ul class="list-group">
+        <ul class="list-group list-group-flush">
           <li class="list-group-item" th:each="a : ${lockedAchievements}" th:text="${a}"></li>
         </ul>
       </div>
@@ -49,9 +92,9 @@
 
   <div class="row g-3 mt-1">
     <div class="col-lg-6">
-      <div class="theme-box rounded p-3 h-100">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
         <h2 class="h5 theme-text">Achievement Lap Lai</h2>
-        <ul class="list-group" th:if="${!#maps.isEmpty(repeatAchievements)}">
+        <ul class="list-group list-group-flush" th:if="${!#maps.isEmpty(repeatAchievements)}">
           <li class="list-group-item"
               th:each="entry : ${repeatAchievements}"
               th:text="${entry.key + ' x' + entry.value}"></li>
@@ -60,9 +103,9 @@
       </div>
     </div>
     <div class="col-lg-6">
-      <div class="theme-box rounded p-3 h-100">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
         <h2 class="h5 theme-text">Achievement Dac Biet</h2>
-        <ul class="list-group" th:if="${!#lists.isEmpty(achievements)}">
+        <ul class="list-group list-group-flush" th:if="${!#lists.isEmpty(achievements)}">
           <li class="list-group-item" th:each="a : ${achievements}" th:text="${a}"></li>
         </ul>
         <div class="text-muted small" th:if="${#lists.isEmpty(achievements)}">Chua co.</div>
@@ -70,11 +113,14 @@
     </div>
   </div>
 
-  <div class="theme-box rounded p-3 mt-3"
-       th:if="${isOwner}"
-       id="profileOwnerRoot"
-       th:attr="data-user-id=${user.id}">
-    <h2 class="h5 mb-3 theme-text">Cap nhat thong tin</h2>
+  <section class="theme-box rounded p-3 mt-3 gx-section-card"
+           th:if="${isOwner}"
+           id="profileOwnerRoot"
+           th:attr="data-user-id=${user.id}">
+    <div class="gx-section-card__head">
+      <h2 class="h5 mb-0 theme-text">Cap nhat thong tin</h2>
+      <div class="gx-section-card__meta">Chi chu so huu profile moi thay doi duoc</div>
+    </div>
     <form id="editProfileForm" class="row g-3">
       <div class="col-md-4">
         <label class="form-label" for="displayName">Display Name</label>
@@ -109,12 +155,12 @@
     </form>
 
     <div id="ownerOut" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
-  </div>
+  </section>
 
-  <div class="mt-3">
+  <div class="gx-inline-actions">
     <a class="btn theme-outline-btn" th:href="@{/}">Ve Home</a>
   </div>
-</div>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('profile')}"></th:block>
 <script>

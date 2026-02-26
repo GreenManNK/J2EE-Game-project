@@ -5,14 +5,18 @@
 <div th:replace="~{fragments :: appShell('xiangqi-offline')}"></div>
 
 <main class="container py-4">
-  <div class="text-center mb-3">
+  <section class="gx-page-hero theme-box text-center mb-3">
+    <div class="home-dashboard__eyebrow mx-auto">
+      <i class="bi bi-diagram-3"></i>
+      <span>Xiangqi / Offline</span>
+    </div>
     <h1 class="theme-text fw-bold mb-2" th:text="${pageHeading} ?: 'CO TUONG OFFLINE (MVP)'">CO TUONG OFFLINE (MVP)</h1>
     <p class="theme-text mb-1" th:text="${pageSubtitle} ?: '2 nguoi choi tren cung thiet bi. Khong can dang nhap.'">2 nguoi choi tren cung thiet bi. Khong can dang nhap.</p>
     <p class="text-muted mb-0" th:text="${pageNote} ?: 'MVP ho tro luat di quan co ban, chieu/chieu bi va ket thuc van co.'">MVP ho tro luat di quan co ban, chieu/chieu bi va ket thuc van co.</p>
-  </div>
+  </section>
 
   <div class="xiangqi-layout">
-    <section class="card shadow-sm theme-box">
+    <section class="card shadow-sm theme-box gx-section-card">
       <div class="card-body">
         <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
           <div>
@@ -32,7 +36,7 @@
       </div>
     </section>
 
-    <aside class="card shadow-sm theme-box">
+    <aside class="card shadow-sm theme-box gx-section-card">
       <div class="card-body">
         <h2 class="h5 theme-text mb-2">Thong tin van dau</h2>
         <div class="small mb-3">

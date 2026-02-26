@@ -4,21 +4,30 @@
 <body>
 <div th:replace="~{fragments :: appShell('game-waiting')}"></div>
 
-<div class="container d-flex flex-column align-items-center justify-content-center theme-text mt-5">
-  <h2 class="fw-bold mb-4">Dang cho doi thu phan hoi...</h2>
-
-  <div class="card bg-dark text-white p-4 shadow rounded-4" style="max-width: 460px;">
-    <div class="text-center mb-3">
-      <div class="mt-3 fs-5">Ma yeu cau: <strong th:text="${requestId}">id</strong></div>
-      <div class="mt-3 fs-5">He thong se huy loi moi sau <strong id="countdown">30</strong>s</div>
-      <div class="mt-2 text-secondary">Vui long cho phan hoi tu doi thu...</div>
+<main class="waiting-page-shell theme-text">
+  <section class="gx-page-hero theme-box text-center">
+    <div class="home-dashboard__eyebrow mx-auto">
+      <i class="bi bi-hourglass-split"></i>
+      <span>Matchmaking / Waiting</span>
     </div>
+    <h2 class="gx-page-title fw-bold mb-0">Dang cho doi thu phan hoi...</h2>
+    <p class="gx-page-subtitle mx-auto mb-0">He thong se tu dong huy loi moi neu qua thoi gian cho quy dinh.</p>
+  </section>
 
-    <div class="progress" role="progressbar" aria-label="Countdown" aria-valuemin="0" aria-valuemax="30">
-      <div id="progressBar" class="progress-bar bg-warning" style="width: 100%"></div>
+  <section class="card shadow-sm theme-box waiting-request-card">
+    <div class="card-body text-center">
+      <div class="gx-chip-row justify-content-center mb-2">
+        <span class="gx-chip"><i class="bi bi-hash"></i> Ma yeu cau: <strong th:text="${requestId}">id</strong></span>
+      </div>
+      <div class="mt-2 fs-5 theme-text">He thong se huy loi moi sau <strong id="countdown">30</strong>s</div>
+      <div class="mt-2 text-muted">Vui long cho phan hoi tu doi thu...</div>
+
+      <div class="progress waiting-progress mt-3" role="progressbar" aria-label="Countdown" aria-valuemin="0" aria-valuemax="30">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
     </div>
-  </div>
-</div>
+  </section>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('game-waiting')}"></th:block>
 <script>

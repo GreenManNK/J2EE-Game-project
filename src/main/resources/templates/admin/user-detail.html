@@ -4,21 +4,37 @@
 <body>
 <div th:replace="~{fragments :: appShell('admin-user-detail')}"></div>
 
-<div class="container py-4 theme-text" id="adminUserDetailRoot" th:attr="data-user-id=${user.id}">
-  <div class="theme-box rounded p-3 mb-3">
-    <h1 class="h3 mb-3 theme-text">User Detail</h1>
-    <div class="row g-2">
-      <div class="col-md-6"><strong>ID:</strong> <span th:text="${user.id}"></span></div>
-      <div class="col-md-6"><strong>Email:</strong> <span th:text="${user.email}"></span></div>
-      <div class="col-md-6"><strong>Name:</strong> <span th:text="${user.displayName}"></span></div>
-      <div class="col-md-6"><strong>Score:</strong> <span th:text="${user.score}"></span></div>
-      <div class="col-md-6"><strong>Role:</strong> <span th:text="${user.role}"></span></div>
-      <div class="col-md-6"><strong>Banned Until:</strong> <span th:text="${user.bannedUntil}"></span></div>
+<main class="gx-page-shell gx-page-shell--narrow theme-text" id="adminUserDetailRoot" th:attr="data-user-id=${user.id}">
+  <section class="gx-page-hero theme-box">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-person-gear"></i>
+          <span>Admin / User Detail</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">User Detail</h1>
+        <p class="gx-page-subtitle">Xem thong tin user, cap nhat nhanh, ban/unban hoac xoa tai khoan.</p>
+      </div>
+      <div class="gx-page-badge">
+        <i class="bi bi-person-badge"></i>
+        <span th:text="${'ID ' + user.id}">ID 0</span>
+      </div>
     </div>
-  </div>
+    <div class="profile-summary-grid">
+      <div class="profile-summary-item"><small>ID</small><strong th:text="${user.id}">0</strong></div>
+      <div class="profile-summary-item"><small>Email</small><strong th:text="${user.email}">email@example.com</strong></div>
+      <div class="profile-summary-item"><small>Name</small><strong th:text="${user.displayName}">User</strong></div>
+      <div class="profile-summary-item"><small>Score</small><strong th:text="${user.score}">0</strong></div>
+      <div class="profile-summary-item"><small>Role</small><strong th:text="${user.role}">User</strong></div>
+      <div class="profile-summary-item"><small>Banned Until</small><strong th:text="${user.bannedUntil} ?: '-'">-</strong></div>
+    </div>
+  </section>
 
-  <div class="theme-box rounded p-3 mb-3">
-    <h2 class="h5 mb-3 theme-text">Quick Edit</h2>
+  <section class="theme-box rounded p-3 mb-3 gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Quick Edit</h2>
+      <div class="gx-section-card__meta">Cap nhat profile va role</div>
+    </div>
     <div class="row g-3">
       <div class="col-md-6">
         <label class="form-label" for="displayName">Name</label>
@@ -38,10 +54,13 @@
       </div>
     </div>
     <button id="saveBtn" type="button" class="btn btn-primary mt-3">Save</button>
-  </div>
+  </section>
 
-  <div class="theme-box rounded p-3 mb-3">
-    <h2 class="h5 mb-3 theme-text">Quick Ban</h2>
+  <section class="theme-box rounded p-3 mb-3 gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Quick Ban</h2>
+      <div class="gx-section-card__meta">Ban / unban / delete</div>
+    </div>
     <div class="row g-2 align-items-end">
       <div class="col-sm-4 col-md-3">
         <label class="form-label" for="minutes">Minutes</label>
@@ -54,10 +73,12 @@
       </div>
     </div>
     <div id="out" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
-  </div>
+  </section>
 
-  <a class="btn theme-outline-btn" th:href="@{/admin/users}">Back</a>
-</div>
+  <div class="gx-inline-actions">
+    <a class="btn theme-outline-btn" th:href="@{/admin/users}">Back</a>
+  </div>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('admin-user-detail')}"></th:block>
 <script th:src="@{/js/admin-user-detail.js}"></script>

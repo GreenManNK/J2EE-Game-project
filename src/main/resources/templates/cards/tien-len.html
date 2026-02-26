@@ -5,17 +5,21 @@
 <div th:replace="~{fragments :: appShell('tien-len')}"></div>
 
 <main class="container py-3 pb-5">
-  <div class="text-center mb-3">
+  <section class="gx-page-hero theme-box text-center mb-3">
+    <div class="home-dashboard__eyebrow mx-auto">
+      <i class="bi bi-suit-spade-fill"></i>
+      <span>Tien Len / Online</span>
+    </div>
     <h1 class="theme-text fw-bold mb-2">TIEN LEN MIEN NAM ONLINE 4 NGUOI</h1>
     <p class="theme-text mb-1">Cho phep guest choi online. Su dung room 4 nguoi tren cung server.</p>
     <p class="text-muted mb-0">Ho tro TLMN co ban: don, doi, sam, tu quy, sanh, doi thong, chat 2 (tu quy/doi thong) va toi trang (sanh rong 3-A, 5 doi thong, 6 doi, tu quy 2).</p>
-  </div>
+  </section>
 
   <div class="tienlen-grid">
     <section class="card shadow-sm theme-box">
       <div class="card-body">
         <div class="d-flex flex-wrap gap-2 align-items-end">
-          <div class="flex-grow-1" style="min-width: 220px;">
+          <div class="flex-grow-1 tl-room-input-min">
             <label for="tlRoomIdInput" class="form-label theme-text mb-1">Ma phong</label>
             <input id="tlRoomIdInput" type="text" class="form-control" placeholder="VD: room-123"
                    th:value="${defaultRoomId}">

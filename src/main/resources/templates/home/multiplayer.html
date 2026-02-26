@@ -4,32 +4,28 @@
 <body>
 <div th:replace="~{fragments :: appShell('multiplayer')}"></div>
 
-<div class="container text-center mt-5">
-  <h1 class="display-4 mb-4 theme-text fw-bold" style="text-shadow: 2px 2px 0 #000, 4px 4px 0 #0ff;">
-    CHE DO NHIEU NGUOI CHOI (CARO)
-  </h1>
-  <p class="theme-text mb-3 fs-5">Che do choi:</p>
-  <div class="mode-menu d-flex flex-column align-items-center gap-3">
-    <a th:href="@{/lobby}" class="btn theme-outline-btn btn-lg w-50">Online</a>
-    <a th:href="@{/game/offline}" class="btn theme-outline-btn btn-lg w-50">Offline</a>
-  </div>
-  <p class="theme-text mt-3 mb-0">
-    Ban co the choi Online voi tu cach khach (khong can dang nhap).
-  </p>
-  <p class="theme-text mt-2 mb-0">
-    Muon xem cac game khac? <a th:href="@{/games}" class="theme-text fw-bold">Mo Thu vien game</a>
-  </p>
-</div>
+<main class="mode-page-shell">
+  <section class="mode-page-card theme-box text-center">
+    <div class="home-dashboard__eyebrow">
+      <i class="bi bi-people"></i>
+      <span>Caro / Multiplayer</span>
+    </div>
+    <h1 class="mode-page-title theme-text mt-2">Che do nhieu nguoi choi</h1>
+    <p class="mode-page-subtitle theme-text">Chon kieu tran dau va vao sanh choi nhanh. Ho tro ca che do guest cho online.</p>
 
-<style>
-  .mode-menu {
-    width: min(100%, 520px);
-    margin: 0 auto;
-  }
-  .mode-menu > .btn {
-    width: min(420px, 100%) !important;
-  }
-</style>
+    <div class="mode-menu d-flex flex-column align-items-center gap-3">
+      <a th:href="@{/lobby}" class="btn theme-outline-btn btn-lg w-50">Online</a>
+      <a th:href="@{/game/offline}" class="btn theme-outline-btn btn-lg w-50">Offline</a>
+    </div>
+
+    <div class="mode-page-links">
+      Ban co the choi Online voi tu cach khach (khong can dang nhap).
+    </div>
+    <div class="mode-page-links">
+      Muon xem cac game khac? <a th:href="@{/games}" class="theme-text fw-bold">Mo Thu vien game</a>
+    </div>
+  </section>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('multiplayer')}"></th:block>
 </body>

@@ -4,15 +4,19 @@
 <body>
 <div th:replace="~{fragments :: appShell('online-hub')}"></div>
 
-<main class="container py-4">
-  <section class="card shadow-sm theme-box">
+<main class="gx-page-shell theme-text">
+  <section class="gx-page-hero theme-box">
     <div class="card-body">
       <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
         <div>
-          <h1 class="h3 theme-text mb-1">
+          <div class="home-dashboard__eyebrow mb-2">
+            <i class="bi bi-wifi"></i>
+            <span>Online Hub</span>
+          </div>
+          <h1 class="gx-page-title theme-text mb-1">
             PHONG ONLINE - <span th:text="${selectedGameName}">Game</span>
           </h1>
-          <p class="mb-0 text-muted">
+          <p class="gx-page-subtitle mb-0 text-muted">
             Trang nay dung chung cho tat ca game online: tim phong, tao phong, moi nguoi choi va vao ban.
           </p>
         </div>
@@ -27,7 +31,7 @@
 
   <section class="row g-3 mt-1">
     <div class="col-12 col-lg-7">
-      <div class="card shadow-sm theme-box h-100">
+      <div class="card shadow-sm theme-box h-100 gx-section-card">
         <div class="card-body">
           <h2 class="h5 theme-text mb-3">1. Tao phong / Tham gia phong</h2>
 
@@ -63,7 +67,7 @@
     </div>
 
     <div class="col-12 col-lg-5">
-      <div class="card shadow-sm theme-box h-100">
+      <div class="card shadow-sm theme-box h-100 gx-section-card">
         <div class="card-body">
           <h2 class="h5 theme-text mb-3">2. Moi nguoi choi</h2>
           <label for="onlineHubInviteUrl" class="form-label theme-text mb-1">Link moi (copy gui ban be)</label>
@@ -80,7 +84,7 @@
     </div>
   </section>
 
-  <section class="card shadow-sm theme-box mt-3">
+  <section class="card shadow-sm theme-box mt-0 gx-section-card">
     <div class="card-body">
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
         <h2 class="h5 theme-text mb-0">3. Tim phong online dang mo</h2>

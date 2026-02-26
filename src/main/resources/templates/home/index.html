@@ -4,126 +4,139 @@
 <body>
 <div th:replace="~{fragments :: appShell('home')}"></div>
 
-<main role="main" id="homeMain" class="transition-margin px-4" style="min-height: 80vh; padding-top: 3rem;">
-  <h2 class="mb-3 text-center theme-text fw-bold" style="text-shadow: 2px 2px 0 #000, 4px 4px 0 #0ff;">
-    CHAO MUNG BAN DEN VOI GAME HUB
-  </h2>
+<main role="main" id="homeMain" class="home-dashboard">
+  <section class="home-dashboard__hero theme-box">
+    <div class="home-dashboard__hero-main">
+      <div class="home-dashboard__eyebrow">
+        <i class="bi bi-stars"></i>
+        <span>Game Hub</span>
+      </div>
+      <h1 class="home-dashboard__title theme-text">Chon game va vao tran ngay</h1>
+      <p class="home-dashboard__subtitle">
+        Trang chu duoc toi uu theo kieu web game portal: hanh dong chinh dat tren cung,
+        bang tin cong dong tach rieng, va khung giao dien dong bo voi cac trang game/detail.
+      </p>
 
-  <p class="text-center theme-text mb-3">Chon loai game ban muon choi:</p>
+      <div class="home-main-actions d-flex justify-content-center mb-3 gap-2 flex-wrap">
+        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="caro" data-game-name="Caro">
+          <i class="bi bi-grid-3x3-gap-fill me-2"></i>Caro
+        </button>
+        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="chess" data-game-name="Co vua">
+          <i class="bi bi-activity me-2"></i>Co vua
+        </button>
+        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="xiangqi" data-game-name="Co tuong">
+          <i class="bi bi-diagram-3-fill me-2"></i>Co tuong
+        </button>
+        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="cards" data-game-name="Danh bai">
+          <i class="bi bi-suit-spade-fill me-2"></i>Danh bai
+        </button>
+        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="minesweeper" data-game-name="Minesweeper">
+          <i class="bi bi-asterisk me-2"></i>Minesweeper
+        </button>
+      </div>
+    </div>
 
-  <div class="home-main-actions d-flex justify-content-center mb-3 gap-2 flex-wrap">
-    <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="caro" data-game-name="Caro">
-      <i class="bi bi-grid-3x3-gap-fill me-2"></i>Caro
-    </button>
-    <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="chess" data-game-name="Co vua">
-      <i class="bi bi-activity me-2"></i>Co vua
-    </button>
-    <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="xiangqi" data-game-name="Co tuong">
-      <i class="bi bi-diagram-3-fill me-2"></i>Co tuong
-    </button>
-    <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="cards" data-game-name="Danh bai">
-      <i class="bi bi-suit-spade-fill me-2"></i>Danh bai
-    </button>
-    <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="minesweeper" data-game-name="Minesweeper">
-      <i class="bi bi-asterisk me-2"></i>Minesweeper
-    </button>
-  </div>
+    <aside class="home-dashboard__hero-side">
+      <div class="home-dashboard__stats">
+        <div class="home-dashboard__stat">
+          <div class="home-dashboard__stat-label">Che do</div>
+          <div class="home-dashboard__stat-value">Online + Bot</div>
+        </div>
+        <div class="home-dashboard__stat">
+          <div class="home-dashboard__stat-label">Truy cap nhanh</div>
+          <div class="home-dashboard__stat-value">1 click</div>
+        </div>
+        <div class="home-dashboard__stat">
+          <div class="home-dashboard__stat-label">Cong dong</div>
+          <div class="home-dashboard__stat-value">Feed + comments</div>
+        </div>
+        <div class="home-dashboard__stat">
+          <div class="home-dashboard__stat-label">Giao dien</div>
+          <div class="home-dashboard__stat-value">Responsive</div>
+        </div>
+      </div>
 
-  <div class="mb-3">
-    <h5 class="mb-2 theme-text text-center">Dang bai viet moi</h5>
-    <form id="postForm">
-      <div class="card shadow-sm px-3 py-2 mx-auto" style="max-width: 900px;">
+      <div class="home-dashboard__side-panel">
+        <h2 class="theme-text">Huong dan nhanh</h2>
+        <p>Chon game o tren, vao trang chi tiet, sau do chon offline / online / bot phu hop.</p>
+      </div>
+
+      <div class="home-dashboard__side-panel">
+        <h2 class="theme-text">Meo choi</h2>
+        <p>Dang nhap de dong bo ho so, luu lich su dau va thao tac voi ban be nhanh hon tren thanh ben trai.</p>
+      </div>
+    </aside>
+  </section>
+
+  <section class="home-dashboard__feed-grid">
+    <section class="home-dashboard__composer theme-box">
+      <div class="home-dashboard__section-title">
+        <h2 class="theme-text">Dang bai viet moi</h2>
+        <small>Cap nhat nhanh cho cong dong</small>
+      </div>
+      <form id="postForm" class="home-composer-form">
         <textarea id="postContent" class="form-control mb-2" rows="3" placeholder="Ban dang nghi gi?" required></textarea>
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="home-composer-meta">
           <small class="text-muted">Tac gia: <span id="postAuthorLabel">Can dang nhap</span></small>
           <button type="submit" class="btn theme-outline-btn btn-sm">Dang bai</button>
         </div>
+      </form>
+    </section>
+
+    <section class="home-dashboard__feed theme-box">
+      <div class="home-dashboard__section-title">
+        <h2 class="theme-text">Bang tin</h2>
+        <small th:text="${(posts != null ? #lists.size(posts) : 0)} + ' bai viet'">0 bai viet</small>
       </div>
-    </form>
-  </div>
 
-  <div class="mx-auto" style="max-width: 900px;">
-    <h5 class="mb-2 theme-text">Bang tin</h5>
-    <div style="max-height: 600px; overflow-y: auto;" class="scroll-posts">
-      <p class="text-muted" th:if="${#lists.isEmpty(posts)}">Chua co bai dang nao.</p>
-      <div class="card mb-3 shadow-sm" th:each="p : ${posts}">
-        <div class="card-body py-2 px-3 text-start">
-          <div class="d-none post-id" th:text="${p.id}">0</div>
-          <div class="mb-1">
-            <strong class="theme-text" th:text="${p.author}">author</strong><br>
-            <small class="text-muted" th:text="${p.createdAt}">time</small>
-          </div>
-          <p class="theme-text mb-2" th:text="${p.content}">content</p>
-          <img th:if="${p.imagePath != null and !#strings.isEmpty(p.imagePath)}" th:src="${p.imagePath}" class="img-fluid rounded mb-2" style="max-height: 300px;" alt="post-image">
+      <div class="home-feed-panel">
+        <div class="scroll-posts">
+          <p class="text-muted" th:if="${#lists.isEmpty(posts)}">Chua co bai dang nao.</p>
+          <div class="card mb-3 shadow-sm home-post-card" th:each="p : ${posts}">
+            <div class="card-body py-2 px-3 text-start">
+              <div class="d-none post-id" th:text="${p.id}">0</div>
+              <div class="mb-1">
+                <strong class="theme-text" th:text="${p.author}">author</strong><br>
+                <small class="text-muted" th:text="${p.createdAt}">time</small>
+              </div>
+              <p class="theme-text mb-2" th:text="${p.content}">content</p>
+              <img th:if="${p.imagePath != null and !#strings.isEmpty(p.imagePath)}"
+                   th:src="${p.imagePath}"
+                   class="img-fluid mb-2 home-post-image"
+                   alt="post-image">
 
-          <div class="mt-2">
-            <div class="small fw-bold theme-text mb-1">Binh luan</div>
-            <div class="ps-2 border-start" th:if="${#lists.isEmpty(p.comments)}">
-              <small class="text-muted">Chua co binh luan</small>
-            </div>
-            <div class="ps-2 border-start d-flex flex-column gap-1" th:if="${!#lists.isEmpty(p.comments)}">
-              <div th:each="c : ${p.comments}">
-                <small>
-                  <strong th:text="${c.author}">author</strong>:
-                  <span th:text="${c.content}">comment</span>
-                </small>
+              <div class="mt-2">
+                <div class="small fw-bold theme-text mb-1">Binh luan</div>
+                <div class="ps-2 border-start" th:if="${#lists.isEmpty(p.comments)}">
+                  <small class="text-muted">Chua co binh luan</small>
+                </div>
+                <div class="ps-2 border-start d-flex flex-column gap-1" th:if="${!#lists.isEmpty(p.comments)}">
+                  <div th:each="c : ${p.comments}">
+                    <small>
+                      <strong th:text="${c.author}">author</strong>:
+                      <span th:text="${c.content}">comment</span>
+                    </small>
+                  </div>
+                </div>
+
+                <form class="commentForm mt-2 d-flex gap-2">
+                  <input type="hidden" class="commentPostId" th:value="${p.id}">
+                  <input type="text" class="form-control form-control-sm commentContent" placeholder="Viet binh luan..." maxlength="500">
+                  <button type="submit" class="btn btn-sm btn-outline-secondary">Gui</button>
+                </form>
               </div>
             </div>
-
-            <form class="commentForm mt-2 d-flex gap-2">
-              <input type="hidden" class="commentPostId" th:value="${p.id}">
-              <input type="text" class="form-control form-control-sm commentContent" placeholder="Viet binh luan..." maxlength="500">
-              <button type="submit" class="btn btn-sm btn-outline-secondary">Gui</button>
-            </form>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
+  </section>
 </main>
 
 <audio id="siteMusic" th:src="@{/music/home.mp3}" loop preload="auto"></audio>
-<button id="siteMusicToggleBtn" class="btn theme-outline-btn btn-sm theme-text" style="position: fixed; bottom: 10px; right: 10px; z-index: 999;">
+<button id="siteMusicToggleBtn" class="btn theme-outline-btn btn-sm theme-text">
   🔊 Tat Nhac
 </button>
-
-<style>
-  .home-main-actions {
-    max-width: 1120px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .home-game-btn {
-    min-width: 200px;
-  }
-  .home-game-btn {
-    text-align: left;
-  }
-
-  @media (max-width: 767.98px) {
-    #homeMain {
-      padding-left: 10px !important;
-      padding-right: 10px !important;
-      padding-top: 1rem !important;
-    }
-    .home-main-actions .btn {
-      width: min(420px, 100%);
-    }
-    .scroll-posts {
-      max-height: none !important;
-    }
-    .commentForm {
-      flex-wrap: wrap;
-    }
-    .commentForm .commentContent {
-      width: 100%;
-      min-width: 0;
-    }
-    .commentForm button {
-      width: 100%;
-    }
-  }
-</style>
 
 <script th:replace="~{fragments :: appScripts('home')}"></script>
 <script>

@@ -4,10 +4,29 @@
 <body>
 <div th:replace="~{fragments :: appShell('notification-admin')}"></div>
 
-<div class="container py-4 theme-text">
-  <h1 class="h3 mb-3 theme-text">System Notifications</h1>
+<main class="gx-page-shell gx-page-shell--narrow theme-text">
+  <section class="gx-page-hero theme-box">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-megaphone"></i>
+          <span>Admin / Notices</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">System Notifications</h1>
+        <p class="gx-page-subtitle">Tao va xoa thong bao he thong duoc hien thi cho nguoi dung trong game hub.</p>
+      </div>
+      <div class="gx-page-badge">
+        <i class="bi bi-bell-fill"></i>
+        <span th:text="${(notifications != null ? #lists.size(notifications) : 0)} + ' notices'">0 notices</span>
+      </div>
+    </div>
+  </section>
 
-  <div class="theme-box rounded p-3 mb-3">
+  <section class="theme-box rounded p-3 mb-3 gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Create Notice</h2>
+      <div class="gx-section-card__meta">Gui thong diep he thong</div>
+    </div>
     <form id="createForm" class="row g-2 align-items-end">
       <div class="col-md-9">
         <label class="form-label" for="content">Content</label>
@@ -18,19 +37,25 @@
       </div>
     </form>
     <div id="out" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
-  </div>
+  </section>
 
-  <div class="theme-box rounded p-3 mb-3">
-    <ul class="list-group">
+  <section class="theme-box rounded p-3 mb-3 gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Danh sach notices</h2>
+      <div class="gx-section-card__meta">Xoa notice khong con su dung</div>
+    </div>
+    <ul class="list-group list-group-flush">
       <li class="list-group-item d-flex justify-content-between align-items-center gap-2" th:each="n : ${notifications}">
         <span th:text="${n.content + ' - ' + n.createdAt}"></span>
         <button type="button" th:attr="data-id=${n.id}" class="del btn btn-sm btn-outline-danger">Delete</button>
       </li>
     </ul>
-  </div>
+  </section>
 
-  <a class="btn theme-outline-btn" th:href="@{/}">Home</a>
-</div>
+  <div class="gx-inline-actions">
+    <a class="btn theme-outline-btn" th:href="@{/}">Home</a>
+  </div>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('notification-admin')}"></th:block>
 <script th:src="@{/js/notification-admin.js}"></script>

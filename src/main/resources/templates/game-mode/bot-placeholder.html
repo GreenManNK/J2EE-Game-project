@@ -4,9 +4,13 @@
 <body>
 <div th:replace="~{fragments :: appShell('game-mode-bot')}"></div>
 
-<main class="container py-4">
-  <section class="card shadow-sm theme-box">
+<main class="gx-page-shell gx-page-shell--compact theme-text">
+  <section class="card shadow-sm theme-box gx-page-hero">
     <div class="card-body">
+      <div class="home-dashboard__eyebrow">
+        <i class="bi bi-tools"></i>
+        <span>Bot Mode Placeholder</span>
+      </div>
       <h1 class="h3 theme-text mb-2">
         BOT <span th:text="${difficultyLabel}">De</span> - <span th:text="${game.displayName}">Game</span>
       </h1>

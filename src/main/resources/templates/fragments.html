@@ -8,10 +8,15 @@
   <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
   <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
   <title th:text="${title} + ' - Caro'">Caro</title>
+  <meta name="theme-color" content="#0b1220">
   <link rel="stylesheet" th:href="@{/lib/bootstrap/dist/css/bootstrap.min.css}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <link rel="stylesheet" th:href="@{/css/site.css}">
   <link rel="stylesheet" th:href="@{/css/games-portal.css}">
+  <link rel="stylesheet" th:href="@{/css/layout-refresh.css}">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     body {
@@ -120,6 +125,14 @@
 <div th:fragment="appShell(pageKey)">
   <div id="friendSidebar" class="theme-text">
     <div class="d-flex flex-column gap-2 mb-3 px-1 justify-content-center align-items-center">
+      <div class="app-shell-sidebar-brand">
+        <div class="app-shell-sidebar-brand__badge">
+          <i class="bi bi-controller"></i>
+          <span>Game Hub</span>
+        </div>
+        <div class="app-shell-sidebar-brand__title">Control Center</div>
+        <div class="app-shell-sidebar-brand__meta">Choi nhanh, quan ly ban be va theo doi bang xep hang.</div>
+      </div>
       <a class="btn theme-outline-btn w-100 text-start fw-bold theme-text" th:href="@{/}"><i class="bi bi-house-fill me-2"></i> Trang chủ</a>
       <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-controller me-2"></i> Thu vien game</a>
       <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/leaderboard}"><i class="bi bi-bar-chart-fill me-2"></i> Bảng xếp hạng</a>
@@ -144,7 +157,7 @@
       <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/register-page}" data-guest-only="true"><i class="bi bi-person-plus-fill me-2"></i> Đăng ký</a>
       <button id="logoutBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true"><i class="bi bi-box-arrow-right me-2"></i> Đăng xuất</button>
       <form id="friendSearchForm" class="d-flex w-100">
-        <input id="friendSearchInput" class="form-control me-2" placeholder="Tìm bạn..." style="border-color: var(--accent, #ccc);">
+        <input id="friendSearchInput" class="form-control me-2" placeholder="Tìm bạn...">
         <button class="btn theme-outline-btn theme-text" type="submit">Tìm</button>
       </form>
       <small class="text-muted" data-current-user-badge="true">Chua dang nhap</small>
@@ -155,7 +168,13 @@
   <button id="toggleSidebar" class="sidebar-toggle-btn"><i class="bi bi-chevron-double-right"></i></button>
 
   <div id="friendListInlineContainer" class="theme-box">
-    <div class="fw-bold mb-2">Bạn bè</div>
+    <div class="app-shell-friends-head">
+      <div>
+        <div class="app-shell-friends-head__title">Ban be</div>
+        <div class="app-shell-friends-head__meta">Trang thai online cap nhat dinh ky</div>
+      </div>
+      <i class="bi bi-people-fill"></i>
+    </div>
     <div id="friendListContainer" class="small text-muted">Dang tai danh sach ban be...</div>
   </div>
 
@@ -200,7 +219,13 @@
         localStorage.setItem("theme", isDark ? "dark" : "light");
       });
       const pageKey = /*[[${pageKey}]]*/ 'home';
-      if (pageKey === 'game-index') body.classList.add('game-index');
+      const normalizedPageKey = String(pageKey || 'home')
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'home';
+      body.dataset.pageKey = normalizedPageKey;
+      body.classList.add('page-' + normalizedPageKey);
+      if (normalizedPageKey === 'game-index') body.classList.add('game-index');
     });
   </script>
 </th:block>

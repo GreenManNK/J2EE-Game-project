@@ -4,13 +4,30 @@
 <body>
 <div th:replace="~{fragments :: appShell('account-ban')}"></div>
 
-<div class="container mt-5" style="max-width: 620px;">
-  <div class="alert alert-danger shadow-sm" role="alert">
-    <h4 class="alert-heading">Thong bao khoa tai khoan</h4>
-    <p class="mb-0" th:text="${message}">Tai khoan cua ban da bi khoa tam thoi.</p>
+<main class="auth-shell">
+  <div class="auth-shell__grid">
+    <section class="theme-box gx-section-card w-100 mx-auto mt-4 auth-card-lg">
+      <div class="home-dashboard__eyebrow">
+        <i class="bi bi-shield-x"></i>
+        <span>Account Notice</span>
+      </div>
+      <div class="alert alert-danger shadow-sm mt-3 mb-2" role="alert">
+        <h4 class="alert-heading">Thong bao khoa tai khoan</h4>
+        <p class="mb-0" th:text="${message}">Tai khoan cua ban da bi khoa tam thoi.</p>
+      </div>
+      <a th:href="@{/account/login-page}" class="btn btn-outline-secondary">Ve trang dang nhap</a>
+    </section>
+
+    <aside class="theme-box auth-side-panel">
+      <div class="home-dashboard__eyebrow">
+        <i class="bi bi-info-circle"></i>
+        <span>Support</span>
+      </div>
+      <h2 class="theme-text mt-2">Can xem lai trang thai tai khoan</h2>
+      <p>Neu thong bao nay xuat hien ngoai du kien, vui long lien he quan tri vien de duoc ho tro.</p>
+    </aside>
   </div>
-  <a th:href="@{/account/login-page}" class="btn btn-outline-secondary">Ve trang dang nhap</a>
-</div>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('account-ban')}"></th:block>
 </body>

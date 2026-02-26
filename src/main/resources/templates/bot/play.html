@@ -4,18 +4,26 @@
 <body>
 <div th:replace="~{fragments :: appShell('bot-play')}"></div>
 
-<main class="container mt-4 text-center">
-  <h1 class="theme-text fw-bold" th:text="${title}">Bot</h1>
-  <p id="botStatus" class="theme-text">Ban danh X. Chon o de danh.</p>
-  <div class="d-flex justify-content-center gap-2 mb-3">
-    <button id="resetBtn" class="btn btn-outline-warning">Choi lai</button>
-    <button id="botSurrenderBtn" class="btn btn-outline-danger">Dau hang</button>
-    <a th:href="@{/single-player}" class="btn btn-outline-secondary">Quay lai</a>
-  </div>
+<main class="board-page-shell text-center">
+  <section class="theme-box board-page-hero">
+    <div class="home-dashboard__eyebrow">
+      <i class="bi bi-cpu"></i>
+      <span>Caro / Bot</span>
+    </div>
+    <h1 class="gx-page-title theme-text fw-bold mt-2 mb-1" th:text="${title}">Bot</h1>
+    <p id="botStatus" class="theme-text mb-0">Ban danh X. Chon o de danh.</p>
+    <div class="board-page-hero__actions">
+      <button id="resetBtn" class="btn btn-outline-warning">Choi lai</button>
+      <button id="botSurrenderBtn" class="btn btn-outline-danger">Dau hang</button>
+      <a th:href="@{/single-player}" class="btn btn-outline-secondary">Quay lai</a>
+    </div>
+  </section>
 
-  <div class="d-flex justify-content-center">
-    <div id="botBoard" class="bot-board"></div>
-  </div>
+  <section class="theme-box board-page-stage">
+    <div class="board-page-stage__inner">
+      <div id="botBoard" class="bot-board"></div>
+    </div>
+  </section>
 </main>
 
 <style>

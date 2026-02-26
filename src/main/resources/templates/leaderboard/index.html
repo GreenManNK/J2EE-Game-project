@@ -4,34 +4,57 @@
 <body>
 <div th:replace="~{fragments :: appShell('leaderboard')}"></div>
 
-<div class="container py-4 theme-text">
-  <div class="theme-box rounded p-3 mb-3">
-    <h1 class="h3 mb-0 theme-text">Bang xep hang</h1>
-  </div>
+<main class="gx-page-shell gx-page-shell--compact theme-text">
+  <section class="gx-page-hero theme-box">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-trophy"></i>
+          <span>Rankings</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Bang xep hang</h1>
+        <p class="gx-page-subtitle">Xem thu hang nguoi choi theo diem so va theo doi tien do canh tranh.</p>
+      </div>
+      <div class="gx-page-badge">
+        <i class="bi bi-people-fill"></i>
+        <span th:text="${(players != null ? #lists.size(players) : 0)} + ' nguoi choi'">0 nguoi choi</span>
+      </div>
+    </div>
+    <div class="gx-chip-row">
+      <span class="gx-chip"><i class="bi bi-graph-up-arrow"></i> Thu hang theo diem</span>
+      <span class="gx-chip"><i class="bi bi-arrow-repeat"></i> Cap nhat tu server</span>
+    </div>
+  </section>
 
-  <div class="theme-box rounded p-2 table-responsive">
-    <table class="table table-bordered table-hover align-middle mb-0">
-      <thead>
-      <tr class="theme-table-header">
-        <th>#</th>
-        <th>Name</th>
-        <th>Score</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="p, i : ${players}">
-        <td th:text="${i.count}"></td>
-        <td th:text="${p.displayName}"></td>
-        <td th:text="${p.score}"></td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
+  <section class="gx-section-card theme-box gx-table-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Danh sach xep hang</h2>
+      <div class="gx-section-card__meta">Top players</div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle mb-0">
+        <thead>
+        <tr class="theme-table-header">
+          <th>#</th>
+          <th>Name</th>
+          <th>Score</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p, i : ${players}">
+          <td th:text="${i.count}"></td>
+          <td th:text="${p.displayName}"></td>
+          <td th:text="${p.score}"></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-  <div class="mt-3">
+  <div class="gx-inline-actions">
     <a class="btn theme-outline-btn" th:href="@{/}">Ve Home</a>
   </div>
-</div>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('leaderboard')}"></th:block>
 </body>

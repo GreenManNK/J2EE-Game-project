@@ -4,12 +4,30 @@
 <body>
 <div th:replace="~{fragments :: appShell('friend-search')}"></div>
 
-<div class="container mt-4" id="friendshipSearchRoot" th:attr="data-current-user-id=${currentUserId}">
-  <h1>Ket qua tim kiem</h1>
-  <p>Tu khoa: <strong th:text="${query}"></strong></p>
+<main class="gx-page-shell gx-page-shell--narrow theme-text" id="friendshipSearchRoot" th:attr="data-current-user-id=${currentUserId}">
+  <section class="gx-page-hero theme-box">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-search"></i>
+          <span>Social / Friend Search</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Ket qua tim kiem</h1>
+        <p class="gx-page-subtitle">Tim user theo ten/email va gui loi moi ket ban ngay tai ket qua.</p>
+      </div>
+      <div class="gx-page-badge">
+        <i class="bi bi-key"></i>
+        <span th:text="${query} ?: ''">query</span>
+      </div>
+    </div>
+  </section>
 
-  <h3>Khop chinh xac</h3>
-  <div class="list-group mb-4">
+  <section class="theme-box gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Khop chinh xac</h2>
+      <div class="gx-section-card__meta">Ket qua uu tien</div>
+    </div>
+    <div class="list-group list-group-flush mb-0">
     <div class="list-group-item d-flex justify-content-between align-items-center gap-2" th:each="u : ${exactMatches}">
       <div class="d-flex align-items-center gap-2 flex-grow-1">
         <img th:src="@{${u.avatarPath != null and !#strings.isEmpty(u.avatarPath) ? u.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
@@ -29,10 +47,15 @@
       </span>
     </div>
     <div class="text-muted" th:if="${#lists.isEmpty(exactMatches)}">Khong co ket qua khop chinh xac.</div>
-  </div>
+    </div>
+  </section>
 
-  <h3>Khop tuong tu</h3>
-  <div class="list-group">
+  <section class="theme-box gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Khop tuong tu</h2>
+      <div class="gx-section-card__meta">Goi y them</div>
+    </div>
+    <div class="list-group list-group-flush">
     <div class="list-group-item d-flex justify-content-between align-items-center gap-2" th:each="u : ${similarMatches}">
       <div class="d-flex align-items-center gap-2 flex-grow-1">
         <img th:src="@{${u.avatarPath != null and !#strings.isEmpty(u.avatarPath) ? u.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
@@ -52,11 +75,14 @@
       </span>
     </div>
     <div class="text-muted" th:if="${#lists.isEmpty(similarMatches)}">Khong co ket qua tuong tu.</div>
-  </div>
+    </div>
+  </section>
 
-  <a class="btn btn-link mt-3" th:href="@{/friendship(currentUserId=${currentUserId})}">Quay lai trang ban be</a>
+  <div class="gx-inline-actions">
+    <a class="btn theme-outline-btn" th:href="@{/friendship(currentUserId=${currentUserId})}">Quay lai trang ban be</a>
+  </div>
   <div id="friendshipSearchOut" class="small mt-2 mb-0" role="status" aria-live="polite"></div>
-</div>
+</main>
 
 <th:block th:replace="~{fragments :: appScripts('friend-search')}"></th:block>
 <script th:src="@{/js/friendship-search.js}"></script>
