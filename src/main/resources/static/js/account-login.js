@@ -3,6 +3,9 @@
   if(!form) return;
   const out = document.getElementById('out');
   const ui = window.CaroUi || {};
+  const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+    ? window.CaroUrl.path
+    : function (value) { return value; };
 
   function setStatus(message, ok) {
     if (ui.setStatus) {
@@ -26,7 +29,7 @@
     const email = document.getElementById('email');
     const password = document.getElementById('password');
     try {
-      const res = await fetch('/account/login', {
+      const res = await fetch(appPath('/account/login'), {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({email:email.value,password:password.value})
       });
@@ -41,7 +44,7 @@
           role: data.data.role || 'User',
           avatarPath: data.data.avatarPath || '/uploads/avatars/default-avatar.jpg'
         });
-        window.location.href = window.CaroUrl.path('/');
+        window.location.href = appPath('/');
       }
     } catch (err) {
       const message = String(err?.message || err || 'Dang nhap that bai');

@@ -33,7 +33,7 @@ huggingface:
 
 app:
   email:
-    mode: ${APP_EMAIL_MODE:log}
+    mode: ${APP_EMAIL_MODE:auto}
     from: ${APP_EMAIL_FROM:noreply@example.local}
   admin:
     default-email: ${APP_DEFAULT_ADMIN_EMAIL:admin@example.local}

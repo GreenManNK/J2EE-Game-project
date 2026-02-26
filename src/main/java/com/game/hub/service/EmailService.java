@@ -14,19 +14,30 @@ public class EmailService {
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
     private final ObjectProvider<JavaMailSender> mailSenderProvider;
     private final String mode;
-    private final String fromAddress;
+    private final String configuredFromAddress;
+    private final String smtpHost;
+    private final String smtpUsername;
 
     public EmailService(ObjectProvider<JavaMailSender> mailSenderProvider,
-                        @Value("${app.email.mode:log}") String mode,
-                        @Value("${app.email.from:no-reply@caro.local}") String fromAddress) {
+                        @Value("${app.email.mode:auto}") String mode,
+                        @Value("${app.email.from:no-reply@caro.local}") String fromAddress,
+                        @Value("${spring.mail.host:}") String smtpHost,
+                        @Value("${spring.mail.username:}") String smtpUsername) {
         this.mailSenderProvider = mailSenderProvider;
         this.mode = mode == null ? "log" : mode.trim();
-        this.fromAddress = (fromAddress == null || fromAddress.isBlank()) ? "no-reply@caro.local" : fromAddress.trim();
+        this.configuredFromAddress = (fromAddress == null || fromAddress.isBlank()) ? "no-reply@caro.local" : fromAddress.trim();
+        this.smtpHost = smtpHost == null ? "" : smtpHost.trim();
+        this.smtpUsername = smtpUsername == null ? "" : smtpUsername.trim();
     }
 
     public void sendEmail(String to, String subject, String body) {
-        if (!"smtp".equalsIgnoreCase(mode)) {
-            log.info("[EMAIL][{}] to={} subject={} body={}", mode.isBlank() ? "log" : mode, to, subject, body);
+        String effectiveMode = resolveEffectiveMode();
+        if (!"smtp".equalsIgnoreCase(effectiveMode)) {
+            if ("auto".equalsIgnoreCase(mode)) {
+                log.warn("[EMAIL][auto->log] SMTP not configured, email not sent. to={} subject={} body={}", to, subject, body);
+            } else {
+                log.info("[EMAIL][{}] to={} subject={} body={}", mode.isBlank() ? "log" : mode, to, subject, body);
+            }
             return;
         }
 
@@ -37,7 +48,7 @@ public class EmailService {
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromAddress);
+            message.setFrom(resolveFromAddress());
             message.setTo(to);
             message.setSubject(subject);
             message.setText(body);
@@ -47,5 +58,34 @@ public class EmailService {
             log.error("Failed to send email to {} via SMTP: {}", to, ex.getMessage());
             throw new IllegalStateException("Failed to send email", ex);
         }
+    }
+
+    private String resolveEffectiveMode() {
+        if (mode == null || mode.isBlank()) {
+            return "log";
+        }
+        if ("smtp".equalsIgnoreCase(mode) || "log".equalsIgnoreCase(mode)) {
+            return mode;
+        }
+        if ("auto".equalsIgnoreCase(mode)) {
+            return isSmtpConfigured() ? "smtp" : "log";
+        }
+        log.warn("Unsupported app.email.mode='{}', fallback to log", mode);
+        return "log";
+    }
+
+    private boolean isSmtpConfigured() {
+        return !smtpHost.isBlank() && mailSenderProvider.getIfAvailable() != null;
+    }
+
+    private String resolveFromAddress() {
+        String from = configuredFromAddress == null ? "" : configuredFromAddress.trim();
+        boolean looksLikePlaceholder = from.isBlank()
+            || from.endsWith("@example.local")
+            || from.endsWith("@caro.local");
+        if (looksLikePlaceholder && !smtpUsername.isBlank()) {
+            return smtpUsername;
+        }
+        return from.isBlank() ? "no-reply@caro.local" : from;
     }
 }

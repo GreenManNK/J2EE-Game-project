@@ -4,6 +4,9 @@
   if(!sendForm || !resetForm) return;
 
   const ui = window.CaroUi || {};
+  const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+    ? window.CaroUrl.path
+    : function (value) { return value; };
   const out = document.getElementById('out');
   const email = document.getElementById('email');
   const code = document.getElementById('code');
@@ -58,7 +61,7 @@
   }
 
   async function postJson(url, payload) {
-    const res = await fetch(url, {
+    const res = await fetch(appPath(url), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload || {})

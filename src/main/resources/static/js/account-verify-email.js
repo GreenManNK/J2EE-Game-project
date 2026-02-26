@@ -5,6 +5,9 @@
   const resendBtn = document.getElementById('resendCodeBtn');
   const out = document.getElementById('out');
   const ui = window.CaroUi || {};
+  const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+    ? window.CaroUrl.path
+    : function (value) { return value; };
   const pendingEmail = localStorage.getItem('pendingVerifyEmail');
   if (emailInput && pendingEmail) {
     emailInput.value = pendingEmail;
@@ -56,7 +59,7 @@
     const email = document.getElementById('email');
     const code = document.getElementById('code');
     try {
-      const res = await fetch('/account/verify-email', {
+      const res = await fetch(appPath('/account/verify-email'), {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({email:email.value,code:code.value})
       });
@@ -87,7 +90,7 @@
     const originalText = resendBtn.textContent;
     resendBtn.textContent = 'Dang gui...';
     try {
-      const res = await fetch('/account/resend-verification-code', {
+      const res = await fetch(appPath('/account/resend-verification-code'), {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ email })
       });

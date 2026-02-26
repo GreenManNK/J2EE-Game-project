@@ -3,6 +3,9 @@
   if(!form) return;
   const out = document.getElementById('out');
   const ui = window.CaroUi || {};
+  const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+    ? window.CaroUrl.path
+    : function (value) { return value; };
 
   function setStatus(message, ok) {
     if (ui.setStatus) {
@@ -27,7 +30,7 @@
     const displayName = document.getElementById('displayName');
     const password = document.getElementById('password');
     try {
-      const res = await fetch('/account/register', {
+      const res = await fetch(appPath('/account/register'), {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({email:email.value,displayName:displayName.value,password:password.value,avatarPath:''})
       });
@@ -36,7 +39,7 @@
       if (ok) {
         localStorage.setItem('pendingVerifyEmail', email.value);
         setTimeout(() => {
-          window.location.href = window.CaroUrl.path('/account/verify-email-page');
+          window.location.href = appPath('/account/verify-email-page');
         }, 600);
       }
     } catch (err) {
