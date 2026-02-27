@@ -5,25 +5,56 @@ pushd "%~dp0\.."
 echo ===== STATUS =====
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$appPidRaw=(Get-Content 'app-prod.pid' -ErrorAction SilentlyContinue | Select-Object -First 1);" ^
-  "$cfPidRaw=(Get-Content 'cloudflared.pid' -ErrorAction SilentlyContinue | Select-Object -First 1);" ^
+  "$quickPidRaw=(Get-Content 'cloudflared.pid' -ErrorAction SilentlyContinue | Select-Object -First 1);" ^
+  "$namedPidRaw=(Get-Content 'cloudflared-named.pid' -ErrorAction SilentlyContinue | Select-Object -First 1);" ^
   "$appProc=$null; if($appPidRaw){ try{$appProc=Get-Process -Id ([int]$appPidRaw) -ErrorAction Stop}catch{} };" ^
-  "$cfProc=$null; if($cfPidRaw){ try{$cfProc=Get-Process -Id ([int]$cfPidRaw) -ErrorAction Stop}catch{} };" ^
+  "$quickProc=$null; if($quickPidRaw){ try{$quickProc=Get-Process -Id ([int]$quickPidRaw) -ErrorAction Stop}catch{} };" ^
+  "$namedProc=$null; if($namedPidRaw){ try{$namedProc=Get-Process -Id ([int]$namedPidRaw) -ErrorAction Stop}catch{} };" ^
   "$listen=Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1;" ^
-  "$urlMatch=$null; if(Test-Path 'cloudflared.err.log'){ $urlMatch=Select-String -Path 'cloudflared.err.log' -Pattern 'https://[a-z0-9-]+\.trycloudflare\.com' -AllMatches -ErrorAction SilentlyContinue | Select-Object -Last 1; };" ^
-  "$url=$null; if($cfProc -and $urlMatch -and $urlMatch.Matches.Count -gt 0){$url=$urlMatch.Matches[$urlMatch.Matches.Count-1].Value + '/Game'};" ^
-  "$savedPublicUrl=$null; if(Test-Path 'public-game-url.txt'){ $line=Get-Content 'public-game-url.txt' -ErrorAction SilentlyContinue | Where-Object { $_ -like 'PUBLIC_GAME_URL=*' } | Select-Object -First 1; if($line){ $savedPublicUrl=$line.Substring('PUBLIC_GAME_URL='.Length) } };" ^
+  "$quickUrlMatch=$null; if(Test-Path 'cloudflared.err.log'){ $quickUrlMatch=Select-String -Path 'cloudflared.err.log' -Pattern 'https://[a-z0-9-]+\.trycloudflare\.com' -AllMatches -ErrorAction SilentlyContinue | Select-Object -Last 1; };" ^
+  "$quickUrl=$null; if($quickProc -and $quickUrlMatch -and $quickUrlMatch.Matches.Count -gt 0){$quickUrl=$quickUrlMatch.Matches[$quickUrlMatch.Matches.Count-1].Value.TrimEnd('/') + '/Game'};" ^
+  "$savedPublicUrl=$null; $savedPublicBase=$null; $savedTunnelMode=$null;" ^
+  "if(Test-Path 'public-game-url.txt'){" ^
+  "  foreach($line in Get-Content 'public-game-url.txt' -ErrorAction SilentlyContinue){" ^
+  "    if($line -like 'PUBLIC_GAME_URL=*'){ $savedPublicUrl=$line.Substring('PUBLIC_GAME_URL='.Length) }" ^
+  "    if($line -like 'PUBLIC_BASE_URL=*'){ $savedPublicBase=$line.Substring('PUBLIC_BASE_URL='.Length) }" ^
+  "    if($line -like 'TUNNEL_MODE=*'){ $savedTunnelMode=$line.Substring('TUNNEL_MODE='.Length).ToLowerInvariant() }" ^
+  "  }" ^
+  "};" ^
+  "$namedUrl=$null;" ^
+  "if($namedProc){" ^
+  "  if(-not [string]::IsNullOrWhiteSpace($savedPublicUrl)){ $namedUrl=$savedPublicUrl.TrimEnd('/') }" ^
+  "  elseif(-not [string]::IsNullOrWhiteSpace($savedPublicBase)){ $namedUrl=$savedPublicBase.TrimEnd('/') + '/Game' }" ^
+  "};" ^
+  "$activeMode='';" ^
+  "if($savedTunnelMode -eq 'named' -and $namedProc){ $activeMode='named' }" ^
+  "elseif($savedTunnelMode -eq 'quick' -and $quickProc){ $activeMode='quick' }" ^
+  "elseif($namedProc){ $activeMode='named' }" ^
+  "elseif($quickProc){ $activeMode='quick' };" ^
+  "$activePublicUrl='';" ^
+  "if($activeMode -eq 'named'){ $activePublicUrl=$namedUrl }" ^
+  "elseif($activeMode -eq 'quick'){ $activePublicUrl=$quickUrl }" ^
+  "if([string]::IsNullOrWhiteSpace($activePublicUrl) -and -not [string]::IsNullOrWhiteSpace($savedPublicUrl)){ $activePublicUrl=$savedPublicUrl };" ^
   "Write-Output ('APP_PID_FILE=' + ($appPidRaw | ForEach-Object {$_}));" ^
   "Write-Output ('APP_PROCESS_ALIVE=' + ($(if($appProc){'1'} else {'0'})));" ^
   "Write-Output ('APP_LISTEN_8080=' + ($(if($listen){'1'} else {'0'})));" ^
   "Write-Output ('APP_LISTEN_PID=' + ($(if($listen){$listen.OwningProcess}else{''})));" ^
-  "Write-Output ('QUICK_TUNNEL_PID_FILE=' + ($cfPidRaw | ForEach-Object {$_}));" ^
-  "Write-Output ('QUICK_TUNNEL_PROCESS_ALIVE=' + ($(if($cfProc){'1'} else {'0'})));" ^
-  "Write-Output ('QUICK_TUNNEL_URL=' + ($(if($url){$url}else{''})));" ^
+  "Write-Output ('QUICK_TUNNEL_PID_FILE=' + ($quickPidRaw | ForEach-Object {$_}));" ^
+  "Write-Output ('QUICK_TUNNEL_PROCESS_ALIVE=' + ($(if($quickProc){'1'} else {'0'})));" ^
+  "Write-Output ('QUICK_TUNNEL_URL=' + ($(if($quickUrl){$quickUrl}else{''})));" ^
+  "Write-Output ('NAMED_TUNNEL_PID_FILE=' + ($namedPidRaw | ForEach-Object {$_}));" ^
+  "Write-Output ('NAMED_TUNNEL_PROCESS_ALIVE=' + ($(if($namedProc){'1'} else {'0'})));" ^
+  "Write-Output ('NAMED_TUNNEL_URL=' + ($(if($namedUrl){$namedUrl}else{''})));" ^
+  "Write-Output ('ACTIVE_TUNNEL_MODE=' + $activeMode);" ^
+  "Write-Output ('ACTIVE_PUBLIC_GAME_URL=' + ($(if($activePublicUrl){$activePublicUrl}else{''})));" ^
+  "Write-Output ('LAST_TUNNEL_MODE=' + ($(if($savedTunnelMode){$savedTunnelMode}else{''})));" ^
+  "Write-Output ('LAST_PUBLIC_BASE_URL=' + ($(if($savedPublicBase){$savedPublicBase}else{''})));" ^
   "Write-Output ('LAST_PUBLIC_GAME_URL=' + ($(if($savedPublicUrl){$savedPublicUrl}else{''})));"
 
 echo ==================
 echo.
-echo Neu QUICK_TUNNEL_URL co gia tri, gui link do cho nguoi choi (dang hoat dong).
+echo Neu ACTIVE_PUBLIC_GAME_URL co gia tri, gui link do cho nguoi choi.
+echo ACTIVE_TUNNEL_MODE cho biet dang dung named hay quick.
 echo LAST_PUBLIC_GAME_URL la link lan chay gan nhat da luu (co the da het hieu luc neu tunnel da tat).
 
 popd

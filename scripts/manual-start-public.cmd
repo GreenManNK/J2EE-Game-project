@@ -2,7 +2,7 @@
 setlocal
 pushd "%~dp0\.."
 
-echo [1/1] Dang chay app + quick tunnel public...
+echo [1/1] Dang chay app + public tunnel auto (uu tien named tunnel, fallback quick)...
 echo Mac dinh se AutoBuild de luon lay giao dien/chuc nang moi nhat.
 echo Vui long doi script in ra dong PUBLIC_GAME_URL=...
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\start-remote-public-session.ps1" -AutoBuild
@@ -14,7 +14,7 @@ if not "%RC%"=="0" (
   echo Kiem tra log:
   echo   run-prod-public.out.log
   echo   run-prod-public.err.log
-  echo   cloudflared.err.log
+  echo   cloudflared.err.log hoac cloudflared-named.err.log
   if exist "public-game-url.txt" del /q "public-game-url.txt" >nul 2>nul
 ) else (
   if exist "public-game-url.txt" (

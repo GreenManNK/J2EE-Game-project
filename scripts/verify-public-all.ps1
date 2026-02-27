@@ -195,8 +195,9 @@ function Wait-ProcessesStopped([int]$TimeoutSeconds = 20) {
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
     while ((Get-Date) -lt $deadline) {
         $appAlive = Test-ProcessAliveByPidFile "app-prod.pid"
-        $cfAlive = Test-ProcessAliveByPidFile "cloudflared.pid"
-        if (-not $appAlive -and -not $cfAlive) {
+        $cfQuickAlive = Test-ProcessAliveByPidFile "cloudflared.pid"
+        $cfNamedAlive = Test-ProcessAliveByPidFile "cloudflared-named.pid"
+        if (-not $appAlive -and -not $cfQuickAlive -and -not $cfNamedAlive) {
             return $true
         }
         Start-Sleep -Milliseconds 700
@@ -314,16 +315,25 @@ if (-not $NoLive) {
                 $status = Parse-StatusOutput $statusLines
                 Ensure-StatusValue $status "APP_PROCESS_ALIVE" "1"
                 Ensure-StatusValue $status "APP_LISTEN_8080" "1"
-                Ensure-StatusValue $status "QUICK_TUNNEL_PROCESS_ALIVE" "1"
-                Assert-True ($status.ContainsKey("QUICK_TUNNEL_URL")) "Status output thieu QUICK_TUNNEL_URL"
-                Assert-True (-not [string]::IsNullOrWhiteSpace([string]$status["QUICK_TUNNEL_URL"])) "QUICK_TUNNEL_URL rong khi dang chay"
+                Assert-True ($status.ContainsKey("ACTIVE_TUNNEL_MODE")) "Status output thieu ACTIVE_TUNNEL_MODE"
+                $activeMode = [string]$status["ACTIVE_TUNNEL_MODE"]
+                Assert-True (($activeMode -eq "quick") -or ($activeMode -eq "named")) ("ACTIVE_TUNNEL_MODE khong hop le: " + $activeMode)
+                if ($activeMode -eq "quick") {
+                    Ensure-StatusValue $status "QUICK_TUNNEL_PROCESS_ALIVE" "1"
+                } else {
+                    Ensure-StatusValue $status "NAMED_TUNNEL_PROCESS_ALIVE" "1"
+                }
+                Assert-True ($status.ContainsKey("ACTIVE_PUBLIC_GAME_URL")) "Status output thieu ACTIVE_PUBLIC_GAME_URL"
+                Assert-True (-not [string]::IsNullOrWhiteSpace([string]$status["ACTIVE_PUBLIC_GAME_URL"])) "ACTIVE_PUBLIC_GAME_URL rong khi dang chay"
             } | Out-Null
 
             Invoke-Check "Root status wrapper (STATUS_PUBLIC.cmd) chay thanh cong" {
                 $statusLines = Invoke-CmdScript "STATUS_PUBLIC.cmd" -CaptureOutput
                 $status = Parse-StatusOutput $statusLines
                 Ensure-StatusValue $status "APP_PROCESS_ALIVE" "1"
-                Ensure-StatusValue $status "QUICK_TUNNEL_PROCESS_ALIVE" "1"
+                Assert-True ($status.ContainsKey("ACTIVE_TUNNEL_MODE")) "Status output thieu ACTIVE_TUNNEL_MODE"
+                $activeMode = [string]$status["ACTIVE_TUNNEL_MODE"]
+                Assert-True (($activeMode -eq "quick") -or ($activeMode -eq "named")) ("ACTIVE_TUNNEL_MODE khong hop le: " + $activeMode)
             } | Out-Null
         }
 
@@ -338,6 +348,7 @@ if (-not $NoLive) {
             $status = Parse-StatusOutput $statusLines
             Ensure-StatusValue $status "APP_PROCESS_ALIVE" "0"
             Ensure-StatusValue $status "QUICK_TUNNEL_PROCESS_ALIVE" "0"
+            Ensure-StatusValue $status "NAMED_TUNNEL_PROCESS_ALIVE" "0"
         } | Out-Null
     } finally {
         if ($started -and -not $stopped) {

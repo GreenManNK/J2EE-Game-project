@@ -76,6 +76,18 @@ powershell -ExecutionPolicy Bypass -File .\scripts\stop-cloudflare-named-tunnel.
 
 - `https://game.example.com/Game`
 
+## 5.1) Chay nhanh bang script tong (uu tien named tunnel)
+
+Khi da dien `CLOUDFLARE_TUNNEL_TOKEN` + `PUBLIC_BASE_URL` trong `.env.public.local`, chi can:
+
+```cmd
+cmd /c scripts\manual-start-public.cmd --no-pause
+```
+
+Script se:
+- uu tien chay named tunnel (domain co dinh)
+- neu chua du cau hinh thi moi fallback quick tunnel
+
 ## 6) Van hanh 24/7 (khuyen nghi)
 
 De chay lau dai va tu khoi dong lai sau reboot:

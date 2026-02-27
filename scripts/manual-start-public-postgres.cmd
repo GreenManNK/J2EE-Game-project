@@ -5,7 +5,7 @@ pushd "%~dp0\.."
 set "APP_DATASOURCE_KIND=postgres"
 set "APP_DATASOURCE_ALLOW_H2_FALLBACK=false"
 
-echo [1/1] Dang chay app + quick tunnel public (PostgreSQL)...
+echo [1/1] Dang chay app + public tunnel auto (uu tien named tunnel, fallback quick) (PostgreSQL)...
 echo Script se dung APP_DATASOURCE_POSTGRES_* tu file .env.public.postgres.local neu co.
 if not exist ".env.public.postgres.local" (
   echo [Canh bao] Chua co .env.public.postgres.local. Se dung bien moi truong hien tai / default.
@@ -22,7 +22,7 @@ if not "%RC%"=="0" (
   echo Kiem tra log:
   echo   run-prod-public.out.log
   echo   run-prod-public.err.log
-  echo   cloudflared.err.log
+  echo   cloudflared.err.log hoac cloudflared-named.err.log
   if exist "public-game-url.txt" del /q "public-game-url.txt" >nul 2>nul
 ) else (
   if exist "public-game-url.txt" (

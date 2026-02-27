@@ -31,8 +31,7 @@
     #appShellLayer #friendSidebar,
     #appShellLayer .sidebar-toggle-btn,
     #appShellLayer #backButton,
-    #appShellLayer #siteMusicToggleBtn,
-    #appShellLayer .app-shell-scrim {
+    #appShellLayer #siteMusicToggleBtn {
       pointer-events: auto;
     }
     body:not(.game-index) {
@@ -43,13 +42,15 @@
       position: fixed;
       inset: 0;
       background: rgba(2, 10, 24, 0.42);
+      display: none;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.22s ease;
       z-index: 1044;
       backdrop-filter: blur(1.5px);
     }
-    body.sidebar-open .app-shell-scrim {
+    body.sidebar-open #appShellLayer .app-shell-scrim {
+      display: block;
       opacity: 1;
       pointer-events: auto;
     }
@@ -275,6 +276,7 @@
       const sidebarScrim = document.getElementById("sidebarScrim");
       const icon = toggleBtn?.querySelector("i");
       if (sidebar && toggleBtn) {
+        body.classList.remove("sidebar-open");
         const syncSidebarToggleUi = () => {
           const isOpen = body.classList.contains("sidebar-open");
           if (icon) icon.className = isOpen ? "bi bi-chevron-double-left" : "bi bi-chevron-double-right";
