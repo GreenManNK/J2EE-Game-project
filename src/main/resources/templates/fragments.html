@@ -23,9 +23,35 @@
       --app-sidebar-width: 300px;
     }
     html, body { margin: 0; padding: 0; overflow-x: hidden; }
+    #appShellLayer {
+      position: relative;
+      z-index: 3100;
+      pointer-events: none;
+    }
+    #appShellLayer #friendSidebar,
+    #appShellLayer .sidebar-toggle-btn,
+    #appShellLayer #backButton,
+    #appShellLayer #siteMusicToggleBtn,
+    #appShellLayer .app-shell-scrim {
+      pointer-events: auto;
+    }
     body:not(.game-index) {
       padding-left: 18px;
       padding-right: 18px;
+    }
+    .app-shell-scrim {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 10, 24, 0.42);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+      z-index: 1044;
+      backdrop-filter: blur(1.5px);
+    }
+    body.sidebar-open .app-shell-scrim {
+      opacity: 1;
+      pointer-events: auto;
     }
     #friendSidebar {
       position: fixed;
@@ -38,7 +64,7 @@
       overflow-x: hidden;
       transform: translateX(-100%);
       transition: transform 0.3s ease-in-out;
-      z-index: 1045;
+      z-index: 1046;
       padding: 90px 10px 10px 10px;
       border-right: 1px solid var(--border-color, #ccc);
       pointer-events: none;
@@ -154,7 +180,8 @@
   </style>
 </th:block>
 
-<div th:fragment="appShell(pageKey)">
+<div id="appShellLayer" th:fragment="appShell(pageKey)">
+  <div id="sidebarScrim" class="app-shell-scrim" aria-hidden="true"></div>
   <div id="friendSidebar" class="theme-text">
     <div class="app-shell-sidebar-scroll d-flex flex-column px-1">
       <div class="app-shell-sidebar-brand">
@@ -194,6 +221,9 @@
           <button class="btn theme-outline-btn theme-text" type="submit">Tìm</button>
         </form>
         <small class="text-muted" data-current-user-badge="true">Chua dang nhap</small>
+        <button id="toggle-language" class="btn theme-outline-btn w-100 text-start theme-text" type="button">
+          <i class="bi bi-translate me-2"></i><span id="currentLanguageLabel">Tiếng Việt</span>
+        </button>
         <button id="toggle-theme" class="btn theme-outline-btn w-100 text-start theme-text"><i class="bi bi-circle-half me-2"></i> Chuyển giao diện</button>
       </div>
 
@@ -235,12 +265,14 @@
   <script th:src="@{/lib/jquery/dist/jquery.min.js}"></script>
   <script th:src="@{/js/network-health.js}"></script>
   <script th:src="@{/js/site.js}"></script>
+  <script th:src="@{/js/i18n-ui.js}"></script>
   <script th:src="@{/js/app-shell.js}"></script>
   <script th:inline="javascript">
     document.addEventListener("DOMContentLoaded", () => {
       const body = document.body;
       const sidebar = document.getElementById("friendSidebar");
       const toggleBtn = document.getElementById("toggleSidebar");
+      const sidebarScrim = document.getElementById("sidebarScrim");
       const icon = toggleBtn?.querySelector("i");
       if (sidebar && toggleBtn) {
         const syncSidebarToggleUi = () => {
@@ -256,7 +288,37 @@
           body.classList.toggle("sidebar-open", !isOpen);
           syncSidebarToggleUi();
         });
+        sidebarScrim?.addEventListener("click", () => {
+          body.classList.remove("sidebar-open");
+          syncSidebarToggleUi();
+        });
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && body.classList.contains("sidebar-open")) {
+            body.classList.remove("sidebar-open");
+            syncSidebarToggleUi();
+          }
+        });
       }
+      const i18n = window.CaroI18n;
+      i18n?.init();
+      const toggleLanguageBtn = document.getElementById("toggle-language");
+      const languageLabel = document.getElementById("currentLanguageLabel");
+      const syncLanguageUi = () => {
+        const lang = i18n?.getLanguage?.() || "vi";
+        if (languageLabel) {
+          languageLabel.textContent = lang === "vi" ? "Tiếng Việt" : "English";
+        }
+        if (toggleLanguageBtn) {
+          toggleLanguageBtn.setAttribute("title", lang === "vi" ? "Chuyển sang tiếng Anh" : "Switch to Vietnamese");
+        }
+      };
+      syncLanguageUi();
+      i18n?.onChange?.(syncLanguageUi);
+      toggleLanguageBtn?.addEventListener("click", () => {
+        if (!i18n) return;
+        const current = i18n.getLanguage?.() || "vi";
+        i18n.setLanguage?.(current === "vi" ? "en" : "vi");
+      });
       const toggleThemeBtn = document.getElementById("toggle-theme");
       const savedTheme = localStorage.getItem("theme");
       if (savedTheme === "dark") body.classList.add("dark-mode");
