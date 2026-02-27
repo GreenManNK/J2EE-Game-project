@@ -116,7 +116,7 @@
       pointer-events: none;
     }
     body.sidebar-open .sidebar-toggle-btn {
-      left: calc(var(--app-sidebar-width) - 8px);
+      left: clamp(8px, calc(var(--app-sidebar-width) - 22px), calc(100vw - 46px));
       transform: translateY(-50%);
     }
     #friendListInlineContainer {
@@ -164,7 +164,7 @@
         transform: none;
       }
       body.sidebar-open .sidebar-toggle-btn {
-        left: calc(var(--app-sidebar-width) - 8px);
+        left: clamp(10px, calc(var(--app-sidebar-width) - 22px), calc(100vw - 46px));
         transform: none;
       }
       #friendListInlineContainer {
@@ -190,12 +190,12 @@
           <i class="bi bi-controller"></i>
           <span>Game Hub</span>
         </div>
-        <div class="app-shell-sidebar-brand__title">Control Center</div>
-        <div class="app-shell-sidebar-brand__meta">Choi nhanh, quan ly ban be va theo doi bang xep hang.</div>
+        <div class="app-shell-sidebar-brand__title">Trung tâm điều khiển</div>
+        <div class="app-shell-sidebar-brand__meta">Chơi nhanh, quản lý bạn bè và theo dõi bảng xếp hạng.</div>
       </div>
       <div class="app-shell-sidebar-menu">
         <a class="btn theme-outline-btn w-100 text-start fw-bold theme-text" th:href="@{/}"><i class="bi bi-house-fill me-2"></i> Trang chủ</a>
-        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-controller me-2"></i> Thu vien game</a>
+        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-controller me-2"></i> Thư viện game</a>
         <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/leaderboard}"><i class="bi bi-bar-chart-fill me-2"></i> Bảng xếp hạng</a>
         <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/history}" data-require-user-id="true" data-user-param="userId"><i class="bi bi-clock-history me-2"></i> Lịch sử đấu</a>
         <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship}" data-require-user-id="true"><i class="bi bi-people-fill me-2"></i> Bạn bè</a>
@@ -221,7 +221,7 @@
           <input id="friendSearchInput" class="form-control me-2" placeholder="Tìm bạn...">
           <button class="btn theme-outline-btn theme-text" type="submit">Tìm</button>
         </form>
-        <small class="text-muted" data-current-user-badge="true">Chua dang nhap</small>
+        <small class="text-muted" data-current-user-badge="true">Chưa đăng nhập</small>
         <button id="toggle-language" class="btn theme-outline-btn w-100 text-start theme-text" type="button">
           <i class="bi bi-translate me-2"></i><span id="currentLanguageLabel">Tiếng Việt</span>
         </button>
@@ -232,18 +232,18 @@
         <div id="friendListInlineContainer" class="theme-box">
           <div class="app-shell-friends-head">
             <div>
-              <div class="app-shell-friends-head__title">Ban be</div>
-              <div class="app-shell-friends-head__meta">Trang thai online cap nhat dinh ky</div>
+              <div class="app-shell-friends-head__title">Bạn bè</div>
+              <div class="app-shell-friends-head__meta">Trạng thái online cập nhật định kỳ</div>
             </div>
             <i class="bi bi-people-fill"></i>
           </div>
-          <div id="friendListContainer" class="small text-muted">Dang tai danh sach ban be...</div>
+          <div id="friendListContainer" class="small text-muted">Đang tải danh sách bạn bè...</div>
         </div>
       </div>
     </div>
   </div>
 
-  <button id="toggleSidebar" class="sidebar-toggle-btn" type="button" aria-label="Mo sidebar" aria-expanded="false" title="Mo sidebar">
+  <button id="toggleSidebar" class="sidebar-toggle-btn" type="button" aria-label="Mở sidebar" aria-expanded="false" title="Mở sidebar">
     <i class="bi bi-chevron-double-right"></i>
   </button>
 
@@ -281,8 +281,8 @@
           const isOpen = body.classList.contains("sidebar-open");
           if (icon) icon.className = isOpen ? "bi bi-chevron-double-left" : "bi bi-chevron-double-right";
           toggleBtn.setAttribute("aria-expanded", String(isOpen));
-          toggleBtn.setAttribute("aria-label", isOpen ? "Dong sidebar" : "Mo sidebar");
-          toggleBtn.setAttribute("title", isOpen ? "Dong sidebar" : "Mo sidebar");
+          toggleBtn.setAttribute("aria-label", isOpen ? "Đóng sidebar" : "Mở sidebar");
+          toggleBtn.setAttribute("title", isOpen ? "Đóng sidebar" : "Mở sidebar");
         };
         syncSidebarToggleUi();
         toggleBtn.addEventListener("click", () => {
