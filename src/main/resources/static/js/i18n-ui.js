@@ -9,179 +9,146 @@
   let applying = false;
   let pendingApply = false;
   let observer = null;
-  let sourceTitle = "";
-  let renderedTitle = "";
 
   const changeListeners = new Set();
   const textState = new WeakMap();
   const attrState = new WeakMap();
 
   const PHRASE_PAIRS = [
-    { vi: "Trung tâm điều khiển", en: "Control Center" },
-    { vi: "Chơi nhanh, quản lý bạn bè và theo dõi bảng xếp hạng.", en: "Play quickly, manage friends, and track the leaderboard." },
-    { vi: "Trang chủ", en: "Home" },
-    { vi: "Thư viện game", en: "Game Library" },
-    { vi: "Bảng xếp hạng", en: "Leaderboard" },
-    { vi: "Lịch sử đấu", en: "Match History" },
-    { vi: "Bạn bè", en: "Friends" },
-    { vi: "Thông báo", en: "Notifications" },
-    { vi: "Hồ sơ của tôi", en: "My Profile" },
-    { vi: "Đăng nhập", en: "Login" },
-    { vi: "Đăng ký", en: "Register" },
-    { vi: "Đăng xuất", en: "Logout" },
-    { vi: "Chuyển giao diện", en: "Toggle Theme" },
-    { vi: "Tìm bạn...", en: "Search friends..." },
-    { vi: "Tìm", en: "Search" },
-    { vi: "Chưa đăng nhập", en: "Not logged in" },
-    { vi: "Đang tải danh sách bạn bè...", en: "Loading friends list..." },
-    { vi: "Trạng thái online cập nhật định kỳ", en: "Online status updates periodically" },
-
-    { vi: "Chọn game và vào trận ngay", en: "Pick a game and jump in now" },
-    { vi: "Trang chủ được tối ưu theo kiểu web game portal: hành động chính đặt trên cùng, bảng tin cộng đồng tách riêng, và khung giao diện đồng bộ với các trang game/detail.", en: "Home is optimized as a game portal: key actions on top, separate community feed, and a unified layout with game/detail pages." },
-    { vi: "Chế độ", en: "Modes" },
-    { vi: "Truy cập nhanh", en: "Quick access" },
-    { vi: "Cộng đồng", en: "Community" },
-    { vi: "Giao diện", en: "Interface" },
-    { vi: "Hướng dẫn nhanh", en: "Quick guide" },
-    { vi: "Mẹo chơi", en: "Tips" },
-    { vi: "Chọn game ở trên, vào trang chi tiết, sau đó chọn offline / online / bot phù hợp.", en: "Choose a game above, open its detail page, then pick the right mode: offline / online / bot." },
-    { vi: "Đăng nhập để đồng bộ hồ sơ, lưu lịch sử đấu và thao tác với bạn bè nhanh hơn trên thanh bên trái.", en: "Log in to sync profile, save match history, and interact with friends faster via the left sidebar." },
-    { vi: "Đăng bài viết mới", en: "Create new post" },
-    { vi: "Cập nhật nhanh cho cộng đồng", en: "Quick update for the community" },
-    { vi: "Bản tin", en: "Feed" },
-    { vi: "Bạn đang nghĩ gì?", en: "What's on your mind?" },
-    { vi: "Tác giả: Cần đăng nhập", en: "Author: Login required" },
-    { vi: "Cần đăng nhập", en: "Login required" },
-    { vi: "Đăng bài", en: "Post" },
-    { vi: "bài viết", en: "posts" },
-    { vi: "Chưa có bài đăng nào.", en: "No posts yet." },
-    { vi: "Bình luận", en: "Comments" },
-    { vi: "Chưa có bình luận", en: "No comments yet" },
-    { vi: "Viết bình luận...", en: "Write a comment..." },
-    { vi: "Gửi", en: "Send" },
-    { vi: "Tắt Nhạc", en: "Mute Music" },
-    { vi: "Bật Nhạc", en: "Unmute Music" },
-
-    { vi: "Đăng ký tài khoản", en: "Create account" },
-    { vi: "Mật khẩu", en: "Password" },
-    { vi: "Tên hiển thị", en: "Display name" },
-    { vi: "Gửi mã xác thực", en: "Send verification code" },
-    { vi: "Đã có mã? Xác thực email", en: "Already have a code? Verify email" },
-    { vi: "Xác thực Email", en: "Verify Email" },
-    { vi: "Mã xác thực", en: "Verification code" },
-    { vi: "Gửi lại mã", en: "Resend code" },
-    { vi: "Đăng nhập để mở tính năng đầy đủ", en: "Log in to unlock full features" },
-    { vi: "Đồng bộ profile, lịch sử đấu, bảng xếp hạng và hệ thống bạn bè/chat riêng.", en: "Sync profile, match history, leaderboard, and the friends/private-chat system." },
-    { vi: "Quên mật khẩu?", en: "Forgot password?" },
-    { vi: "Đặt lại mật khẩu", en: "Reset password" },
-    { vi: "Bước 1: Gửi mã reset", en: "Step 1: Send reset code" },
-    { vi: "Bước 2: Xác thực mã reset + Đặt lại mật khẩu (dùng email ở trên)", en: "Step 2: Verify reset code + set a new password (using the email above)" },
-    { vi: "Gửi mã", en: "Send code" },
-    { vi: "Chưa xác thực mã", en: "Code not verified" },
-    { vi: "Mật khẩu mới", en: "New password" },
-    { vi: "Xác nhận mật khẩu", en: "Confirm password" },
-    { vi: "Khôi phục truy cập an toàn", en: "Secure access recovery" },
-    { vi: "Quy trình 2 bước giúp xác minh email trước khi cho phép đổi mật khẩu mới.", en: "A two-step flow verifies email before allowing password reset." },
-
-    { vi: "Tạo phòng", en: "Create room" },
-    { vi: "Tham gia", en: "Join" },
-    { vi: "Hiện tại không có phòng nào.", en: "There are no rooms currently." },
-    { vi: "Sảnh chơi online", en: "Online lobby" },
-    { vi: "Cập nhật realtime", en: "Realtime updates" },
-    { vi: "Ván mới", en: "New match" },
-    { vi: "Đầu hàng", en: "Surrender" },
-    { vi: "Rời phòng", en: "Leave room" },
-    { vi: "Về Online Hub", en: "Back to Online Hub" },
-    { vi: "Đang khởi tạo...", en: "Initializing..." },
-    { vi: "Đang chờ kết nối...", en: "Waiting for connection..." },
-    { vi: "Đang chờ vào phòng...", en: "Waiting to enter room..." },
-    { vi: "Đang chờ đủ người...", en: "Waiting for enough players..." },
-    { vi: "Thông tin ván đấu", en: "Match information" },
-    { vi: "Nhật ký nước đi", en: "Move log" },
-    { vi: "Trạng thái", en: "Status" },
-    { vi: "Nước đi", en: "Moves" },
-    { vi: "Lượt hiện tại", en: "Current turn" },
-    { vi: "Đang chơi", en: "In progress" },
-    { vi: "Phòng", en: "Room" },
-    { vi: "Bạn", en: "You" },
-    { vi: "Màu quân của bạn", en: "Your side" },
-    { vi: "Chưa chọn", en: "Not selected" },
-    { vi: "Chưa vào phòng", en: "Not in room" },
-
-    { vi: "Cập nhật thông tin", en: "Update profile" },
-    { vi: "Đổi mật khẩu", en: "Change password" },
-    { vi: "Lưu thay đổi", en: "Save changes" },
-    { vi: "Về Home", en: "Back to Home" },
-    { vi: "Chưa có.", en: "None yet." },
-    { vi: "Điểm Achievements", en: "Achievement score" },
-    { vi: "Achievement Lặp Lại", en: "Repeat achievements" },
-    { vi: "Achievement Đặc Biệt", en: "Special achievements" },
-
-    { vi: "Đăng nhập để xem danh sách bạn bè.", en: "Log in to view your friends list." },
-    { vi: "Chưa có bạn bè nào.", en: "No friends yet." },
-    { vi: "Không tải được danh sách bạn bè.", en: "Unable to load friends list." },
-    { vi: "Xử lý thành công", en: "Success" },
-    { vi: "Thao tác thành công", en: "Action completed successfully" },
-    { vi: "Thao tác thất bại", en: "Action failed" },
-    { vi: "Lỗi", en: "Error" },
-    { vi: "Thông báo", en: "Notification" },
-    { vi: "Lỗi mạng", en: "Network error" },
-
-    { vi: "Email là bắt buộc", en: "Email is required" },
-    { vi: "Mật khẩu là bắt buộc", en: "Password is required" },
-    { vi: "Tên hiển thị là bắt buộc", en: "Display name is required" },
-    { vi: "Email đã tồn tại", en: "Email already exists" },
-    { vi: "Mã xác thực đã được gửi", en: "Verification code sent" },
-    { vi: "Nếu email tồn tại, mã reset đã được gửi", en: "If the email exists, a reset code has been sent" },
-    { vi: "Không thể gửi mã xác thực lúc này. Vui lòng thử lại.", en: "Cannot send verification email right now. Please try again." },
-    { vi: "Không thể gửi mã reset lúc này. Vui lòng thử lại.", en: "Cannot send reset code right now. Please try again." },
-    { vi: "Mã không hợp lệ hoặc đã hết hạn", en: "Invalid or expired code" },
-    { vi: "Xác thực email thành công", en: "Email verification successful" },
-    { vi: "Đăng nhập thành công", en: "Login successful" },
-    { vi: "Đăng ký thất bại", en: "Registration failed" },
-    { vi: "Đăng nhập thất bại", en: "Login failed" },
-    { vi: "Chờ", en: "Wait" }
+    { vi: "Trung tâm điều khiển", en: "Control Center", aliases: ["Trung tam dieu khien"] },
+    { vi: "Trang chủ", en: "Home", aliases: ["Trang chu"] },
+    { vi: "Thư viện game", en: "Game Library", aliases: ["Thu vien game"] },
+    { vi: "Bảng xếp hạng", en: "Leaderboard", aliases: ["Bang xep hang"] },
+    { vi: "Lịch sử đấu", en: "Match History", aliases: ["Lich su dau"] },
+    { vi: "Bạn bè", en: "Friends", aliases: ["Ban be"] },
+    { vi: "Thông báo", en: "Notifications", aliases: ["Thong bao"] },
+    { vi: "Hồ sơ của tôi", en: "My Profile", aliases: ["Ho so cua toi"] },
+    { vi: "Đăng nhập", en: "Login", aliases: ["Dang nhap"] },
+    { vi: "Đăng ký", en: "Register", aliases: ["Dang ky"] },
+    { vi: "Đăng xuất", en: "Logout", aliases: ["Dang xuat"] },
+    { vi: "Tìm bạn...", en: "Search friends...", aliases: ["Tim ban..."] },
+    { vi: "Tìm", en: "Search", aliases: ["Tim"] },
+    { vi: "Chưa đăng nhập", en: "Not logged in", aliases: ["Chua dang nhap"] },
+    { vi: "Đang tải danh sách bạn bè...", en: "Loading friends list...", aliases: ["Dang tai danh sach ban be..."] },
+    { vi: "Chế độ", en: "Mode", aliases: ["Che do"] },
+    { vi: "Truy cập nhanh", en: "Quick Access", aliases: ["Truy cap nhanh"] },
+    { vi: "Cộng đồng", en: "Community", aliases: ["Cong dong"] },
+    { vi: "Giao diện", en: "Interface", aliases: ["Giao dien"] },
+    { vi: "Hướng dẫn nhanh", en: "Quick Guide", aliases: ["Huong dan nhanh"] },
+    { vi: "Mẹo chơi", en: "Tips", aliases: ["Meo choi"] },
+    { vi: "Đăng bài", en: "Post", aliases: ["Dang bai"] },
+    { vi: "Bảng tin", en: "Feed", aliases: ["Bang tin"] },
+    { vi: "Bình luận", en: "Comments", aliases: ["Binh luan"] },
+    { vi: "Gửi", en: "Send", aliases: ["Gui"] },
+    { vi: "Đầu hàng", en: "Surrender", aliases: ["Dau hang"] },
+    { vi: "Rời phòng", en: "Leave room", aliases: ["Roi phong"] },
+    { vi: "Ván mới", en: "New match", aliases: ["Van moi"] },
+    { vi: "Trạng thái", en: "Status", aliases: ["Trang thai"] },
+    { vi: "Kết nối", en: "Connection", aliases: ["Ket noi"] },
+    { vi: "Người chơi", en: "Player", aliases: ["Nguoi choi"] },
+    { vi: "Nước đi", en: "Move", aliases: ["Nuoc di"] },
+    { vi: "Màu quân của bạn", en: "Your side", aliases: ["Mau quan cua ban"] },
+    { vi: "Chưa chọn", en: "Not selected", aliases: ["Chua chon"] },
+    { vi: "Chưa vào phòng", en: "Not in room", aliases: ["Chua vao phong"] },
+    { vi: "Đang chơi", en: "In progress", aliases: ["Dang choi"] },
+    { vi: "Đang chờ đối thủ", en: "Waiting for opponent", aliases: ["Dang cho doi thu", "Dang cho doi doi thu"] },
+    { vi: "Đang chờ kết nối...", en: "Waiting for connection...", aliases: ["Dang cho ket noi..."] },
+    { vi: "Đang khởi tạo...", en: "Initializing...", aliases: ["Dang khoi tao..."] },
+    { vi: "Đang vào phòng...", en: "Joining room...", aliases: ["Dang vao phong..."] },
+    { vi: "Chưa có", en: "No data yet", aliases: ["Chua co"] },
+    { vi: "Không có", en: "No", aliases: ["Khong co"] },
+    { vi: "Không thể", en: "Cannot", aliases: ["Khong the"] },
+    { vi: "Không xác định được", en: "Unable to determine", aliases: ["Khong xac dinh duoc"] },
+    { vi: "Không kết nối được máy chủ", en: "Cannot connect to server", aliases: ["Khong ket noi duoc may chu"] },
+    { vi: "Vui lòng", en: "Please", aliases: ["Vui long"] }
   ];
 
-  const VI_WORD_FIX = {
-    "dang": "đang",
-    "nhap": "nhập",
-    "ky": "ký",
-    "khong": "không",
-    "choi": "chơi",
-    "thong": "thông",
-    "bao": "báo",
-    "lich": "lịch",
-    "su": "sử",
-    "dau": "đấu",
-    "vien": "viện",
-    "ban": "bạn",
-    "be": "bè",
-    "tim": "tìm",
-    "gui": "gửi",
-    "lai": "lại",
-    "ma": "mã",
-    "xac": "xác",
-    "thuc": "thực",
-    "mat": "mật",
-    "khau": "khẩu",
-    "ten": "tên",
-    "hien": "hiện",
-    "thi": "thị",
-    "nguoi": "người",
-    "phong": "phòng",
-    "roi": "rời",
-    "ve": "về",
-    "moi": "mới",
-    "tao": "tạo",
-    "ket": "kết",
-    "noi": "nối",
-    "van": "ván",
-    "sanh": "sảnh",
-    "cap": "cập",
-    "nhat": "nhật",
-    "dinh": "định"
-  };
+  const VI_FIXES = [
+    ["Dang cho doi doi thu", "Đang chờ đối thủ"],
+    ["Dang cho doi thu", "Đang chờ đối thủ"],
+    ["Dang cho du nguoi", "Đang chờ đủ người"],
+    ["Dang cho them 1 nguoi choi", "Đang chờ thêm 1 người chơi"],
+    ["Dang cho vao phong", "Đang chờ vào phòng"],
+    ["Dang cho ket noi", "Đang chờ kết nối"],
+    ["Dang cho server xac nhan nuoc di", "Đang chờ server xác nhận nước đi"],
+    ["Dang ket noi", "Đang kết nối"],
+    ["Da ket noi", "Đã kết nối"],
+    ["Dang vao phong", "Đang vào phòng"],
+    ["Dang khoi tao ket noi", "Đang khởi tạo kết nối"],
+    ["Dang khoi tao van", "Đang khởi tạo ván"],
+    ["Dang tai danh sach phong", "Đang tải danh sách phòng"],
+    ["Dang tai danh sach ban be", "Đang tải danh sách bạn bè"],
+    ["Dang den luot", "Đang đến lượt"],
+    ["Dang chon", "Đang chọn"],
+    ["Dang gui", "Đang gửi"],
+    ["Dang danh", "Đang đánh"],
+    ["Dang choi", "Đang chơi"],
+    ["Chua den luot", "Chưa đến lượt"],
+    ["Chua dang nhap", "Chưa đăng nhập"],
+    ["Chua vao phong", "Chưa vào phòng"],
+    ["Chua co ma phong", "Chưa có mã phòng"],
+    ["Chua co phong dang cho", "Chưa có phòng đang chờ"],
+    ["Chua co nuoc di", "Chưa có nước đi"],
+    ["Chua co du lieu lich su", "Chưa có dữ liệu lịch sử"],
+    ["Chua ket noi server", "Chưa kết nối server"],
+    ["Chua ket ban", "Chưa kết bạn"],
+    ["Chua chon", "Chưa chọn"],
+    ["Khong ket noi duoc may chu", "Không kết nối được máy chủ"],
+    ["Khong xac dinh duoc", "Không xác định được"],
+    ["Khong tai duoc SockJS/STOMP.", "Không tải được SockJS/STOMP."],
+    ["Khong gui duoc tin nhan", "Không gửi được tin nhắn"],
+    ["Khong gui duoc nuoc di. Vui long thu lai.", "Không gửi được nước đi. Vui lòng thử lại."],
+    ["Khong copy tu dong duoc. Hay copy thu cong", "Không copy tự động được. Hãy copy thủ công"],
+    ["Khong goi duoc API bot", "Không gọi được API bot"],
+    ["Khong reset duoc bot. Thu lai.", "Không reset được bot. Thử lại."],
+    ["Khong co loi moi ket ban", "Không có lời mời kết bạn"],
+    ["Khong co loi moi dang cho", "Không có lời mời đang chờ"],
+    ["Khong co loi moi da gui", "Không có lời mời đã gửi"],
+    ["Khong co ket qua khop chinh xac", "Không có kết quả khớp chính xác"],
+    ["Khong co ket qua tuong tu", "Không có kết quả tương tự"],
+    ["Khong can dang nhap", "Không cần đăng nhập"],
+    ["Khong can", "Không cần"],
+    ["Khong the", "Không thể"],
+    ["Khong co", "Không có"],
+    ["Loi WebSocket", "Lỗi WebSocket"],
+    ["Mat ket noi", "Mất kết nối"],
+    ["Ket noi mang on dinh", "Kết nối mạng ổn định"],
+    ["Internet da ket noi lai", "Internet đã kết nối lại"],
+    ["Dang offline - kiem tra mang internet", "Đang offline - kiểm tra mạng internet"],
+    ["Bang xep hang", "Bảng xếp hạng"],
+    ["Danh sach xep hang", "Danh sách xếp hạng"],
+    ["Lich su dau", "Lịch sử đấu"],
+    ["Thu vien game", "Thư viện game"],
+    ["Ban be", "Bạn bè"],
+    ["Thong bao", "Thông báo"],
+    ["Tai khoan", "Tài khoản"],
+    ["Mat khau", "Mật khẩu"],
+    ["Xac thuc", "Xác thực"],
+    ["Xac nhan", "Xác nhận"],
+    ["Vui long", "Vui lòng"],
+    ["Hay ", "Hãy "],
+    ["Mau quan cua ban", "Màu quân của bạn"],
+    ["Nguoi choi trong phong", "Người chơi trong phòng"],
+    ["Nguoi choi", "Người chơi"],
+    ["Nuoc di", "Nước đi"],
+    ["Luot hien tai", "Lượt hiện tại"],
+    ["Luot cua", "Lượt của"],
+    ["Luot:", "Lượt:"],
+    ["Den luot", "Đến lượt"],
+    ["Trang thai van dau", "Trạng thái ván đấu"],
+    ["Thong tin van dau", "Thông tin ván đấu"],
+    ["Trang thai", "Trạng thái"],
+    ["Dau hang", "Đầu hàng"],
+    ["Roi phong", "Rời phòng"],
+    ["Van moi", "Ván mới"],
+    ["Choi lai", "Chơi lại"],
+    ["Nhap ma phong", "Nhập mã phòng"],
+    ["Nhap tin nhan", "Nhập tin nhắn"],
+    ["Nhap cau hoi", "Nhập câu hỏi"],
+    ["Nhap user id de loc", "Nhập user ID để lọc"],
+    ["Co vua", "Cờ vua"],
+    ["Co tuong", "Cờ tướng"]
+  ];
 
   function toAscii(value) {
     return String(value || "")
@@ -195,63 +162,39 @@
     return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
-  function isUpper(value) {
-    return value === value.toUpperCase() && value !== value.toLowerCase();
-  }
-
-  function isCapitalized(value) {
-    if (!value) return false;
-    return value.charAt(0) === value.charAt(0).toUpperCase() && value.slice(1) === value.slice(1).toLowerCase();
-  }
-
-  function applyCase(source, replacement) {
-    if (!source || !replacement) return replacement;
-    if (isUpper(source)) return replacement.toUpperCase();
-    if (isCapitalized(source)) return replacement.charAt(0).toUpperCase() + replacement.slice(1);
-    return replacement;
-  }
-
-  function buildPhraseReplacements() {
-    const list = [];
+  function buildPairReplacements() {
+    const all = [];
     PHRASE_PAIRS.forEach((pair) => {
-      const variants = new Set([
-        pair.vi,
-        pair.en,
-        toAscii(pair.vi),
-        toAscii(pair.en)
-      ]);
-      variants.forEach((source) => {
+      const aliases = pair.aliases || [];
+      const sources = new Set([pair.vi, pair.en, toAscii(pair.vi), toAscii(pair.en), ...aliases]);
+      sources.forEach((source) => {
         const text = String(source || "").trim();
         if (!text) return;
-        list.push({
-          source: text,
+        all.push({
           regex: new RegExp(escapeRegExp(text), "gi"),
           vi: pair.vi,
           en: pair.en
         });
       });
     });
-    return list.sort((a, b) => b.source.length - a.source.length);
+    all.sort((a, b) => String(b.vi).length - String(a.vi).length);
+    return all;
   }
 
-  const PHRASE_REPLACEMENTS = buildPhraseReplacements();
+  const PHRASE_REPLACEMENTS = buildPairReplacements();
+  const VI_FIX_REPLACEMENTS = VI_FIXES
+    .map(([oldValue, newValue]) => ({
+      regex: new RegExp(escapeRegExp(oldValue), "gi"),
+      value: newValue
+    }))
+    .sort((a, b) => String(b.value).length - String(a.value).length);
 
   function normalizeLanguage(language) {
     const value = String(language || "").trim().toLowerCase();
     return SUPPORTED_LANGS.includes(value) ? value : "vi";
   }
 
-  function getStoredLanguage() {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return null;
-    return normalizeLanguage(stored);
-  }
-
-  function saveLanguage(language) {
-    localStorage.setItem(STORAGE_KEY, language);
-  }
-
-  function applyPhraseReplacement(text, language) {
+  function translateByPairs(text, language) {
     let output = String(text || "");
     PHRASE_REPLACEMENTS.forEach((entry) => {
       output = output.replace(entry.regex, entry[language]);
@@ -259,13 +202,12 @@
     return output;
   }
 
-  function applyVietnameseWordFix(text) {
-    return String(text || "").replace(/\b[\p{L}\p{M}]+\b/gu, (token) => {
-      const key = toAscii(token).toLowerCase();
-      const replacement = VI_WORD_FIX[key];
-      if (!replacement) return token;
-      return applyCase(token, replacement);
+  function applyVietnameseFixes(text) {
+    let output = String(text || "");
+    VI_FIX_REPLACEMENTS.forEach((entry) => {
+      output = output.replace(entry.regex, entry.value);
     });
+    return output;
   }
 
   function translateText(rawText, language) {
@@ -273,28 +215,16 @@
     if (!text.trim()) return text;
 
     const lang = normalizeLanguage(language || currentLang);
-    let output = applyPhraseReplacement(text, lang);
+    let output = translateByPairs(text, lang);
     if (lang === "vi") {
-      output = output.replace(
-        /Please wait\s+(\d+)\s+seconds before requesting a new code/gi,
-        "Vui lòng chờ $1 giây trước khi yêu cầu mã mới"
-      );
-    } else {
-      output = output.replace(
-        /Vui lòng chờ\s+(\d+)\s+giây trước khi yêu cầu mã mới/gi,
-        "Please wait $1 seconds before requesting a new code"
-      );
-    }
-    if (lang === "vi") {
-      output = applyVietnameseWordFix(output);
+      output = applyVietnameseFixes(output);
     }
     return output;
   }
 
   function shouldSkipElement(element) {
     if (!element || element.nodeType !== Node.ELEMENT_NODE) return true;
-    const tag = element.tagName;
-    if (["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "CODE", "PRE", "IFRAME"].includes(tag)) {
+    if (["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "CODE", "PRE", "IFRAME"].includes(element.tagName)) {
       return true;
     }
     return !!element.closest("[data-no-i18n='true']");
@@ -315,7 +245,7 @@
     }
 
     const translated = translateText(state.source, currentLang);
-    if (currentValue !== translated) {
+    if (translated !== currentValue) {
       node.nodeValue = translated;
     }
     state.rendered = translated;
@@ -340,7 +270,7 @@
     }
 
     const translated = translateText(attr.source, currentLang);
-    if (currentValue !== translated) {
+    if (translated !== currentValue) {
       element.setAttribute(attrName, translated);
     }
     attr.rendered = translated;
@@ -368,23 +298,15 @@
     }
 
     const translated = translateText(valueState.source, currentLang);
-    if (currentValue !== translated) {
+    if (translated !== currentValue) {
       element.value = translated;
     }
     valueState.rendered = translated;
   }
 
   function translateRoot(root) {
-    if (!root) return;
-
-    const start = root.nodeType === Node.ELEMENT_NODE ? root : document.body;
-    if (!start) return;
-    if (start.nodeType === Node.ELEMENT_NODE && shouldSkipElement(start)) return;
-
-    if (start.nodeType === Node.ELEMENT_NODE) {
-      TEXT_ATTRS.forEach((attr) => updateElementAttribute(start, attr));
-      updateInputValue(start);
-    }
+    const start = root && root.nodeType === Node.ELEMENT_NODE ? root : document.body;
+    if (!start || shouldSkipElement(start)) return;
 
     const walker = document.createTreeWalker(
       start,
@@ -417,32 +339,12 @@
     }
   }
 
-  function translateDocumentTitle() {
-    const title = String(document.title || "");
-    if (!sourceTitle) {
-      sourceTitle = title;
-      renderedTitle = title;
-    } else if (title !== renderedTitle && title !== sourceTitle) {
-      sourceTitle = title;
-    }
-    const translated = translateText(sourceTitle, currentLang);
-    if (title !== translated) {
-      document.title = translated;
-    }
-    renderedTitle = translated;
-  }
-
-  function setHtmlLanguage(language) {
-    document.documentElement.setAttribute("lang", language === "en" ? "en" : "vi");
-  }
-
   function applyAll() {
     if (!document.body) return;
     applying = true;
     try {
       translateRoot(document.body);
-      translateDocumentTitle();
-      setHtmlLanguage(currentLang);
+      document.documentElement.setAttribute("lang", currentLang);
     } finally {
       applying = false;
     }
@@ -460,8 +362,7 @@
   function startObserver() {
     if (observer || !document.body) return;
     observer = new MutationObserver(() => {
-      if (applying) return;
-      scheduleApplyAll();
+      if (!applying) scheduleApplyAll();
     });
     observer.observe(document.body, {
       childList: true,
@@ -474,11 +375,7 @@
 
   function notifyChange() {
     changeListeners.forEach((listener) => {
-      try {
-        listener(currentLang);
-      } catch (_) {
-        // no-op
-      }
+      try { listener(currentLang); } catch (_) { }
     });
   }
 
@@ -486,7 +383,7 @@
     const next = normalizeLanguage(language);
     if (next === currentLang) return;
     currentLang = next;
-    saveLanguage(currentLang);
+    localStorage.setItem(STORAGE_KEY, next);
     applyAll();
     notifyChange();
   }
@@ -496,9 +393,7 @@
   }
 
   function onChange(listener) {
-    if (typeof listener !== "function") {
-      return function () { return undefined; };
-    }
+    if (typeof listener !== "function") return function () {};
     changeListeners.add(listener);
     return function unsubscribe() {
       changeListeners.delete(listener);
@@ -511,25 +406,20 @@
       return;
     }
     initialized = true;
-
-    const stored = getStoredLanguage();
-    currentLang = stored || "vi";
-    saveLanguage(currentLang);
-
+    currentLang = normalizeLanguage(localStorage.getItem(STORAGE_KEY) || "vi");
+    localStorage.setItem(STORAGE_KEY, currentLang);
     applyAll();
     startObserver();
     notifyChange();
   }
 
   window.CaroI18n = {
-    init: init,
-    setLanguage: setLanguage,
-    getLanguage: getLanguage,
-    onChange: onChange,
+    init,
+    setLanguage,
+    getLanguage,
+    onChange,
     apply: applyAll,
-    t: function (text) {
-      return translateText(text, currentLang);
-    },
+    t: function (text) { return translateText(text, currentLang); },
     supportedLanguages: SUPPORTED_LANGS.slice()
   };
 })();

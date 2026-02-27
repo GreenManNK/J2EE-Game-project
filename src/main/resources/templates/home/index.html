@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Trang chính')}"></head>
 <body>
@@ -11,24 +11,24 @@
         <i class="bi bi-stars"></i>
         <span>Game Hub</span>
       </div>
-      <h1 class="home-dashboard__title theme-text">Chon game va vao tran ngay</h1>
+      <h1 class="home-dashboard__title theme-text">Chọn game và vào trận ngay</h1>
       <p class="home-dashboard__subtitle">
-        Trang chu duoc toi uu theo kieu web game portal: hanh dong chinh dat tren cung,
-        bang tin cong dong tach rieng, va khung giao dien dong bo voi cac trang game/detail.
+        Trang chủ được tối ưu theo kiểu web game portal: hành động chính đặt trên cùng,
+        bảng tin cộng đồng tách riêng, và khung giao diện đồng bộ với các trang game/detail.
       </p>
 
       <div class="home-main-actions d-flex justify-content-center mb-3 gap-2 flex-wrap">
         <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="caro" data-game-name="Caro">
           <i class="bi bi-grid-3x3-gap-fill me-2"></i>Caro
         </button>
-        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="chess" data-game-name="Co vua">
-          <i class="bi bi-activity me-2"></i>Co vua
+        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="chess" data-game-name="Cờ vua">
+          <i class="bi bi-activity me-2"></i>Cờ vua
         </button>
-        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="xiangqi" data-game-name="Co tuong">
-          <i class="bi bi-diagram-3-fill me-2"></i>Co tuong
+        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="xiangqi" data-game-name="Cờ tướng">
+          <i class="bi bi-diagram-3-fill me-2"></i>Cờ tướng
         </button>
-        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="cards" data-game-name="Danh bai">
-          <i class="bi bi-suit-spade-fill me-2"></i>Danh bai
+        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="cards" data-game-name="Đánh bài">
+          <i class="bi bi-suit-spade-fill me-2"></i>Đánh bài
         </button>
         <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="minesweeper" data-game-name="Minesweeper">
           <i class="bi bi-asterisk me-2"></i>Minesweeper
@@ -39,31 +39,31 @@
     <aside class="home-dashboard__hero-side">
       <div class="home-dashboard__stats">
         <div class="home-dashboard__stat">
-          <div class="home-dashboard__stat-label">Che do</div>
+          <div class="home-dashboard__stat-label">Chế độ</div>
           <div class="home-dashboard__stat-value">Online + Bot</div>
         </div>
         <div class="home-dashboard__stat">
-          <div class="home-dashboard__stat-label">Truy cap nhanh</div>
+          <div class="home-dashboard__stat-label">Truy cập nhanh</div>
           <div class="home-dashboard__stat-value">1 click</div>
         </div>
         <div class="home-dashboard__stat">
-          <div class="home-dashboard__stat-label">Cong dong</div>
+          <div class="home-dashboard__stat-label">Cộng đồng</div>
           <div class="home-dashboard__stat-value">Feed + comments</div>
         </div>
         <div class="home-dashboard__stat">
-          <div class="home-dashboard__stat-label">Giao dien</div>
+          <div class="home-dashboard__stat-label">Giao diện</div>
           <div class="home-dashboard__stat-value">Responsive</div>
         </div>
       </div>
 
       <div class="home-dashboard__side-panel">
-        <h2 class="theme-text">Huong dan nhanh</h2>
-        <p>Chon game o tren, vao trang chi tiet, sau do chon offline / online / bot phu hop.</p>
+        <h2 class="theme-text">Hướng dẫn nhanh</h2>
+        <p>Chọn game ở trên, vào trang chi tiết, sau đó chọn offline / online / bot phù hợp.</p>
       </div>
 
       <div class="home-dashboard__side-panel">
-        <h2 class="theme-text">Meo choi</h2>
-        <p>Dang nhap de dong bo ho so, luu lich su dau va thao tac voi ban be nhanh hon tren thanh ben trai.</p>
+        <h2 class="theme-text">Mẹo chơi</h2>
+        <p>Đăng nhập để đồng bộ hồ sơ, lưu lịch sử đấu và thao tác với bạn bè nhanh hơn trên thanh bên trái.</p>
       </div>
     </aside>
   </section>
@@ -71,27 +71,27 @@
   <section class="home-dashboard__feed-grid">
     <section class="home-dashboard__composer theme-box">
       <div class="home-dashboard__section-title">
-        <h2 class="theme-text">Dang bai viet moi</h2>
-        <small>Cap nhat nhanh cho cong dong</small>
+        <h2 class="theme-text">Đăng bài viết mới</h2>
+        <small>Cập nhật nhanh cho cộng đồng</small>
       </div>
       <form id="postForm" class="home-composer-form">
-        <textarea id="postContent" class="form-control mb-2" rows="3" placeholder="Ban dang nghi gi?" required></textarea>
+        <textarea id="postContent" class="form-control mb-2" rows="3" placeholder="Bạn đang nghĩ gì?" required></textarea>
         <div class="home-composer-meta">
-          <small class="text-muted">Tac gia: <span id="postAuthorLabel">Can dang nhap</span></small>
-          <button type="submit" class="btn theme-outline-btn btn-sm">Dang bai</button>
+          <small class="text-muted">Tác giả: <span id="postAuthorLabel">Cần đăng nhập</span></small>
+          <button type="submit" class="btn theme-outline-btn btn-sm">Đăng bài</button>
         </div>
       </form>
     </section>
 
     <section class="home-dashboard__feed theme-box">
       <div class="home-dashboard__section-title">
-        <h2 class="theme-text">Bang tin</h2>
-        <small th:text="${(posts != null ? #lists.size(posts) : 0)} + ' bai viet'">0 bai viet</small>
+        <h2 class="theme-text">Bảng tin</h2>
+        <small th:text="${(posts != null ? #lists.size(posts) : 0)} + ' bài viết'">0 bài viết</small>
       </div>
 
       <div class="home-feed-panel">
         <div class="scroll-posts">
-          <p class="text-muted" th:if="${#lists.isEmpty(posts)}">Chua co bai dang nao.</p>
+          <p class="text-muted" th:if="${#lists.isEmpty(posts)}">Chưa có bài đăng nào.</p>
           <div class="card mb-3 shadow-sm home-post-card" th:each="p : ${posts}">
             <div class="card-body py-2 px-3 text-start">
               <div class="d-none post-id" th:text="${p.id}">0</div>
@@ -106,9 +106,9 @@
                    alt="post-image">
 
               <div class="mt-2">
-                <div class="small fw-bold theme-text mb-1">Binh luan</div>
+                <div class="small fw-bold theme-text mb-1">Bình luận</div>
                 <div class="ps-2 border-start" th:if="${#lists.isEmpty(p.comments)}">
-                  <small class="text-muted">Chua co binh luan</small>
+                  <small class="text-muted">Chưa có bình luận</small>
                 </div>
                 <div class="ps-2 border-start d-flex flex-column gap-1" th:if="${!#lists.isEmpty(p.comments)}">
                   <div th:each="c : ${p.comments}">
@@ -121,8 +121,8 @@
 
                 <form class="commentForm mt-2 d-flex gap-2">
                   <input type="hidden" class="commentPostId" th:value="${p.id}">
-                  <input type="text" class="form-control form-control-sm commentContent" placeholder="Viet binh luan..." maxlength="500">
-                  <button type="submit" class="btn btn-sm btn-outline-secondary">Gui</button>
+                  <input type="text" class="form-control form-control-sm commentContent" placeholder="Viết bình luận..." maxlength="500">
+                  <button type="submit" class="btn btn-sm btn-outline-secondary">Gửi</button>
                 </form>
               </div>
             </div>
@@ -135,7 +135,7 @@
 
 <audio id="siteMusic" th:src="@{/music/home.mp3}" loop preload="auto"></audio>
 <button id="siteMusicToggleBtn" class="btn theme-outline-btn btn-sm theme-text">
-  🔊 Tat Nhac
+  🔊 Tắt Nhạc
 </button>
 
 <script th:replace="~{fragments :: appScripts('home')}"></script>
@@ -196,27 +196,27 @@
     });
 
     if (authorLabel) {
-      authorLabel.textContent = currentUser?.displayName || currentUser?.userId || 'Can dang nhap';
+      authorLabel.textContent = currentUser?.displayName || currentUser?.userId || 'Cần đăng nhập';
     }
 
     if (siteMusic) {
       siteMusic.volume = 0.3;
       if (localStorage.getItem('music') === 'off') {
         siteMusic.pause();
-        siteToggleBtn.textContent = '🔇 Bat Nhac';
+        siteToggleBtn.textContent = '🔇 Bật Nhạc';
       } else {
         siteMusic.play().catch(() => {});
-        siteToggleBtn.textContent = '🔊 Tat Nhac';
+        siteToggleBtn.textContent = '🔊 Tắt Nhạc';
       }
       siteToggleBtn?.addEventListener('click', () => {
         if (siteMusic.paused) {
           siteMusic.play().then(() => {
-            siteToggleBtn.textContent = '🔊 Tat Nhac';
+            siteToggleBtn.textContent = '🔊 Tắt Nhạc';
             localStorage.setItem('music', 'on');
           }).catch(() => {});
         } else {
           siteMusic.pause();
-          siteToggleBtn.textContent = '🔇 Bat Nhac';
+          siteToggleBtn.textContent = '🔇 Bật Nhạc';
           localStorage.setItem('music', 'off');
         }
       });
@@ -229,7 +229,7 @@
         return;
       }
       if (!currentUser?.userId) {
-        toast('Can dang nhap de dang bai', 'warning');
+        toast('Cần đăng nhập để đăng bài', 'warning');
         return;
       }
       try {
@@ -240,10 +240,10 @@
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok || data.success === false) {
-          throw new Error(data.error || 'Khong dang bai duoc');
+          throw new Error(data.error || 'Không đăng bài được');
         }
         if (!data.success) {
-          throw new Error('Khong dang bai duoc');
+          throw new Error('Không đăng bài được');
         }
         window.location.reload();
       } catch (err) {
@@ -255,7 +255,7 @@
       commentForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentUser?.userId) {
-          toast('Can dang nhap de binh luan', 'warning');
+          toast('Cần đăng nhập để bình luận', 'warning');
           return;
         }
         const postId = Number(commentForm.querySelector('.commentPostId')?.value || 0);
@@ -272,7 +272,7 @@
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok || data.success === false) {
-            throw new Error(data.error || 'Khong gui binh luan duoc');
+            throw new Error(data.error || 'Không gửi bình luận được');
           }
           window.location.reload();
         } catch (err) {

@@ -21,7 +21,7 @@
 
     const current = window.CaroUser.get();
     if (!current || !current.userId) {
-      container.innerHTML = '<div class="small text-muted">Dang nhap de xem danh sach ban be.</div>';
+      container.innerHTML = '<div class="small text-muted">Đăng nhập để xem danh sách bạn bè.</div>';
       return;
     }
 
@@ -34,7 +34,7 @@
       }
       const friends = await res.json();
       if (!Array.isArray(friends) || friends.length === 0) {
-        container.innerHTML = '<div class="small text-muted">Chua co ban be nao.</div>';
+        container.innerHTML = '<div class="small text-muted">Chưa có bạn bè nào.</div>';
         return;
       }
 
@@ -52,7 +52,7 @@
 
       container.innerHTML = items;
     } catch (_) {
-      container.innerHTML = '<div class="small text-danger">Khong tai duoc danh sach ban be.</div>';
+      container.innerHTML = '<div class="small text-danger">Không tải được danh sách bạn bè.</div>';
     }
   }
 

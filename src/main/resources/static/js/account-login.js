@@ -20,7 +20,7 @@
       return ui.apiResult(data, { statusEl: out, successMessage });
     }
     const ok = !!(data && data.success);
-    setStatus(ok ? successMessage : String(data?.error || data?.message || 'Dang nhap that bai'), ok);
+    setStatus(ok ? successMessage : String(data?.error || data?.message || 'Đăng nhập thất bại'), ok);
     return ok;
   }
 
@@ -34,7 +34,7 @@
         body: JSON.stringify({email:email.value,password:password.value})
       });
       const data = await res.json();
-      const ok = report(data, 'Dang nhap thanh cong');
+      const ok = report(data, 'Đăng nhập thành công');
 
       if (ok && data.data && data.data.userId && window.CaroUser) {
         window.CaroUser.set({
@@ -47,7 +47,7 @@
         window.location.href = appPath('/');
       }
     } catch (err) {
-      const message = String(err?.message || err || 'Dang nhap that bai');
+      const message = String(err?.message || err || 'Đăng nhập thất bại');
       setStatus(message, false);
       ui.toast?.(message, { type: 'danger' });
     }

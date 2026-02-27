@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Dang nhap')}"></head>
+<head th:replace="~{fragments :: appHead('Đăng nhập')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('account-login')}"></div>
 
@@ -8,24 +8,24 @@
   <div class="auth-shell__grid">
     <div class="card theme-box mx-auto mt-5 w-100 auth-card-sm">
       <div class="card-header">
-        <h4 class="mb-0 theme-text">Dang nhap</h4>
+        <h4 class="mb-0 theme-text">Đăng nhập</h4>
       </div>
       <div class="card-body theme-text">
         <form id="loginForm">
           <div class="mb-3">
             <label for="email" class="form-label">Email</label>
-            <input id="email" class="form-control" type="email" placeholder="Nhap email" required>
+            <input id="email" class="form-control" type="email" placeholder="Nhập email" required>
           </div>
           <div class="mb-3">
-            <label for="password" class="form-label">Mat khau</label>
+            <label for="password" class="form-label">Mật khẩu</label>
             <div class="input-group">
-              <input id="password" class="form-control" type="password" placeholder="Nhap mat khau" required>
+              <input id="password" class="form-control" type="password" placeholder="Nhập mật khẩu" required>
               <button class="btn btn-outline-secondary" id="togglePasswordBtn" type="button">👁</button>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary w-100">Dang nhap</button>
+          <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
           <div class="text-center mt-2">
-            <a th:href="@{/account/reset-page}" class="btn btn-link">Quen mat khau?</a>
+            <a th:href="@{/account/reset-page}" class="btn btn-link">Quên mật khẩu?</a>
           </div>
         </form>
         <div id="out" class="small mt-3" role="status" aria-live="polite"></div>
@@ -35,14 +35,14 @@
     <aside class="theme-box auth-side-panel">
       <div class="home-dashboard__eyebrow">
         <i class="bi bi-shield-check"></i>
-        <span>Account Access</span>
+        <span>Truy cập tài khoản</span>
       </div>
-      <h2 class="theme-text mt-2">Dang nhap de mo tinh nang day du</h2>
-      <p>Dong bo profile, lich su dau, bang xep hang va he thong ban be/chat rieng.</p>
+      <h2 class="theme-text mt-2">Đăng nhập để mở đầy đủ tính năng</h2>
+      <p>Đồng bộ hồ sơ, lịch sử đấu, bảng xếp hạng và hệ thống bạn bè/chat riêng.</p>
       <ul class="auth-side-list">
-        <li><strong>Quick access</strong>Vao nhanh cac mode choi va lobby online.</li>
-        <li><strong>Social layer</strong>Quan ly ban be, thong bao va chat rieng.</li>
-        <li><strong>Progress</strong>Luu diem, rank va thanh tich.</li>
+        <li><strong>Truy cập nhanh:</strong> Vào nhanh các chế độ chơi và lobby online.</li>
+        <li><strong>Kết nối xã hội:</strong> Quản lý bạn bè, thông báo và chat riêng.</li>
+        <li><strong>Tiến trình:</strong> Lưu điểm, rank và thành tích.</li>
       </ul>
     </aside>
   </div>

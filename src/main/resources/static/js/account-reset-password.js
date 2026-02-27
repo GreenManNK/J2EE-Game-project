@@ -30,12 +30,12 @@
       return ui.apiResult(data, { statusEl: out, successMessage });
     }
     const ok = !!(data && data.success);
-    setStatus(ok ? successMessage : String(data?.error || data?.message || 'Thao tac that bai'), ok);
+    setStatus(ok ? successMessage : String(data?.error || data?.message || 'Thao tác thất bại'), ok);
     return ok;
   }
 
   function reportError(err) {
-    const message = String(err?.message || err || 'Network error');
+    const message = String(err?.message || err || 'Lỗi mạng');
     setStatus(message, false);
     ui.toast?.(message, { type: 'danger' });
   }
@@ -43,7 +43,7 @@
   function setVerifyState(verified, label, tone) {
     isCodeVerified = !!verified;
     if (verifyCodeStatus) {
-      verifyCodeStatus.textContent = label || (verified ? 'Ma hop le' : 'Chua xac thuc ma');
+      verifyCodeStatus.textContent = label || (verified ? 'Mã hợp lệ' : 'Chưa xác thực mã');
       verifyCodeStatus.classList.remove('text-muted', 'text-success', 'text-danger');
       const resolvedTone = tone || (verified ? 'success' : 'muted');
       verifyCodeStatus.classList.add(
@@ -57,7 +57,7 @@
 
   function invalidateVerifiedCode() {
     if (!isCodeVerified) return;
-    setVerifyState(false, 'Ma da thay doi, vui long verify lai', 'danger');
+    setVerifyState(false, 'Mã đã thay đổi, vui lòng xác thực lại', 'danger');
   }
 
   async function postJson(url, payload) {
@@ -73,16 +73,16 @@
     e.preventDefault();
     const emailValue = (email?.value || '').trim();
     if (!emailValue) {
-      setStatus('Email is required', false);
-      ui.toast?.('Email is required', { type: 'danger' });
+      setStatus('Email là bắt buộc', false);
+      ui.toast?.('Email là bắt buộc', { type: 'danger' });
       return;
     }
     const submitBtn = sendForm.querySelector('button[type="submit"]');
     if (submitBtn) submitBtn.disabled = true;
     try {
       const data = await postJson('/account/send-reset-code', { email: emailValue });
-      report(data, 'Neu email ton tai, ma reset da duoc gui');
-      setVerifyState(false, 'Chua xac thuc ma', 'muted');
+      report(data, 'Nếu email tồn tại, mã reset đã được gửi');
+      setVerifyState(false, 'Chưa xác thực mã', 'muted');
       code?.focus();
     } catch (err) {
       reportError(err);
@@ -98,22 +98,22 @@
     const emailValue = (email?.value || '').trim();
     const codeValue = (code?.value || '').trim();
     if (!emailValue || !codeValue) {
-      setVerifyState(false, 'Nhap email va code', 'danger');
-      setStatus('Nhap email va code de xac thuc', false);
+      setVerifyState(false, 'Nhập email và mã xác thực', 'danger');
+      setStatus('Nhập email và mã xác thực để tiếp tục', false);
       return;
     }
     try {
       verifyCodeBtn.disabled = true;
       const data = await postJson('/account/verify-reset-code', { email: emailValue, code: codeValue });
-      const ok = report(data, 'Ma reset hop le');
+      const ok = report(data, 'Mã reset hợp lệ');
       if (ok) {
-        setVerifyState(true, 'Ma hop le', 'success');
+        setVerifyState(true, 'Mã hợp lệ', 'success');
       } else {
-        setVerifyState(false, String(data?.error || 'Ma khong hop le'), 'danger');
+        setVerifyState(false, String(data?.error || 'Mã không hợp lệ'), 'danger');
       }
     } catch (err) {
       reportError(err);
-      setVerifyState(false, 'Khong the xac thuc ma', 'danger');
+      setVerifyState(false, 'Không thể xác thực mã', 'danger');
     } finally {
       verifyCodeBtn.disabled = false;
     }
@@ -122,8 +122,8 @@
   resetForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
     if (!isCodeVerified) {
-      setStatus('Vui long verify code truoc khi reset', false);
-      ui.toast?.('Vui long verify code truoc khi reset', { type: 'warning' });
+      setStatus('Vui lòng xác thực mã trước khi đặt lại mật khẩu', false);
+      ui.toast?.('Vui lòng xác thực mã trước khi đặt lại mật khẩu', { type: 'warning' });
       return;
     }
 
@@ -137,9 +137,9 @@
         newPassword: newPassword?.value || '',
         confirmPassword: confirmPassword?.value || ''
       });
-      const ok = report(data, 'Dat lai mat khau thanh cong');
+      const ok = report(data, 'Đặt lại mật khẩu thành công');
       if (ok) {
-        setVerifyState(false, 'Reset thanh cong', 'success');
+        setVerifyState(false, 'Đặt lại mật khẩu thành công', 'success');
         if (code) code.value = '';
         if (newPassword) newPassword.value = '';
         if (confirmPassword) confirmPassword.value = '';

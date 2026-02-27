@@ -20,7 +20,7 @@
       return ui.apiResult(data, { statusEl: out, successMessage });
     }
     const ok = !!(data && data.success);
-    setStatus(ok ? successMessage : String(data?.error || data?.message || 'Dang ky that bai'), ok);
+    setStatus(ok ? successMessage : String(data?.error || data?.message || 'Đăng ký thất bại'), ok);
     return ok;
   }
 
@@ -35,7 +35,7 @@
         body: JSON.stringify({email:email.value,displayName:displayName.value,password:password.value,avatarPath:''})
       });
       const data = await res.json();
-      const ok = report(data, 'Da gui ma xac thuc email');
+      const ok = report(data, 'Đã gửi mã xác thực email');
       if (ok) {
         localStorage.setItem('pendingVerifyEmail', email.value);
         setTimeout(() => {
@@ -43,7 +43,7 @@
         }, 600);
       }
     } catch (err) {
-      const message = String(err?.message || err || 'Dang ky that bai');
+      const message = String(err?.message || err || 'Đăng ký thất bại');
       setStatus(message, false);
       ui.toast?.(message, { type: 'danger' });
     }

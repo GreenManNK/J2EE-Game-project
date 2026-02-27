@@ -18,13 +18,13 @@
     if (ui.apiResult) {
       ui.apiResult(data, {
         statusEl: out,
-        successMessage: 'Xu ly thanh cong'
+        successMessage: 'Xử lý thành công'
       });
       return;
     }
     if (!out) return;
     const ok = !!(data && data.success);
-    out.textContent = ok ? 'Xu ly thanh cong' : String(data?.error || data?.message || 'That bai');
+    out.textContent = ok ? 'Xử lý thành công' : String(data?.error || data?.message || 'Thất bại');
   }
 
   function startResendCooldown(seconds) {
@@ -36,21 +36,21 @@
     let remain = Number(seconds) || 0;
     if (remain <= 0) {
       resendBtn.disabled = false;
-      resendBtn.textContent = 'Gui lai ma';
+      resendBtn.textContent = 'Gửi lại mã';
       return;
     }
     resendBtn.disabled = true;
-    resendBtn.textContent = `Gui lai ma (${remain}s)`;
+    resendBtn.textContent = `Gửi lại mã (${remain}s)`;
     resendCooldownTimer = setInterval(() => {
       remain -= 1;
       if (remain <= 0) {
         clearInterval(resendCooldownTimer);
         resendCooldownTimer = null;
         resendBtn.disabled = false;
-        resendBtn.textContent = 'Gui lai ma';
+        resendBtn.textContent = 'Gửi lại mã';
         return;
       }
-      resendBtn.textContent = `Gui lai ma (${remain}s)`;
+      resendBtn.textContent = `Gửi lại mã (${remain}s)`;
     }, 1000);
   }
 
@@ -65,7 +65,7 @@
       });
       const data = await res.json();
       if (data.success && ui.apiResult) {
-        ui.apiResult(data, { statusEl: out, successMessage: 'Xac thuc email thanh cong' });
+        ui.apiResult(data, { statusEl: out, successMessage: 'Xác thực email thành công' });
       } else {
         renderOut(data);
       }
@@ -73,7 +73,7 @@
         localStorage.removeItem('pendingVerifyEmail');
       }
     } catch (err) {
-      const message = String(err?.message || 'Network error');
+      const message = String(err?.message || 'Lỗi mạng');
       if (ui.setStatus) ui.setStatus(out, message, false);
       else if (out) out.textContent = message;
       ui.toast?.(message, { type: 'danger' });
@@ -83,12 +83,12 @@
   resendBtn?.addEventListener('click', async () => {
     const email = emailInput?.value?.trim();
     if (!email) {
-      renderOut({ success: false, error: 'Email is required' });
+      renderOut({ success: false, error: 'Email là bắt buộc' });
       return;
     }
     resendBtn.disabled = true;
     const originalText = resendBtn.textContent;
-    resendBtn.textContent = 'Dang gui...';
+    resendBtn.textContent = 'Đang gửi...';
     try {
       const res = await fetch(appPath('/account/resend-verification-code'), {
         method:'POST', headers:{'Content-Type':'application/json'},
@@ -96,7 +96,7 @@
       });
       const data = await res.json();
       if (data.success && ui.apiResult) {
-        ui.apiResult(data, { statusEl: out, successMessage: 'Da gui lai ma xac thuc' });
+        ui.apiResult(data, { statusEl: out, successMessage: 'Đã gửi lại mã xác thực' });
       } else {
         renderOut(data);
       }
@@ -105,14 +105,14 @@
         startResendCooldown(30);
       } else {
         resendBtn.disabled = false;
-        resendBtn.textContent = originalText || 'Gui lai ma';
+        resendBtn.textContent = originalText || 'Gửi lại mã';
       }
     } catch (err) {
-      const message = err?.message || 'Network error';
+      const message = err?.message || 'Lỗi mạng';
       renderOut({ success: false, error: message });
       ui.toast?.(message, { type: 'danger' });
       resendBtn.disabled = false;
-      resendBtn.textContent = originalText || 'Gui lai ma';
+      resendBtn.textContent = originalText || 'Gửi lại mã';
     }
   });
 })();
