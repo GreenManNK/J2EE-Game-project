@@ -1,1291 +1,774 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Puzzle Arena')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('games-puzzle')}"></div>
 
-<main class="hub-portal-shell hub-portal-theme-puzzle puzzle-catalog-page">
-    <section class="hub-portal-hero puzzle-catalog-hero">
-        <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
-        <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
+<main class="cg-market-catalog hub-portal-theme-puzzle">
+  <section class="hub-portal-panel cg-market-topbar">
+    <div>
+      <h1 class="cg-title">Puzzle Arena</h1>
+      <p class="cg-subtitle">Category puzzle da duoc doi bo cuc gan voi CrazyGames: co search, filter, sort, lane discovery va card game thumbnail.</p>
+      <div class="cg-chip-row">
+        <span class="cg-chip is-live"><i class="bi bi-puzzle-fill"></i> 4 game dang hoat dong</span>
+        <span class="cg-chip"><i class="bi bi-bookmark-fill"></i> Favorite</span>
+        <span class="cg-chip"><i class="bi bi-star-fill"></i> User rating</span>
+        <span class="cg-chip"><i class="bi bi-clock-history"></i> Recently played</span>
+      </div>
+    </div>
 
-        <div class="hub-portal-hero__main">
-            <div class="hub-portal-eyebrow">
-                <i class="bi bi-puzzle-fill"></i>
-                <span>PUZZLE CATEGORY</span>
-            </div>
+    <label class="cg-control" aria-label="Tim puzzle">
+      <i class="bi bi-search"></i>
+      <input id="puzzleSearchInput" type="text" placeholder="Tim game puzzle...">
+    </label>
 
-            <h1 class="hub-portal-title">Puzzle Arena</h1>
-            <p class="hub-portal-subtitle">
-                Layout duoc cap nhat theo huong category page nhu CrazyGames: co tim kiem, bo loc,
-                sap xep va card game de vao tran nhanh. Mau sac van giu he theme hien tai cua web.
-            </p>
+    <label class="cg-control" aria-label="Sap xep puzzle">
+      <span>Sap xep</span>
+      <select id="puzzleSortSelect">
+        <option value="popular">Pho bien nhat</option>
+        <option value="rating">Danh gia cao</option>
+        <option value="newest">Moi cap nhat</option>
+        <option value="az">Ten A-Z</option>
+      </select>
+    </label>
+  </section>
 
-            <div class="hub-portal-chip-row">
-                <span class="hub-portal-chip is-live"><i class="bi bi-grid-3x3-gap-fill"></i> 4 game dang hoat dong</span>
-                <span class="hub-portal-chip"><i class="bi bi-funnel-fill"></i> Filter + Search</span>
-                <span class="hub-portal-chip"><i class="bi bi-sort-down"></i> Sort theo rating/popular</span>
-                <span class="hub-portal-chip"><i class="bi bi-phone-fill"></i> Responsive</span>
-            </div>
+  <section class="cg-market-layout">
+    <aside class="cg-market-sidebar">
+      <section class="hub-portal-panel cg-market-panel">
+        <div class="cg-section-head">
+          <div>
+            <h2>Bo loc puzzle</h2>
+            <small>Category rail</small>
+          </div>
         </div>
 
-        <aside class="hub-portal-hero__side">
-            <section class="hub-portal-panel">
-                <div class="hub-portal-panel__head">
-                    <div>
-                        <div class="hub-portal-panel__label">Tinh nang moi</div>
-                        <div class="hub-portal-panel__title">Category UX</div>
-                    </div>
-                    <span class="hub-portal-pill">Puzzle</span>
-                </div>
-                <div class="puzzle-kpi-grid">
-                    <div class="puzzle-kpi-item">
-                        <small>Search</small>
-                        <strong>Live filter</strong>
-                    </div>
-                    <div class="puzzle-kpi-item">
-                        <small>Sort</small>
-                        <strong>4 che do</strong>
-                    </div>
-                    <div class="puzzle-kpi-item">
-                        <small>Cards</small>
-                        <strong>Metadata</strong>
-                    </div>
-                    <div class="puzzle-kpi-item">
-                        <small>CTA</small>
-                        <strong>1 click play</strong>
-                    </div>
-                </div>
-            </section>
-        </aside>
-    </section>
-
-    <section class="hub-portal-panel puzzle-catalog-toolbar">
-        <div class="puzzle-toolbar-row">
-            <label class="puzzle-control puzzle-search">
-                <i class="bi bi-search"></i>
-                <input id="puzzleSearchInput" type="text" placeholder="Tim game puzzle...">
-            </label>
-
-            <label class="puzzle-control puzzle-sort">
-                <span>Sap xep</span>
-                <select id="puzzleSortSelect">
-                    <option value="popular">Pho bien nhat</option>
-                    <option value="rating">Danh gia cao</option>
-                    <option value="newest">Moi cap nhat</option>
-                    <option value="az">Ten A-Z</option>
-                </select>
-            </label>
+        <div class="cg-market-filter-list" role="group" aria-label="Puzzle filters">
+          <button type="button" class="cg-market-filter-btn is-active" data-filter="all">Tat ca</button>
+          <button type="button" class="cg-market-filter-btn" data-filter="logic">Logic</button>
+          <button type="button" class="cg-market-filter-btn" data-filter="classic">Classic</button>
+          <button type="button" class="cg-market-filter-btn" data-filter="word">Word</button>
+          <button type="button" class="cg-market-filter-btn" data-filter="quick">Quick</button>
+          <button type="button" class="cg-market-filter-btn" data-filter="favorite">Yeu thich</button>
         </div>
 
-        <div class="puzzle-filter-row" role="group" aria-label="Puzzle filters">
-            <button type="button" class="puzzle-filter-btn is-active" data-filter="all">Tat ca</button>
-            <button type="button" class="puzzle-filter-btn" data-filter="logic">Logic</button>
-            <button type="button" class="puzzle-filter-btn" data-filter="classic">Classic</button>
-            <button type="button" class="puzzle-filter-btn" data-filter="word">Word</button>
-            <button type="button" class="puzzle-filter-btn" data-filter="quick">Quick</button>
-            <button type="button" class="puzzle-filter-btn" data-filter="favorite">Yeu thich</button>
+        <div class="cg-market-meta">
+          <div class="cg-market-meta-row">
+            <span>Ket qua</span>
+            <strong id="puzzleResultCount">0 game</strong>
+          </div>
+          <div class="cg-market-meta-row">
+            <span>Dang loc</span>
+            <strong id="puzzleFilterLabel">Tat ca</strong>
+          </div>
+          <div class="cg-market-meta-row">
+            <span>Da luu</span>
+            <strong id="puzzleFavoriteCount">0</strong>
+          </div>
         </div>
+      </section>
 
-        <div class="puzzle-toolbar-meta">
-            <span id="puzzleResultCount">4 game</span>
-            <span>Category: Puzzle</span>
+      <section class="hub-portal-panel cg-market-panel">
+        <div class="cg-section-head">
+          <div>
+            <h2>Gap check</h2>
+            <small>So voi CrazyGames</small>
+          </div>
         </div>
-    </section>
-
-    <section class="puzzle-discovery-lanes">
-        <article class="hub-portal-panel puzzle-lane-card">
-            <div class="hub-portal-panel__head">
-                <div>
-                    <div class="hub-portal-panel__label">Trending</div>
-                    <div class="hub-portal-panel__title">Pho bien hom nay</div>
-                </div>
-                <span class="hub-portal-pill">Top</span>
-            </div>
-            <div id="puzzleTrendingLane" class="puzzle-mini-lane"></div>
-        </article>
-
-        <article class="hub-portal-panel puzzle-lane-card">
-            <div class="hub-portal-panel__head">
-                <div>
-                    <div class="hub-portal-panel__label">Newly Added</div>
-                    <div class="hub-portal-panel__title">Moi cap nhat</div>
-                </div>
-                <span class="hub-portal-pill">New</span>
-            </div>
-            <div id="puzzleNewestLane" class="puzzle-mini-lane"></div>
-        </article>
-    </section>
-
-    <section class="puzzle-catalog-section">
-        <div id="puzzleCatalogGrid" class="puzzle-catalog-grid">
-            <article class="puzzle-catalog-card"
-                     data-code="jigsaw"
-                     data-name="Jigsaw Puzzle"
-                     data-category="classic"
-                     data-tags="classic image drag drop relaxing"
-                     data-popularity="95"
-                     data-rating="4.8"
-                     data-release="2025">
-                <div class="puzzle-card-cover puzzle-cover-jigsaw">
-                    <img th:src="@{/images/puzzle/jigsaw.svg}" src="/images/puzzle/jigsaw.svg" alt="Jigsaw thumbnail" class="puzzle-thumb">
-                    <span class="puzzle-cover-badge">Jigsaw</span>
-                </div>
-                <div class="puzzle-card-body">
-                    <div class="puzzle-card-head">
-                        <h2>Jigsaw Puzzle</h2>
-                        <div class="puzzle-card-head__meta">
-                            <span class="puzzle-rating"><i class="bi bi-star-fill"></i> 4.8</span>
-                            <button type="button" class="puzzle-fav-btn" data-favorite-btn aria-pressed="false" title="Luu vao yeu thich">
-                                <i class="bi bi-bookmark"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <p>Keo tha manh ghep vao dung vi tri va hoan thanh buc tranh nhanh nhat.</p>
-                    <div class="puzzle-user-rate" data-user-rate></div>
-                    <div class="puzzle-tags">
-                        <span>Classic</span><span>Image</span><span>Relax</span>
-                    </div>
-                    <div class="puzzle-card-foot">
-                        <small><i class="bi bi-graph-up-arrow"></i> Popular 95</small>
-                        <div class="puzzle-card-actions">
-                            <a th:href="@{/games/puzzle/jigsaw}" class="hub-portal-inline-btn">Play</a>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <article class="puzzle-catalog-card"
-                     data-code="sliding"
-                     data-name="Sliding Puzzle"
-                     data-category="quick"
-                     data-tags="sliding tiles numbers quick"
-                     data-popularity="90"
-                     data-rating="4.6"
-                     data-release="2024">
-                <div class="puzzle-card-cover puzzle-cover-sliding">
-                    <img th:src="@{/images/puzzle/sliding.svg}" src="/images/puzzle/sliding.svg" alt="Sliding thumbnail" class="puzzle-thumb">
-                    <span class="puzzle-cover-badge">Sliding</span>
-                </div>
-                <div class="puzzle-card-body">
-                    <div class="puzzle-card-head">
-                        <h2>Sliding Puzzle</h2>
-                        <div class="puzzle-card-head__meta">
-                            <span class="puzzle-rating"><i class="bi bi-star-fill"></i> 4.6</span>
-                            <button type="button" class="puzzle-fav-btn" data-favorite-btn aria-pressed="false" title="Luu vao yeu thich">
-                                <i class="bi bi-bookmark"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <p>Truot cac o de dua ban co ve trang thai hoan chinh theo dung thu tu.</p>
-                    <div class="puzzle-user-rate" data-user-rate></div>
-                    <div class="puzzle-tags">
-                        <span>Quick</span><span>Tiles</span><span>Brain</span>
-                    </div>
-                    <div class="puzzle-card-foot">
-                        <small><i class="bi bi-graph-up-arrow"></i> Popular 90</small>
-                        <div class="puzzle-card-actions">
-                            <a th:href="@{/games/puzzle/sliding}" class="hub-portal-inline-btn">Play</a>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <article class="puzzle-catalog-card"
-                     data-code="word"
-                     data-name="Word Puzzle"
-                     data-category="word"
-                     data-tags="word letters vocabulary search"
-                     data-popularity="82"
-                     data-rating="4.4"
-                     data-release="2024">
-                <div class="puzzle-card-cover puzzle-cover-word">
-                    <img th:src="@{/images/puzzle/word.svg}" src="/images/puzzle/word.svg" alt="Word thumbnail" class="puzzle-thumb">
-                    <span class="puzzle-cover-badge">Word</span>
-                </div>
-                <div class="puzzle-card-body">
-                    <div class="puzzle-card-head">
-                        <h2>Word Puzzle</h2>
-                        <div class="puzzle-card-head__meta">
-                            <span class="puzzle-rating"><i class="bi bi-star-fill"></i> 4.4</span>
-                            <button type="button" class="puzzle-fav-btn" data-favorite-btn aria-pressed="false" title="Luu vao yeu thich">
-                                <i class="bi bi-bookmark"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <p>Tim tu theo hang, cot va duong cheo. Tien do duoc cap nhat realtime tren board.</p>
-                    <div class="puzzle-user-rate" data-user-rate></div>
-                    <div class="puzzle-tags">
-                        <span>Word</span><span>Search</span><span>Vocabulary</span>
-                    </div>
-                    <div class="puzzle-card-foot">
-                        <small><i class="bi bi-graph-up-arrow"></i> Popular 82</small>
-                        <div class="puzzle-card-actions">
-                            <a th:href="@{/games/puzzle/word}" class="hub-portal-inline-btn">Play</a>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <article class="puzzle-catalog-card"
-                     data-code="sudoku"
-                     data-name="Sudoku"
-                     data-category="logic"
-                     data-tags="logic numbers sudoku classic"
-                     data-popularity="88"
-                     data-rating="4.7"
-                     data-release="2025">
-                <div class="puzzle-card-cover puzzle-cover-sudoku">
-                    <img th:src="@{/images/puzzle/sudoku.svg}" src="/images/puzzle/sudoku.svg" alt="Sudoku thumbnail" class="puzzle-thumb">
-                    <span class="puzzle-cover-badge">Sudoku</span>
-                </div>
-                <div class="puzzle-card-body">
-                    <div class="puzzle-card-head">
-                        <h2>Sudoku</h2>
-                        <div class="puzzle-card-head__meta">
-                            <span class="puzzle-rating"><i class="bi bi-star-fill"></i> 4.7</span>
-                            <button type="button" class="puzzle-fav-btn" data-favorite-btn aria-pressed="false" title="Luu vao yeu thich">
-                                <i class="bi bi-bookmark"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <p>Dien so 1-9 khong trung lap tren hang, cot va tung vung 3x3.</p>
-                    <div class="puzzle-user-rate" data-user-rate></div>
-                    <div class="puzzle-tags">
-                        <span>Logic</span><span>Classic</span><span>Solo</span>
-                    </div>
-                    <div class="puzzle-card-foot">
-                        <small><i class="bi bi-graph-up-arrow"></i> Popular 88</small>
-                        <div class="puzzle-card-actions">
-                            <a th:href="@{/games/puzzle/sudoku}" class="hub-portal-inline-btn">Play</a>
-                        </div>
-                    </div>
-                </div>
-            </article>
-        </div>
-        <div id="puzzleEmptyState" class="puzzle-empty-state" hidden>
-            Khong tim thay game phu hop voi bo loc hien tai.
-        </div>
-        <div id="puzzleLoadmoreWrap" class="puzzle-loadmore-wrap">
-            <button type="button" id="puzzleLoadMoreBtn" class="btn theme-outline-btn">Xem them game</button>
-            <small id="puzzleLoadMeta">Dang hien 0/0</small>
-        </div>
-    </section>
-
-    <section id="puzzleRecentPanel" class="hub-portal-panel puzzle-recent-panel" hidden>
-        <div class="hub-portal-panel__head">
-            <div>
-                <div class="hub-portal-panel__label">Recently Played</div>
-                <div class="hub-portal-panel__title">Game vua choi</div>
-            </div>
-            <span class="hub-portal-pill">History</span>
-        </div>
-        <div id="puzzleRecentList" class="puzzle-recent-list"></div>
-    </section>
-
-    <section class="hub-portal-panel puzzle-gap-panel">
-        <div class="hub-portal-panel__head">
-            <div>
-                <div class="hub-portal-panel__label">So voi CrazyGames Puzzle</div>
-                <div class="hub-portal-panel__title">Chuc nang con thieu</div>
-            </div>
-            <span class="hub-portal-pill">Gap check</span>
-        </div>
-        <ul class="puzzle-gap-list mb-0">
-            <li><i class="bi bi-exclamation-circle-fill"></i> User rating da co tren client, nhung chua dong bo rating server-account.</li>
-            <li><i class="bi bi-x-circle-fill"></i> Chua co recommendation theo hanh vi choi va lich su user.</li>
-            <li><i class="bi bi-exclamation-circle-fill"></i> Lane Trending/Newly Added da co client-side, chua lay du lieu dong tu backend.</li>
-            <li><i class="bi bi-x-circle-fill"></i> Favorite hien tai dang luu local tren browser, chua dong bo server-account.</li>
-            <li><i class="bi bi-x-circle-fill"></i> Recently played moi luu local, chua chia se giua nhieu thiet bi.</li>
-            <li><i class="bi bi-x-circle-fill"></i> Load-more hien tai la phan trang client-side, chua ket noi API page/offset.</li>
+        <ul class="puz-gap-list mb-0">
+          <li><i class="bi bi-exclamation-circle-fill"></i> Rating/favorite/recent moi dang luu local, chua dong bo account.</li>
+          <li><i class="bi bi-x-circle-fill"></i> Chua co recommendation theo hanh vi choi.</li>
+          <li><i class="bi bi-exclamation-circle-fill"></i> Trending/new lane chua lay API backend dong.</li>
+          <li><i class="bi bi-x-circle-fill"></i> Chua co user vote cong khai tren tung card.</li>
         </ul>
+      </section>
+    </aside>
+
+    <section class="cg-market-main">
+      <section class="hub-portal-panel cg-market-panel">
+        <div class="cg-section-head">
+          <div>
+            <h2>Featured picks</h2>
+            <small>Quick lane nhu trang category</small>
+          </div>
+        </div>
+        <div id="puzzleFeaturedStrip" class="puz-featured-strip"></div>
+      </section>
+
+      <section class="hub-portal-panel cg-market-panel">
+        <div id="puzzleCatalogGrid" class="cg-market-grid">
+          <article class="cg-market-card puz-card"
+                   data-code="jigsaw"
+                   data-name="Jigsaw Puzzle"
+                   data-category="classic"
+                   data-tags="classic image drag drop relaxing"
+                   data-popularity="95"
+                   data-rating="4.8"
+                   data-release="2026">
+            <div class="puz-thumb-wrap">
+              <img th:src="@{/images/puzzle/jigsaw.svg}" src="/images/puzzle/jigsaw.svg" alt="Jigsaw thumbnail" class="puz-thumb">
+              <span class="puz-badge">Jigsaw</span>
+              <button type="button" class="puz-fav-btn" data-favorite-btn aria-pressed="false" title="Luu vao yeu thich"><i class="bi bi-bookmark"></i></button>
+              <a th:href="@{/games/puzzle/jigsaw}" class="puz-thumb-link" data-play-link data-code="jigsaw" aria-label="Mo Jigsaw Puzzle"></a>
+            </div>
+            <div class="cg-market-body">
+              <h2>Jigsaw Puzzle</h2>
+              <p>Keo tha manh ghep vao dung vi tri va hoan thanh buc tranh nhanh nhat.</p>
+              <div class="cg-market-badges"><span>Classic</span><span>Image</span><span>Relax</span></div>
+              <div class="puz-rate" data-user-rate></div>
+              <div class="cg-market-actions">
+                <small><i class="bi bi-graph-up-arrow"></i> Popular 95</small>
+                <a th:href="@{/games/puzzle/jigsaw}" class="hub-portal-inline-btn primary" data-play-link data-code="jigsaw">Play</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="cg-market-card puz-card"
+                   data-code="sliding"
+                   data-name="Sliding Puzzle"
+                   data-category="quick"
+                   data-tags="sliding tiles numbers quick"
+                   data-popularity="90"
+                   data-rating="4.6"
+                   data-release="2025">
+            <div class="puz-thumb-wrap">
+              <img th:src="@{/images/puzzle/sliding.svg}" src="/images/puzzle/sliding.svg" alt="Sliding thumbnail" class="puz-thumb">
+              <span class="puz-badge">Sliding</span>
+              <button type="button" class="puz-fav-btn" data-favorite-btn aria-pressed="false" title="Luu vao yeu thich"><i class="bi bi-bookmark"></i></button>
+              <a th:href="@{/games/puzzle/sliding}" class="puz-thumb-link" data-play-link data-code="sliding" aria-label="Mo Sliding Puzzle"></a>
+            </div>
+            <div class="cg-market-body">
+              <h2>Sliding Puzzle</h2>
+              <p>Truot cac o de dua ban co ve trang thai hoan chinh theo dung thu tu.</p>
+              <div class="cg-market-badges"><span>Quick</span><span>Tiles</span><span>Brain</span></div>
+              <div class="puz-rate" data-user-rate></div>
+              <div class="cg-market-actions">
+                <small><i class="bi bi-graph-up-arrow"></i> Popular 90</small>
+                <a th:href="@{/games/puzzle/sliding}" class="hub-portal-inline-btn primary" data-play-link data-code="sliding">Play</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="cg-market-card puz-card"
+                   data-code="word"
+                   data-name="Word Puzzle"
+                   data-category="word"
+                   data-tags="word letters vocabulary search"
+                   data-popularity="82"
+                   data-rating="4.4"
+                   data-release="2025">
+            <div class="puz-thumb-wrap">
+              <img th:src="@{/images/puzzle/word.svg}" src="/images/puzzle/word.svg" alt="Word thumbnail" class="puz-thumb">
+              <span class="puz-badge">Word</span>
+              <button type="button" class="puz-fav-btn" data-favorite-btn aria-pressed="false" title="Luu vao yeu thich"><i class="bi bi-bookmark"></i></button>
+              <a th:href="@{/games/puzzle/word}" class="puz-thumb-link" data-play-link data-code="word" aria-label="Mo Word Puzzle"></a>
+            </div>
+            <div class="cg-market-body">
+              <h2>Word Puzzle</h2>
+              <p>Tim tu theo hang, cot va duong cheo, cap nhat tien do theo buoc choi.</p>
+              <div class="cg-market-badges"><span>Word</span><span>Search</span><span>Vocabulary</span></div>
+              <div class="puz-rate" data-user-rate></div>
+              <div class="cg-market-actions">
+                <small><i class="bi bi-graph-up-arrow"></i> Popular 82</small>
+                <a th:href="@{/games/puzzle/word}" class="hub-portal-inline-btn primary" data-play-link data-code="word">Play</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="cg-market-card puz-card"
+                   data-code="sudoku"
+                   data-name="Sudoku"
+                   data-category="logic"
+                   data-tags="logic numbers sudoku classic"
+                   data-popularity="88"
+                   data-rating="4.7"
+                   data-release="2026">
+            <div class="puz-thumb-wrap">
+              <img th:src="@{/images/puzzle/sudoku.svg}" src="/images/puzzle/sudoku.svg" alt="Sudoku thumbnail" class="puz-thumb">
+              <span class="puz-badge">Sudoku</span>
+              <button type="button" class="puz-fav-btn" data-favorite-btn aria-pressed="false" title="Luu vao yeu thich"><i class="bi bi-bookmark"></i></button>
+              <a th:href="@{/games/puzzle/sudoku}" class="puz-thumb-link" data-play-link data-code="sudoku" aria-label="Mo Sudoku"></a>
+            </div>
+            <div class="cg-market-body">
+              <h2>Sudoku</h2>
+              <p>Dien so 1-9 khong trung lap tren hang, cot va tung vung 3x3.</p>
+              <div class="cg-market-badges"><span>Logic</span><span>Classic</span><span>Solo</span></div>
+              <div class="puz-rate" data-user-rate></div>
+              <div class="cg-market-actions">
+                <small><i class="bi bi-graph-up-arrow"></i> Popular 88</small>
+                <a th:href="@{/games/puzzle/sudoku}" class="hub-portal-inline-btn primary" data-play-link data-code="sudoku">Play</a>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div id="puzzleEmptyState" class="cg-market-empty" hidden>Khong tim thay game puzzle phu hop.</div>
+        <div id="puzzleLoadmoreWrap" class="cg-market-loadmore">
+          <button type="button" id="puzzleLoadMoreBtn" class="btn theme-outline-btn">Xem them game</button>
+          <small id="puzzleLoadMeta">Dang hien 0/0</small>
+        </div>
+      </section>
     </section>
+
+    <aside class="cg-market-right">
+      <section class="hub-portal-panel cg-market-panel">
+        <div class="cg-section-head">
+          <div>
+            <h2>Trending</h2>
+            <small>Pho bien nhat</small>
+          </div>
+        </div>
+        <div id="puzzleTrendingLane" class="cg-market-lane-list"></div>
+      </section>
+
+      <section class="hub-portal-panel cg-market-panel">
+        <div class="cg-section-head">
+          <div>
+            <h2>Moi cap nhat</h2>
+            <small>Release moi</small>
+          </div>
+        </div>
+        <div id="puzzleNewestLane" class="cg-market-lane-list"></div>
+      </section>
+
+      <section id="puzzleRecentPanel" class="hub-portal-panel cg-market-panel" hidden>
+        <div class="cg-section-head">
+          <div>
+            <h2>Recently played</h2>
+            <small>Game vua click</small>
+          </div>
+        </div>
+        <div id="puzzleRecentList" class="cg-market-lane-list"></div>
+      </section>
+    </aside>
+  </section>
 </main>
 
 <style>
-    .puzzle-catalog-page {
-        width: min(1240px, calc(100% - 24px));
-    }
-
-    .puzzle-kpi-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
-    }
-
-    .puzzle-kpi-item {
-        border: 1px solid color-mix(in srgb, var(--gp-primary) 20%, transparent);
-        border-radius: 12px;
-        padding: 9px;
-        background: color-mix(in srgb, var(--gp-primary) 5%, #fff);
-    }
-
-    .puzzle-kpi-item small {
-        display: block;
-        color: var(--gp-muted);
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-    }
-
-    .puzzle-kpi-item strong {
-        display: block;
-        margin-top: 4px;
-        font-size: 0.9rem;
-        color: #0f172a;
-    }
-
-    .puzzle-catalog-toolbar {
-        margin-top: 14px;
-        padding: 14px;
-    }
-
-    .puzzle-toolbar-row {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .puzzle-control {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        border-radius: 12px;
-        border: 1px solid color-mix(in srgb, var(--gp-primary) 18%, var(--gp-border));
-        background: rgba(255, 255, 255, 0.92);
-        padding: 8px 10px;
-    }
-
-    .puzzle-control i {
-        color: var(--gp-primary-deep);
-    }
-
-    .puzzle-control input,
-    .puzzle-control select {
-        border: 0;
-        outline: 0;
-        background: transparent;
-        color: #102037;
-        min-width: 0;
-    }
-
-    .puzzle-control input {
-        width: 100%;
-    }
-
-    .puzzle-sort span {
-        color: var(--gp-muted);
-        font-size: 0.8rem;
-        font-weight: 700;
-    }
-
-    .puzzle-filter-row {
-        margin-top: 10px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .puzzle-filter-btn {
-        border: 1px solid color-mix(in srgb, var(--gp-primary) 24%, var(--gp-border));
-        background: rgba(255, 255, 255, 0.88);
-        color: #1b2b40;
-        border-radius: 999px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        padding: 6px 11px;
-    }
-
-    .puzzle-filter-btn.is-active {
-        background: color-mix(in srgb, var(--gp-primary) 14%, #fff);
-        border-color: color-mix(in srgb, var(--gp-primary) 44%, transparent);
-        color: var(--gp-primary-deep);
-    }
-
-    .puzzle-toolbar-meta {
-        margin-top: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        color: var(--gp-muted);
-        font-size: 0.8rem;
-        font-weight: 600;
-    }
-
-    .puzzle-discovery-lanes {
-        margin-top: 14px;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-    }
-
-    .puzzle-lane-card {
-        padding: 12px;
-    }
-
-    .puzzle-mini-lane {
-        margin-top: 8px;
-        display: grid;
-        gap: 8px;
-    }
-
-    .puzzle-lane-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.88);
-        color: #12253e;
-        text-decoration: none;
-        padding: 8px 10px;
-    }
-
-    .puzzle-lane-item__main {
-        min-width: 0;
-        display: grid;
-        gap: 3px;
-    }
-
-    .puzzle-lane-item__name {
-        font-size: 0.88rem;
-        font-weight: 700;
-        color: #0f172a;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .puzzle-lane-item__meta {
-        color: var(--gp-muted);
-        font-size: 0.76rem;
-        font-weight: 600;
-    }
-
-    .puzzle-lane-rank {
-        flex: none;
-        min-width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        border: 1px solid color-mix(in srgb, var(--gp-primary) 30%, transparent);
-        background: color-mix(in srgb, var(--gp-primary) 10%, #fff);
-        color: var(--gp-primary-deep);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.78rem;
-        font-weight: 800;
-    }
-
-    .puzzle-catalog-section {
-        margin-top: 14px;
-    }
-
-    .puzzle-catalog-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-    }
-
-    .puzzle-catalog-card {
-        border-radius: 16px;
-        border: 1px solid color-mix(in srgb, var(--gp-primary) 16%, var(--gp-border));
-        background: rgba(255, 255, 255, 0.95);
-        box-shadow: 0 12px 28px rgba(9, 25, 52, 0.08);
-        overflow: hidden;
-        display: grid;
-        grid-template-columns: 150px minmax(0, 1fr);
-    }
-
-    .puzzle-card-cover {
-        position: relative;
-        min-height: 138px;
-        overflow: hidden;
-    }
-
-    .puzzle-cover-jigsaw {
-        background: linear-gradient(140deg, #1d4ed8, #2563eb);
-    }
-
-    .puzzle-cover-sliding {
-        background: linear-gradient(140deg, #0f766e, #14b8a6);
-    }
-
-    .puzzle-cover-word {
-        background: linear-gradient(140deg, #7c3aed, #9333ea);
-    }
-
-    .puzzle-cover-sudoku {
-        background: linear-gradient(140deg, #0b6fd8, #22c55e);
-    }
-
-    .puzzle-thumb {
-        width: 100%;
-        height: 100%;
-        min-height: 138px;
-        object-fit: cover;
-        display: block;
-    }
-
-    .puzzle-cover-badge {
-        position: absolute;
-        left: 8px;
-        top: 8px;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        background: rgba(7, 22, 43, 0.7);
-        color: #f4f8ff;
-        font-size: 0.72rem;
-        font-weight: 800;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        padding: 4px 8px;
-        backdrop-filter: blur(4px);
-    }
-
-    .puzzle-card-body {
-        padding: 12px;
-    }
-
-    .puzzle-card-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-    }
-
-    .puzzle-card-head__meta {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .puzzle-card-head h2 {
-        margin: 0;
-        font-size: 1rem;
-        color: #0f172a;
-    }
-
-    .puzzle-rating {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        border-radius: 999px;
-        border: 1px solid color-mix(in srgb, var(--gp-secondary) 34%, transparent);
-        background: color-mix(in srgb, var(--gp-secondary) 12%, #fff);
-        color: #0d6b5e;
-        padding: 3px 8px;
-        font-size: 0.76rem;
-        font-weight: 700;
-    }
-
-    .puzzle-fav-btn {
-        width: 30px;
-        height: 30px;
-        border-radius: 10px;
-        border: 1px solid color-mix(in srgb, var(--gp-primary) 30%, transparent);
-        background: color-mix(in srgb, var(--gp-primary) 8%, #fff);
-        color: var(--gp-primary-deep);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.9rem;
-    }
-
-    .puzzle-fav-btn.is-active {
-        background: color-mix(in srgb, var(--gp-secondary) 16%, #fff);
-        border-color: color-mix(in srgb, var(--gp-secondary) 46%, transparent);
-        color: #0f766e;
-    }
-
-    .puzzle-card-body p {
-        margin: 8px 0;
-        color: var(--gp-muted);
-        font-size: 0.86rem;
-        line-height: 1.45;
-    }
-
-    .puzzle-user-rate {
-        margin-top: 4px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-
-    .puzzle-user-rate__label {
-        color: var(--gp-muted);
-        font-size: 0.76rem;
-        font-weight: 700;
-    }
-
-    .puzzle-star-row {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .puzzle-star-btn {
-        width: 24px;
-        height: 24px;
-        border-radius: 8px;
-        border: 1px solid color-mix(in srgb, var(--gp-primary) 28%, transparent);
-        background: color-mix(in srgb, var(--gp-primary) 8%, #fff);
-        color: #64748b;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
-        line-height: 1;
-    }
-
-    .puzzle-star-btn:hover {
-        border-color: color-mix(in srgb, var(--gp-secondary) 45%, transparent);
-        color: #d97706;
-    }
-
-    .puzzle-star-btn.is-on {
-        color: #f59e0b;
-        border-color: color-mix(in srgb, #f59e0b 65%, transparent);
-        background: color-mix(in srgb, #f59e0b 14%, #fff);
-    }
-
-    .puzzle-user-rate__value {
-        color: var(--gp-muted);
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-
-    .puzzle-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
-    .puzzle-tags span {
-        border-radius: 999px;
-        border: 1px solid color-mix(in srgb, var(--gp-primary) 22%, transparent);
-        background: color-mix(in srgb, var(--gp-primary) 8%, #fff);
-        color: var(--gp-primary-deep);
-        font-size: 0.72rem;
-        font-weight: 700;
-        padding: 3px 8px;
-    }
-
-    .puzzle-card-foot {
-        margin-top: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-    }
-
-    .puzzle-card-foot small {
-        color: var(--gp-muted);
-        font-weight: 600;
-    }
-
-    .puzzle-empty-state {
-        margin-top: 12px;
-        border-radius: 14px;
-        border: 1px dashed color-mix(in srgb, var(--gp-primary) 32%, var(--gp-border));
-        background: color-mix(in srgb, var(--gp-primary) 6%, #fff);
-        color: var(--gp-muted);
-        text-align: center;
-        padding: 20px 14px;
-        font-weight: 600;
-    }
-
-    .puzzle-loadmore-wrap {
-        margin-top: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        border-radius: 12px;
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        background: rgba(255, 255, 255, 0.84);
-        padding: 9px 10px;
-    }
-
-    .puzzle-loadmore-wrap small {
-        color: var(--gp-muted);
-        font-weight: 600;
-        font-size: 0.8rem;
-    }
-
-    .puzzle-recent-panel {
-        margin-top: 14px;
-    }
-
-    .puzzle-recent-list {
-        margin-top: 8px;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-    }
-
-    .puzzle-recent-item {
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.88);
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 10px;
-        text-decoration: none;
-        padding: 8px 10px;
-    }
-
-    .puzzle-recent-item__main {
-        min-width: 0;
-        display: grid;
-        gap: 3px;
-    }
-
-    .puzzle-recent-item__name {
-        font-size: 0.86rem;
-        font-weight: 700;
-        color: #0f172a;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .puzzle-recent-item__meta {
-        color: var(--gp-muted);
-        font-size: 0.74rem;
-        font-weight: 600;
-    }
-
-    .puzzle-recent-item__go {
-        width: 30px;
-        height: 30px;
-        border-radius: 10px;
-        border: 1px solid color-mix(in srgb, var(--gp-primary) 32%, transparent);
-        background: color-mix(in srgb, var(--gp-primary) 10%, #fff);
-        color: var(--gp-primary-deep);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.88rem;
-    }
-
-    .puzzle-gap-panel {
-        margin-top: 14px;
-    }
-
-    .puzzle-gap-list {
-        list-style: none;
-        padding: 0;
-        display: grid;
-        gap: 8px;
-    }
-
-    .puzzle-gap-list li {
-        display: flex;
-        align-items: flex-start;
-        gap: 8px;
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.84);
-        padding: 9px 10px;
-        color: #223449;
-        font-size: 0.86rem;
-    }
-
-    .puzzle-gap-list i {
-        color: #dc2626;
-        margin-top: 1px;
-    }
-
-    body.dark-mode .puzzle-control,
-    body.dark-mode .puzzle-filter-btn,
-    body.dark-mode .puzzle-lane-item,
-    body.dark-mode .puzzle-recent-item,
-    body.dark-mode .puzzle-catalog-card,
-    body.dark-mode .puzzle-gap-list li,
-    body.dark-mode .puzzle-empty-state,
-    body.dark-mode .puzzle-kpi-item,
-    body.dark-mode .puzzle-loadmore-wrap {
-        background: rgba(10, 19, 36, 0.86);
-        border-color: rgba(130, 154, 192, 0.26);
-        color: #dbe7ff;
-    }
-
-    body.dark-mode .puzzle-card-head h2,
-    body.dark-mode .puzzle-kpi-item strong,
-    body.dark-mode .puzzle-lane-item__name,
-    body.dark-mode .puzzle-recent-item__name,
-    body.dark-mode .puzzle-control input,
-    body.dark-mode .puzzle-control select {
-        color: #eaf1ff;
-    }
-
-    body.dark-mode .puzzle-card-body p,
-    body.dark-mode .puzzle-toolbar-meta,
-    body.dark-mode .puzzle-lane-item__meta,
-    body.dark-mode .puzzle-recent-item__meta,
-    body.dark-mode .puzzle-user-rate__value,
-    body.dark-mode .puzzle-user-rate__label,
-    body.dark-mode .puzzle-card-foot small,
-    body.dark-mode .puzzle-kpi-item small,
-    body.dark-mode .puzzle-loadmore-wrap small {
-        color: #9fb0cc;
-    }
-
-    body.dark-mode .puzzle-cover-badge {
-        background: rgba(8, 16, 30, 0.78);
-        border-color: rgba(168, 196, 232, 0.34);
-        color: #edf4ff;
-    }
-
-    body.dark-mode .puzzle-fav-btn {
-        background: rgba(14, 30, 56, 0.92);
-        border-color: rgba(116, 155, 211, 0.34);
-        color: #cae1ff;
-    }
-
-    body.dark-mode .puzzle-fav-btn.is-active {
-        background: rgba(16, 74, 69, 0.92);
-        border-color: rgba(84, 190, 176, 0.42);
-        color: #cbfff4;
-    }
-
-    body.dark-mode .puzzle-star-btn {
-        background: rgba(14, 30, 56, 0.92);
-        border-color: rgba(116, 155, 211, 0.34);
-        color: #8fa8cb;
-    }
-
-    body.dark-mode .puzzle-star-btn.is-on {
-        background: rgba(123, 86, 23, 0.45);
-        border-color: rgba(252, 205, 106, 0.45);
-        color: #ffe39f;
-    }
-
-    @media (max-width: 991.98px) {
-        .puzzle-discovery-lanes {
-            grid-template-columns: 1fr;
-        }
-
-        .puzzle-toolbar-row {
-            grid-template-columns: 1fr;
-        }
-
-        .puzzle-catalog-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .puzzle-recent-list {
-            grid-template-columns: 1fr;
-        }
-
-        .puzzle-catalog-card {
-            grid-template-columns: 130px minmax(0, 1fr);
-        }
-    }
-
-    @media (max-width: 767.98px) {
-        .puzzle-catalog-page {
-            width: min(100%, calc(100% - 10px));
-        }
-
-        .puzzle-catalog-card {
-            grid-template-columns: 1fr;
-        }
-
-        .puzzle-card-cover {
-            min-height: 96px;
-        }
-
-        .puzzle-card-foot {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .puzzle-loadmore-wrap {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .puzzle-recent-item {
-            grid-template-columns: 1fr;
-        }
-    }
+  .puz-gap-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 7px;
+  }
+
+  .puz-gap-list li {
+    border: 1px solid rgba(121, 166, 236, 0.28);
+    border-radius: 11px;
+    background: rgba(10, 28, 56, 0.84);
+    color: #a9bfdc;
+    font-size: 0.78rem;
+    line-height: 1.38;
+    padding: 8px 9px;
+    display: flex;
+    gap: 7px;
+    align-items: flex-start;
+  }
+
+  .puz-gap-list i {
+    margin-top: 1px;
+    color: #ff8f8f;
+  }
+
+  .puz-featured-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .puz-featured-item {
+    border: 1px solid rgba(121, 166, 236, 0.32);
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(10, 28, 56, 0.84);
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 0;
+    text-decoration: none;
+  }
+
+  .puz-featured-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .puz-featured-body {
+    padding: 8px;
+    display: grid;
+    gap: 4px;
+  }
+
+  .puz-featured-body strong {
+    color: #edf5ff;
+    font-size: 0.82rem;
+    line-height: 1.25;
+  }
+
+  .puz-featured-body small {
+    color: #93abd0;
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+
+  .puz-card .cg-market-body {
+    gap: 7px;
+  }
+
+  .puz-thumb-wrap {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(121, 166, 236, 0.24);
+  }
+
+  .puz-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .puz-thumb-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .puz-badge {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    z-index: 2;
+    border-radius: 999px;
+    border: 1px solid rgba(226, 238, 255, 0.28);
+    background: rgba(8, 20, 40, 0.74);
+    color: #edf5ff;
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+  }
+
+  .puz-fav-btn {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    z-index: 2;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    border: 1px solid rgba(121, 166, 236, 0.38);
+    background: rgba(8, 26, 54, 0.9);
+    color: #d5e6ff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.88rem;
+  }
+
+  .puz-fav-btn.is-active {
+    border-color: rgba(64, 207, 159, 0.58);
+    background: rgba(12, 74, 63, 0.86);
+    color: #c8ffea;
+  }
+
+  .puz-rate {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .puz-rate-label,
+  .puz-rate-value {
+    color: #97afd3;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .puz-star-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .puz-star-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 8px;
+    border: 1px solid rgba(121, 166, 236, 0.34);
+    background: rgba(10, 28, 56, 0.88);
+    color: #829bc0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    line-height: 1;
+  }
+
+  .puz-star-btn.is-on {
+    border-color: rgba(251, 191, 36, 0.56);
+    background: rgba(126, 85, 18, 0.42);
+    color: #ffd972;
+  }
+
+  .cg-market-actions small {
+    color: #91a9ce;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  @media (max-width: 991.98px) {
+    .puz-featured-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .puz-featured-strip {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
 
 <script th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', () => {
-        const grid = document.getElementById('puzzleCatalogGrid');
-        const cards = Array.from(grid?.querySelectorAll('.puzzle-catalog-card') || []);
-        const searchInput = document.getElementById('puzzleSearchInput');
-        const sortSelect = document.getElementById('puzzleSortSelect');
-        const filterButtons = Array.from(document.querySelectorAll('.puzzle-filter-btn'));
-        const resultCount = document.getElementById('puzzleResultCount');
-        const emptyState = document.getElementById('puzzleEmptyState');
-        const loadMoreWrap = document.getElementById('puzzleLoadmoreWrap');
-        const loadMoreBtn = document.getElementById('puzzleLoadMoreBtn');
-        const loadMeta = document.getElementById('puzzleLoadMeta');
-        const trendingLane = document.getElementById('puzzleTrendingLane');
-        const newestLane = document.getElementById('puzzleNewestLane');
-        const recentPanel = document.getElementById('puzzleRecentPanel');
-        const recentList = document.getElementById('puzzleRecentList');
+  document.addEventListener('DOMContentLoaded', () => {
+    const grid = document.getElementById('puzzleCatalogGrid');
+    const cards = Array.from(grid?.querySelectorAll('.puz-card') || []);
+    const searchInput = document.getElementById('puzzleSearchInput');
+    const sortSelect = document.getElementById('puzzleSortSelect');
+    const filterButtons = Array.from(document.querySelectorAll('.cg-market-filter-btn'));
+    const resultCount = document.getElementById('puzzleResultCount');
+    const filterLabel = document.getElementById('puzzleFilterLabel');
+    const favoriteCount = document.getElementById('puzzleFavoriteCount');
+    const emptyState = document.getElementById('puzzleEmptyState');
+    const loadWrap = document.getElementById('puzzleLoadmoreWrap');
+    const loadBtn = document.getElementById('puzzleLoadMoreBtn');
+    const loadMeta = document.getElementById('puzzleLoadMeta');
+    const featuredHost = document.getElementById('puzzleFeaturedStrip');
+    const trendingHost = document.getElementById('puzzleTrendingLane');
+    const newestHost = document.getElementById('puzzleNewestLane');
+    const recentPanel = document.getElementById('puzzleRecentPanel');
+    const recentHost = document.getElementById('puzzleRecentList');
 
-        if (!grid || cards.length === 0) {
-            return;
+    if (!grid || cards.length === 0) {
+      return;
+    }
+
+    const FAVORITE_STORAGE_KEY = 'puzzleCatalogFavorites.v1';
+    const RATING_STORAGE_KEY = 'puzzleCatalogRatings.v1';
+    const RECENT_STORAGE_KEY = 'puzzleCatalogRecent.v1';
+    const INITIAL_VISIBLE = 6;
+    const RECENT_LIMIT = 8;
+
+    const filterLabels = {
+      all: 'Tat ca',
+      logic: 'Logic',
+      classic: 'Classic',
+      word: 'Word',
+      quick: 'Quick',
+      favorite: 'Yeu thich'
+    };
+
+    let activeFilter = 'all';
+    let visibleLimit = INITIAL_VISIBLE;
+
+    const safeParse = (value, fallback) => {
+      try {
+        if (!value) return fallback;
+        return JSON.parse(value);
+      } catch (_) {
+        return fallback;
+      }
+    };
+
+    const getCardCode = (card) => String(card?.dataset?.code || '').trim();
+    const getCardName = (card) => String(card?.dataset?.name || '').trim();
+    const getCardHref = (card) => String(card?.querySelector('[data-play-link]')?.getAttribute('href') || '#');
+    const getCardThumb = (card) => String(card?.querySelector('.puz-thumb')?.getAttribute('src') || '');
+    const textOfCard = (card) => (getCardName(card) + ' ' + String(card.dataset.tags || '') + ' ' + String(card.textContent || '')).toLowerCase();
+
+    let favorites = new Set((safeParse(window.localStorage.getItem(FAVORITE_STORAGE_KEY), []) || []).map((x) => String(x)));
+    let ratings = (() => {
+      const raw = safeParse(window.localStorage.getItem(RATING_STORAGE_KEY), {});
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      const mapped = {};
+      Object.entries(raw).forEach(([key, value]) => {
+        const score = Number(value);
+        if (Number.isFinite(score) && score >= 1 && score <= 5) {
+          mapped[String(key)] = Math.round(score);
         }
+      });
+      return mapped;
+    })();
+    let recentCodes = (safeParse(window.localStorage.getItem(RECENT_STORAGE_KEY), []) || []).map((x) => String(x)).filter((x) => x);
 
-        const FAVORITE_STORAGE_KEY = 'puzzleCatalogFavorites.v1';
-        const RATING_STORAGE_KEY = 'puzzleCatalogRatings.v1';
-        const RECENT_STORAGE_KEY = 'puzzleCatalogRecent.v1';
-        const INITIAL_VISIBLE = 2;
-        const RECENT_LIMIT = 6;
-        let activeFilter = 'all';
-        let visibleLimit = INITIAL_VISIBLE;
+    const saveFavorites = () => {
+      try {
+        window.localStorage.setItem(FAVORITE_STORAGE_KEY, JSON.stringify(Array.from(favorites)));
+      } catch (_) {
+      }
+    };
 
-        const readJson = (key, fallback) => {
-            try {
-                const raw = window.localStorage.getItem(key);
-                if (!raw) {
-                    return fallback;
-                }
-                return JSON.parse(raw);
-            } catch (_) {
-                return fallback;
-            }
-        };
+    const saveRatings = () => {
+      try {
+        window.localStorage.setItem(RATING_STORAGE_KEY, JSON.stringify(ratings));
+      } catch (_) {
+      }
+    };
 
-        const readFavorites = () => {
-            const arr = readJson(FAVORITE_STORAGE_KEY, []);
-            if (!Array.isArray(arr)) {
-                return new Set();
-            }
-            return new Set(arr.map((x) => String(x)));
-        };
+    const saveRecent = () => {
+      try {
+        window.localStorage.setItem(RECENT_STORAGE_KEY, JSON.stringify(recentCodes));
+      } catch (_) {
+      }
+    };
 
-        const readRatings = () => {
-            const raw = readJson(RATING_STORAGE_KEY, {});
-            const result = {};
-            if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-                return result;
-            }
-            Object.entries(raw).forEach(([code, value]) => {
-                const n = Number(value);
-                if (Number.isFinite(n) && n >= 1 && n <= 5) {
-                    result[String(code)] = Math.round(n);
-                }
-            });
-            return result;
-        };
+    const updateFavoriteButton = (card) => {
+      const code = getCardCode(card);
+      const btn = card.querySelector('[data-favorite-btn]');
+      if (!btn) return;
+      const active = favorites.has(code);
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      btn.title = active ? 'Bo luu yeu thich' : 'Luu vao yeu thich';
+      const icon = btn.querySelector('i');
+      if (icon) {
+        icon.className = active ? 'bi bi-bookmark-fill' : 'bi bi-bookmark';
+      }
+    };
 
-        const readRecent = () => {
-            const raw = readJson(RECENT_STORAGE_KEY, []);
-            if (!Array.isArray(raw)) {
-                return [];
-            }
-            return raw.map((x) => String(x)).filter((x) => x);
-        };
+    const renderRate = (card) => {
+      const box = card.querySelector('[data-user-rate]');
+      if (!box) return;
+      const code = getCardCode(card);
+      const current = Number(ratings[code] || 0);
+      const stars = [1, 2, 3, 4, 5].map((value) => {
+        const cls = value <= current ? 'puz-star-btn is-on' : 'puz-star-btn';
+        return '<button type="button" class="' + cls + '" data-rate-value="' + value + '" aria-label="Cham ' + value + ' sao"><i class="bi bi-star-fill"></i></button>';
+      }).join('');
+      box.innerHTML = '<span class="puz-rate-label">Ban cham:</span>' +
+        '<div class="puz-star-row">' + stars + '</div>' +
+        '<span class="puz-rate-value">' + (current ? (current + '/5') : 'chua cham') + '</span>';
+    };
 
-        let favorites = readFavorites();
-        let userRatings = readRatings();
-        let recentCodes = readRecent();
+    const sortCards = (list, mode) => {
+      const arr = [...list];
+      if (mode === 'rating') {
+        arr.sort((a, b) => Number(b.dataset.rating || 0) - Number(a.dataset.rating || 0));
+      } else if (mode === 'newest') {
+        arr.sort((a, b) => Number(b.dataset.release || 0) - Number(a.dataset.release || 0));
+      } else if (mode === 'az') {
+        arr.sort((a, b) => getCardName(a).localeCompare(getCardName(b), 'vi'));
+      } else {
+        arr.sort((a, b) => Number(b.dataset.popularity || 0) - Number(a.dataset.popularity || 0));
+      }
+      return arr;
+    };
 
-        const writeFavorites = () => {
-            try {
-                window.localStorage.setItem(FAVORITE_STORAGE_KEY, JSON.stringify(Array.from(favorites)));
-            } catch (_) {
-            }
-        };
+    const renderLane = (host, list, mapper) => {
+      if (!host) return;
+      host.innerHTML = list.map((card, idx) => mapper(card, idx)).join('');
+    };
 
-        const writeRatings = () => {
-            try {
-                window.localStorage.setItem(RATING_STORAGE_KEY, JSON.stringify(userRatings));
-            } catch (_) {
-            }
-        };
+    const renderFeatured = () => {
+      if (!featuredHost) return;
+      const picks = sortCards(cards, 'popular').slice(0, 3);
+      featuredHost.innerHTML = picks.map((card, idx) => {
+        return '<a class="puz-featured-item" href="' + getCardHref(card) + '" data-play-link data-code="' + getCardCode(card) + '">' +
+          '<img src="' + getCardThumb(card) + '" alt="' + getCardName(card) + '">' +
+          '<div class="puz-featured-body">' +
+            '<strong>#' + (idx + 1) + ' ' + getCardName(card) + '</strong>' +
+            '<small>Popular ' + String(card.dataset.popularity || '0') + ' • Rating ' + String(card.dataset.rating || '-') + '</small>' +
+          '</div>' +
+        '</a>';
+      }).join('');
+    };
 
-        const writeRecent = () => {
-            try {
-                window.localStorage.setItem(RECENT_STORAGE_KEY, JSON.stringify(recentCodes));
-            } catch (_) {
-            }
-        };
+    const renderRecent = () => {
+      if (!recentPanel || !recentHost) return;
+      const map = new Map(cards.map((card) => [getCardCode(card), card]));
+      const list = recentCodes.map((code) => map.get(code)).filter((card) => Boolean(card)).slice(0, RECENT_LIMIT);
+      if (list.length === 0) {
+        recentPanel.hidden = true;
+        recentHost.innerHTML = '';
+        return;
+      }
+      recentPanel.hidden = false;
+      recentHost.innerHTML = list.map((card) => {
+        const code = getCardCode(card);
+        const score = Number(ratings[code] || 0);
+        const scoreText = score ? ('Ban cham ' + score + '/5') : 'Chua cham';
+        return '<a class="cg-market-lane-item" href="' + getCardHref(card) + '" data-play-link data-code="' + code + '">' +
+          '<strong>' + getCardName(card) + '</strong>' +
+          '<small>' + scoreText + '</small>' +
+        '</a>';
+      }).join('');
+    };
 
-        const getCardCode = (card) => String(card?.dataset?.code || '').trim();
-        const getCardName = (card) => String(card?.dataset?.name || '').trim();
-        const getCardHref = (card) => String(card?.querySelector('.puzzle-card-actions a')?.getAttribute('href') || '#');
+    const markRecent = (code) => {
+      if (!code) return;
+      recentCodes = [code, ...recentCodes.filter((x) => x !== code)].slice(0, RECENT_LIMIT);
+      saveRecent();
+      renderRecent();
+    };
 
-        const updateFavoriteButton = (card) => {
-            const btn = card.querySelector('[data-favorite-btn]');
-            if (!btn) {
-                return;
-            }
-            const code = getCardCode(card);
-            const liked = favorites.has(code);
-            btn.classList.toggle('is-active', liked);
-            btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
-            btn.title = liked ? 'Bo luu yeu thich' : 'Luu vao yeu thich';
-            const icon = btn.querySelector('i');
-            if (icon) {
-                icon.className = liked ? 'bi bi-bookmark-fill' : 'bi bi-bookmark';
-            }
-        };
+    const applyState = () => {
+      const query = String(searchInput?.value || '').trim().toLowerCase();
+      const sortMode = String(sortSelect?.value || 'popular');
 
-        const renderUserRate = (card) => {
-            const box = card.querySelector('[data-user-rate]');
-            if (!box) {
-                return;
-            }
-            const code = getCardCode(card);
-            const picked = Number(userRatings[code] || 0);
-            const stars = [1, 2, 3, 4, 5]
-                .map((value) => {
-                    const cls = value <= picked ? 'puzzle-star-btn is-on' : 'puzzle-star-btn';
-                    return '<button type="button" class="' + cls + '" data-rate-value="' + value + '" aria-label="Cham '
-                        + value + ' sao">&#9733;</button>';
-                })
-                .join('');
-            const text = picked ? (picked + '/5') : 'chua cham';
-            box.innerHTML = '<span class="puzzle-user-rate__label">Ban cham:</span>'
-                + '<div class="puzzle-star-row">' + stars + '</div>'
-                + '<span class="puzzle-user-rate__value">' + text + '</span>';
-        };
+      const filtered = cards.filter((card) => {
+        const inFilter = activeFilter === 'all'
+          || (activeFilter === 'favorite' && favorites.has(getCardCode(card)))
+          || String(card.dataset.category || '') === activeFilter;
+        if (!inFilter) return false;
+        if (!query) return true;
+        return textOfCard(card).includes(query);
+      });
 
-        const getCardText = (card) => {
-            const name = String(card.dataset.name || '').toLowerCase();
-            const tags = String(card.dataset.tags || '').toLowerCase();
-            const body = String(card.textContent || '').toLowerCase();
-            return name + ' ' + tags + ' ' + body;
-        };
+      const ordered = sortCards(filtered, sortMode);
+      const shown = ordered.slice(0, visibleLimit);
+      const hiddenSet = new Set(cards);
 
-        const sortCards = (list, mode) => {
-            const arr = [...list];
-            if (mode === 'rating') {
-                arr.sort((a, b) => Number(b.dataset.rating || 0) - Number(a.dataset.rating || 0));
-            } else if (mode === 'newest') {
-                arr.sort((a, b) => Number(b.dataset.release || 0) - Number(a.dataset.release || 0));
-            } else if (mode === 'az') {
-                arr.sort((a, b) => String(a.dataset.name || '').localeCompare(String(b.dataset.name || ''), 'vi'));
-            } else {
-                arr.sort((a, b) => Number(b.dataset.popularity || 0) - Number(a.dataset.popularity || 0));
-            }
-            return arr;
-        };
+      shown.forEach((card) => {
+        hiddenSet.delete(card);
+        card.hidden = false;
+        grid.appendChild(card);
+      });
+      ordered.slice(visibleLimit).forEach((card) => {
+        hiddenSet.delete(card);
+        card.hidden = true;
+        grid.appendChild(card);
+      });
+      hiddenSet.forEach((card) => {
+        card.hidden = true;
+      });
 
-        const renderLane = (host, source, metaBuilder) => {
-            if (!host) {
-                return;
-            }
-            host.innerHTML = source.map((card, index) => {
-                const name = getCardName(card);
-                const href = getCardHref(card);
-                const meta = metaBuilder(card);
-                return '<a class="puzzle-lane-item" href="' + href + '">'
-                    + '<div class="puzzle-lane-item__main">'
-                    + '<span class="puzzle-lane-item__name">' + name + '</span>'
-                    + '<span class="puzzle-lane-item__meta">' + meta + '</span>'
-                    + '</div>'
-                    + '<span class="puzzle-lane-rank">#' + (index + 1) + '</span>'
-                    + '</a>';
-            }).join('');
-        };
+      if (resultCount) {
+        resultCount.textContent = filtered.length + ' game (hien ' + shown.length + ')';
+      }
+      if (filterLabel) {
+        filterLabel.textContent = filterLabels[activeFilter] || filterLabels.all;
+      }
+      if (favoriteCount) {
+        favoriteCount.textContent = String(favorites.size);
+      }
+      if (emptyState) {
+        emptyState.hidden = filtered.length !== 0;
+      }
+      if (loadWrap) {
+        loadWrap.hidden = filtered.length === 0;
+      }
+      if (loadMeta) {
+        loadMeta.textContent = 'Dang hien ' + shown.length + '/' + filtered.length;
+      }
+      if (loadBtn) {
+        loadBtn.hidden = filtered.length <= visibleLimit;
+      }
 
-        const renderDiscoveryLanes = () => {
-            const topPopular = sortCards(cards, 'popular').slice(0, 4);
-            const topNewest = sortCards(cards, 'newest').slice(0, 4);
-            renderLane(trendingLane, topPopular, (card) => 'Popular ' + String(card.dataset.popularity || '0'));
-            renderLane(newestLane, topNewest, (card) => 'Ban ' + String(card.dataset.release || '-'));
-        };
+      renderLane(trendingHost, sortCards(filtered, 'popular').slice(0, 5), (card, idx) =>
+        '<a class="cg-market-lane-item" href="' + getCardHref(card) + '" data-play-link data-code="' + getCardCode(card) + '">' +
+          '<strong>#' + (idx + 1) + ' ' + getCardName(card) + '</strong>' +
+          '<small>Popular ' + String(card.dataset.popularity || '0') + ' • Rating ' + String(card.dataset.rating || '-') + '</small>' +
+        '</a>'
+      );
 
-        const renderRecent = () => {
-            if (!recentPanel || !recentList) {
-                return;
-            }
-            const cardMap = new Map(cards.map((card) => [getCardCode(card), card]));
-            const list = recentCodes
-                .map((code) => cardMap.get(code))
-                .filter((card) => Boolean(card))
-                .slice(0, RECENT_LIMIT);
-            if (list.length === 0) {
-                recentPanel.hidden = true;
-                recentList.innerHTML = '';
-                return;
-            }
-            recentPanel.hidden = false;
-            recentList.innerHTML = list.map((card) => {
-                const code = getCardCode(card);
-                const mine = Number(userRatings[code] || 0);
-                const mineText = mine ? ('Ban cham ' + mine + '/5') : 'Chua cham';
-                return '<a class="puzzle-recent-item" href="' + getCardHref(card) + '">'
-                    + '<div class="puzzle-recent-item__main">'
-                    + '<span class="puzzle-recent-item__name">' + getCardName(card) + '</span>'
-                    + '<span class="puzzle-recent-item__meta">' + mineText + '</span>'
-                    + '</div>'
-                    + '<span class="puzzle-recent-item__go"><i class="bi bi-arrow-right"></i></span>'
-                    + '</a>';
-            }).join('');
-        };
+      renderLane(newestHost, sortCards(filtered, 'newest').slice(0, 5), (card) =>
+        '<a class="cg-market-lane-item" href="' + getCardHref(card) + '" data-play-link data-code="' + getCardCode(card) + '">' +
+          '<strong>' + getCardName(card) + '</strong>' +
+          '<small>Release ' + String(card.dataset.release || '-') + '</small>' +
+        '</a>'
+      );
+    };
 
-        const markRecent = (code) => {
-            if (!code) {
-                return;
-            }
-            recentCodes = [code, ...recentCodes.filter((item) => item !== code)].slice(0, RECENT_LIMIT);
-            writeRecent();
-            renderRecent();
-        };
-
-        const applyCatalogState = () => {
-            const query = String(searchInput?.value || '').trim().toLowerCase();
-            const sortMode = String(sortSelect?.value || 'popular');
-
-            const filtered = cards.filter((card) => {
-                const matchFilter = activeFilter === 'all'
-                    || (activeFilter === 'favorite' && favorites.has(getCardCode(card)))
-                    || String(card.dataset.category || '') === activeFilter;
-                if (!matchFilter) {
-                    return false;
-                }
-                if (!query) {
-                    return true;
-                }
-                return getCardText(card).includes(query);
-            });
-
-            const ordered = sortCards(filtered, sortMode);
-            const hiddenSet = new Set(cards);
-            const shown = ordered.slice(0, visibleLimit);
-
-            shown.forEach((card) => {
-                hiddenSet.delete(card);
-                grid.appendChild(card);
-                card.hidden = false;
-            });
-
-            ordered.slice(visibleLimit).forEach((card) => {
-                hiddenSet.delete(card);
-                grid.appendChild(card);
-                card.hidden = true;
-            });
-
-            hiddenSet.forEach((card) => {
-                card.hidden = true;
-            });
-
-            if (resultCount) {
-                resultCount.textContent = filtered.length + ' game (hien ' + shown.length + ')';
-            }
-            if (emptyState) {
-                emptyState.hidden = filtered.length !== 0;
-            }
-            if (loadMoreWrap) {
-                loadMoreWrap.hidden = filtered.length === 0;
-            }
-            if (loadMeta) {
-                loadMeta.textContent = 'Dang hien ' + shown.length + '/' + filtered.length;
-            }
-            if (loadMoreBtn) {
-                loadMoreBtn.hidden = filtered.length <= visibleLimit;
-            }
-        };
-
-        filterButtons.forEach((btn) => {
-            btn.addEventListener('click', () => {
-                activeFilter = String(btn.dataset.filter || 'all');
-                filterButtons.forEach((x) => x.classList.toggle('is-active', x === btn));
-                visibleLimit = INITIAL_VISIBLE;
-                applyCatalogState();
-            });
-        });
-
-        cards.forEach((card) => {
-            updateFavoriteButton(card);
-            renderUserRate(card);
-        });
-
-        grid.addEventListener('click', (event) => {
-            const target = event.target;
-            if (!(target instanceof Element)) {
-                return;
-            }
-
-            const favoriteBtn = target.closest('[data-favorite-btn]');
-            if (favoriteBtn) {
-                event.preventDefault();
-                event.stopPropagation();
-                const card = favoriteBtn.closest('.puzzle-catalog-card');
-                if (!card) {
-                    return;
-                }
-                const code = getCardCode(card);
-                if (!code) {
-                    return;
-                }
-                if (favorites.has(code)) {
-                    favorites.delete(code);
-                } else {
-                    favorites.add(code);
-                }
-                writeFavorites();
-                updateFavoriteButton(card);
-                applyCatalogState();
-                return;
-            }
-
-            const rateBtn = target.closest('[data-rate-value]');
-            if (rateBtn) {
-                event.preventDefault();
-                event.stopPropagation();
-                const card = rateBtn.closest('.puzzle-catalog-card');
-                if (!card) {
-                    return;
-                }
-                const value = Number(rateBtn.getAttribute('data-rate-value') || 0);
-                if (!Number.isFinite(value) || value < 1 || value > 5) {
-                    return;
-                }
-                const code = getCardCode(card);
-                if (!code) {
-                    return;
-                }
-                userRatings[code] = value;
-                writeRatings();
-                renderUserRate(card);
-                renderRecent();
-                return;
-            }
-
-            const playLink = target.closest('.puzzle-card-actions a');
-            if (playLink) {
-                const card = playLink.closest('.puzzle-catalog-card');
-                if (!card) {
-                    return;
-                }
-                markRecent(getCardCode(card));
-            }
-        });
-
-        searchInput?.addEventListener('input', () => {
-            visibleLimit = INITIAL_VISIBLE;
-            applyCatalogState();
-        });
-        sortSelect?.addEventListener('change', () => {
-            visibleLimit = INITIAL_VISIBLE;
-            applyCatalogState();
-        });
-        loadMoreBtn?.addEventListener('click', () => {
-            visibleLimit += INITIAL_VISIBLE;
-            applyCatalogState();
-        });
-
-        renderDiscoveryLanes();
-        renderRecent();
-        applyCatalogState();
+    filterButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeFilter = String(btn.dataset.filter || 'all');
+        filterButtons.forEach((x) => x.classList.toggle('is-active', x === btn));
+        visibleLimit = INITIAL_VISIBLE;
+        applyState();
+      });
     });
+
+    cards.forEach((card) => {
+      updateFavoriteButton(card);
+      renderRate(card);
+    });
+
+    grid.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      const favBtn = target.closest('[data-favorite-btn]');
+      if (favBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        const card = favBtn.closest('.puz-card');
+        if (!card) return;
+        const code = getCardCode(card);
+        if (!code) return;
+        if (favorites.has(code)) {
+          favorites.delete(code);
+        } else {
+          favorites.add(code);
+        }
+        saveFavorites();
+        updateFavoriteButton(card);
+        applyState();
+        return;
+      }
+
+      const rateBtn = target.closest('[data-rate-value]');
+      if (rateBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        const card = rateBtn.closest('.puz-card');
+        if (!card) return;
+        const value = Number(rateBtn.getAttribute('data-rate-value') || 0);
+        if (!Number.isFinite(value) || value < 1 || value > 5) return;
+        const code = getCardCode(card);
+        if (!code) return;
+        ratings[code] = value;
+        saveRatings();
+        renderRate(card);
+        renderRecent();
+        return;
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const playLink = target.closest('[data-play-link]');
+      if (!playLink) return;
+      const code = String(playLink.getAttribute('data-code') || '').trim();
+      if (code) {
+        markRecent(code);
+      }
+    });
+
+    searchInput?.addEventListener('input', () => {
+      visibleLimit = INITIAL_VISIBLE;
+      applyState();
+    });
+
+    sortSelect?.addEventListener('change', () => {
+      visibleLimit = INITIAL_VISIBLE;
+      applyState();
+    });
+
+    loadBtn?.addEventListener('click', () => {
+      visibleLimit += INITIAL_VISIBLE;
+      applyState();
+    });
+
+    renderFeatured();
+    renderRecent();
+    applyState();
+  });
 </script>
 
 <th:block th:replace="~{fragments :: appScripts('games-puzzle')}"></th:block>

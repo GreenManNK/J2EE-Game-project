@@ -1,151 +1,225 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Trang chính')}"></head>
+<head th:replace="~{fragments :: appHead('Trang chinh')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('home')}"></div>
 
-<main role="main" id="homeMain" class="home-dashboard">
-  <section class="home-dashboard__hero theme-box">
-    <div class="home-dashboard__hero-main">
-      <div class="home-dashboard__eyebrow">
-        <i class="bi bi-stars"></i>
-        <span>Game Hub</span>
+<main role="main" id="homeMain" class="cg-home">
+  <section class="theme-box cg-home-hero">
+    <div class="cg-home-hero-main">
+      <div class="cg-chip-row">
+        <span class="cg-chip is-live"><i class="bi bi-controller"></i> HOME / GAME HUB</span>
+        <span class="cg-chip"><i class="bi bi-lightning-charge-fill"></i> 1 click vao game</span>
+        <span class="cg-chip"><i class="bi bi-chat-left-dots-fill"></i> Feed cong dong</span>
+        <span class="cg-chip"><i class="bi bi-phone-fill"></i> Responsive</span>
       </div>
-      <h1 class="home-dashboard__title theme-text">Chọn game và vào trận ngay</h1>
-      <p class="home-dashboard__subtitle">
-        Trang chủ được tối ưu theo kiểu web game portal: hành động chính đặt trên cùng,
-        bảng tin cộng đồng tách riêng, và khung giao diện đồng bộ với các trang game/detail.
+
+      <h1 class="cg-title">Vao game nhanh theo kieu CrazyGames, giu mau theme cua ban</h1>
+      <p class="cg-subtitle">
+        Trang chu da duoc cap nhat lai theo huong discovery-first: game rail tren cung,
+        card game o giua, va feed cong dong tach rieng. Ban co the click vao game ngay tai day.
       </p>
 
-      <div class="home-main-actions d-flex justify-content-center mb-3 gap-2 flex-wrap">
-        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="caro" data-game-name="Caro">
-          <i class="bi bi-grid-3x3-gap-fill me-2"></i>Caro
-        </button>
-        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="chess" data-game-name="Cờ vua">
-          <i class="bi bi-activity me-2"></i>Cờ vua
-        </button>
-        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="xiangqi" data-game-name="Cờ tướng">
-          <i class="bi bi-diagram-3-fill me-2"></i>Cờ tướng
-        </button>
-        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="cards" data-game-name="Đánh bài">
-          <i class="bi bi-suit-spade-fill me-2"></i>Đánh bài
-        </button>
-        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="minesweeper" data-game-name="Minesweeper">
-          <i class="bi bi-asterisk me-2"></i>Minesweeper
-        </button>
-        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="quiz" data-game-name="Quiz">
-          <i class="bi bi-patch-question-fill me-2"></i>Quiz
-        </button>
-        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="typing" data-game-name="Typing Battle">
-          <i class="bi bi-keyboard-fill me-2"></i>Typing
-        </button>
-        <button type="button" class="btn theme-outline-btn btn-lg home-game-btn js-game-picker" data-game-code="puzzle" data-game-name="Puzzles">
-          <i class="bi bi-puzzle-fill me-2"></i>Puzzle
-        </button>
+      <div class="cg-home-quick-nav" role="group" aria-label="Game quick picker">
+        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="caro" data-game-name="Caro"><i class="bi bi-grid-3x3-gap-fill"></i> Caro</button>
+        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="chess" data-game-name="Co vua"><i class="bi bi-activity"></i> Co vua</button>
+        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="xiangqi" data-game-name="Co tuong"><i class="bi bi-diagram-3-fill"></i> Co tuong</button>
+        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="cards" data-game-name="Danh bai"><i class="bi bi-suit-spade-fill"></i> Danh bai</button>
+        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="minesweeper" data-game-name="Minesweeper"><i class="bi bi-asterisk"></i> Minesweeper</button>
+        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="quiz" data-game-name="Quiz"><i class="bi bi-patch-question-fill"></i> Quiz</button>
+        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="typing" data-game-name="Typing"><i class="bi bi-keyboard-fill"></i> Typing</button>
+        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="puzzle" data-game-name="Puzzle"><i class="bi bi-puzzle-fill"></i> Puzzle</button>
       </div>
     </div>
 
-    <aside class="home-dashboard__hero-side">
-      <div class="home-dashboard__stats">
-        <div class="home-dashboard__stat">
-          <div class="home-dashboard__stat-label">Chế độ</div>
-          <div class="home-dashboard__stat-value">Online + Bot</div>
-        </div>
-        <div class="home-dashboard__stat">
-          <div class="home-dashboard__stat-label">Truy cập nhanh</div>
-          <div class="home-dashboard__stat-value">1 click</div>
-        </div>
-        <div class="home-dashboard__stat">
-          <div class="home-dashboard__stat-label">Cộng đồng</div>
-          <div class="home-dashboard__stat-value">Feed + comments</div>
-        </div>
-        <div class="home-dashboard__stat">
-          <div class="home-dashboard__stat-label">Giao diện</div>
-          <div class="home-dashboard__stat-value">Responsive</div>
-        </div>
-      </div>
-
-      <div class="home-dashboard__side-panel">
-        <h2 class="theme-text">Hướng dẫn nhanh</h2>
-        <p>Chọn game ở trên, vào trang chi tiết, sau đó chọn offline / online / bot phù hợp.</p>
-      </div>
-
-      <div class="home-dashboard__side-panel">
-        <h2 class="theme-text">Mẹo chơi</h2>
-        <p>Đăng nhập để đồng bộ hồ sơ, lưu lịch sử đấu và thao tác với bạn bè nhanh hơn trên thanh bên trái.</p>
-      </div>
+    <aside class="cg-home-hero-side">
+      <article class="cg-home-side-card">
+        <h2>Quick mode</h2>
+        <p>Chon game -> vao trang chi tiet -> bat dau tran online, bot hoac offline.</p>
+      </article>
+      <article class="cg-home-side-card">
+        <h2>Tin hieu he thong</h2>
+        <ul>
+          <li>Sidebar ban be update online/offline theo chu ky.</li>
+          <li>Tat ca game moi da vao cung bo mau giao dien.</li>
+          <li>Lich su + bang xep hang lien ket tren menu trai.</li>
+        </ul>
+      </article>
+      <article class="cg-home-side-card">
+        <h2>Meo su dung</h2>
+        <p>Dang nhap de dong bo tien do, bai viet, comment va ho so giua cac trang game.</p>
+      </article>
     </aside>
   </section>
 
-  <section class="home-dashboard__feed-grid">
-    <section class="home-dashboard__composer theme-box">
-      <div class="home-dashboard__section-title">
-        <h2 class="theme-text">Đăng bài viết mới</h2>
-        <small>Cập nhật nhanh cho cộng đồng</small>
-      </div>
-      <form id="postForm" class="home-composer-form">
-        <textarea id="postContent" class="form-control mb-2" rows="3" placeholder="Bạn đang nghĩ gì?" required></textarea>
-        <div class="home-composer-meta">
-          <small class="text-muted">Tác giả: <span id="postAuthorLabel">Cần đăng nhập</span></small>
-          <button type="submit" class="btn theme-outline-btn btn-sm">Đăng bài</button>
+  <section class="cg-home-content">
+    <section class="cg-home-main">
+      <section class="theme-box">
+        <div class="cg-section-head">
+          <div>
+            <h2>Game de xuat hom nay</h2>
+            <small>Phong cach card-grid nhu CrazyGames</small>
+          </div>
+          <a th:href="@{/games}" class="hub-portal-inline-btn">Mo thu vien</a>
         </div>
-      </form>
-    </section>
 
-    <section class="home-dashboard__feed theme-box">
-      <div class="home-dashboard__section-title">
-        <h2 class="theme-text">Bảng tin</h2>
-        <small th:text="${(posts != null ? #lists.size(posts) : 0)} + ' bài viết'">0 bài viết</small>
-      </div>
-
-      <div class="home-feed-panel">
-        <div class="scroll-posts">
-          <p class="text-muted" th:if="${#lists.isEmpty(posts)}">Chưa có bài đăng nào.</p>
-          <div class="card mb-3 shadow-sm home-post-card" th:each="p : ${posts}">
-            <div class="card-body py-2 px-3 text-start">
-              <div class="d-none post-id" th:text="${p.id}">0</div>
-              <div class="mb-1">
-                <strong class="theme-text" th:text="${p.author}">author</strong><br>
-                <small class="text-muted" th:text="${p.createdAt}">time</small>
+        <div class="cg-home-game-grid">
+          <article class="cg-home-game-card">
+            <div class="cg-home-game-thumb" data-tone="accent">
+              <span class="cg-home-game-badge">Hot</span>
+              <i class="bi bi-grid-3x3-gap-fill"></i>
+            </div>
+            <div class="cg-home-game-body">
+              <h3>Caro</h3>
+              <p>Choi online, bot hoac offline voi bo giao dien dong nhat.</p>
+              <div class="cg-home-game-foot">
+                <small><i class="bi bi-graph-up-arrow"></i> Pho bien</small>
+                <button type="button" class="btn hub-portal-inline-btn js-game-picker" data-game-code="caro" data-game-name="Caro">Play</button>
               </div>
-              <p class="theme-text mb-2" th:text="${p.content}">content</p>
-              <img th:if="${p.imagePath != null and !#strings.isEmpty(p.imagePath)}"
-                   th:src="${p.imagePath}"
-                   class="img-fluid mb-2 home-post-image"
-                   alt="post-image">
+            </div>
+          </article>
 
-              <div class="mt-2">
-                <div class="small fw-bold theme-text mb-1">Bình luận</div>
-                <div class="ps-2 border-start" th:if="${#lists.isEmpty(p.comments)}">
-                  <small class="text-muted">Chưa có bình luận</small>
-                </div>
-                <div class="ps-2 border-start d-flex flex-column gap-1" th:if="${!#lists.isEmpty(p.comments)}">
-                  <div th:each="c : ${p.comments}">
-                    <small>
-                      <strong th:text="${c.author}">author</strong>:
-                      <span th:text="${c.content}">comment</span>
-                    </small>
+          <article class="cg-home-game-card">
+            <div class="cg-home-game-thumb">
+              <span class="cg-home-game-badge">Classic</span>
+              <i class="bi bi-activity"></i>
+            </div>
+            <div class="cg-home-game-body">
+              <h3>Co vua</h3>
+              <p>Bo ban responsive, co che do online va danh voi bot.</p>
+              <div class="cg-home-game-foot">
+                <small><i class="bi bi-graph-up-arrow"></i> Ranking</small>
+                <button type="button" class="btn hub-portal-inline-btn js-game-picker" data-game-code="chess" data-game-name="Co vua">Play</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="cg-home-game-card">
+            <div class="cg-home-game-thumb" data-tone="warm">
+              <span class="cg-home-game-badge">Cards</span>
+              <i class="bi bi-suit-spade-fill"></i>
+            </div>
+            <div class="cg-home-game-body">
+              <h3>Danh bai</h3>
+              <p>Tien len va blackjack cung phong cach giao dien moi.</p>
+              <div class="cg-home-game-foot">
+                <small><i class="bi bi-graph-up-arrow"></i> 1 click</small>
+                <button type="button" class="btn hub-portal-inline-btn js-game-picker" data-game-code="cards" data-game-name="Danh bai">Play</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="cg-home-game-card">
+            <div class="cg-home-game-thumb" data-tone="accent">
+              <span class="cg-home-game-badge">Puzzle</span>
+              <i class="bi bi-puzzle-fill"></i>
+            </div>
+            <div class="cg-home-game-body">
+              <h3>Puzzle hub</h3>
+              <p>Category co search, filter, favorite, rating va recently played.</p>
+              <div class="cg-home-game-foot">
+                <small><i class="bi bi-graph-up-arrow"></i> Moi cap nhat</small>
+                <button type="button" class="btn hub-portal-inline-btn js-game-picker" data-game-code="puzzle" data-game-name="Puzzle">Play</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="cg-home-feed-grid">
+        <section class="home-dashboard__composer theme-box">
+          <div class="cg-section-head">
+            <div>
+              <h2>Dang bai viet moi</h2>
+              <small>Cap nhat nhanh cho cong dong</small>
+            </div>
+          </div>
+          <form id="postForm" class="home-composer-form">
+            <textarea id="postContent" class="form-control mb-2" rows="3" placeholder="Ban dang nghi gi?" required></textarea>
+            <div class="home-composer-meta">
+              <small class="text-muted">Tac gia: <span id="postAuthorLabel">Can dang nhap</span></small>
+              <button type="submit" class="btn theme-outline-btn btn-sm">Dang bai</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="home-dashboard__feed theme-box">
+          <div class="cg-section-head">
+            <div>
+              <h2>Bang tin</h2>
+              <small th:text="${(posts != null ? #lists.size(posts) : 0)} + ' bai viet'">0 bai viet</small>
+            </div>
+          </div>
+
+          <div class="home-feed-panel">
+            <div class="scroll-posts">
+              <p class="text-muted" th:if="${#lists.isEmpty(posts)}">Chua co bai dang nao.</p>
+              <div class="card mb-3 shadow-sm home-post-card" th:each="p : ${posts}">
+                <div class="card-body py-2 px-3 text-start">
+                  <div class="d-none post-id" th:text="${p.id}">0</div>
+                  <div class="mb-1">
+                    <strong class="theme-text" th:text="${p.author}">author</strong><br>
+                    <small class="text-muted" th:text="${p.createdAt}">time</small>
+                  </div>
+                  <p class="theme-text mb-2" th:text="${p.content}">content</p>
+                  <img th:if="${p.imagePath != null and !#strings.isEmpty(p.imagePath)}"
+                       th:src="${p.imagePath}"
+                       class="img-fluid mb-2 home-post-image"
+                       alt="post-image">
+
+                  <div class="mt-2">
+                    <div class="small fw-bold theme-text mb-1">Binh luan</div>
+                    <div class="ps-2 border-start" th:if="${#lists.isEmpty(p.comments)}">
+                      <small class="text-muted">Chua co binh luan</small>
+                    </div>
+                    <div class="ps-2 border-start d-flex flex-column gap-1" th:if="${!#lists.isEmpty(p.comments)}">
+                      <div th:each="c : ${p.comments}">
+                        <small>
+                          <strong th:text="${c.author}">author</strong>:
+                          <span th:text="${c.content}">comment</span>
+                        </small>
+                      </div>
+                    </div>
+
+                    <form class="commentForm mt-2 d-flex gap-2">
+                      <input type="hidden" class="commentPostId" th:value="${p.id}">
+                      <input type="text" class="form-control form-control-sm commentContent" placeholder="Viet binh luan..." maxlength="500">
+                      <button type="submit" class="btn btn-sm btn-outline-secondary">Gui</button>
+                    </form>
                   </div>
                 </div>
-
-                <form class="commentForm mt-2 d-flex gap-2">
-                  <input type="hidden" class="commentPostId" th:value="${p.id}">
-                  <input type="text" class="form-control form-control-sm commentContent" placeholder="Viết bình luận..." maxlength="500">
-                  <button type="submit" class="btn btn-sm btn-outline-secondary">Gửi</button>
-                </form>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </section>
+      </section>
     </section>
+
+    <aside class="cg-home-right">
+      <section class="theme-box cg-home-side-card">
+        <h2>Tinh nang da dong bo</h2>
+        <ul>
+          <li>Sidebar rieng, co trang thai ban be online/offline.</li>
+          <li>Theme dark/light dung chung toan he thong.</li>
+          <li>Danh sach game, detail game, va category dong bo bo cuc.</li>
+        </ul>
+      </section>
+
+      <section class="theme-box cg-home-side-card">
+        <h2>Dieu huong nhanh</h2>
+        <div class="d-flex flex-wrap gap-2">
+          <a th:href="@{/games}" class="hub-portal-inline-btn">Thu vien game</a>
+          <a th:href="@{/leaderboard}" class="hub-portal-inline-btn">Bang xep hang</a>
+          <a th:href="@{/history}" class="hub-portal-inline-btn" data-require-user-id="true">Lich su dau</a>
+          <a th:href="@{/online-hub}" class="hub-portal-inline-btn">Online hub</a>
+        </div>
+      </section>
+    </aside>
   </section>
 </main>
 
 <audio id="siteMusic" th:src="@{/music/home.mp3}" loop preload="auto"></audio>
-<button id="siteMusicToggleBtn" class="btn theme-outline-btn btn-sm theme-text">
-  🔊 Tắt Nhạc
-</button>
+<button id="siteMusicToggleBtn" class="btn theme-outline-btn btn-sm theme-text">Tat nhac</button>
 
 <script th:replace="~{fragments :: appScripts('home')}"></script>
 <script>
@@ -163,30 +237,14 @@
     const gamePickerButtons = Array.from(document.querySelectorAll('.js-game-picker'));
 
     const gameConfigs = {
-      caro: {
-        detailHref: '/games/caro'
-      },
-      chess: {
-        detailHref: '/games/chess'
-      },
-      xiangqi: {
-        detailHref: '/games/xiangqi'
-      },
-      cards: {
-        detailHref: '/games/cards'
-      },
-      minesweeper: {
-        detailHref: '/games/minesweeper'
-      },
-      quiz: {
-        detailHref: '/games/quiz'
-      },
-      typing: {
-        detailHref: '/games/typing'
-      },
-      puzzle: {
-        detailHref: '/games/puzzle'
-      }
+      caro: { detailHref: '/games/caro' },
+      chess: { detailHref: '/games/chess' },
+      xiangqi: { detailHref: '/games/xiangqi' },
+      cards: { detailHref: '/games/cards' },
+      minesweeper: { detailHref: '/games/minesweeper' },
+      quiz: { detailHref: '/games/quiz' },
+      typing: { detailHref: '/games/typing' },
+      puzzle: { detailHref: '/games/puzzle' }
     };
 
     function toast(message, type) {
@@ -214,27 +272,27 @@
     });
 
     if (authorLabel) {
-      authorLabel.textContent = currentUser?.displayName || currentUser?.userId || 'Cần đăng nhập';
+      authorLabel.textContent = currentUser?.displayName || currentUser?.userId || 'Can dang nhap';
     }
 
     if (siteMusic) {
       siteMusic.volume = 0.3;
       if (localStorage.getItem('music') === 'off') {
         siteMusic.pause();
-        siteToggleBtn.textContent = '🔇 Bật Nhạc';
+        siteToggleBtn.textContent = 'Bat nhac';
       } else {
         siteMusic.play().catch(() => {});
-        siteToggleBtn.textContent = '🔊 Tắt Nhạc';
+        siteToggleBtn.textContent = 'Tat nhac';
       }
       siteToggleBtn?.addEventListener('click', () => {
         if (siteMusic.paused) {
           siteMusic.play().then(() => {
-            siteToggleBtn.textContent = '🔊 Tắt Nhạc';
+            siteToggleBtn.textContent = 'Tat nhac';
             localStorage.setItem('music', 'on');
           }).catch(() => {});
         } else {
           siteMusic.pause();
-          siteToggleBtn.textContent = '🔇 Bật Nhạc';
+          siteToggleBtn.textContent = 'Bat nhac';
           localStorage.setItem('music', 'off');
         }
       });
@@ -247,7 +305,7 @@
         return;
       }
       if (!currentUser?.userId) {
-        toast('Cần đăng nhập để đăng bài', 'warning');
+        toast('Can dang nhap de dang bai', 'warning');
         return;
       }
       try {
@@ -258,10 +316,10 @@
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok || data.success === false) {
-          throw new Error(data.error || 'Không đăng bài được');
+          throw new Error(data.error || 'Khong dang bai duoc');
         }
         if (!data.success) {
-          throw new Error('Không đăng bài được');
+          throw new Error('Khong dang bai duoc');
         }
         window.location.reload();
       } catch (err) {
@@ -273,7 +331,7 @@
       commentForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentUser?.userId) {
-          toast('Cần đăng nhập để bình luận', 'warning');
+          toast('Can dang nhap de binh luan', 'warning');
           return;
         }
         const postId = Number(commentForm.querySelector('.commentPostId')?.value || 0);
@@ -290,7 +348,7 @@
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok || data.success === false) {
-            throw new Error(data.error || 'Không gửi bình luận được');
+            throw new Error(data.error || 'Khong gui binh luan duoc');
           }
           window.location.reload();
         } catch (err) {

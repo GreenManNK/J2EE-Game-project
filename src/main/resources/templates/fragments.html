@@ -17,10 +17,13 @@
   <link rel="stylesheet" th:href="@{/css/site.css}">
   <link rel="stylesheet" th:href="@{/css/games-portal.css}">
   <link rel="stylesheet" th:href="@{/css/layout-refresh.css}">
+  <link rel="stylesheet" th:href="@{/css/cg-market.css}">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     body {
       --app-sidebar-width: 258px;
+      --app-sidebar-compact-width: 58px;
+      --app-shell-gap: 18px;
     }
     html, body { margin: 0; padding: 0; overflow-x: hidden; }
     #appShellLayer {
@@ -29,12 +32,15 @@
       pointer-events: none;
     }
     #appShellLayer #friendSidebar,
+    #appShellLayer #cgTopbar,
+    #appShellLayer #cgTopRail,
     #appShellLayer .sidebar-toggle-btn,
     #appShellLayer #backButton,
     #appShellLayer #siteMusicToggleBtn {
       pointer-events: auto;
     }
     body:not(.game-index) {
+      padding-top: 72px;
       padding-left: 18px;
       padding-right: 18px;
     }
@@ -49,7 +55,7 @@
       z-index: 1044;
       backdrop-filter: blur(1.5px);
     }
-    body.sidebar-open #appShellLayer .app-shell-scrim {
+    body.sidebar-open:not(.sidebar-desktop) #appShellLayer .app-shell-scrim {
       display: block;
       opacity: 1;
       pointer-events: auto;
@@ -63,13 +69,13 @@
       background-color: var(--bg, #fff);
       overflow: hidden;
       transform: translateX(-100%);
-      transition: transform 0.3s ease-in-out;
+      transition: transform 0.28s ease-in-out;
       z-index: 1046;
-      padding: 90px 10px 10px 10px;
+      padding: 78px 10px 10px 10px;
       border-right: 1px solid var(--border-color, #ccc);
       pointer-events: none;
     }
-    body.sidebar-open #friendSidebar {
+    body.sidebar-open:not(.sidebar-desktop) #friendSidebar {
       transform: translateX(0);
       pointer-events: auto;
     }
@@ -93,6 +99,8 @@
     .app-shell-sidebar-friends {
       width: 100%;
       min-height: 0;
+      display: flex;
+      flex-direction: column;
     }
     .sidebar-toggle-btn {
       position: fixed;
@@ -113,7 +121,7 @@
       line-height: 1;
       pointer-events: none;
     }
-    body.sidebar-open .sidebar-toggle-btn {
+    body:not(.sidebar-desktop).sidebar-open .sidebar-toggle-btn {
       left: clamp(8px, calc(var(--app-sidebar-width) - 20px), calc(100vw - 42px));
       transform: translateY(-50%);
     }
@@ -131,16 +139,95 @@
       z-index: auto;
       box-shadow: none;
     }
+    #friendSidebar #friendListInlineContainer {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      max-height: min(38vh, 320px);
+    }
+    #friendSidebar #friendListContainer {
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: none;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
     #backButton { position: fixed; bottom: 10px; left: 10px; z-index: 999; }
+
+    @media (min-width: 1200px) {
+      body {
+        --app-sidebar-width: 272px;
+        --app-sidebar-compact-width: 58px;
+      }
+      body:not(.game-index) {
+        padding-top: 72px;
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+      #friendSidebar {
+        width: var(--app-sidebar-compact-width);
+        transform: translateX(0);
+        pointer-events: auto;
+        padding-top: 74px;
+        transition: width 0.22s ease, box-shadow 0.22s ease;
+      }
+      #friendSidebar:hover,
+      #friendSidebar:focus-within {
+        width: var(--app-sidebar-width);
+      }
+      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand {
+        padding: 8px 6px;
+        display: grid;
+        place-items: center;
+      }
+      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__badge {
+        min-width: 34px;
+        justify-content: center;
+        padding: 6px;
+      }
+      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__badge span,
+      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__title,
+      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__meta,
+      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-menu-group__title,
+      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) #friendSearchForm,
+      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) [data-current-user-badge],
+      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) #toggle-language #currentLanguageLabel,
+      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-friends {
+        display: none !important;
+      }
+      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-menu {
+        align-items: center;
+        overflow-x: hidden;
+        padding-right: 0;
+      }
+      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-menu .btn.theme-outline-btn {
+        width: 42px;
+        min-height: 40px;
+        padding: 0 !important;
+        justify-content: center;
+        border-radius: 12px !important;
+        font-size: 0 !important;
+        line-height: 0 !important;
+      }
+      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-menu .btn.theme-outline-btn i {
+        margin-right: 0 !important;
+        font-size: 1rem !important;
+        line-height: 1 !important;
+      }
+    }
 
     @media (max-width: 1199.98px) {
       body:not(.game-index) {
+        padding-top: 70px;
         padding-left: 14px;
         padding-right: 14px;
       }
       #friendListInlineContainer {
         min-height: 170px;
         max-height: min(30vh, 240px);
+      }
+      #friendSidebar #friendListInlineContainer {
+        max-height: min(34vh, 240px);
       }
       #backButton {
         bottom: 12px;
@@ -152,6 +239,9 @@
       body {
         --app-sidebar-width: min(84vw, 320px);
       }
+      body:not(.game-index) {
+        padding-top: 68px;
+      }
       #friendSidebar {
         padding-top: 78px;
       }
@@ -161,7 +251,7 @@
         bottom: 76px;
         transform: none;
       }
-      body.sidebar-open .sidebar-toggle-btn {
+      body:not(.sidebar-desktop).sidebar-open .sidebar-toggle-btn {
         left: clamp(10px, calc(var(--app-sidebar-width) - 20px), calc(100vw - 42px));
         transform: none;
       }
@@ -169,6 +259,9 @@
         min-height: 150px;
         max-height: min(34vh, 220px);
         font-size: 0.8rem;
+      }
+      #friendSidebar #friendListInlineContainer {
+        max-height: min(36vh, 220px);
       }
       #backButton {
         max-width: calc(100vw - 24px);
@@ -181,6 +274,42 @@
 
 <div id="appShellLayer" th:fragment="appShell(pageKey)">
   <div id="sidebarScrim" class="app-shell-scrim" aria-hidden="true"></div>
+  <header id="cgTopbar" class="cg-topbar">
+    <div class="cg-topbar__inner">
+      <a class="cg-topbar__brand" th:href="@{/}">
+        <i class="bi bi-controller"></i>
+        <span>Game Hub</span>
+      </a>
+
+      <form id="cgGlobalSearchForm" class="cg-topbar__search" role="search">
+        <i class="bi bi-search"></i>
+        <input id="cgGlobalSearchInput" type="search" placeholder="Tim game, mode, category...">
+      </form>
+
+      <div class="cg-topbar__actions">
+        <a class="cg-topbar__icon-btn" th:href="@{/friendship/notifications}" data-require-user-id="true" aria-label="Thong bao"><i class="bi bi-bell"></i></a>
+        <a class="cg-topbar__icon-btn" th:href="@{/games}" aria-label="Yeu thich"><i class="bi bi-heart"></i></a>
+        <a class="cg-topbar__icon-btn" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true" aria-label="Tai khoan"><i class="bi bi-person"></i></a>
+        <a class="cg-topbar__login-btn" th:href="@{/account/login-page}" data-guest-only="true">Dang nhap</a>
+        <small class="cg-topbar__user-badge" data-current-user-badge="true" data-auth-only="true">Nguoi choi</small>
+      </div>
+    </div>
+  </header>
+
+  <nav id="cgTopRail" class="cg-top-rail" aria-label="Category rail">
+    <a th:href="@{/}" class="cg-top-rail__item"><i class="bi bi-house-fill"></i> Home</a>
+    <a th:href="@{/games}" class="cg-top-rail__item"><i class="bi bi-grid-3x3-gap-fill"></i> Library</a>
+    <a th:href="@{/games/caro}" class="cg-top-rail__item"><i class="bi bi-grid-3x3"></i> Caro</a>
+    <a th:href="@{/games/chess}" class="cg-top-rail__item"><i class="bi bi-activity"></i> Chess</a>
+    <a th:href="@{/games/xiangqi}" class="cg-top-rail__item"><i class="bi bi-diagram-3-fill"></i> Xiangqi</a>
+    <a th:href="@{/games/cards}" class="cg-top-rail__item"><i class="bi bi-suit-spade-fill"></i> Cards</a>
+    <a th:href="@{/games/minesweeper}" class="cg-top-rail__item"><i class="bi bi-asterisk"></i> Minesweeper</a>
+    <a th:href="@{/games/quiz}" class="cg-top-rail__item"><i class="bi bi-patch-question-fill"></i> Quiz</a>
+    <a th:href="@{/games/typing}" class="cg-top-rail__item"><i class="bi bi-keyboard-fill"></i> Typing</a>
+    <a th:href="@{/games/puzzle}" class="cg-top-rail__item"><i class="bi bi-puzzle-fill"></i> Puzzle</a>
+    <a th:href="@{/online-hub}" class="cg-top-rail__item"><i class="bi bi-wifi"></i> Online hub</a>
+  </nav>
+
   <div id="friendSidebar" class="theme-text">
     <div class="app-shell-sidebar-scroll d-flex flex-column px-1">
       <div class="app-shell-sidebar-brand">
@@ -192,29 +321,53 @@
         <div class="app-shell-sidebar-brand__meta">Chơi nhanh, quản lý bạn bè và theo dõi bảng xếp hạng.</div>
       </div>
       <div class="app-shell-sidebar-menu">
-        <a class="btn theme-outline-btn w-100 text-start fw-bold theme-text" th:href="@{/}"><i class="bi bi-house-fill me-2"></i> Trang chủ</a>
-        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-controller me-2"></i> Thư viện game</a>
-        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/leaderboard}"><i class="bi bi-bar-chart-fill me-2"></i> Bảng xếp hạng</a>
-        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/history}" data-require-user-id="true" data-user-param="userId"><i class="bi bi-clock-history me-2"></i> Lịch sử đấu</a>
-        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship}" data-require-user-id="true"><i class="bi bi-people-fill me-2"></i> Bạn bè</a>
-        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship/notifications}" data-require-user-id="true"><i class="bi bi-bell-fill me-2"></i> Thông báo</a>
-        <a id="myProfileLink" class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true"><i class="bi bi-person-circle me-2"></i> Hồ sơ của tôi</a>
-        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/chat-bot}"><i class="bi bi-robot me-2"></i> Chat Bot</a>
-        <a class="btn theme-outline-btn w-100 text-start theme-text"
-           th:href="@{/manager/users}"
-           data-auth-only="true"
-           data-role-allowed="Manager,Admin"><i class="bi bi-people me-2"></i> Manager Users</a>
-        <a class="btn theme-outline-btn w-100 text-start theme-text"
-           th:href="@{/admin/users}"
-           data-auth-only="true"
-           data-role-allowed="Admin"><i class="bi bi-shield-lock me-2"></i> Admin Users</a>
-        <a class="btn theme-outline-btn w-100 text-start theme-text"
-           th:href="@{/notification-admin}"
-           data-auth-only="true"
-           data-role-allowed="Admin"><i class="bi bi-megaphone me-2"></i> System Notices</a>
-        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/login-page}" data-guest-only="true"><i class="bi bi-box-arrow-in-right me-2"></i> Đăng nhập</a>
-        <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/register-page}" data-guest-only="true"><i class="bi bi-person-plus-fill me-2"></i> Đăng ký</a>
-        <button id="logoutBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true"><i class="bi bi-box-arrow-right me-2"></i> Đăng xuất</button>
+        <div class="app-shell-menu-group">
+          <div class="app-shell-menu-group__title">Dieu huong</div>
+          <a class="btn theme-outline-btn w-100 text-start fw-bold theme-text" th:href="@{/}"><i class="bi bi-house-fill me-2"></i> Trang chu</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-clock-history me-2"></i> Gan day</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-stars me-2"></i> Moi</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-fire me-2"></i> Xu huong</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-arrow-repeat me-2"></i> Cap nhat</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-grid-3x3-gap-fill me-2"></i> Originals</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/online-hub}"><i class="bi bi-people-fill me-2"></i> Multiplayer</a>
+        </div>
+
+        <div class="app-shell-menu-group">
+          <div class="app-shell-menu-group__title">Danh muc</div>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/cards}"><i class="bi bi-suit-spade-fill me-2"></i> Bai</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/chess}"><i class="bi bi-activity me-2"></i> Ban sung</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/minesweeper}"><i class="bi bi-asterisk me-2"></i> Bao ve toa thap</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/quiz}"><i class="bi bi-dribbble me-2"></i> Bi da 6 lo</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/typing}"><i class="bi bi-basket2-fill me-2"></i> Bong ro</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/puzzle}"><i class="bi bi-puzzle-fill me-2"></i> Giai do</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/caro}"><i class="bi bi-controller me-2"></i> Casual</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/xiangqi}"><i class="bi bi-diagram-3-fill me-2"></i> Co tuong</a>
+        </div>
+
+        <div class="app-shell-menu-group">
+          <div class="app-shell-menu-group__title">Tai khoan</div>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/leaderboard}"><i class="bi bi-bar-chart-fill me-2"></i> Bang xep hang</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/history}" data-require-user-id="true" data-user-param="userId"><i class="bi bi-clock-history me-2"></i> Lich su dau</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship}" data-require-user-id="true"><i class="bi bi-people-fill me-2"></i> Ban be</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship/notifications}" data-require-user-id="true"><i class="bi bi-bell-fill me-2"></i> Thong bao</a>
+          <a id="myProfileLink" class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true"><i class="bi bi-person-circle me-2"></i> Ho so cua toi</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/chat-bot}"><i class="bi bi-robot me-2"></i> Chat Bot</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text"
+             th:href="@{/manager/users}"
+             data-auth-only="true"
+             data-role-allowed="Manager,Admin"><i class="bi bi-people me-2"></i> Manager Users</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text"
+             th:href="@{/admin/users}"
+             data-auth-only="true"
+             data-role-allowed="Admin"><i class="bi bi-shield-lock me-2"></i> Admin Users</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text"
+             th:href="@{/notification-admin}"
+             data-auth-only="true"
+             data-role-allowed="Admin"><i class="bi bi-megaphone me-2"></i> System Notices</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/login-page}" data-guest-only="true"><i class="bi bi-box-arrow-in-right me-2"></i> Dang nhap</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/register-page}" data-guest-only="true"><i class="bi bi-person-plus-fill me-2"></i> Dang ky</a>
+          <button id="logoutBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true"><i class="bi bi-box-arrow-right me-2"></i> Dang xuat</button>
+        </div>
         <form id="friendSearchForm" class="d-flex w-100">
           <input id="friendSearchInput" class="form-control me-2" placeholder="Tìm bạn...">
           <button class="btn theme-outline-btn theme-text" type="submit">Tìm</button>
@@ -273,42 +426,90 @@
       const toggleBtn = document.getElementById("toggleSidebar");
       const sidebarScrim = document.getElementById("sidebarScrim");
       const icon = toggleBtn?.querySelector("i");
+      const topSearchForm = document.getElementById("cgGlobalSearchForm");
+      const topSearchInput = document.getElementById("cgGlobalSearchInput");
+      const toAppPath = (window.CaroUrl && typeof window.CaroUrl.path === "function")
+        ? window.CaroUrl.path
+        : ((value) => value);
+      const normalizedPath = (value) => {
+        const raw = String(value || "/");
+        const trimmed = raw.replace(/\/+$/, "");
+        return trimmed.length > 0 ? trimmed : "/";
+      };
+      const currentPath = normalizedPath(window.location.pathname);
+      const isPathActive = (current, target) => {
+        if (!target || !current) {
+          return false;
+        }
+        if (target === "/") {
+          return current === "/";
+        }
+        return current === target || current.startsWith(target + "/");
+      };
+
       if (sidebar && toggleBtn) {
-        body.classList.remove("sidebar-open");
+        const desktopQuery = window.matchMedia("(min-width: 1200px)");
+
         const syncSidebarToggleUi = () => {
-          const isOpen = body.classList.contains("sidebar-open");
-          if (icon) icon.className = isOpen ? "bi bi-chevron-double-left" : "bi bi-chevron-double-right";
-          toggleBtn.setAttribute("aria-expanded", String(isOpen));
-          toggleBtn.setAttribute("aria-label", isOpen ? "Đóng sidebar" : "Mở sidebar");
-          toggleBtn.setAttribute("title", isOpen ? "Đóng sidebar" : "Mở sidebar");
+          const isDesktop = desktopQuery.matches;
+          body.classList.toggle("sidebar-desktop", isDesktop);
+          if (isDesktop) {
+            body.classList.remove("sidebar-open");
+            sidebarScrim?.setAttribute("aria-hidden", "true");
+            toggleBtn.hidden = true;
+            toggleBtn.setAttribute("aria-hidden", "true");
+            toggleBtn.setAttribute("aria-expanded", "false");
+            return;
+          }
+
+          toggleBtn.hidden = false;
+          toggleBtn.removeAttribute("aria-hidden");
+
+          const isMobileOpen = body.classList.contains("sidebar-open");
+          if (icon) {
+            icon.className = isMobileOpen ? "bi bi-x-lg" : "bi bi-list";
+          }
+          sidebarScrim?.setAttribute("aria-hidden", String(!isMobileOpen));
+          toggleBtn.setAttribute("aria-expanded", String(isMobileOpen));
+          toggleBtn.setAttribute("aria-label", isMobileOpen ? "Dong sidebar" : "Mo sidebar");
+          toggleBtn.setAttribute("title", isMobileOpen ? "Dong sidebar" : "Mo sidebar");
         };
         syncSidebarToggleUi();
+
         toggleBtn.addEventListener("click", () => {
+          if (desktopQuery.matches) {
+            return;
+          }
           const isOpen = body.classList.contains("sidebar-open");
           body.classList.toggle("sidebar-open", !isOpen);
           syncSidebarToggleUi();
         });
         sidebarScrim?.addEventListener("click", () => {
+          if (desktopQuery.matches) {
+            return;
+          }
           body.classList.remove("sidebar-open");
           syncSidebarToggleUi();
         });
         document.addEventListener("keydown", (event) => {
-          if (event.key === "Escape" && body.classList.contains("sidebar-open")) {
+          if (!desktopQuery.matches && event.key === "Escape" && body.classList.contains("sidebar-open")) {
             body.classList.remove("sidebar-open");
             syncSidebarToggleUi();
           }
         });
-
-        const normalizedPath = (value) => {
-          const raw = String(value || "/");
-          const trimmed = raw.replace(/\/+$/, "");
-          return trimmed.length > 0 ? trimmed : "/";
+        const onDesktopChange = () => {
+          syncSidebarToggleUi();
         };
-        const currentPath = normalizedPath(window.location.pathname);
+        if (typeof desktopQuery.addEventListener === "function") {
+          desktopQuery.addEventListener("change", onDesktopChange);
+        } else if (typeof desktopQuery.addListener === "function") {
+          desktopQuery.addListener(onDesktopChange);
+        }
+
         sidebar.querySelectorAll(".app-shell-sidebar-menu a.btn[href]").forEach((link) => {
           try {
             const targetPath = normalizedPath(new URL(link.href, window.location.origin).pathname);
-            const isActive = targetPath === currentPath;
+            const isActive = isPathActive(currentPath, targetPath);
             link.classList.toggle("is-active", isActive);
             if (isActive) {
               link.setAttribute("aria-current", "page");
@@ -317,8 +518,45 @@
             }
           } catch (_) {
           }
+          link.addEventListener("click", () => {
+            if (!desktopQuery.matches && body.classList.contains("sidebar-open")) {
+              body.classList.remove("sidebar-open");
+              syncSidebarToggleUi();
+            }
+          });
         });
       }
+
+      document.querySelectorAll(".cg-topbar__actions a[href], .cg-top-rail__item[href]").forEach((link) => {
+        try {
+          const targetPath = normalizedPath(new URL(link.href, window.location.origin).pathname);
+          const active = isPathActive(currentPath, targetPath);
+          link.classList.toggle("is-active", active);
+          if (active) {
+            link.setAttribute("aria-current", "page");
+          } else {
+            link.removeAttribute("aria-current");
+          }
+        } catch (_) {
+        }
+      });
+
+      topSearchForm?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const query = String(topSearchInput?.value || "").trim();
+        try {
+          if (query) {
+            window.sessionStorage.setItem("caroGlobalGameSearchQuery", query);
+          } else {
+            window.sessionStorage.removeItem("caroGlobalGameSearchQuery");
+          }
+        } catch (_) {
+        }
+        const base = toAppPath("/games");
+        const url = query ? (base + "?q=" + encodeURIComponent(query)) : base;
+        window.location.href = url;
+      });
+
       const i18n = window.CaroI18n;
       i18n?.init();
       const toggleLanguageBtn = document.getElementById("toggle-language");

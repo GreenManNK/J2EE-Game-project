@@ -1,196 +1,249 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Thu vien game')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('games')}"></div>
 
-<main class="hub-portal-shell hub-portal-theme-catalog">
-  <section class="hub-portal-hero">
-    <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
-    <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
-
-    <div class="hub-portal-hero__main">
-      <div class="hub-portal-eyebrow">
-        <i class="bi bi-controller"></i>
-        <span>GAME HUB / CATALOG</span>
-      </div>
-
-      <h1 class="hub-portal-title">Thu vien game da duoc dong bo giao dien</h1>
-
-      <p class="hub-portal-subtitle">
-        Moi game co trang rieng va che do choi rieng, nhung da dung chung mot ngon ngu giao dien:
-        hero ro CTA, panel thong tin nhanh, va khu vuc huong dan / tinh nang nhat quan de de mo rong.
-      </p>
-
-      <div class="hub-portal-chip-row">
-        <span class="hub-portal-chip is-live"><i class="bi bi-check-circle-fill"></i> UI portal dong bo</span>
-        <span class="hub-portal-chip"><i class="bi bi-grid-1x2-fill"></i> Route tach rieng tung game</span>
-        <span class="hub-portal-chip"><i class="bi bi-phone"></i> Responsive co ban</span>
-        <span class="hub-portal-chip"><i class="bi bi-boxes"></i> De mo rong them game</span>
-      </div>
-
-      <div class="hub-portal-action-grid">
-        <a th:href="@{/games/caro}" class="hub-portal-action hub-portal-action--primary">
-          <span class="hub-portal-action__icon"><i class="bi bi-grid-3x3-gap-fill"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Vao Caro</strong>
-            <small>Game trung tam: online, bot, offline</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:href="@{/online-hub(game='caro')}" class="hub-portal-action hub-portal-action--accent">
-          <span class="hub-portal-action__icon"><i class="bi bi-wifi"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Online Hub</strong>
-            <small>Tim phong nhanh cho game online</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:href="@{/}" class="hub-portal-action hub-portal-action--soft">
-          <span class="hub-portal-action__icon"><i class="bi bi-house-fill"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Trang chu</strong>
-            <small>Ve dashboard tong quan</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:href="@{/leaderboard}" class="hub-portal-action hub-portal-action--soft">
-          <span class="hub-portal-action__icon"><i class="bi bi-bar-chart-fill"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Bang xep hang</strong>
-            <small>Xem thong ke va ket qua</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-      </div>
+<main class="cg-browser-page">
+  <section class="hub-portal-panel cg-browser-head">
+    <div class="cg-chip-row">
+      <span class="cg-chip is-live"><i class="bi bi-check-circle-fill"></i> <span th:text="${#lists.size(games)} + ' game san sang'">0 game san sang</span></span>
+      <span class="cg-chip"><i class="bi bi-lightning-charge-fill"></i> Choi ngay tren trinh duyet</span>
+      <span class="cg-chip"><i class="bi bi-phone-fill"></i> Tren moi thiet bi</span>
+      <span class="cg-chip"><i class="bi bi-people-fill"></i> Co mode online</span>
     </div>
 
-    <aside class="hub-portal-hero__side">
-      <section class="hub-portal-panel">
-        <div class="hub-portal-panel__head">
-          <div>
-            <div class="hub-portal-panel__label">Tong quan catalog</div>
-            <div class="hub-portal-panel__title">Danh sach game</div>
-          </div>
-          <span class="hub-portal-pill" th:text="${#lists.size(games)} + ' game'">5 game</span>
-        </div>
+    <div class="cg-browser-controls">
+      <label class="cg-control" aria-label="Tim game">
+        <i class="bi bi-search"></i>
+        <input id="gamesBrowserSearch" type="text" placeholder="Tim kiem tro choi va danh muc">
+      </label>
 
-        <div class="hub-portal-preview">
-          <div class="hub-portal-preview-grid" aria-hidden="true">
-            <div class="hub-portal-preview-cell is-accent-a"><i class="bi bi-grid-3x3-gap-fill"></i></div>
-            <div class="hub-portal-preview-cell">X</div>
-            <div class="hub-portal-preview-cell is-accent-b"><i class="bi bi-suit-spade-fill"></i></div>
-            <div class="hub-portal-preview-cell">Q</div>
-            <div class="hub-portal-preview-cell is-accent-a"><i class="bi bi-asterisk"></i></div>
-            <div class="hub-portal-preview-cell">8</div>
-            <div class="hub-portal-preview-cell">O</div>
-            <div class="hub-portal-preview-cell is-accent-a"><i class="bi bi-diagram-3-fill"></i></div>
-            <div class="hub-portal-preview-cell">K</div>
-            <div class="hub-portal-preview-cell is-accent-b"><i class="bi bi-activity"></i></div>
-            <div class="hub-portal-preview-cell">2</div>
-            <div class="hub-portal-preview-cell is-accent-a"><i class="bi bi-controller"></i></div>
-          </div>
-        </div>
-
-        <div class="hub-portal-meta-list">
-          <div class="hub-portal-meta-item">
-            <span>Kieu page</span>
-            <strong>Portal + CTA mode</strong>
-          </div>
-          <div class="hub-portal-meta-item">
-            <span>Dong bo UI</span>
-            <strong>Games catalog / detail</strong>
-          </div>
-          <div class="hub-portal-meta-item">
-            <span>Mo rong tiep</span>
-            <strong>In-game screens (tuy chon)</strong>
-          </div>
-        </div>
-      </section>
-
-      <div class="hub-portal-mini-grid">
-        <section class="hub-portal-mini-card">
-          <div class="hub-portal-mini-card__title">Cach dung nhanh</div>
-          <ol class="hub-portal-inline-list">
-            <li><span>Mo trang chi tiet game</span><strong>1 click</strong></li>
-            <li><span>Chon che do choi</span><strong>CTA lon</strong></li>
-            <li><span>Vao phong/ban choi</span><strong>Route rieng</strong></li>
-          </ol>
-        </section>
-
-        <section class="hub-portal-mini-card">
-          <div class="hub-portal-mini-card__title">Dieu huong</div>
-          <div class="hub-portal-inline-actions">
-            <a th:href="@{/games/api}" class="hub-portal-inline-btn">Games API</a>
-            <a th:href="@{/online-hub}" class="hub-portal-inline-btn">Online Hub</a>
-            <a th:href="@{/chat-bot}" class="hub-portal-inline-btn">Chat Bot</a>
-          </div>
-        </section>
-      </div>
-    </aside>
+      <label class="cg-control" aria-label="Sap xep">
+        <span>Sap xep</span>
+        <select id="gamesBrowserSort">
+          <option value="smart">De xuat</option>
+          <option value="popular">Pho bien</option>
+          <option value="new">Moi cap nhat</option>
+          <option value="az">Ten A-Z</option>
+        </select>
+      </label>
+    </div>
   </section>
 
-  <section class="hub-portal-highlights">
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-layout-text-window-reverse"></i></div>
-      <div>
-        <h2>Dong bo bo cuc</h2>
-        <p>Trang game detail va mode pages da ve cung mot kieu hero + panel + content blocks.</p>
-      </div>
-    </article>
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-lightning-charge-fill"></i></div>
-      <div>
-        <h2>Vao van nhanh</h2>
-        <p>CTA quan trong duoc dat len tren, giam thao tac tim route khi muon choi ngay.</p>
-      </div>
-    </article>
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-brush-fill"></i></div>
-      <div>
-        <h2>San sang mo rong</h2>
-        <p>CSS dung chung cho phep them game moi ma khong can thiet ke lai tu dau.</p>
-      </div>
-    </article>
-  </section>
-
-  <section class="hub-portal-catalog-grid">
-    <article class="hub-portal-game-card" th:each="g : ${games}">
-      <div class="hub-portal-game-card__head">
-        <div class="hub-portal-game-card__title">
+  <section class="cg-lane" data-lane-section>
+    <header class="cg-lane-head">
+      <h2>De xuat danh cho ban</h2>
+      <a th:href="@{/games}" class="cg-lane-more">Xem them</a>
+    </header>
+    <div class="cg-lane-track" data-lane-track>
+      <article class="cg-tile"
+               th:each="g,st : ${games}"
+               th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' || g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 70 : 35) + (g.supportsOnline ? 18 : 0) + (20 - st.index)}">
+        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+          <span class="cg-tile-badge" th:text="${g.availableNow} ? 'Live' : 'Soon'">Live</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
-          <div>
-            <h2 th:text="${g.displayName}">Caro</h2>
-            <small th:text="${g.shortLabel}">Caro</small>
+        </div>
+        <div class="cg-tile-body">
+          <h3 th:text="${g.displayName}">Game</h3>
+          <p th:text="${g.description}">Mo ta game</p>
+          <div class="cg-tile-actions">
+            <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
+            <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
+               th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary">Play</a>
           </div>
         </div>
-        <span class="hub-portal-status"
-              th:classappend="${g.availableNow} ? ' is-live' : ''"
-              th:text="${g.availableNow} ? 'San sang' : 'Dang trien khai'">San sang</span>
-      </div>
-
-      <p class="hub-portal-muted mb-0" th:text="${g.description}">Mo ta game</p>
-
-      <div class="hub-portal-badge-row">
-        <span class="hub-portal-badge" th:if="${g.supportsOnline}">Online</span>
-        <span class="hub-portal-badge" th:if="${g.supportsOffline}">Offline</span>
-        <span class="hub-portal-badge" th:if="${g.supportsGuest}">Guest</span>
-      </div>
-
-      <div class="hub-portal-game-card__actions">
-        <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-btn">Chi tiet</a>
-        <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
-           th:href="@{${g.primaryActionUrl}}"
-           class="hub-portal-btn hub-portal-btn--primary"
-           th:text="${g.primaryActionLabel}">Vao che do choi</a>
-      </div>
-    </article>
+      </article>
+    </div>
   </section>
+
+  <section class="cg-lane" data-lane-section>
+    <header class="cg-lane-head">
+      <h2>Multiplayer</h2>
+      <a th:href="@{/online-hub}" class="cg-lane-more">Xem them</a>
+    </header>
+    <div class="cg-lane-track" data-lane-track>
+      <article class="cg-tile"
+               th:each="g : ${games}"
+               th:if="${g.supportsOnline}"
+               th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' || g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 85 : 45)}">
+        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+          <span class="cg-tile-badge">Online</span>
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-tile-body">
+          <h3 th:text="${g.displayName}">Game</h3>
+          <p th:text="${g.description}">Mo ta game</p>
+          <div class="cg-tile-actions">
+            <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
+            <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
+               th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary">Play</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="cg-lane" data-lane-section>
+    <header class="cg-lane-head">
+      <h2>Classic va Chien thuat</h2>
+      <a th:href="@{/games/chess}" class="cg-lane-more">Xem them</a>
+    </header>
+    <div class="cg-lane-track" data-lane-track>
+      <article class="cg-tile"
+               th:each="g : ${games}"
+               th:if="${g.code == 'caro' or g.code == 'chess' or g.code == 'xiangqi' or g.code == 'puzzle'}"
+               th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' ? 2026 : 2025},data-popularity=${(g.availableNow ? 74 : 40) + (g.supportsOnline ? 10 : 0)}">
+        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+          <span class="cg-tile-badge">Top</span>
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-tile-body">
+          <h3 th:text="${g.displayName}">Game</h3>
+          <p th:text="${g.description}">Mo ta game</p>
+          <div class="cg-tile-actions">
+            <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
+            <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
+               th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary">Play</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="cg-lane" data-lane-section>
+    <header class="cg-lane-head">
+      <h2>Cards, Puzzle va Nhanh</h2>
+      <a th:href="@{/games/cards}" class="cg-lane-more">Xem them</a>
+    </header>
+    <div class="cg-lane-track" data-lane-track>
+      <article class="cg-tile"
+               th:each="g : ${games}"
+               th:if="${g.code == 'cards' or g.code == 'puzzle' or g.code == 'quiz' or g.code == 'typing' or g.code == 'minesweeper'}"
+               th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' or g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 65 : 42) + (g.supportsGuest ? 12 : 0)}">
+        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+          <span class="cg-tile-badge">New</span>
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-tile-body">
+          <h3 th:text="${g.displayName}">Game</h3>
+          <p th:text="${g.description}">Mo ta game</p>
+          <div class="cg-tile-actions">
+            <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
+            <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
+               th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary">Play</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <div id="gamesBrowserEmpty" class="cg-market-empty" hidden>Khong co game phu hop voi tu khoa hien tai.</div>
 </main>
 
-<th:block th:replace="~{fragments :: appScripts('games')}"></th:block>
+<th:block th:replace="~{fragments :: appScripts('games')}"/>
+<script th:inline="javascript">
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('gamesBrowserSearch');
+    const sortSelect = document.getElementById('gamesBrowserSort');
+    const tracks = Array.from(document.querySelectorAll('[data-lane-track]'));
+    const laneSections = Array.from(document.querySelectorAll('[data-lane-section]'));
+    const emptyState = document.getElementById('gamesBrowserEmpty');
+
+    if (tracks.length === 0) {
+      return;
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryFromUrl = String(urlParams.get('q') || '').trim();
+    let queryFromGlobal = '';
+    try {
+      queryFromGlobal = String(window.sessionStorage.getItem('caroGlobalGameSearchQuery') || '').trim();
+      if (queryFromGlobal) {
+        window.sessionStorage.removeItem('caroGlobalGameSearchQuery');
+      }
+    } catch (_) {
+      queryFromGlobal = '';
+    }
+
+    const initialQuery = queryFromUrl || queryFromGlobal;
+    if (searchInput && initialQuery) {
+      searchInput.value = initialQuery;
+    }
+
+    const tileText = (tile) => (String(tile.dataset.name || '') + ' ' + String(tile.dataset.code || '') + ' ' + String(tile.textContent || '')).toLowerCase();
+
+    const sortTiles = (tiles, mode) => {
+      const arr = [...tiles];
+      if (mode === 'az') {
+        arr.sort((a, b) => String(a.dataset.name || '').localeCompare(String(b.dataset.name || ''), 'vi'));
+      } else if (mode === 'new') {
+        arr.sort((a, b) => Number(b.dataset.release || 0) - Number(a.dataset.release || 0));
+      } else {
+        arr.sort((a, b) => Number(b.dataset.popularity || 0) - Number(a.dataset.popularity || 0));
+      }
+      return arr;
+    };
+
+    const applyState = () => {
+      const query = String(searchInput?.value || '').trim().toLowerCase();
+      const mode = String(sortSelect?.value || 'smart');
+      let totalVisible = 0;
+
+      tracks.forEach((track) => {
+        const tiles = Array.from(track.querySelectorAll('.cg-tile'));
+        const filtered = tiles.filter((tile) => {
+          if (!query) {
+            return true;
+          }
+          return tileText(tile).includes(query);
+        });
+
+        const ordered = sortTiles(filtered, mode);
+        const hiddenSet = new Set(tiles);
+
+        ordered.forEach((tile) => {
+          hiddenSet.delete(tile);
+          tile.hidden = false;
+          track.appendChild(tile);
+        });
+
+        hiddenSet.forEach((tile) => {
+          tile.hidden = true;
+        });
+
+        const section = track.closest('[data-lane-section]');
+        if (section) {
+          section.hidden = ordered.length === 0;
+        }
+
+        totalVisible += ordered.length;
+      });
+
+      if (emptyState) {
+        emptyState.hidden = totalVisible !== 0;
+      }
+    };
+
+    searchInput?.addEventListener('input', applyState);
+    sortSelect?.addEventListener('change', applyState);
+
+    tracks.forEach((track) => {
+      track.addEventListener('wheel', (event) => {
+        if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
+          return;
+        }
+        event.preventDefault();
+        track.scrollBy({ left: event.deltaY, behavior: 'smooth' });
+      }, { passive: false });
+    });
+
+    applyState();
+  });
+</script>
 </body>
 </html>
