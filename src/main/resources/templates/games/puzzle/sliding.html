@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Sliding Puzzle')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-puzzle-sliding')}"></div>
+
+<main class="hub-portal-shell hub-portal-theme-puzzle">
+    <section class="hub-portal-hero">
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
+
+        <div class="hub-portal-hero__main">
+            <div class="hub-portal-eyebrow">
+                <i class="bi bi-border-all"></i>
+                <span>SLIDING / SOLO PUZZLE</span>
+            </div>
+            <h1 class="hub-portal-title">Sliding Puzzle</h1>
+            <p class="hub-portal-subtitle">Sap xep lai anh bang cach truot tung o ve dung vi tri.</p>
+
+            <div class="hub-portal-chip-row">
+                <span class="hub-portal-chip is-live"><i class="bi bi-grid-3x3-gap-fill"></i> Ho tro 3x3 den 5x5</span>
+                <span class="hub-portal-chip"><i class="bi bi-stopwatch-fill"></i> Co dong ho + move count</span>
+                <span class="hub-portal-chip"><i class="bi bi-stars"></i> Theo doi chuoi thang</span>
+            </div>
+
+            <div class="sliding-controls">
+                <label for="sliding-size" class="form-label">Do kho</label>
+                <select id="sliding-size" class="form-select">
+                    <option value="3">3 x 3</option>
+                    <option value="4">4 x 4</option>
+                    <option value="5">5 x 5</option>
+                </select>
+                <button id="shuffle-btn" class="hub-portal-action hub-portal-action--primary">Tao ban moi</button>
+            </div>
+
+            <div class="sliding-hud">
+                <div><span>So buoc</span><strong id="sliding-moves">0</strong></div>
+                <div><span>Thoi gian</span><strong id="sliding-time">00:00</strong></div>
+                <div><span>Chuoi thang</span><strong id="sliding-streak">0</strong></div>
+            </div>
+
+            <div class="sliding-layout">
+                <div id="puzzle-container" class="sliding-board"></div>
+                <div id="sliding-preview" class="sliding-preview"></div>
+            </div>
+
+            <p id="sliding-status" class="sliding-note"></p>
+        </div>
+
+        <aside class="hub-portal-hero__side">
+            <section class="hub-portal-panel">
+                <div class="hub-portal-panel__head">
+                    <div>
+                        <div class="hub-portal-panel__label">Luat choi</div>
+                        <div class="hub-portal-panel__title">Chi truot o canh o trong</div>
+                    </div>
+                    <span class="hub-portal-pill">Classic</span>
+                </div>
+                <ul class="hub-portal-bullet-list mb-0">
+                    <li>Moi lan chi di chuyen 1 o canh o trong.</li>
+                    <li>Muc tieu la dua toan bo anh ve dung vi tri goc.</li>
+                    <li>Do kho cao hon se tang kich thuoc ban.</li>
+                </ul>
+            </section>
+            <div class="hub-portal-mini-grid">
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Meo nhanh</div>
+                    <ul class="hub-portal-bullet-list mb-0">
+                        <li>Giai tung hang tu tren xuong de it roi.</li>
+                        <li>Quan sat preview de giu huong chinh.</li>
+                    </ul>
+                </section>
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Dieu huong</div>
+                    <div class="hub-portal-inline-actions">
+                        <a th:href="@{/games/puzzle}" class="hub-portal-inline-btn">Puzzle hub</a>
+                        <a th:href="@{/games/puzzle/jigsaw}" class="hub-portal-inline-btn">Jigsaw</a>
+                        <a th:href="@{/games/puzzle/sudoku}" class="hub-portal-inline-btn">Sudoku</a>
+                    </div>
+                </section>
+            </div>
+        </aside>
+    </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-puzzle-sliding')}"></th:block>
+<style>
+    .sliding-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.55rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .sliding-controls .form-select {
+        max-width: 140px;
+    }
+
+    .sliding-hud {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 0.5rem;
+        margin-bottom: 0.85rem;
+    }
+
+    .sliding-hud > div {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        padding: 0.6rem 0.65rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .sliding-hud span {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        opacity: 0.85;
+    }
+
+    .sliding-layout {
+        display: grid;
+        grid-template-columns: minmax(240px, 1fr) 180px;
+        gap: 0.9rem;
+        align-items: start;
+    }
+
+    .sliding-board {
+        display: grid;
+        gap: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 14px;
+        padding: 6px;
+        background: rgba(2, 6, 23, 0.35);
+    }
+
+    .sliding-tile {
+        aspect-ratio: 1 / 1;
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        border-radius: 8px;
+        background-size: cover;
+        background-repeat: no-repeat;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sliding-tile > span {
+        position: absolute;
+        right: 6px;
+        bottom: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+    }
+
+    .sliding-empty {
+        border: 1px dashed rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .sliding-preview {
+        width: 180px;
+        aspect-ratio: 1 / 1;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        background-size: cover;
+        background-position: center;
+    }
+
+    .sliding-note {
+        margin: 0.8rem 0 0;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .sliding-note.success {
+        color: #bbf7d0;
+    }
+
+    @media (max-width: 940px) {
+        .sliding-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .sliding-preview {
+            width: min(220px, 100%);
+        }
+    }
+</style>
+<script>
+    const puzzleContainer = document.getElementById('puzzle-container');
+    const previewEl = document.getElementById('sliding-preview');
+    const movesEl = document.getElementById('sliding-moves');
+    const timeEl = document.getElementById('sliding-time');
+    const streakEl = document.getElementById('sliding-streak');
+    const statusEl = document.getElementById('sliding-status');
+
+    const sizeSelect = document.getElementById('sliding-size');
+    const shuffleBtn = document.getElementById('shuffle-btn');
+
+    const imageUrl = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720">
+            <defs>
+                <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#1d4ed8"/>
+                    <stop offset="100%" stop-color="#0ea5e9"/>
+                </linearGradient>
+            </defs>
+            <rect width="720" height="720" fill="url(#g)"/>
+            <circle cx="170" cy="210" r="118" fill="rgba(255,255,255,0.24)"/>
+            <circle cx="560" cy="520" r="152" fill="rgba(255,255,255,0.2)"/>
+            <text x="360" y="392" text-anchor="middle" fill="#ffffff" font-size="96" font-family="Verdana" font-weight="700">SLIDE</text>
+        </svg>`
+    );
+
+    let size = 3;
+    let board = [];
+    let moves = 0;
+    let streak = 0;
+    let startTime;
+    let timerHandle;
+
+    shuffleBtn.addEventListener('click', startGame);
+    sizeSelect.addEventListener('change', startGame);
+
+    function startGame() {
+        size = parseInt(sizeSelect.value, 10);
+        board = solvedBoard();
+        board = shuffleBoardByMoves(board, 240 + size * 30);
+
+        moves = 0;
+        startTime = Date.now();
+        startTimer();
+        previewEl.style.backgroundImage = `url(${imageUrl})`;
+        statusEl.textContent = 'Click o nam canh o trong de di chuyen.';
+        statusEl.classList.remove('success');
+
+        render();
+        updateHud();
+    }
+
+    function solvedBoard() {
+        const total = size * size;
+        return Array.from({ length: total }, (_, i) => (i + 1) % total);
+    }
+
+    function shuffleBoardByMoves(sourceBoard, turns) {
+        const arr = sourceBoard.slice();
+        for (let i = 0; i < turns; i += 1) {
+            const emptyIndex = arr.indexOf(0);
+            const neighbors = getNeighborIndices(emptyIndex);
+            const nextIndex = neighbors[Math.floor(Math.random() * neighbors.length)];
+            [arr[emptyIndex], arr[nextIndex]] = [arr[nextIndex], arr[emptyIndex]];
+        }
+
+        if (isSolved(arr)) {
+            return shuffleBoardByMoves(arr, turns + 12);
+        }
+        return arr;
+    }
+
+    function getNeighborIndices(index) {
+        const row = Math.floor(index / size);
+        const col = index % size;
+        const neighbors = [];
+
+        if (row > 0) neighbors.push(index - size);
+        if (row < size - 1) neighbors.push(index + size);
+        if (col > 0) neighbors.push(index - 1);
+        if (col < size - 1) neighbors.push(index + 1);
+
+        return neighbors;
+    }
+
+    function moveTile(index) {
+        const emptyIndex = board.indexOf(0);
+        if (!getNeighborIndices(emptyIndex).includes(index)) {
+            return;
+        }
+
+        [board[index], board[emptyIndex]] = [board[emptyIndex], board[index]];
+        moves += 1;
+        render();
+        updateHud();
+
+        if (isSolved(board)) {
+            clearInterval(timerHandle);
+            streak += 1;
+            streakEl.textContent = String(streak);
+            statusEl.textContent = `Ban da giai xong trong ${moves} buoc va ${timeEl.textContent}.`;
+            statusEl.classList.add('success');
+        }
+    }
+
+    function isSolved(arr) {
+        const target = solvedBoard();
+        return arr.every((value, index) => value === target[index]);
+    }
+
+    function render() {
+        puzzleContainer.innerHTML = '';
+        puzzleContainer.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+
+        const sizePercent = size * 100;
+
+        board.forEach((value, index) => {
+            if (value === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'sliding-empty';
+                puzzleContainer.appendChild(empty);
+                return;
+            }
+
+            const tile = document.createElement('button');
+            tile.type = 'button';
+            tile.className = 'sliding-tile';
+
+            const imageIndex = value - 1;
+            const imageX = imageIndex % size;
+            const imageY = Math.floor(imageIndex / size);
+
+            tile.style.backgroundImage = `url(${imageUrl})`;
+            tile.style.backgroundSize = `${sizePercent}% ${sizePercent}%`;
+            tile.style.backgroundPosition = `${(imageX / (size - 1 || 1)) * 100}% ${(imageY / (size - 1 || 1)) * 100}%`;
+
+            tile.innerHTML = `<span>${value}</span>`;
+            tile.addEventListener('click', () => moveTile(index));
+            puzzleContainer.appendChild(tile);
+        });
+    }
+
+    function updateHud() {
+        movesEl.textContent = String(moves);
+    }
+
+    function startTimer() {
+        clearInterval(timerHandle);
+        timeEl.textContent = '00:00';
+
+        timerHandle = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const seconds = String(elapsed % 60).padStart(2, '0');
+            timeEl.textContent = `${minutes}:${seconds}`;
+        }, 1000);
+    }
+
+    startGame();
+</script>
+</body>
+</html>

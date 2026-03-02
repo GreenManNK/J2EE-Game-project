@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChessOnlineRoomService {
     private static final int BOARD_SIZE = 8;
     private static final int PLAYER_LIMIT = 2;
+    private static final int MAX_SPECTATORS = 4;
     private static final String STATUS_WAITING = "WAITING";
     private static final String STATUS_PLAYING = "PLAYING";
     private static final String STATUS_GAME_OVER = "GAME_OVER";
@@ -67,6 +68,30 @@ public class ChessOnlineRoomService {
         }
 
         return new JoinResult(true, assignedColor, snapshotOf(room), null);
+    }
+    
+    public synchronized JoinResult joinAsSpectator(String roomId, String userId) {
+        String normalizedRoomId = normalize(roomId);
+        String normalizedUserId = normalize(userId);
+        if (normalizedRoomId == null || normalizedUserId == null) {
+            return new JoinResult(false, null, null, "Invalid room or user");
+        }
+
+        RoomState room = rooms.get(normalizedRoomId);
+        if (room == null) {
+            return new JoinResult(false, null, null, "Room not found");
+        }
+
+        if (room.spectators.contains(normalizedUserId)) {
+            return new JoinResult(true, "spectator", snapshotOf(room), null);
+        }
+
+        if (room.spectators.size() >= MAX_SPECTATORS) {
+            return new JoinResult(false, null, snapshotOf(room), "Spectator limit reached");
+        }
+
+        room.spectators.add(normalizedUserId);
+        return new JoinResult(true, "spectator", snapshotOf(room), null);
     }
 
     public synchronized ActionResult move(String roomId,
@@ -237,7 +262,8 @@ public class ChessOnlineRoomService {
             return;
         }
         room.players.remove(normalizedUserId);
-        if (room.players.isEmpty()) {
+        room.spectators.remove(normalizedUserId);
+        if (room.players.isEmpty() && room.spectators.isEmpty()) {
             rooms.remove(room.roomId);
             return;
         }
@@ -320,6 +346,7 @@ public class ChessOnlineRoomService {
             room.roomId,
             room.players.size(),
             PLAYER_LIMIT,
+            room.spectators.size(),
             room.status,
             room.statusMessage,
             room.currentTurnUserId,
@@ -457,6 +484,7 @@ public class ChessOnlineRoomService {
     public record RoomSnapshot(String roomId,
                                int playerCount,
                                int playerLimit,
+                               int spectatorCount,
                                String status,
                                String statusMessage,
                                String currentTurnUserId,
@@ -465,6 +493,32 @@ public class ChessOnlineRoomService {
                                List<String> moveHistory,
                                LastMoveSnapshot lastMove,
                                List<PlayerSnapshot> players) {
+        public boolean isGameOver() {
+            return STATUS_GAME_OVER.equals(status);
+        }
+
+        public String getWinnerId() {
+            if (!isGameOver()) {
+                return null;
+            }
+            // Simplified logic: assumes the currentTurnColor is the winner's color
+            return players.stream()
+                .filter(p -> p.color.equals(currentTurnColor))
+                .map(PlayerSnapshot::userId)
+                .findFirst()
+                .orElse(null);
+        }
+
+        public String getLoserId(String winnerId) {
+            if (!isGameOver() || winnerId == null) {
+                return null;
+            }
+            return players.stream()
+                .map(PlayerSnapshot::userId)
+                .filter(id -> !id.equals(winnerId))
+                .findFirst()
+                .orElse(null);
+        }
     }
 
     public record PlayerSnapshot(String userId, String displayName, String avatarPath, String color) {
@@ -483,6 +537,7 @@ public class ChessOnlineRoomService {
     private static final class RoomState {
         private final String roomId;
         private final LinkedHashMap<String, PlayerSeatState> players = new LinkedHashMap<>();
+        private final List<String> spectators = new ArrayList<>();
         private String[][] board;
         private String status = STATUS_WAITING;
         private String statusMessage = "Dang cho doi thu vao phong";

@@ -44,6 +44,8 @@ if [[ "$CHECK_ONLY" -eq 1 ]]; then INSTALL_MISSING=0; fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 APT_UPDATED=0
+MAVEN_WRAPPER="$REPO_ROOT/mvnw"
+GRADLE_WRAPPER="$REPO_ROOT/gradlew"
 
 title() { printf '== %s ==\n' "$1"; }
 ok() { printf '[OK] %s\n' "$1"; }
@@ -93,8 +95,21 @@ java_major() {
 }
 
 maven_version() {
-  cmd_exists mvn || return 1
-  mvn -v 2>&1 | awk '/Apache Maven/ {print $3; exit}'
+  if cmd_exists mvn; then
+    mvn -v 2>&1 | awk '/Apache Maven/ {print $3; exit}'
+    return 0
+  fi
+  [[ -f "$MAVEN_WRAPPER" ]] || return 1
+  bash "$MAVEN_WRAPPER" -v 2>&1 | awk '/Apache Maven/ {print $3; exit}'
+}
+
+gradle_version() {
+  if cmd_exists gradle; then
+    gradle -v 2>&1 | awk '/^Gradle / {print $2; exit}'
+    return 0
+  fi
+  [[ -f "$GRADLE_WRAPPER" ]] || return 1
+  bash "$GRADLE_WRAPPER" -v 2>&1 | awk '/^Gradle / {print $2; exit}'
 }
 
 node_version() {
@@ -149,6 +164,7 @@ try_install_tool() {
       case "$key" in
         java21) run_install brew install openjdk@21 ;;
         maven) run_install brew install maven ;;
+        gradle) run_install brew install gradle ;;
         git) run_install brew install git ;;
         node) run_install brew install node ;;
         cloudflared) run_install brew install cloudflared ;;
@@ -160,6 +176,7 @@ try_install_tool() {
       case "$key" in
         java21) run_install apt-get install -y openjdk-21-jdk ;;
         maven) run_install apt-get install -y maven ;;
+        gradle) run_install apt-get install -y gradle ;;
         git) run_install apt-get install -y git ;;
         node) run_install apt-get install -y nodejs npm ;;
         cloudflared) run_install apt-get install -y cloudflared ;;
@@ -170,6 +187,7 @@ try_install_tool() {
       case "$key" in
         java21) run_install dnf install -y java-21-openjdk-devel ;;
         maven) run_install dnf install -y maven ;;
+        gradle) run_install dnf install -y gradle ;;
         git) run_install dnf install -y git ;;
         node) run_install dnf install -y nodejs ;;
         cloudflared) run_install dnf install -y cloudflared ;;
@@ -180,6 +198,7 @@ try_install_tool() {
       case "$key" in
         java21) run_install yum install -y java-21-openjdk-devel ;;
         maven) run_install yum install -y maven ;;
+        gradle) run_install yum install -y gradle ;;
         git) run_install yum install -y git ;;
         node) run_install yum install -y nodejs npm ;;
         cloudflared) run_install yum install -y cloudflared ;;
@@ -190,6 +209,7 @@ try_install_tool() {
       case "$key" in
         java21) run_install pacman -S --noconfirm jdk21-openjdk ;;
         maven) run_install pacman -S --noconfirm maven ;;
+        gradle) run_install pacman -S --noconfirm gradle ;;
         git) run_install pacman -S --noconfirm git ;;
         node) run_install pacman -S --noconfirm nodejs npm ;;
         cloudflared) run_install pacman -S --noconfirm cloudflared ;;
@@ -200,6 +220,7 @@ try_install_tool() {
       case "$key" in
         java21) run_install zypper --non-interactive install java-21-openjdk-devel ;;
         maven) run_install zypper --non-interactive install maven ;;
+        gradle) run_install zypper --non-interactive install gradle ;;
         git) run_install zypper --non-interactive install git ;;
         node) run_install zypper --non-interactive install nodejs ;;
         cloudflared) run_install zypper --non-interactive install cloudflared ;;
@@ -236,12 +257,17 @@ ensure_tool() {
 
   if cmd_exists "$cmd"; then
     exists=1
+  elif [[ "$cmd" == "mvn" && -f "$MAVEN_WRAPPER" ]]; then
+    exists=1
+  elif [[ "$cmd" == "gradle" && -f "$GRADLE_WRAPPER" ]]; then
+    exists=1
   fi
 
   if [[ "$exists" -eq 1 ]]; then
     case "$version_type" in
       java) version="$(java_major || true)" ;;
       maven) version="$(maven_version || true)" ;;
+      gradle) version="$(gradle_version || true)" ;;
       node) version="$(node_version || true)" ;;
       none) version="" ;;
     esac
@@ -282,11 +308,18 @@ ensure_tool() {
   exists=0
   version=""
   version_ok=1
-  if cmd_exists "$cmd"; then exists=1; fi
+  if cmd_exists "$cmd"; then
+    exists=1
+  elif [[ "$cmd" == "mvn" && -f "$MAVEN_WRAPPER" ]]; then
+    exists=1
+  elif [[ "$cmd" == "gradle" && -f "$GRADLE_WRAPPER" ]]; then
+    exists=1
+  fi
   if [[ "$exists" -eq 1 ]]; then
     case "$version_type" in
       java) version="$(java_major || true)" ;;
       maven) version="$(maven_version || true)" ;;
+      gradle) version="$(gradle_version || true)" ;;
       node) version="$(node_version || true)" ;;
       none) version="" ;;
     esac
@@ -318,12 +351,13 @@ else
   warn "Khong phat hien package manager ho tro (chi check, khong cai tu dong)."
 fi
 
-if ! ensure_tool "Java (JDK)" "java" "java21" 1 "21" "java" "$PM"; then
-  required_failures+=("Java 21+")
+if ! ensure_tool "Java (JDK)" "java" "java21" 1 "17" "java" "$PM"; then
+  required_failures+=("Java 17+")
 fi
-if ! ensure_tool "Maven" "mvn" "maven" 1 "3.9.0" "maven" "$PM"; then
-  required_failures+=("Maven 3.9+")
+if ! ensure_tool "Maven (hoac Maven Wrapper)" "mvn" "maven" 1 "3.8.6" "maven" "$PM"; then
+  required_failures+=("Maven 3.8.6+ (hoac mvnw)")
 fi
+ensure_tool "Gradle (hoac Gradle Wrapper)" "gradle" "gradle" 0 "8.7.0" "gradle" "$PM" || true
 ensure_tool "Git" "git" "git" 0 "" "none" "$PM" || true
 ensure_tool "Node.js" "node" "node" 0 "18.0.0" "node" "$PM" || true
 
@@ -349,6 +383,8 @@ fi
 title "Quick Start"
 echo "Windows (PowerShell): powershell -ExecutionPolicy Bypass -File .\\scripts\\dev-run-local.ps1"
 echo "macOS/Linux (bash):  bash ./scripts/dev-run-local.sh"
+echo "Maven wrapper: .\\mvnw.cmd spring-boot:run (Windows) | ./mvnw spring-boot:run (macOS/Linux)"
+echo "Gradle wrapper: .\\gradlew.bat bootRun (Windows) | ./gradlew bootRun (macOS/Linux)"
 if [[ "$MODE" == "public" ]]; then
   echo "Windows public helper: cmd /c scripts\\manual-start-public.cmd"
 fi

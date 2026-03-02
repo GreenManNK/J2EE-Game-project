@@ -5,7 +5,7 @@
 - Platform: ASP.NET Core MVC + Identity + EF Core + SignalR
 
 ## Java target implemented
-- Platform: Spring Boot 3.3 (Java 21)
+- Platform: Spring Boot 3.3 (Java 17+)
 - Data: Spring Data JPA (H2 default, MSSQL driver included)
 - Realtime: STOMP over WebSocket (`/ws`)
 - Security: Spring Security baseline + BCrypt password encoder
@@ -61,8 +61,10 @@
 
 ## Run
 ```bash
-mvn spring-boot:run
+./mvnw spring-boot:run
+# or
+./gradlew bootRun
 ```
 
 ## Note about validation in this environment
-- `mvn` command is not available in PATH in the current machine session, so full compile/test command could not be executed here.
+- Uu tien dung wrapper (`mvnw` / `gradlew`) de khong phu thuoc cong cu co san trong PATH.

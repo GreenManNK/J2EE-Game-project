@@ -23,6 +23,7 @@
         userId: String(boot.sessionUserId || "").trim(),
         displayName: String(boot.sessionDisplayName || "").trim(),
         avatarPath: String(boot.sessionAvatarPath || "").trim(),
+        spectate: new URLSearchParams(window.location.search).get('spectate') === 'true',
         board: [],
         turn: "w",
         currentTurnUserId: "",
@@ -166,6 +167,10 @@
     }
 
     function onCellClick(row, col) {
+        if (state.spectate) {
+            setGameStatus("You are a spectator.");
+            return;
+        }
         if (!state.connected) {
             setGameStatus("Dang mat ket noi... He thong se tu ket noi lai.");
             return;
@@ -736,8 +741,9 @@
             return;
         }
         state.joining = true;
+        const destination = state.spectate ? "/app/chess.spectate" : "/app/chess.join";
         state.client.publish({
-            destination: "/app/chess.join",
+            destination: destination,
             body: JSON.stringify({
                 roomId: state.roomId,
                 userId: state.userId,

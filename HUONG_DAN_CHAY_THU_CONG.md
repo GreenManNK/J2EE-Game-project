@@ -45,11 +45,11 @@ bash ./scripts/dev-env-setup.sh --mode local --db auto
 ```
 
 Ghi chu:
-- Script se co gang cai `Java 21+`, `Maven`, `Git`, `Node.js` (khuyen nghi), va `cloudflared` neu chon `Mode public`.
+- Script se co gang cai `Java 17+` (thuong cai ban 21 LTS), `Maven`, `Gradle`, `Git`, `Node.js` (khuyen nghi), va `cloudflared` neu chon `Mode public`.
 - Viec cai tu dong phu thuoc package manager cua may (`winget/choco/scoop`, `brew`, `apt/dnf/yum/pacman/zypper`).
 - Neu script bao da cai xong nhung terminal van khong nhan lenh, hay mo terminal moi va chay lai script.
 
-### 3) Chay local da nen tang (Maven + H2 fallback)
+### 3) Chay local da nen tang (Maven/Gradle + H2 fallback)
 
 Windows (PowerShell):
 
@@ -63,6 +63,18 @@ macOS / Linux (bash):
 bash ./scripts/dev-run-local.sh
 ```
 
+Neu muon chay truc tiep bang wrapper:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+.\gradlew.bat bootRun
+```
+
+```bash
+./mvnw spring-boot:run
+./gradlew bootRun
+```
+
 Script local moi se:
 - tu dong `bootstrap` moi truong o lan chay dau tien (doctor + auto-install best effort)
 - ghi file trang thai vao `.data/dev-env/` de cac lan sau bo qua buoc chuan doan/cai dat
@@ -70,7 +82,8 @@ Script local moi se:
 - co the ep bootstrap lai bang `-ForceBootstrap` (PowerShell) / `--force-bootstrap` (bash)
 - tu tao thu muc `.data/`
 - bat `H2 fallback` + `APP_EMAIL_MODE=log` de de chay tren may moi
-- chay app bang `mvn spring-boot:run` (profile `prod`)
+- tu dong chon build tool theo thu tu uu tien: `mvnw` -> `mvn` -> `gradlew` -> `gradle`
+- chay app voi profile `prod` va port `8080` (co the doi qua tham so script)
 
 Vi du ep chay lai bootstrap:
 

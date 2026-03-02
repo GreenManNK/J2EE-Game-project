@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Word Puzzle')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-puzzle-word')}"></div>
+
+<main class="hub-portal-shell hub-portal-theme-puzzle">
+    <section class="hub-portal-hero">
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
+
+        <div class="hub-portal-hero__main">
+            <div class="hub-portal-eyebrow">
+                <i class="bi bi-fonts"></i>
+                <span>WORD / FIND LINE</span>
+            </div>
+            <h1 class="hub-portal-title">Word Puzzle</h1>
+            <p class="hub-portal-subtitle">Chon diem bat dau va diem ket thuc de tim tu nam tren duong thang.</p>
+
+            <div class="hub-portal-chip-row">
+                <span class="hub-portal-chip is-live"><i class="bi bi-grid-fill"></i> Luoi 12x12</span>
+                <span class="hub-portal-chip"><i class="bi bi-signpost-split-fill"></i> Ho tro ngang/doc/cheo</span>
+                <span class="hub-portal-chip"><i class="bi bi-stopwatch-fill"></i> Co dem thoi gian</span>
+            </div>
+
+            <div class="word-controls">
+                <button id="new-word-game-btn" class="hub-portal-action hub-portal-action--primary">Tao bang moi</button>
+            </div>
+
+            <div class="word-hud">
+                <div><span>Da tim</span><strong id="found-count">0</strong></div>
+                <div><span>Tong tu</span><strong id="total-count">0</strong></div>
+                <div><span>Thoi gian</span><strong id="word-time">00:00</strong></div>
+            </div>
+
+            <div class="word-layout">
+                <div id="grid-container" class="word-grid"></div>
+                <div>
+                    <h2 class="word-title">Danh sach tu</h2>
+                    <div id="word-list" class="word-list"></div>
+                </div>
+            </div>
+
+            <p id="word-status" class="word-note"></p>
+        </div>
+
+        <aside class="hub-portal-hero__side">
+            <section class="hub-portal-panel">
+                <div class="hub-portal-panel__head">
+                    <div>
+                        <div class="hub-portal-panel__label">Cach choi</div>
+                        <div class="hub-portal-panel__title">2 click de tim 1 tu</div>
+                    </div>
+                    <span class="hub-portal-pill">Straight line</span>
+                </div>
+                <ol class="hub-portal-inline-list mb-0">
+                    <li><span>Click chu cai dau</span><strong>Start</strong></li>
+                    <li><span>Click chu cai cuoi</span><strong>End</strong></li>
+                    <li><span>He thong kiem tra tu trong list</span><strong>Match</strong></li>
+                </ol>
+            </section>
+            <div class="hub-portal-mini-grid">
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Luu y</div>
+                    <ul class="hub-portal-bullet-list mb-0">
+                        <li>Duong chon phai thang hang hoac cheo.</li>
+                        <li>Tu dao nguoc van duoc chap nhan.</li>
+                    </ul>
+                </section>
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Dieu huong</div>
+                    <div class="hub-portal-inline-actions">
+                        <a th:href="@{/games/puzzle}" class="hub-portal-inline-btn">Puzzle hub</a>
+                        <a th:href="@{/games/puzzle/sudoku}" class="hub-portal-inline-btn">Sudoku</a>
+                        <a th:href="@{/games/puzzle/jigsaw}" class="hub-portal-inline-btn">Jigsaw</a>
+                    </div>
+                </section>
+            </div>
+        </aside>
+    </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-puzzle-word')}"></th:block>
+<style>
+    .word-controls {
+        display: flex;
+        gap: 0.55rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .word-hud {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 0.5rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .word-hud > div {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        padding: 0.55rem 0.65rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .word-hud span {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        opacity: 0.85;
+    }
+
+    .word-layout {
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) 220px;
+        gap: 0.9rem;
+        align-items: start;
+    }
+
+    .word-grid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(28px, 1fr));
+        gap: 3px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 12px;
+        padding: 6px;
+        background: rgba(2, 6, 23, 0.35);
+    }
+
+    .word-cell {
+        aspect-ratio: 1 / 1;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.03);
+        color: #f8fafc;
+        font-weight: 700;
+        font-size: 0.92rem;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .word-cell.start {
+        outline: 2px solid rgba(56, 189, 248, 0.95);
+        background: rgba(56, 189, 248, 0.2);
+    }
+
+    .word-cell.found {
+        background: rgba(34, 197, 94, 0.3);
+        border-color: rgba(134, 239, 172, 0.85);
+    }
+
+    .word-title {
+        margin: 0 0 0.45rem;
+        font-size: 0.95rem;
+    }
+
+    .word-list {
+        display: grid;
+        gap: 0.45rem;
+    }
+
+    .word-item {
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        border-radius: 999px;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.84rem;
+        width: fit-content;
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .word-item.found {
+        background: rgba(34, 197, 94, 0.28);
+        border-color: rgba(134, 239, 172, 0.85);
+        text-decoration: line-through;
+    }
+
+    .word-note {
+        margin: 0.8rem 0 0;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .word-note.success {
+        color: #bbf7d0;
+    }
+
+    .word-note.error {
+        color: #fecaca;
+    }
+
+    @media (max-width: 960px) {
+        .word-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .word-grid {
+            grid-template-columns: repeat(12, minmax(24px, 1fr));
+        }
+    }
+</style>
+<script>
+    const GRID_SIZE = 12;
+    const WORDS = ['JAVA', 'SPRING', 'PUZZLE', 'GAME', 'SOCKET', 'PLAYER', 'SCORE', 'RACE'];
+    const DIRECTIONS = [
+        { dx: 1, dy: 0 }, { dx: -1, dy: 0 },
+        { dx: 0, dy: 1 }, { dx: 0, dy: -1 },
+        { dx: 1, dy: 1 }, { dx: -1, dy: -1 },
+        { dx: 1, dy: -1 }, { dx: -1, dy: 1 }
+    ];
+
+    const gridContainer = document.getElementById('grid-container');
+    const wordListContainer = document.getElementById('word-list');
+    const foundCountEl = document.getElementById('found-count');
+    const totalCountEl = document.getElementById('total-count');
+    const timeEl = document.getElementById('word-time');
+    const statusEl = document.getElementById('word-status');
+    const newBtn = document.getElementById('new-word-game-btn');
+
+    let grid;
+    let placements;
+    let foundWords;
+    let selectedStart = null;
+    let startedAt;
+    let timerHandle;
+
+    newBtn.addEventListener('click', startGame);
+
+    function startGame() {
+        grid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(''));
+        placements = [];
+        foundWords = new Set();
+        selectedStart = null;
+
+        placeWords();
+        fillRandomLetters();
+        renderGrid();
+        renderWordList();
+
+        totalCountEl.textContent = String(WORDS.length);
+        foundCountEl.textContent = '0';
+        statusEl.textContent = 'Click chu cai dau tien, sau do click chu cai cuoi cua tu.';
+        statusEl.classList.remove('success', 'error');
+
+        startTimer();
+    }
+
+    function placeWords() {
+        WORDS.forEach((word) => {
+            let placed = false;
+            for (let attempt = 0; attempt < 280 && !placed; attempt += 1) {
+                const direction = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+                const startX = Math.floor(Math.random() * GRID_SIZE);
+                const startY = Math.floor(Math.random() * GRID_SIZE);
+
+                if (!canPlaceWord(word, startX, startY, direction)) {
+                    continue;
+                }
+
+                for (let i = 0; i < word.length; i += 1) {
+                    const x = startX + direction.dx * i;
+                    const y = startY + direction.dy * i;
+                    grid[y][x] = word[i];
+                }
+
+                placements.push({ word, startX, startY, direction });
+                placed = true;
+            }
+
+            if (!placed) {
+                throw new Error('Khong the dat tu: ' + word);
+            }
+        });
+    }
+
+    function canPlaceWord(word, startX, startY, direction) {
+        for (let i = 0; i < word.length; i += 1) {
+            const x = startX + direction.dx * i;
+            const y = startY + direction.dy * i;
+            if (x < 0 || y < 0 || x >= GRID_SIZE || y >= GRID_SIZE) {
+                return false;
+            }
+            const existing = grid[y][x];
+            if (existing && existing !== word[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function fillRandomLetters() {
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        for (let y = 0; y < GRID_SIZE; y += 1) {
+            for (let x = 0; x < GRID_SIZE; x += 1) {
+                if (!grid[y][x]) {
+                    grid[y][x] = alphabet[Math.floor(Math.random() * alphabet.length)];
+                }
+            }
+        }
+    }
+
+    function renderGrid() {
+        gridContainer.innerHTML = '';
+        for (let y = 0; y < GRID_SIZE; y += 1) {
+            for (let x = 0; x < GRID_SIZE; x += 1) {
+                const cell = document.createElement('button');
+                cell.type = 'button';
+                cell.className = 'word-cell';
+                cell.dataset.x = String(x);
+                cell.dataset.y = String(y);
+                cell.textContent = grid[y][x];
+                cell.addEventListener('click', () => onCellClick(x, y));
+                gridContainer.appendChild(cell);
+            }
+        }
+    }
+
+    function renderWordList() {
+        wordListContainer.innerHTML = '';
+        WORDS.forEach((word) => {
+            const item = document.createElement('div');
+            item.className = 'word-item';
+            item.dataset.word = word;
+            item.textContent = word;
+            wordListContainer.appendChild(item);
+        });
+    }
+
+    function onCellClick(x, y) {
+        clearStartMarker();
+
+        if (!selectedStart) {
+            selectedStart = { x, y };
+            markStartCell(x, y);
+            statusEl.textContent = 'Tiep theo hay click chu cai cuoi cua cung tu.';
+            statusEl.classList.remove('error', 'success');
+            return;
+        }
+
+        const start = selectedStart;
+        selectedStart = null;
+
+        const path = buildPath(start, { x, y });
+        if (!path || path.length < 2) {
+            statusEl.textContent = 'Duong chon phai la duong thang.';
+            statusEl.classList.add('error');
+            statusEl.classList.remove('success');
+            return;
+        }
+
+        const word = path.map((point) => grid[point.y][point.x]).join('');
+        const reversedWord = word.split('').reverse().join('');
+        const matched = WORDS.find((candidate) => !foundWords.has(candidate) && (candidate === word || candidate === reversedWord));
+
+        if (!matched) {
+            statusEl.textContent = 'Khong trung tu trong danh sach. Thu lai.';
+            statusEl.classList.add('error');
+            statusEl.classList.remove('success');
+            return;
+        }
+
+        foundWords.add(matched);
+        highlightPath(path);
+        markWordFound(matched);
+        foundCountEl.textContent = String(foundWords.size);
+
+        statusEl.textContent = `Da tim thay: ${matched}.`;
+        statusEl.classList.remove('error');
+        statusEl.classList.add('success');
+
+        if (foundWords.size === WORDS.length) {
+            clearInterval(timerHandle);
+            statusEl.textContent = `Da tim het tu trong ${timeEl.textContent}.`;
+            statusEl.classList.add('success');
+        }
+    }
+
+    function buildPath(start, end) {
+        const dx = Math.sign(end.x - start.x);
+        const dy = Math.sign(end.y - start.y);
+
+        if (dx === 0 && dy === 0) {
+            return [start];
+        }
+
+        if (dx !== 0 && dy !== 0 && Math.abs(end.x - start.x) !== Math.abs(end.y - start.y)) {
+            return null;
+        }
+
+        if (dx === 0 && dy === 0) {
+            return null;
+        }
+
+        const path = [];
+        let x = start.x;
+        let y = start.y;
+
+        while (true) {
+            path.push({ x, y });
+            if (x === end.x && y === end.y) {
+                break;
+            }
+            x += dx;
+            y += dy;
+            if (x < 0 || y < 0 || x >= GRID_SIZE || y >= GRID_SIZE) {
+                return null;
+            }
+        }
+
+        return path;
+    }
+
+    function highlightPath(path) {
+        path.forEach((point) => {
+            const cell = getCellElement(point.x, point.y);
+            if (cell) {
+                cell.classList.add('found');
+            }
+        });
+    }
+
+    function markWordFound(word) {
+        const item = wordListContainer.querySelector(`[data-word="${word}"]`);
+        if (item) {
+            item.classList.add('found');
+        }
+    }
+
+    function markStartCell(x, y) {
+        const cell = getCellElement(x, y);
+        if (cell) {
+            cell.classList.add('start');
+        }
+    }
+
+    function clearStartMarker() {
+        gridContainer.querySelectorAll('.word-cell.start').forEach((cell) => {
+            cell.classList.remove('start');
+        });
+    }
+
+    function getCellElement(x, y) {
+        return gridContainer.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+    }
+
+    function startTimer() {
+        clearInterval(timerHandle);
+        startedAt = Date.now();
+        timeEl.textContent = '00:00';
+
+        timerHandle = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+            const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const seconds = String(elapsed % 60).padStart(2, '0');
+            timeEl.textContent = `${minutes}:${seconds}`;
+        }, 1000);
+    }
+
+    startGame();
+</script>
+</body>
+</html>

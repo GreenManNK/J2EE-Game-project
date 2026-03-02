@@ -316,21 +316,51 @@ try {
     if ($resolvedTunnelMode -eq "quick") {
         Write-Output "STEP=START_TUNNEL_QUICK"
         & $stopNamedTunnelScript | Out-Null
-        $quickOutput = @()
-        try {
-            $quickOutput = & $tunnelStartScript -LocalPort $Port -ContextPath "/Game" 2>&1
-        } catch {
-            throw ("Khoi dong quick tunnel that bai: {0}" -f $_.Exception.Message)
-        }
-        $quickOutput | ForEach-Object { Write-Output ([string]$_) }
+        $quickMaxAttempts = 3
+        $quickAttempt = 0
+        $quickLastError = $null
+        while ($quickAttempt -lt $quickMaxAttempts) {
+            $quickAttempt++
+            Write-Output ("QUICK_TUNNEL_ATTEMPT={0}/{1}" -f $quickAttempt, $quickMaxAttempts)
+            & $stopQuickTunnelScript | Out-Null
 
-        $publicBaseUrl = Get-QuickTunnelBaseUrl -LogPath $cfErrLog
-        if (-not $publicBaseUrl) {
-            throw "Khong lay duoc quick tunnel URL tu $cfErrLog"
+            $quickOutput = @()
+            try {
+                $quickOutput = & $tunnelStartScript -LocalPort $Port -ContextPath "/Game" 2>&1
+            } catch {
+                $quickLastError = "Khoi dong quick tunnel that bai: $($_.Exception.Message)"
+                if ($quickAttempt -lt $quickMaxAttempts) {
+                    Write-Warning ($quickLastError + " Dang thu lai...")
+                    Start-Sleep -Seconds 2
+                    continue
+                }
+                throw $quickLastError
+            }
+            $quickOutput | ForEach-Object { Write-Output ([string]$_) }
+
+            $publicBaseUrl = Get-QuickTunnelBaseUrl -LogPath $cfErrLog
+            $quickAliveAfterStart = Test-ProcessAliveByPidFile -PidFilePath $tunnelPidFile
+
+            if ([string]::IsNullOrWhiteSpace($publicBaseUrl)) {
+                $quickLastError = "Khong lay duoc quick tunnel URL tu $cfErrLog"
+            } elseif (-not $quickAliveAfterStart) {
+                $quickLastError = "Quick tunnel vua khoi dong nhung process da dung."
+            } else {
+                $publicBaseUrl = Normalize-BaseUrl -BaseUrl $publicBaseUrl -GameUrl $null
+                $publicGameUrl = Normalize-GameUrl -Url $publicBaseUrl
+                $tunnelLogErr = $cfErrLog
+                break
+            }
+
+            if ($quickAttempt -lt $quickMaxAttempts) {
+                Write-Warning ($quickLastError + " Dang thu lai...")
+                Start-Sleep -Seconds 2
+            }
         }
-        $publicBaseUrl = Normalize-BaseUrl -BaseUrl $publicBaseUrl -GameUrl $null
-        $publicGameUrl = Normalize-GameUrl -Url $publicBaseUrl
-        $tunnelLogErr = $cfErrLog
+
+        if ([string]::IsNullOrWhiteSpace($publicGameUrl)) {
+            throw ("Quick tunnel khong on dinh sau {0} lan thu. Loi cuoi: {1}" -f $quickMaxAttempts, $quickLastError)
+        }
     }
 
     $publicPingUrl = $publicGameUrl.TrimEnd("/") + "/api/connectivity/ping"

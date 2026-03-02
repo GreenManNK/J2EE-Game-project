@@ -26,9 +26,39 @@ function Get-LocalCloudflaredPath {
     return (Join-Path $repoRoot ".tools\cloudflared.exe")
 }
 
+function Get-LocalMavenWrapperPath {
+    $cmd = Join-Path $repoRoot "mvnw.cmd"
+    if (Test-Path $cmd) {
+        return $cmd
+    }
+    $sh = Join-Path $repoRoot "mvnw"
+    if (Test-Path $sh) {
+        return $sh
+    }
+    return $cmd
+}
+
+function Get-LocalGradleWrapperPath {
+    $bat = Join-Path $repoRoot "gradlew.bat"
+    if (Test-Path $bat) {
+        return $bat
+    }
+    $sh = Join-Path $repoRoot "gradlew"
+    if (Test-Path $sh) {
+        return $sh
+    }
+    return $bat
+}
+
 function Test-ToolAvailable([string]$CommandName) {
     if (Test-CommandExists $CommandName) {
         return $true
+    }
+    if ($CommandName -eq "mvn") {
+        return (Test-Path (Get-LocalMavenWrapperPath))
+    }
+    if ($CommandName -eq "gradle") {
+        return (Test-Path (Get-LocalGradleWrapperPath))
     }
     if ($CommandName -eq "cloudflared" -and $env:OS -eq "Windows_NT") {
         return (Test-Path (Get-LocalCloudflaredPath))
@@ -55,11 +85,38 @@ function Get-JavaMajorVersion {
 }
 
 function Get-MavenVersionText {
-    if (-not (Test-CommandExists "mvn")) { return $null }
+    $mavenCmd = $null
+    if (Test-CommandExists "mvn") {
+        $mavenCmd = "mvn"
+    } elseif (Test-Path (Get-LocalMavenWrapperPath)) {
+        $mavenCmd = (Get-LocalMavenWrapperPath)
+    } else {
+        return $null
+    }
     try {
-        $line = (& mvn -v 2>&1 | Select-Object -First 1)
+        $line = (& $mavenCmd -v 2>&1 | Select-Object -First 1)
         $s = [string]$line
         if ($s -match 'Apache Maven\s+(?<v>\d+(\.\d+){1,3})') {
+            return $Matches.v
+        }
+    } catch {
+    }
+    return $null
+}
+
+function Get-GradleVersionText {
+    $gradleCmd = $null
+    if (Test-CommandExists "gradle") {
+        $gradleCmd = "gradle"
+    } elseif (Test-Path (Get-LocalGradleWrapperPath)) {
+        $gradleCmd = (Get-LocalGradleWrapperPath)
+    } else {
+        return $null
+    }
+    try {
+        $raw = (& $gradleCmd -v 2>&1 | Out-String)
+        $s = [string]$raw
+        if ($s -match 'Gradle\s+(?<v>\d+(\.\d+){1,3})') {
             return $Matches.v
         }
     } catch {
@@ -189,6 +246,7 @@ function Try-InstallTool([string]$ToolKey) {
             $ids = switch ($ToolKey) {
                 "java21" { @("EclipseAdoptium.Temurin.21.JDK", "Microsoft.OpenJDK.21") }
                 "maven" { @("Apache.Maven") }
+                "gradle" { @("Gradle.Gradle") }
                 "git" { @("Git.Git") }
                 "node" { @("OpenJS.NodeJS.LTS") }
                 "cloudflared" { @("Cloudflare.cloudflared") }
@@ -207,6 +265,7 @@ function Try-InstallTool([string]$ToolKey) {
             $names = switch ($ToolKey) {
                 "java21" { @("temurin21") }
                 "maven" { @("maven") }
+                "gradle" { @("gradle") }
                 "git" { @("git") }
                 "node" { @("nodejs-lts") }
                 "cloudflared" { @("cloudflared") }
@@ -225,6 +284,7 @@ function Try-InstallTool([string]$ToolKey) {
             $names = switch ($ToolKey) {
                 "java21" { @("openjdk21") }
                 "maven" { @("maven") }
+                "gradle" { @("gradle") }
                 "git" { @("git") }
                 "node" { @("nodejs-lts") }
                 "cloudflared" { @("cloudflared") }
@@ -243,6 +303,7 @@ function Try-InstallTool([string]$ToolKey) {
             $names = switch ($ToolKey) {
                 "java21" { @("openjdk@21") }
                 "maven" { @("maven") }
+                "gradle" { @("gradle") }
                 "git" { @("git") }
                 "node" { @("node") }
                 "cloudflared" { @("cloudflared") }
@@ -259,6 +320,7 @@ function Try-InstallTool([string]$ToolKey) {
             $names = switch ($ToolKey) {
                 "java21" { @("openjdk-21-jdk") }
                 "maven" { @("maven") }
+                "gradle" { @("gradle") }
                 "git" { @("git") }
                 "node" { @("nodejs", "npm") }
                 "cloudflared" { @("cloudflared") }
@@ -279,6 +341,7 @@ function Try-InstallTool([string]$ToolKey) {
             $names = switch ($ToolKey) {
                 "java21" { @("java-21-openjdk-devel") }
                 "maven" { @("maven") }
+                "gradle" { @("gradle") }
                 "git" { @("git") }
                 "node" { @("nodejs", "npm") }
                 "cloudflared" { @("cloudflared") }
@@ -298,6 +361,7 @@ function Try-InstallTool([string]$ToolKey) {
             $names = switch ($ToolKey) {
                 "java21" { @("java-21-openjdk-devel") }
                 "maven" { @("maven") }
+                "gradle" { @("gradle") }
                 "git" { @("git") }
                 "node" { @("nodejs", "npm") }
                 "cloudflared" { @("cloudflared") }
@@ -313,6 +377,7 @@ function Try-InstallTool([string]$ToolKey) {
             $names = switch ($ToolKey) {
                 "java21" { @("jdk21-openjdk") }
                 "maven" { @("maven") }
+                "gradle" { @("gradle") }
                 "git" { @("git") }
                 "node" { @("nodejs", "npm") }
                 "cloudflared" { @("cloudflared") }
@@ -333,6 +398,7 @@ function Try-InstallTool([string]$ToolKey) {
             $names = switch ($ToolKey) {
                 "java21" { @("java-21-openjdk-devel") }
                 "maven" { @("maven") }
+                "gradle" { @("gradle") }
                 "git" { @("git") }
                 "node" { @("nodejs18", "nodejs") }
                 "cloudflared" { @("cloudflared") }
@@ -455,12 +521,13 @@ if ($pm) {
     Write-WarnLine "Khong phat hien package manager ho tro (chi co the check, khong cai tu dong)."
 }
 
-if (-not (Ensure-Tool -DisplayName "Java (JDK)" -CommandName "java" -InstallerKey "java21" -Required $true -VersionGetter { Get-JavaMajorVersion } -MinVersion "21")) {
-    $requiredFailures.Add("Java 21+")
+if (-not (Ensure-Tool -DisplayName "Java (JDK)" -CommandName "java" -InstallerKey "java21" -Required $true -VersionGetter { Get-JavaMajorVersion } -MinVersion "17")) {
+    $requiredFailures.Add("Java 17+")
 }
-if (-not (Ensure-Tool -DisplayName "Maven" -CommandName "mvn" -InstallerKey "maven" -Required $true -VersionGetter { Get-MavenVersionText } -MinVersion "3.9.0")) {
-    $requiredFailures.Add("Maven 3.9+")
+if (-not (Ensure-Tool -DisplayName "Maven (hoac Maven Wrapper)" -CommandName "mvn" -InstallerKey "maven" -Required $true -VersionGetter { Get-MavenVersionText } -MinVersion "3.8.6")) {
+    $requiredFailures.Add("Maven 3.8.6+ (hoac mvnw)")
 }
+[void](Ensure-Tool -DisplayName "Gradle (hoac Gradle Wrapper)" -CommandName "gradle" -InstallerKey "gradle" -Required $false -VersionGetter { Get-GradleVersionText } -MinVersion "8.7.0")
 [void](Ensure-Tool -DisplayName "Git" -CommandName "git" -InstallerKey "git" -Required $false -VersionGetter $null -MinVersion "")
 [void](Ensure-Tool -DisplayName "Node.js" -CommandName "node" -InstallerKey "node" -Required $false -VersionGetter { Get-NodeVersionText } -MinVersion "18.0.0")
 
@@ -493,6 +560,8 @@ if ($Db -eq "postgres") {
 Write-Title "Quick Start"
 Write-Host "Windows (PowerShell): powershell -ExecutionPolicy Bypass -File .\scripts\dev-run-local.ps1" -ForegroundColor White
 Write-Host "macOS/Linux (bash):  bash ./scripts/dev-run-local.sh" -ForegroundColor White
+Write-Host "Maven wrapper: ./mvnw spring-boot:run (macOS/Linux) | .\mvnw.cmd spring-boot:run (Windows)" -ForegroundColor White
+Write-Host "Gradle wrapper: ./gradlew bootRun (macOS/Linux) | .\gradlew.bat bootRun (Windows)" -ForegroundColor White
 if ($Mode -eq "public") {
     Write-Host "Public mode (Windows): cmd /c scripts\manual-start-public.cmd" -ForegroundColor White
 }

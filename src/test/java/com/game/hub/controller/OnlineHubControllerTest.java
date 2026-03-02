@@ -62,8 +62,8 @@ class OnlineHubControllerTest {
         @SuppressWarnings("unchecked")
         List<OnlineHubController.RoomRow> rooms = (List<OnlineHubController.RoomRow>) result.get("rooms");
         assertEquals(1, rooms.size());
-        assertEquals("Normal_123", rooms.getFirst().roomId());
-        assertEquals(2, rooms.getFirst().playerLimit());
+        assertEquals("Normal_123", rooms.get(0).roomId());
+        assertEquals(2, rooms.get(0).playerLimit());
     }
 
     @Test

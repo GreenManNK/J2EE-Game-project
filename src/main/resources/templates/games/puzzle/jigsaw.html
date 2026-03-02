@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Jigsaw Puzzle')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-puzzle-jigsaw')}"></div>
+
+<main class="hub-portal-shell hub-portal-theme-puzzle">
+    <section class="hub-portal-hero">
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
+
+        <div class="hub-portal-hero__main">
+            <div class="hub-portal-eyebrow">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+                <span>JIGSAW / TILE PUZZLE</span>
+            </div>
+            <h1 class="hub-portal-title">Jigsaw Puzzle</h1>
+            <p class="hub-portal-subtitle">Chon manh ghep trong khay roi dat vao o trong tren ban choi.</p>
+
+            <div class="hub-portal-chip-row">
+                <span class="hub-portal-chip is-live"><i class="bi bi-shuffle"></i> Khoi tao ngau nhien</span>
+                <span class="hub-portal-chip"><i class="bi bi-grid-fill"></i> Ho tro 3x3 den 5x5</span>
+                <span class="hub-portal-chip"><i class="bi bi-stopwatch-fill"></i> Co move/time/progress</span>
+            </div>
+
+            <div class="puzzle-controls">
+                <label for="jigsaw-size" class="form-label">Do kho</label>
+                <select id="jigsaw-size" class="form-select">
+                    <option value="3">3 x 3</option>
+                    <option value="4">4 x 4</option>
+                    <option value="5">5 x 5</option>
+                </select>
+                <button id="new-game-btn" class="hub-portal-action hub-portal-action--primary">Ban moi</button>
+            </div>
+
+            <div class="puzzle-hud">
+                <div><span>So buoc</span><strong id="jigsaw-moves">0</strong></div>
+                <div><span>Thoi gian</span><strong id="jigsaw-time">00:00</strong></div>
+                <div><span>Da dat</span><strong id="jigsaw-progress">0%</strong></div>
+            </div>
+
+            <div class="jigsaw-layout">
+                <section>
+                    <h2 class="puzzle-section-title">Ban choi</h2>
+                    <div id="puzzle-container" class="jigsaw-board"></div>
+                </section>
+                <section>
+                    <h2 class="puzzle-section-title">Khay manh ghep</h2>
+                    <div id="pieces-container" class="jigsaw-tray"></div>
+                </section>
+                <section>
+                    <h2 class="puzzle-section-title">Anh mau</h2>
+                    <div id="jigsaw-preview" class="jigsaw-preview"></div>
+                </section>
+            </div>
+
+            <p id="jigsaw-status" class="puzzle-note"></p>
+        </div>
+
+        <aside class="hub-portal-hero__side">
+            <section class="hub-portal-panel">
+                <div class="hub-portal-panel__head">
+                    <div>
+                        <div class="hub-portal-panel__label">Luat choi</div>
+                        <div class="hub-portal-panel__title">Dat dung manh vao vi tri dung</div>
+                    </div>
+                    <span class="hub-portal-pill">Drag style</span>
+                </div>
+                <ul class="hub-portal-bullet-list mb-0">
+                    <li>Click 1 manh trong khay de chon.</li>
+                    <li>Click vao 1 o trong tren ban de dat manh.</li>
+                    <li>Co the click lai manh tren ban de tra ve khay.</li>
+                </ul>
+            </section>
+            <div class="hub-portal-mini-grid">
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Meo nhanh</div>
+                    <ul class="hub-portal-bullet-list mb-0">
+                        <li>Bat dau tu goc va canh de de canh chinh.</li>
+                        <li>Tang do kho sau khi da quen ban nho.</li>
+                    </ul>
+                </section>
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Dieu huong</div>
+                    <div class="hub-portal-inline-actions">
+                        <a th:href="@{/games/puzzle}" class="hub-portal-inline-btn">Puzzle hub</a>
+                        <a th:href="@{/games/puzzle/sliding}" class="hub-portal-inline-btn">Sliding</a>
+                        <a th:href="@{/games/puzzle/word}" class="hub-portal-inline-btn">Word</a>
+                    </div>
+                </section>
+            </div>
+        </aside>
+    </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-puzzle-jigsaw')}"></th:block>
+<style>
+    .puzzle-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .puzzle-controls .form-select {
+        max-width: 140px;
+    }
+
+    .puzzle-hud {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .puzzle-hud > div {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 0.55rem 0.65rem;
+        background: rgba(255, 255, 255, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .puzzle-hud span {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        opacity: 0.85;
+    }
+
+    .jigsaw-layout {
+        display: grid;
+        gap: 0.9rem;
+        grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) 180px;
+    }
+
+    .puzzle-section-title {
+        margin: 0 0 0.45rem;
+        font-size: 0.95rem;
+    }
+
+    .jigsaw-board {
+        display: grid;
+        gap: 4px;
+        background: rgba(15, 23, 42, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 14px;
+        padding: 6px;
+    }
+
+    .jigsaw-cell {
+        border: 1px dashed rgba(255, 255, 255, 0.35);
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 8px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .jigsaw-piece {
+        width: 100%;
+        height: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        border-radius: 8px;
+        cursor: pointer;
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+
+    .jigsaw-piece.selected {
+        outline: 3px solid rgba(56, 189, 248, 0.95);
+        outline-offset: 1px;
+    }
+
+    .jigsaw-tray {
+        min-height: 220px;
+        display: grid;
+        gap: 6px;
+        grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
+        padding: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 14px;
+        background: rgba(2, 6, 23, 0.32);
+    }
+
+    .jigsaw-preview {
+        width: 180px;
+        aspect-ratio: 1/1;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        background-size: cover;
+        background-position: center;
+    }
+
+    .puzzle-note {
+        margin: 0.8rem 0 0;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .puzzle-note.success {
+        color: #bbf7d0;
+    }
+
+    @media (max-width: 980px) {
+        .jigsaw-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .jigsaw-preview {
+            width: min(220px, 100%);
+        }
+    }
+</style>
+<script>
+    const puzzleContainer = document.getElementById('puzzle-container');
+    const piecesContainer = document.getElementById('pieces-container');
+    const previewEl = document.getElementById('jigsaw-preview');
+    const movesEl = document.getElementById('jigsaw-moves');
+    const timeEl = document.getElementById('jigsaw-time');
+    const progressEl = document.getElementById('jigsaw-progress');
+    const statusEl = document.getElementById('jigsaw-status');
+
+    const sizeSelect = document.getElementById('jigsaw-size');
+    const newGameBtn = document.getElementById('new-game-btn');
+
+    const imageUrl = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720">
+            <defs>
+                <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#0369a1"/>
+                    <stop offset="100%" stop-color="#22c55e"/>
+                </linearGradient>
+            </defs>
+            <rect width="720" height="720" fill="url(#g)"/>
+            <circle cx="190" cy="210" r="120" fill="rgba(255,255,255,0.25)"/>
+            <circle cx="560" cy="520" r="145" fill="rgba(255,255,255,0.22)"/>
+            <text x="360" y="390" text-anchor="middle" fill="#ffffff" font-size="108" font-family="Verdana" font-weight="700">JIGSAW</text>
+        </svg>`
+    );
+
+    let boardSize = 3;
+    let boardState = [];
+    let selectedPieceId = null;
+    let moveCount = 0;
+    let startTime;
+    let timerHandle;
+
+    newGameBtn.addEventListener('click', startNewGame);
+    sizeSelect.addEventListener('change', startNewGame);
+
+    function startNewGame() {
+        boardSize = parseInt(sizeSelect.value, 10);
+        const pieceCount = boardSize * boardSize;
+
+        boardState = Array(pieceCount).fill(null);
+        selectedPieceId = null;
+        moveCount = 0;
+        startTime = Date.now();
+        resetTimer();
+        statusEl.textContent = 'Chon 1 manh trong khay, sau do click vao o tren ban de dat.';
+        statusEl.classList.remove('success');
+
+        renderBoard();
+        renderTray(shuffle(Array.from({ length: pieceCount }, (_, i) => i)));
+        updateHud();
+        previewEl.style.backgroundImage = `url(${imageUrl})`;
+    }
+
+    function renderBoard() {
+        puzzleContainer.innerHTML = '';
+        puzzleContainer.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+
+        for (let i = 0; i < boardState.length; i += 1) {
+            const cell = document.createElement('button');
+            cell.type = 'button';
+            cell.className = 'jigsaw-cell';
+            cell.style.aspectRatio = '1 / 1';
+            cell.dataset.index = String(i);
+            cell.addEventListener('click', () => handleBoardCellClick(i));
+            puzzleContainer.appendChild(cell);
+        }
+
+        repaintBoardPieces();
+    }
+
+    function renderTray(pieceIds) {
+        piecesContainer.innerHTML = '';
+        pieceIds.forEach((pieceId) => {
+            const piece = createPieceElement(pieceId);
+            piece.addEventListener('click', () => selectPiece(pieceId));
+            piecesContainer.appendChild(piece);
+        });
+        repaintSelection();
+    }
+
+    function createPieceElement(pieceId) {
+        const piece = document.createElement('button');
+        piece.type = 'button';
+        piece.className = 'jigsaw-piece';
+        piece.dataset.pieceId = String(pieceId);
+
+        const x = pieceId % boardSize;
+        const y = Math.floor(pieceId / boardSize);
+        const sizePercent = boardSize * 100;
+        piece.style.backgroundImage = `url(${imageUrl})`;
+        piece.style.backgroundSize = `${sizePercent}% ${sizePercent}%`;
+        piece.style.backgroundPosition = `${(x / (boardSize - 1 || 1)) * 100}% ${(y / (boardSize - 1 || 1)) * 100}%`;
+
+        return piece;
+    }
+
+    function selectPiece(pieceId) {
+        selectedPieceId = pieceId;
+        repaintSelection();
+    }
+
+    function repaintSelection() {
+        piecesContainer.querySelectorAll('.jigsaw-piece').forEach((piece) => {
+            const pid = parseInt(piece.dataset.pieceId, 10);
+            piece.classList.toggle('selected', pid === selectedPieceId);
+        });
+    }
+
+    function handleBoardCellClick(cellIndex) {
+        const existingPiece = boardState[cellIndex];
+
+        if (selectedPieceId === null && existingPiece !== null) {
+            returnPieceToTray(existingPiece);
+            boardState[cellIndex] = null;
+            moveCount += 1;
+            repaintBoardPieces();
+            updateHud();
+            return;
+        }
+
+        if (selectedPieceId === null || existingPiece !== null) {
+            return;
+        }
+
+        const selectedElement = piecesContainer.querySelector(`[data-piece-id="${selectedPieceId}"]`);
+        if (!selectedElement) {
+            selectedPieceId = null;
+            return;
+        }
+
+        boardState[cellIndex] = selectedPieceId;
+        selectedElement.remove();
+        selectedPieceId = null;
+
+        moveCount += 1;
+        repaintBoardPieces();
+        updateHud();
+        checkWin();
+    }
+
+    function repaintBoardPieces() {
+        const boardCells = puzzleContainer.querySelectorAll('.jigsaw-cell');
+        boardCells.forEach((cell, index) => {
+            cell.innerHTML = '';
+            const pieceId = boardState[index];
+            if (pieceId === null) {
+                return;
+            }
+            const piece = createPieceElement(pieceId);
+            piece.addEventListener('click', (event) => {
+                event.stopPropagation();
+                returnPieceToTray(pieceId);
+                boardState[index] = null;
+                moveCount += 1;
+                repaintBoardPieces();
+                updateHud();
+            });
+            cell.appendChild(piece);
+        });
+        repaintSelection();
+    }
+
+    function returnPieceToTray(pieceId) {
+        const piece = createPieceElement(pieceId);
+        piece.addEventListener('click', () => selectPiece(pieceId));
+        piecesContainer.appendChild(piece);
+    }
+
+    function checkWin() {
+        const solved = boardState.every((pieceId, index) => pieceId === index);
+        if (!solved) {
+            return;
+        }
+
+        clearInterval(timerHandle);
+        statusEl.textContent = `Ban da giai xong trong ${moveCount} buoc va ${timeEl.textContent}.`;
+        statusEl.classList.add('success');
+    }
+
+    function updateHud() {
+        movesEl.textContent = String(moveCount);
+
+        const total = boardState.length;
+        const placed = boardState.filter((p) => p !== null).length;
+        const percent = total === 0 ? 0 : Math.round((placed / total) * 100);
+        progressEl.textContent = `${percent}%`;
+    }
+
+    function resetTimer() {
+        clearInterval(timerHandle);
+        timerHandle = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const seconds = String(elapsed % 60).padStart(2, '0');
+            timeEl.textContent = `${minutes}:${seconds}`;
+        }, 1000);
+        timeEl.textContent = '00:00';
+    }
+
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    startNewGame();
+</script>
+</body>
+</html>

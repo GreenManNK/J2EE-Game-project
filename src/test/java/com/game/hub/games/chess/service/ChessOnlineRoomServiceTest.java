@@ -96,8 +96,8 @@ class ChessOnlineRoomServiceTest {
         assertEquals("WAITING", snapshot.status());
         assertNull(snapshot.currentTurnUserId());
         assertEquals(1, service.availableRooms().size());
-        assertEquals("CHESS-3", service.availableRooms().getFirst().roomId());
-        assertEquals("w", snapshot.players().getFirst().color());
+        assertEquals("CHESS-3", service.availableRooms().get(0).roomId());
+        assertEquals("w", snapshot.players().get(0).color());
     }
 
     @Test
@@ -114,7 +114,7 @@ class ChessOnlineRoomServiceTest {
         assertEquals("GAME_OVER", surrender.room().status());
         assertNull(surrender.room().currentTurnUserId());
         assertTrue(surrender.room().statusMessage().contains("dau hang"));
-        assertEquals("Trang dau hang", surrender.room().moveHistory().getLast());
+        assertEquals("Trang dau hang", surrender.room().moveHistory().get(surrender.room().moveHistory().size() - 1));
 
         ChessOnlineRoomService.ActionResult moveAfterSurrender = service.move("CHESS-4", "blackUser", 1, 4, 3, 4, null);
         assertFalse(moveAfterSurrender.ok());

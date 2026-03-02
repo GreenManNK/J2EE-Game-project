@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Quiz Battle')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-quiz')}"></div>
+
+<main class="hub-portal-shell hub-portal-theme-quiz">
+    <section class="hub-portal-hero">
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
+
+        <div class="hub-portal-hero__main">
+            <div class="hub-portal-eyebrow">
+                <i class="bi bi-patch-question-fill"></i>
+                <span>QUIZ / REALTIME ROOM</span>
+            </div>
+
+            <h1 class="hub-portal-title">Quiz Battle theo phong realtime</h1>
+            <p class="hub-portal-subtitle">
+                Tra loi nhanh, dung va on dinh de leo bang xep hang. Trang nay da dong bo giao dien
+                phong choi voi cac game multiplayer khac trong web.
+            </p>
+
+            <div class="hub-portal-chip-row">
+                <span class="hub-portal-chip is-live"><i class="bi bi-lightning-charge-fill"></i> Tra loi +2 / sai -1</span>
+                <span class="hub-portal-chip"><i class="bi bi-stopwatch-fill"></i> Dem nguoc tung cau</span>
+                <span class="hub-portal-chip"><i class="bi bi-people-fill"></i> Ho tro spectator</span>
+                <span class="hub-portal-chip"><i class="bi bi-bar-chart-fill"></i> Bang xep hang theo diem</span>
+            </div>
+
+            <details class="game-rules">
+                <summary>Luat choi va cach tinh diem</summary>
+                <ul>
+                    <li>Moi cau tra loi dung: +2 diem.</li>
+                    <li>Moi cau sai hoac het gio: -1 diem (khong am).</li>
+                    <li>Moi nguoi chi gui 1 dap an cho moi cau.</li>
+                    <li>Cau typed answer bo qua hoa/thuong va khoang trang thua.</li>
+                </ul>
+            </details>
+
+            <div id="room-selection" class="quiz-room-panel">
+                <div class="quiz-lobby-head">
+                    <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">Tao phong</button>
+                    <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
+                </div>
+                <div class="hub-portal-action quiz-join-row">
+                    <input type="text" id="room-id-input" placeholder="Nhap Room ID" maxlength="64">
+                    <button id="join-room-btn" class="hub-portal-action__icon" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
+                    <button id="spectate-room-btn" class="hub-portal-action__icon" title="Xem tran"><i class="bi bi-eye"></i></button>
+                </div>
+                <div id="quiz-room-list" class="quiz-room-list"></div>
+                <p id="connection-status" class="quiz-status-note">Chua ket noi.</p>
+            </div>
+
+            <div id="quiz-container" class="quiz-shell" hidden>
+                <div class="quiz-room-tools">
+                    <button id="copy-room-btn" class="hub-portal-action">Sao chep Room ID</button>
+                    <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
+                    <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
+                </div>
+
+                <div class="quiz-hud">
+                    <div class="quiz-hud__item"><span>Phong</span><strong id="room-id-value">-</strong></div>
+                    <div class="quiz-hud__item"><span>Nguoi choi</span><strong id="player-count-value">0</strong></div>
+                    <div class="quiz-hud__item"><span>Nguoi xem</span><strong id="spectator-count-value">0</strong></div>
+                    <div class="quiz-hud__item"><span>Thoi gian</span><strong id="timer">15s</strong></div>
+                </div>
+
+                <div class="quiz-progress">
+                    <div class="quiz-progress__meta">
+                        <span id="question-index">Cau hoi 0/0</span>
+                        <span>Phim nhanh: 1-4, Enter</span>
+                    </div>
+                    <div class="quiz-progress__track">
+                        <div id="quiz-progress-fill" class="quiz-progress__fill"></div>
+                    </div>
+                </div>
+
+                <section class="quiz-question-card">
+                    <h2 id="question" class="quiz-question">Dang cho chu phong bat dau...</h2>
+                    <div id="options" class="quiz-options"></div>
+                    <div class="quiz-actions">
+                        <button id="submit-answer-btn" class="hub-portal-action hub-portal-action--primary">Gui dap an</button>
+                        <button id="start-game-btn" class="hub-portal-action">Bat dau tran</button>
+                    </div>
+                    <p id="question-feedback" class="quiz-status-note"></p>
+                </section>
+            </div>
+        </div>
+
+        <aside class="hub-portal-hero__side">
+            <section class="hub-portal-panel">
+                <div class="hub-portal-panel__head">
+                    <div>
+                        <div class="hub-portal-panel__label">Luot choi</div>
+                        <div class="hub-portal-panel__title">Flow moi van quiz</div>
+                    </div>
+                    <span class="hub-portal-pill">Realtime</span>
+                </div>
+                <ol class="hub-portal-inline-list mb-0">
+                    <li><span>Tao/JOIN room</span><strong>Lobby</strong></li>
+                    <li><span>Chu phong bat dau</span><strong>Bat dau</strong></li>
+                    <li><span>Tra loi + chot ket qua</span><strong>Per question</strong></li>
+                    <li><span>Tong ket diem</span><strong>Bang ket qua</strong></li>
+                </ol>
+            </section>
+
+            <div class="hub-portal-mini-grid">
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Meo thao tac nhanh</div>
+                    <ul class="hub-portal-bullet-list mb-0">
+                        <li>Nhap 1-4 de chon dap an trac nghiem.</li>
+                        <li>Enter de gui dap an ngay.</li>
+                        <li>Nguoi xem khong gui dap an.</li>
+                    </ul>
+                </section>
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Dieu huong</div>
+                    <div class="hub-portal-inline-actions">
+                        <a th:href="@{/games}" class="hub-portal-inline-btn">Thu vien</a>
+                        <a th:href="@{/games/typing}" class="hub-portal-inline-btn">Typing</a>
+                        <a th:href="@{/games/cards/blackjack}" class="hub-portal-inline-btn">Blackjack</a>
+                    </div>
+                </section>
+            </div>
+        </aside>
+    </section>
+
+    <section class="hub-portal-layout">
+        <div class="hub-portal-main">
+            <section class="hub-portal-card">
+                <div class="hub-portal-card__head">
+                    <h2>Bang xep hang quiz</h2>
+                    <span class="hub-portal-tag">Top diem</span>
+                </div>
+                <ol id="high-scores-list" class="hub-portal-bullet-list"></ol>
+            </section>
+        </div>
+        <aside class="hub-portal-side">
+            <section class="hub-portal-card">
+                <h3>Noi dung da cap nhat</h3>
+                <ul class="hub-portal-check-list">
+                    <li><i class="bi bi-check-circle-fill"></i> Co room list, join va spectate</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Auto-join qua link moi phong</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Thang diem +2/-1 va floor 0</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Typed answer da chuan hoa dau vao</li>
+                </ul>
+            </section>
+        </aside>
+    </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-quiz')}"></th:block>
+<style>
+    .quiz-room-panel {
+        display: grid;
+        gap: 0.75rem;
+        max-width: 860px;
+    }
+
+    .game-rules {
+        margin: 0.55rem 0 0.8rem;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.08);
+        padding: 0.55rem 0.7rem;
+    }
+
+    .game-rules summary {
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .game-rules ul {
+        margin: 0.45rem 0 0;
+        padding-left: 1.1rem;
+        display: grid;
+        gap: 0.25rem;
+        font-size: 0.88rem;
+    }
+
+    .quiz-lobby-head {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+    }
+
+    .quiz-join-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .quiz-room-list {
+        display: grid;
+        gap: 0.45rem;
+        max-height: 200px;
+        overflow: auto;
+        padding-right: 4px;
+    }
+
+    .quiz-room-item {
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 0.5rem 0.6rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.55rem;
+        font-size: 0.85rem;
+    }
+
+    .quiz-room-actions {
+        display: flex;
+        gap: 0.4rem;
+    }
+
+    .quiz-shell {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .quiz-room-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .quiz-hud {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 0.5rem;
+    }
+
+    .quiz-hud__item {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 0.65rem 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .quiz-hud__item span {
+        font-size: 0.75rem;
+        opacity: 0.85;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .quiz-hud__item strong {
+        font-size: 1rem;
+    }
+
+    .quiz-progress {
+        display: grid;
+        gap: 0.35rem;
+    }
+
+    .quiz-progress__meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    .quiz-progress__track {
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        overflow: hidden;
+    }
+
+    .quiz-progress__fill {
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, #f59e0b, #ef4444);
+        transition: width 0.25s ease;
+    }
+
+    .quiz-question-card {
+        background:
+            radial-gradient(circle at 15% 10%, rgba(73, 148, 255, 0.18), transparent 38%),
+            radial-gradient(circle at 85% 12%, rgba(255, 96, 196, 0.16), transparent 42%),
+            linear-gradient(160deg, rgba(63, 20, 121, 0.88), rgba(42, 13, 93, 0.92));
+        border: 1px solid rgba(180, 126, 255, 0.42);
+        border-radius: 18px;
+        padding: 1.05rem;
+        display: grid;
+        gap: 1rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+            inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+            0 16px 34px rgba(19, 4, 45, 0.38);
+    }
+
+    .quiz-question-card::before,
+    .quiz-question-card::after {
+        content: "";
+        position: absolute;
+        background: linear-gradient(90deg, rgba(132, 208, 255, 0.65), rgba(255, 141, 212, 0.65));
+        opacity: 0.42;
+        pointer-events: none;
+    }
+
+    .quiz-question-card::before {
+        left: 0;
+        right: 0;
+        top: 33%;
+        height: 1px;
+    }
+
+    .quiz-question-card::after {
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 1px;
+    }
+
+    .quiz-question {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #f8ebff;
+        position: relative;
+        z-index: 1;
+    }
+
+    .quiz-options {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.7rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .quiz-option {
+        display: block;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .quiz-option__body {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.8rem;
+        border: 1.5px solid rgba(249, 206, 120, 0.84);
+        border-radius: 999px;
+        background: linear-gradient(145deg, rgba(72, 21, 125, 0.74), rgba(41, 12, 88, 0.86));
+        color: #ffeebf;
+        box-shadow:
+            inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+            0 8px 14px rgba(15, 5, 36, 0.28);
+        transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+    }
+
+    .quiz-option__key {
+        width: 22px;
+        height: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        border: 1px solid rgba(127, 217, 255, 0.78);
+        background: rgba(52, 15, 106, 0.78);
+        color: #95deff;
+        font-size: 0.72rem;
+        font-weight: 700;
+        flex: 0 0 auto;
+    }
+
+    .quiz-option__text {
+        color: #f8ebff;
+        line-height: 1.3;
+    }
+
+    .quiz-options.is-multi .quiz-option__body {
+        border-radius: 0;
+        clip-path: polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%);
+        padding-left: 1rem;
+        padding-right: 1rem;
+        min-height: 50px;
+    }
+
+    .quiz-option input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .quiz-option input:checked + .quiz-option__body {
+        border-color: #8ae2ff;
+        background: linear-gradient(145deg, rgba(99, 29, 166, 0.84), rgba(45, 14, 98, 0.94));
+        box-shadow:
+            inset 0 0 0 1px rgba(142, 228, 255, 0.22),
+            0 0 0 3px rgba(118, 209, 255, 0.18),
+            0 10px 18px rgba(20, 8, 48, 0.34);
+        transform: translateY(-1px);
+    }
+
+    .quiz-option input:focus-visible + .quiz-option__body {
+        outline: 2px solid rgba(137, 224, 255, 0.72);
+        outline-offset: 2px;
+    }
+
+    .quiz-option input:disabled + .quiz-option__body {
+        opacity: 0.66;
+        cursor: not-allowed;
+    }
+
+    .quiz-options.is-typed {
+        grid-template-columns: 1fr;
+    }
+
+    .quiz-typed-input {
+        width: 100%;
+        border-radius: 999px;
+        border: 1.5px solid rgba(249, 206, 120, 0.84);
+        background: rgba(40, 13, 87, 0.9);
+        color: #f6eaff;
+        padding: 0.66rem 0.95rem;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    }
+
+    .quiz-typed-input::placeholder {
+        color: rgba(226, 206, 248, 0.72);
+    }
+
+    .quiz-typed-input:focus {
+        border-color: #8ae2ff;
+        box-shadow: 0 0 0 3px rgba(120, 213, 255, 0.2);
+        outline: none;
+    }
+
+    .quiz-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .quiz-status-note {
+        margin: 0;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .quiz-status-note.error {
+        color: #fecaca;
+    }
+
+    .quiz-status-note.success {
+        color: #bbf7d0;
+    }
+
+    .quiz-result-list {
+        margin: 0;
+        padding-left: 1.1rem;
+        display: grid;
+        gap: 0.35rem;
+    }
+
+    @media (max-width: 640px) {
+        .quiz-question {
+            font-size: 1.05rem;
+        }
+
+        .quiz-progress__meta {
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .quiz-options {
+            grid-template-columns: 1fr;
+            gap: 0.55rem;
+        }
+
+        .quiz-option__body {
+            min-height: 44px;
+            padding: 0.45rem 0.66rem;
+        }
+    }
+</style>
+<script>
+    const createRoomBtn = document.getElementById('create-room-btn');
+    const joinRoomBtn = document.getElementById('join-room-btn');
+    const spectateRoomBtn = document.getElementById('spectate-room-btn');
+    const refreshRoomListBtn = document.getElementById('refresh-room-list-btn');
+    const roomIdInput = document.getElementById('room-id-input');
+    const roomListEl = document.getElementById('quiz-room-list');
+    const roomSelection = document.getElementById('room-selection');
+    const connectionStatusEl = document.getElementById('connection-status');
+
+    const quizContainer = document.getElementById('quiz-container');
+    const roomIdValue = document.getElementById('room-id-value');
+    const playerCountValue = document.getElementById('player-count-value');
+    const spectatorCountValue = document.getElementById('spectator-count-value');
+    const questionIndexEl = document.getElementById('question-index');
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const timerEl = document.getElementById('timer');
+    const questionFeedbackEl = document.getElementById('question-feedback');
+    const progressFillEl = document.getElementById('quiz-progress-fill');
+
+    const copyRoomBtn = document.getElementById('copy-room-btn');
+    const shareRoomBtn = document.getElementById('share-room-btn');
+    const leaveRoomBtn = document.getElementById('leave-room-btn');
+
+    const startGameBtn = document.getElementById('start-game-btn');
+    const submitAnswerBtn = document.getElementById('submit-answer-btn');
+    const highScoresList = document.getElementById('high-scores-list');
+
+    const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+        ? window.CaroUrl.path
+        : (value) => value;
+    const appContextPath = (window.CaroUrl && typeof window.CaroUrl.contextPath === 'string')
+        ? window.CaroUrl.contextPath
+        : '';
+
+    const QUESTION_SECONDS = 15;
+
+    let socket;
+    let currentQuestionType;
+    let isSpectator = false;
+    let questionNumber = 0;
+    let totalQuestions = 0;
+    let hasSubmittedCurrent = false;
+    let countdown = QUESTION_SECONDS;
+    let countdownTimer;
+    let currentRoomId = '';
+    let roomListTimer;
+
+    function buildWsUrl(path) {
+        const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const normalizedPath = path.startsWith('/') ? path : ('/' + path);
+        return protocol + '://' + window.location.host + appContextPath + normalizedPath;
+    }
+
+    function setStatus(message, type) {
+        connectionStatusEl.textContent = message;
+        connectionStatusEl.classList.remove('error', 'success');
+        if (type) {
+            connectionStatusEl.classList.add(type);
+        }
+    }
+
+    function setQuestionFeedback(message, type) {
+        questionFeedbackEl.textContent = message;
+        questionFeedbackEl.classList.remove('error', 'success');
+        if (type) {
+            questionFeedbackEl.classList.add(type);
+        }
+    }
+
+    function openSocket(actionPayload) {
+        if (socket && socket.readyState <= 1) {
+            socket.close();
+        }
+        stopCountdown();
+        setStatus('Dang ket noi...', '');
+        socket = new WebSocket(buildWsUrl('/game/quiz'));
+        socket.onopen = () => {
+            setStatus('Da ket noi.', 'success');
+            socket.send(JSON.stringify(actionPayload));
+        };
+        setupSocket();
+    }
+
+    function safeSend(payload) {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify(payload));
+            return true;
+        }
+        return false;
+    }
+
+    createRoomBtn.addEventListener('click', () => {
+        isSpectator = false;
+        openSocket({ action: 'create' });
+    });
+
+    joinRoomBtn.addEventListener('click', () => {
+        const roomId = roomIdInput.value.trim();
+        if (!roomId) {
+            setStatus('Can nhap Room ID.', 'error');
+            return;
+        }
+        isSpectator = false;
+        openSocket({ action: 'join', roomId });
+    });
+
+    spectateRoomBtn.addEventListener('click', () => {
+        const roomId = roomIdInput.value.trim();
+        if (!roomId) {
+            setStatus('Can nhap Room ID.', 'error');
+            return;
+        }
+        isSpectator = true;
+        openSocket({ action: 'spectate', roomId });
+    });
+
+    refreshRoomListBtn.addEventListener('click', () => {
+        fetchRoomList(true);
+    });
+
+    copyRoomBtn.addEventListener('click', async () => {
+        if (!currentRoomId) {
+            setQuestionFeedback('Room ID dang rong.', 'error');
+            return;
+        }
+        const ok = await copyToClipboard(currentRoomId);
+        setQuestionFeedback(ok ? 'Da copy Room ID.' : 'Khong the copy Room ID.', ok ? 'success' : 'error');
+    });
+
+    shareRoomBtn.addEventListener('click', async () => {
+        if (!currentRoomId) {
+            setQuestionFeedback('Room ID dang rong.', 'error');
+            return;
+        }
+        const inviteUrl = buildInviteUrl(currentRoomId, isSpectator ? 'spectate' : 'join');
+        const ok = await copyToClipboard(inviteUrl);
+        setQuestionFeedback(ok ? 'Da copy link moi.' : 'Khong the copy link moi.', ok ? 'success' : 'error');
+    });
+
+    leaveRoomBtn.addEventListener('click', () => {
+        leaveRoom();
+    });
+
+    startGameBtn.addEventListener('click', () => {
+        if (safeSend({ action: 'start' })) {
+            setQuestionFeedback('Chu phong da bat dau tran.', 'success');
+        }
+    });
+
+    submitAnswerBtn.addEventListener('click', () => {
+        submitCurrentAnswer(true);
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (quizContainer.hidden || isSpectator) {
+            return;
+        }
+        if (event.key === 'Enter') {
+            const activeEl = document.activeElement;
+            if (activeEl && activeEl.id === 'typed-answer') {
+                submitCurrentAnswer(true);
+                return;
+            }
+            submitCurrentAnswer(true);
+            return;
+        }
+
+        const numeric = Number.parseInt(event.key, 10);
+        if (!Number.isFinite(numeric) || numeric < 1 || numeric > 9) {
+            return;
+        }
+        const idx = numeric - 1;
+        const optionInputs = Array.from(document.querySelectorAll('input[name="quiz-option"]'));
+        if (idx < 0 || idx >= optionInputs.length) {
+            return;
+        }
+        const target = optionInputs[idx];
+        if (target.type === 'checkbox') {
+            target.checked = !target.checked;
+        } else {
+            target.checked = true;
+        }
+    });
+
+    function setupSocket() {
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.error) {
+                setStatus(data.error, 'error');
+                return;
+            }
+
+            if (data.roomId) {
+                renderRoomState(data);
+                return;
+            }
+
+            if (data.question) {
+                renderQuestion(data);
+                return;
+            }
+
+            if (isScorePayload(data)) {
+                renderScores(data);
+            }
+        };
+
+        socket.onclose = () => {
+            stopCountdown();
+            setStatus('Da ngat ket noi.', 'error');
+        };
+
+        socket.onerror = () => {
+            setStatus('Loi WebSocket.', 'error');
+        };
+    }
+
+    function renderRoomState(data) {
+        roomSelection.hidden = true;
+        quizContainer.hidden = false;
+
+        currentRoomId = data.roomId || '';
+        roomIdValue.textContent = currentRoomId || '-';
+        roomIdInput.value = currentRoomId || '';
+        playerCountValue.textContent = String(data.players ?? 0);
+        spectatorCountValue.textContent = String(data.spectators ?? 0);
+
+        if (Number.isFinite(data.questionNumber)) {
+            questionNumber = data.questionNumber;
+        }
+        if (Number.isFinite(data.totalQuestions)) {
+            totalQuestions = data.totalQuestions;
+        }
+
+        updateProgressHud();
+
+        startGameBtn.style.display = isSpectator ? 'none' : 'inline-flex';
+        submitAnswerBtn.style.display = isSpectator ? 'none' : 'inline-flex';
+        submitAnswerBtn.disabled = true;
+
+        fetchRoomList(false);
+    }
+
+    function renderQuestion(data) {
+        currentQuestionType = data.type;
+        questionNumber = Number.isFinite(data.questionNumber) ? data.questionNumber : (questionNumber + 1);
+        totalQuestions = Number.isFinite(data.totalQuestions) ? data.totalQuestions : Math.max(totalQuestions, questionNumber);
+        hasSubmittedCurrent = false;
+
+        questionEl.textContent = data.question || 'Cau hoi';
+        optionsEl.className = 'quiz-options';
+        optionsEl.innerHTML = '';
+        setQuestionFeedback(isSpectator ? 'Che do xem: ban chi theo doi tran.' : 'Chon dap an va gui truoc khi het gio.', '');
+
+        if (data.type === 'typedAnswer') {
+            optionsEl.classList.add('is-typed');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'typed-answer';
+            input.className = 'quiz-typed-input';
+            input.placeholder = 'Nhap dap an cua ban';
+            input.disabled = isSpectator;
+            optionsEl.appendChild(input);
+        } else if (Array.isArray(data.options)) {
+            if (data.type === 'multipleCorrect') {
+                optionsEl.classList.add('is-multi');
+            } else {
+                optionsEl.classList.add('is-single');
+            }
+            data.options.forEach((option, index) => {
+                const wrapper = document.createElement('label');
+                wrapper.className = 'quiz-option';
+
+                const input = document.createElement('input');
+                input.type = data.type === 'multipleCorrect' ? 'checkbox' : 'radio';
+                input.name = 'quiz-option';
+                input.value = String(index);
+                input.disabled = isSpectator;
+
+                const body = document.createElement('span');
+                body.className = 'quiz-option__body';
+
+                const key = document.createElement('span');
+                key.className = 'quiz-option__key';
+                key.textContent = optionKey(index);
+
+                const text = document.createElement('span');
+                text.className = 'quiz-option__text';
+                text.textContent = option;
+
+                body.appendChild(key);
+                body.appendChild(text);
+                wrapper.appendChild(input);
+                wrapper.appendChild(body);
+                optionsEl.appendChild(wrapper);
+            });
+        }
+
+        updateProgressHud();
+        submitAnswerBtn.disabled = isSpectator;
+        startGameBtn.style.display = 'none';
+        startCountdown();
+    }
+
+    function renderScores(scorePayload) {
+        stopCountdown();
+        submitAnswerBtn.disabled = true;
+
+        const sorted = Object.entries(scorePayload)
+            .filter((entry) => typeof entry[1] === 'number')
+            .sort((a, b) => b[1] - a[1]);
+
+        let resultHtml = '<h3>Ket thuc tran</h3>';
+        if (sorted.length > 0) {
+            resultHtml += '<ol class="quiz-result-list">';
+            sorted.forEach(([name, score]) => {
+                resultHtml += `<li>${name}: ${score} diem</li>`;
+            });
+            resultHtml += '</ol>';
+        } else {
+            resultHtml += '<p>Khong co du lieu diem.</p>';
+        }
+
+        questionEl.innerHTML = resultHtml;
+        optionsEl.innerHTML = '';
+        setQuestionFeedback('Da co ket qua cuoi. Ban co the share phong hoac roi ve lobby.', 'success');
+        fetchHighScores();
+        fetchRoomList(false);
+    }
+
+    function isScorePayload(data) {
+        if (!data || typeof data !== 'object') {
+            return false;
+        }
+        const reserved = new Set([
+            'roomId', 'players', 'spectators', 'question', 'options', 'type',
+            'questionType', 'correctAnswer', 'correctAnswers', 'questionNumber', 'totalQuestions', 'error'
+        ]);
+        const keys = Object.keys(data);
+        if (keys.length === 0) {
+            return false;
+        }
+        if (keys.some((key) => reserved.has(key))) {
+            return false;
+        }
+        return keys.every((key) => typeof data[key] === 'number');
+    }
+
+    function updateProgressHud() {
+        const normalizedTotal = Math.max(1, totalQuestions || questionNumber || 1);
+        const normalizedQuestion = Math.max(0, Math.min(questionNumber || 0, normalizedTotal));
+        questionIndexEl.textContent = `Cau hoi ${normalizedQuestion}/${normalizedTotal}`;
+        progressFillEl.style.width = `${(normalizedQuestion / normalizedTotal) * 100}%`;
+    }
+
+    function startCountdown() {
+        stopCountdown();
+        countdown = QUESTION_SECONDS;
+        timerEl.textContent = `${countdown}s`;
+
+        countdownTimer = window.setInterval(() => {
+            countdown -= 1;
+            timerEl.textContent = `${Math.max(countdown, 0)}s`;
+
+            if (countdown <= 0) {
+                stopCountdown();
+                if (!isSpectator && !hasSubmittedCurrent) {
+                    submitCurrentAnswer(false);
+                    setQuestionFeedback('Het gio. He thong da tu dong gui dap an.', 'error');
+                }
+            }
+        }, 1000);
+    }
+
+    function stopCountdown() {
+        if (countdownTimer) {
+            window.clearInterval(countdownTimer);
+            countdownTimer = null;
+        }
+    }
+
+    function submitCurrentAnswer(isManualSubmit) {
+        if (isSpectator || hasSubmittedCurrent) {
+            return;
+        }
+
+        let answer;
+        if (currentQuestionType === 'singleCorrect') {
+            const selected = document.querySelector('input[name="quiz-option"]:checked');
+            if (!selected) {
+                if (isManualSubmit) {
+                    setQuestionFeedback('Hay chon 1 dap an truoc.', 'error');
+                    return;
+                }
+                answer = -1;
+            } else {
+                answer = parseInt(selected.value, 10);
+            }
+        } else if (currentQuestionType === 'multipleCorrect') {
+            const selected = Array.from(document.querySelectorAll('input[name="quiz-option"]:checked'));
+            if (selected.length === 0 && isManualSubmit) {
+                setQuestionFeedback('Hay chon it nhat 1 lua chon.', 'error');
+                return;
+            }
+            answer = selected.map((el) => parseInt(el.value, 10));
+        } else if (currentQuestionType === 'typedAnswer') {
+            const input = document.getElementById('typed-answer');
+            answer = input ? input.value.trim() : '';
+            if (!answer && isManualSubmit) {
+                setQuestionFeedback('Hay nhap dap an truoc.', 'error');
+                return;
+            }
+        }
+
+        if (safeSend({ action: 'answer', answer })) {
+            hasSubmittedCurrent = true;
+            submitAnswerBtn.disabled = true;
+            setQuestionFeedback('Da gui dap an.', 'success');
+        }
+    }
+
+    function leaveRoom() {
+        stopCountdown();
+        if (socket && socket.readyState <= 1) {
+            socket.close();
+        }
+        socket = null;
+        currentRoomId = '';
+        questionNumber = 0;
+        totalQuestions = 0;
+        hasSubmittedCurrent = false;
+
+        roomSelection.hidden = false;
+        quizContainer.hidden = true;
+        questionEl.textContent = 'Dang cho chu phong bat dau...';
+        optionsEl.className = 'quiz-options';
+        optionsEl.innerHTML = '';
+        setQuestionFeedback('', '');
+        setStatus('Da quay lai lobby.', 'success');
+        fetchRoomList(true);
+    }
+
+    function optionKey(index) {
+        const i = Number(index);
+        if (!Number.isFinite(i) || i < 0) {
+            return '?';
+        }
+        return String.fromCharCode(65 + i);
+    }
+
+    async function fetchRoomList(showFallbackMessage) {
+        try {
+            const response = await fetch(appPath('/games/quiz/rooms'));
+            if (!response.ok) {
+                throw new Error('Khong tai duoc danh sach phong');
+            }
+            const rooms = await response.json();
+            renderRoomList(Array.isArray(rooms) ? rooms : []);
+        } catch (error) {
+            if (showFallbackMessage) {
+                roomListEl.innerHTML = '<div class="quiz-status-note error">Khong tai duoc danh sach phong.</div>';
+            }
+        }
+    }
+
+    function renderRoomList(rooms) {
+        roomListEl.innerHTML = '';
+        if (rooms.length === 0) {
+            roomListEl.innerHTML = '<div class="quiz-status-note">Chua co phong dang hoat dong.</div>';
+            return;
+        }
+
+        rooms.forEach((room) => {
+            const row = document.createElement('div');
+            row.className = 'quiz-room-item';
+            row.innerHTML = `
+                <div>
+                    <strong>${escapeHtml(room.id)}</strong><br>
+                    <span>${escapeHtml(room.gameState || 'WAITING')} | P:${room.playerCount || 0} S:${room.spectatorCount || 0}</span>
+                </div>
+                <div class="quiz-room-actions">
+                    <button class="hub-portal-action__icon" data-join="${escapeHtml(room.id)}" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
+                    <button class="hub-portal-action__icon" data-spectate="${escapeHtml(room.id)}" title="Xem tran"><i class="bi bi-eye"></i></button>
+                </div>
+            `;
+            roomListEl.appendChild(row);
+        });
+
+        roomListEl.querySelectorAll('[data-join]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const roomId = button.getAttribute('data-join');
+                if (!roomId) {
+                    return;
+                }
+                roomIdInput.value = roomId;
+                isSpectator = false;
+                openSocket({ action: 'join', roomId });
+            });
+        });
+
+        roomListEl.querySelectorAll('[data-spectate]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const roomId = button.getAttribute('data-spectate');
+                if (!roomId) {
+                    return;
+                }
+                roomIdInput.value = roomId;
+                isSpectator = true;
+                openSocket({ action: 'spectate', roomId });
+            });
+        });
+    }
+
+    function setupRoomPolling() {
+        if (roomListTimer) {
+            window.clearInterval(roomListTimer);
+        }
+        roomListTimer = window.setInterval(() => {
+            if (!roomSelection.hidden) {
+                fetchRoomList(false);
+            }
+        }, 8000);
+    }
+
+    function buildInviteUrl(roomId, mode) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('room', roomId);
+        if (mode === 'spectate') {
+            url.searchParams.set('mode', 'spectate');
+        } else {
+            url.searchParams.delete('mode');
+        }
+        return url.toString();
+    }
+
+    async function copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (_) {
+            const fallback = document.createElement('textarea');
+            fallback.value = text;
+            fallback.style.position = 'fixed';
+            fallback.style.left = '-9999px';
+            document.body.appendChild(fallback);
+            fallback.select();
+            const ok = document.execCommand('copy');
+            fallback.remove();
+            return ok;
+        }
+    }
+
+    function applyAutoJoinFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const room = (params.get('room') || '').trim();
+        const mode = (params.get('mode') || '').trim().toLowerCase();
+        if (!room) {
+            return;
+        }
+        roomIdInput.value = room;
+        if (mode === 'spectate') {
+            isSpectator = true;
+            openSocket({ action: 'spectate', roomId: room });
+        } else {
+            isSpectator = false;
+            openSocket({ action: 'join', roomId: room });
+        }
+    }
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+
+    fetchHighScores();
+    fetchRoomList(true);
+    setupRoomPolling();
+    applyAutoJoinFromUrl();
+
+    function fetchHighScores() {
+        fetch(appPath('/games/quiz/highscores'))
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Khong tai duoc bang xep hang');
+                }
+                return response.json();
+            })
+            .then((data) => {
+                highScoresList.innerHTML = '';
+                data.forEach((score) => {
+                    const li = document.createElement('li');
+                    li.innerText = `${score.playerName}: ${score.score}`;
+                    highScoresList.appendChild(li);
+                });
+            })
+            .catch(() => {
+                highScoresList.innerHTML = '<li>Khong tai duoc bang xep hang.</li>';
+            });
+    }
+</script>
+</body>
+</html>

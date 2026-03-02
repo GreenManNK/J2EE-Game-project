@@ -282,7 +282,27 @@
     setStatus: setStatusMessage
   };
 
+  function normalizeRootRelativeUrls() {
+    document.querySelectorAll('a[href]').forEach((anchor) => {
+      const rawHref = anchor.getAttribute('href');
+      if (!rawHref || !rawHref.startsWith('/')) {
+        return;
+      }
+      anchor.setAttribute('href', toAppPath(rawHref));
+    });
+
+    document.querySelectorAll('form[action]').forEach((form) => {
+      const rawAction = form.getAttribute('action');
+      if (!rawAction || !rawAction.startsWith('/')) {
+        return;
+      }
+      form.setAttribute('action', toAppPath(rawAction));
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
+    normalizeRootRelativeUrls();
+
     const user = getCurrentUser();
     const badges = document.querySelectorAll('[data-current-user-badge]');
     const logoutBtn = document.getElementById('logoutBtn');

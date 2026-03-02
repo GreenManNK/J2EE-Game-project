@@ -49,6 +49,13 @@ public class AchievementService {
     }
 
     @Transactional
+    public void checkAndAward(String userId, String gameName, boolean won) {
+        if (won) {
+            grantOnce(userId, "Winner - " + gameName);
+        }
+    }
+
+    @Transactional
     public void evaluateAfterMatch(String roomId,
                                    String winnerId,
                                    String loserId,

@@ -17,8 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class GameRoomService {
     private static final int BOARD_SIZE = 10;
+    private static final int MAX_SPECTATORS = 4;
 
     private final Map<String, Map<String, String>> roomPlayers = new ConcurrentHashMap<>();
+    private final Map<String, List<String>> roomSpectators = new ConcurrentHashMap<>();
     private final Map<String, String[][]> boards = new ConcurrentHashMap<>();
     private final Map<String, String> currentTurn = new ConcurrentHashMap<>();
 
@@ -36,29 +38,54 @@ public class GameRoomService {
 
     public synchronized JoinResult joinRoom(String roomId, String userId) {
         if (roomId == null || roomId.isBlank() || userId == null || userId.isBlank()) {
-            return new JoinResult(false, null, "Invalid room or user", null, 0);
+            return new JoinResult(false, null, "Invalid room or user", null, 0, 0);
         }
 
         Map<String, String> players = roomPlayers.computeIfAbsent(roomId, k -> new ConcurrentHashMap<>());
+        List<String> spectators = roomSpectators.computeIfAbsent(roomId, k -> new ArrayList<>());
+
         if (players.containsKey(userId)) {
-            return new JoinResult(true, players.get(userId), null, currentTurn.get(roomId), players.size());
+            return new JoinResult(true, players.get(userId), null, currentTurn.get(roomId), players.size(), spectators.size());
         }
         if (players.size() >= 2) {
-            return new JoinResult(false, null, "Room is full", currentTurn.get(roomId), players.size());
+            return new JoinResult(false, null, "Room is full", currentTurn.get(roomId), players.size(), spectators.size());
         }
 
         String symbol = nextAvailableSymbol(players);
         if (symbol == null) {
-            return new JoinResult(false, null, "Room is full", currentTurn.get(roomId), players.size());
+            return new JoinResult(false, null, "Room is full", currentTurn.get(roomId), players.size(), spectators.size());
         }
         players.put(userId, symbol);
 
         boards.computeIfAbsent(roomId, k -> new String[BOARD_SIZE][BOARD_SIZE]);
         if (!currentTurn.containsKey(roomId)) {
-            currentTurn.put(roomId, userId);
+            String xPlayer = players.entrySet().stream()
+                .filter(entry -> "X".equals(entry.getValue()))
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(userId);
+            currentTurn.put(roomId, xPlayer);
         }
 
-        return new JoinResult(true, symbol, null, currentTurn.get(roomId), players.size());
+        return new JoinResult(true, symbol, null, currentTurn.get(roomId), players.size(), spectators.size());
+    }
+    
+    public synchronized JoinResult joinAsSpectator(String roomId, String userId) {
+        if (roomId == null || roomId.isBlank() || userId == null || userId.isBlank()) {
+            return new JoinResult(false, null, "Invalid room or user", null, 0, 0);
+        }
+
+        List<String> spectators = roomSpectators.computeIfAbsent(roomId, k -> new ArrayList<>());
+        if (spectators.contains(userId)) {
+            return new JoinResult(true, "spectator", null, currentTurn.get(roomId), roomPlayers.get(roomId).size(), spectators.size());
+        }
+
+        if (spectators.size() >= MAX_SPECTATORS) {
+            return new JoinResult(false, null, "Spectator limit reached", null, roomPlayers.get(roomId).size(), spectators.size());
+        }
+
+        spectators.add(userId);
+        return new JoinResult(true, "spectator", null, currentTurn.get(roomId), roomPlayers.get(roomId).size(), spectators.size());
     }
 
     public synchronized MoveResult makeMove(String roomId, String userId, int x, int y) {
@@ -170,16 +197,20 @@ public class GameRoomService {
 
     public synchronized void leaveRoom(String roomId, String userId) {
         Map<String, String> players = roomPlayers.get(roomId);
-        if (players == null) {
-            return;
+        if (players != null) {
+            players.remove(userId);
+            if (players.isEmpty()) {
+                roomPlayers.remove(roomId);
+                boards.remove(roomId);
+                currentTurn.remove(roomId);
+                roomSpectators.remove(roomId);
+                return;
+            }
         }
-
-        players.remove(userId);
-        if (players.isEmpty()) {
-            roomPlayers.remove(roomId);
-            boards.remove(roomId);
-            currentTurn.remove(roomId);
-            return;
+        
+        List<String> spectators = roomSpectators.get(roomId);
+        if (spectators != null) {
+            spectators.remove(userId);
         }
 
         // Keep the room waiting for a fresh round when the next player joins.
@@ -352,7 +383,7 @@ public class GameRoomService {
         return null;
     }
 
-    public record JoinResult(boolean ok, String symbol, String error, String currentTurnUserId, int playerCount) {
+    public record JoinResult(boolean ok, String symbol, String error, String currentTurnUserId, int playerCount, int spectatorCount) {
     }
 
     public record BoardPoint(int x, int y) {
@@ -394,4 +425,3 @@ public class GameRoomService {
     private record ScoreUpdate(Integer winnerScore, Integer loserScore) {
     }
 }
-

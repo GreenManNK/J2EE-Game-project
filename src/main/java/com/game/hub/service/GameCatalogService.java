@@ -20,60 +20,61 @@ public class GameCatalogService {
                 "caro",
                 "Caro",
                 "Caro",
-                "Game hien tai da ho tro choi online/offline, guest va lobby phong.",
+                "Caro da ho tro online room, offline 2 nguoi, bot Easy/Hard va guest.",
                 "bi-grid-3x3-gap-fill",
                 true,
                 true,
                 true,
                 true,
-                "Vao che do choi",
+                "Vao Caro",
                 "/multiplayer",
                 List.of(
-                    "Giá»¯ vai tro game mac dinh hien tai.",
-                    "Mo rong lich su va thong ke theo tung game."
+                    "Lobby + room invite + ws realtime.",
+                    "Bot Easy/Hard va lich su tran dau.",
+                    "Guest mode va profile dang nhap."
                 )
             ),
             new GameCatalogItem(
                 "chess",
                 "Co vua",
                 "Chess",
-                "Da co che do bot Easy/Hard, offline 2 nguoi cung may va online room (MVP). Se tiep tuc hoan thien luat/online nang cao.",
+                "Co vua da co online room 1v1, bot Easy/Hard va offline 2 nguoi cung may.",
                 "bi-activity",
                 true,
                 true,
                 true,
                 true,
-                "Co vua online (MVP)",
+                "Co vua online",
                 "/online-hub?game=chess",
                 List.of(
-                    "Ban co 8x8, setup quan co day du.",
-                    "Bot Easy/Hard va che do offline 2 nguoi.",
-                    "Phong online va dong bo nuoc di (MVP)."
+                    "Ban co 8x8 va setup quan co day du.",
+                    "Bot Easy/Hard va che do offline local.",
+                    "Phong online va dong bo nuoc di realtime."
                 )
             ),
             new GameCatalogItem(
                 "xiangqi",
                 "Co tuong",
                 "Xiangqi",
-                "Da co che do bot Easy/Hard (MVP), offline 2 nguoi va online room (MVP). Se tiep tuc hoan thien luat/online nang cao.",
+                "Co tuong da co online room, bot Easy/Hard va offline 2 nguoi cung may.",
                 "bi-diagram-3-fill",
                 true,
                 true,
                 true,
                 true,
-                "Co tuong online (MVP)",
+                "Co tuong online",
                 "/online-hub?game=xiangqi",
                 List.of(
-                    "Bot Easy/Hard MVP da san sang.",
+                    "Bot Easy/Hard da san sang.",
                     "Offline 2 nguoi cung may.",
-                    "Online room va dong bo nuoc di (MVP)."
+                    "Online room va dong bo nuoc di realtime."
                 )
             ),
             new GameCatalogItem(
                 "minesweeper",
                 "Do min",
                 "Minesweeper",
-                "Game giai do offline co ban voi cac muc de/trung binh/kho. Ho tro cam co, mo o lan dau an toan va tinh trang thai thang/thua tren client.",
+                "Minesweeper offline voi beginner/intermediate/expert, co cam co va first-click safe.",
                 "bi-asterisk",
                 true,
                 false,
@@ -82,26 +83,81 @@ public class GameCatalogService {
                 "Mo Minesweeper",
                 "/minesweeper",
                 List.of(
-                    "Them bang diem tot nhat theo muc do.",
-                    "Them tuy chon kich thuoc ban va so min."
+                    "3 muc do beginner/intermediate/expert.",
+                    "Cam co va first-click safe.",
+                    "Cap nhat achievement khi thang."
                 )
             ),
             new GameCatalogItem(
                 "cards",
                 "Danh bai",
                 "Cards",
-                "Da co Tien len online 4 nguoi (MVP) va che do choi voi bot Easy/Hard (MVP). Se tiep tuc hoan thien luat nang cao o buoc sau.",
+                "Module Cards da co Tien Len online 4 nguoi, bot Easy/Hard va them mode Blackjack.",
                 "bi-suit-spade-fill",
                 true,
                 true,
                 true,
                 true,
-                "Tien len online 4 nguoi (MVP)",
-                "/cards/tien-len",
+                "Mo Cards hub",
+                "/games/cards",
                 List.of(
-                    "MVP hien tai: online 4 nguoi + bot Easy/Hard, ho tro don, doi, sam, tu quy, sanh, doi thong va chat 2 co ban (tu quy / doi thong).",
-                    "Bo sung them luat nang cao Tien len (doi thong nang cao, bao toi/trang neu can).",
-                    "Them cac game bai khac sau khi on dinh module Tien len."
+                    "Tien Len online 4 nguoi + room realtime.",
+                    "Tien Len bot Easy/Hard va bo luat mo rong.",
+                    "Blackjack voi bot dealer da co route rieng."
+                )
+            ),
+            new GameCatalogItem(
+                "quiz",
+                "Quiz",
+                "Quiz",
+                "Quiz da ho tro tao room, join room, spectate va bang diem cao.",
+                "bi-patch-question-fill",
+                true,
+                true,
+                false,
+                true,
+                "Mo Quiz",
+                "/games/quiz",
+                List.of(
+                    "Tao/join/spectate room quiz.",
+                    "Nhieu dang cau hoi: single, multiple, typed.",
+                    "Theo doi high score."
+                )
+            ),
+            new GameCatalogItem(
+                "typing",
+                "Typing Battle",
+                "Typing",
+                "Typing Battle realtime voi tao/join room, theo doi progress va accuracy.",
+                "bi-keyboard-fill",
+                true,
+                true,
+                false,
+                true,
+                "Mo Typing Battle",
+                "/games/typing",
+                List.of(
+                    "Tao/join room typing realtime.",
+                    "Theo doi progress + accuracy cua tung nguoi choi.",
+                    "Thong bao winner khi ket thuc."
+                )
+            ),
+            new GameCatalogItem(
+                "puzzle",
+                "Puzzles",
+                "Puzzle",
+                "Puzzle pack gom Jigsaw, Sliding, Word Puzzle va Sudoku.",
+                "bi-puzzle-fill",
+                true,
+                false,
+                true,
+                true,
+                "Mo Puzzle Pack",
+                "/games/puzzle",
+                List.of(
+                    "Jigsaw puzzle.",
+                    "Sliding puzzle.",
+                    "Word puzzle va Sudoku."
                 )
             )
         );

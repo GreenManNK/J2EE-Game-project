@@ -223,7 +223,7 @@ class TienLenRoomServiceTest {
         assertFalse(waiting.started());
         assertEquals(1, waiting.playerCount());
         assertEquals(1, waiting.players().size());
-        assertEquals("u1", waiting.players().getFirst().userId());
+        assertEquals("u1", waiting.players().get(0).userId());
         assertFalse(waiting.players().stream().anyMatch(TienLenRoomService.PlayerSnapshot::bot));
     }
 

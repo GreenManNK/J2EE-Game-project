@@ -59,6 +59,7 @@
     els.currentTrickLabel = document.getElementById('tlCurrentTrickLabel');
     els.trickOwnerText = document.getElementById('tlTrickOwnerText');
     els.trickCards = document.getElementById('tlTrickCards');
+    els.scoreBoard = document.getElementById('tlScoreBoard');
     els.myHand = document.getElementById('tlMyHand');
     els.selectedCount = document.getElementById('tlSelectedCount');
     els.handCount = document.getElementById('tlHandCount');
@@ -361,10 +362,13 @@
     slotEls.forEach((slotEl, idx) => {
       const p = players[idx];
       const tablePos = String(slotEl?.dataset?.tablePos || tablePositionKey(idx));
+      const isCompactSeat = tablePos !== 'bottom';
       slotEl.classList.remove('is-turn', 'is-control', 'is-passed', 'is-me', 'is-winner');
       slotEl.classList.remove('turn-flash');
+      slotEl.classList.toggle('is-compact', Boolean(p && isCompactSeat));
       slotEl.innerHTML = '';
       if (!p) {
+        slotEl.classList.remove('is-compact');
         slotEl.innerHTML =
           '<div class="tl-player-empty">' +
           '<div class="tl-player-empty__icon">+</div>' +
@@ -407,9 +411,12 @@
       if (chopDelta !== 0) {
         flags.push('Chat ' + (chopDelta > 0 ? '+' : '') + chopDelta);
       }
+      const avatarHtml = buildAvatarHtml(p.avatarPath, displayName, 'tl-player-avatar');
+      const fanHtml = isCompactSeat ? '<div class="tl-player-fan" aria-hidden="true"></div>' : '';
       slotEl.innerHTML =
+        fanHtml +
         '<div class="tl-player-slot__head">' +
-          '<div class="tl-player-avatar" aria-hidden="true">' + escapeHtml(initialsOfName(displayName)) + '</div>' +
+          avatarHtml +
           '<div class="tl-player-slot__identity">' +
             '<div class="tl-player-slot__name">' + escapeHtml(displayName) + '</div>' +
             '<div class="tl-player-slot__uid">' + escapeHtml(p.userId || '') + '</div>' +
@@ -424,6 +431,80 @@
     state.pendingTurnFlashUserId = '';
 
     els.turnText.textContent = currentTurnLabel();
+    renderScoreBoard(players);
+  }
+
+  function renderScoreBoard(players) {
+    if (!els.scoreBoard) {
+      return;
+    }
+    const tablePlayers = Array.isArray(players) ? players.filter(Boolean) : [];
+    const boardTitle = scoreBoardTitle();
+    if (tablePlayers.length === 0) {
+      els.scoreBoard.innerHTML =
+        '<div class="tl-scoreboard__head"><span aria-hidden="true">◎</span><span>' + escapeHtml(boardTitle) + '</span></div>' +
+        '<div class="tl-scoreboard__empty">Dang cho nguoi choi...</div>';
+      return;
+    }
+    const sorted = tablePlayers.slice().sort((a, b) => Number(b.score || 0) - Number(a.score || 0));
+    const rowsHtml = sorted.map((player) => {
+      const displayName = String(player.displayName || player.userId || 'Player');
+      const points = Number(player.score || 0);
+      const avatarSrc = normalizeAvatarPath(player.avatarPath);
+      const isTurn = Boolean(state.room?.currentTurnUserId && state.room.currentTurnUserId === player.userId && !state.room?.gameOver);
+      const isMe = player.userId === me.userId;
+      const rowClass = 'tl-score-item' + (isTurn ? ' is-turn' : '');
+      const avatarHtml = avatarSrc
+        ? '<img class="tl-score-item__avatar" src="' + escapeHtml(avatarSrc) + '" alt="">' 
+        : '<div class="tl-score-item__avatar tl-score-item__avatar--text" aria-hidden="true">' + escapeHtml(initialsOfName(displayName)) + '</div>';
+      return (
+        '<div class="' + rowClass + '">' +
+          avatarHtml +
+          '<span class="tl-score-item__name">' + escapeHtml(displayName + (isMe ? ' (Ban)' : '')) + '</span>' +
+          '<span class="tl-score-item__points">' + String(points) + '</span>' +
+        '</div>'
+      );
+    }).join('');
+    els.scoreBoard.innerHTML =
+      '<div class="tl-scoreboard__head"><span aria-hidden="true">◎</span><span>' + escapeHtml(boardTitle) + '</span></div>' +
+      rowsHtml;
+  }
+
+  function scoreBoardTitle() {
+    const targets = [
+      Number(state.room?.targetScore),
+      Number(state.room?.scoreTarget),
+      Number(state.room?.targetPoint),
+      Number(state.room?.maxScore)
+    ];
+    const target = targets.find((value) => Number.isFinite(value) && value > 0);
+    return String((target && Math.round(target)) || 100) + ' diem';
+  }
+
+  function buildAvatarHtml(avatarPath, displayName, className) {
+    const avatarSrc = normalizeAvatarPath(avatarPath);
+    if (avatarSrc) {
+      return (
+        '<div class="' + className + '" aria-hidden="true">' +
+          '<img class="tl-player-avatar__img" src="' + escapeHtml(avatarSrc) + '" alt="">' +
+        '</div>'
+      );
+    }
+    return '<div class="' + className + '" aria-hidden="true">' + escapeHtml(initialsOfName(displayName)) + '</div>';
+  }
+
+  function normalizeAvatarPath(value) {
+    const raw = String(value || '').trim();
+    if (!raw) {
+      return '';
+    }
+    if (/^(https?:)?\/\//i.test(raw) || /^data:/i.test(raw) || /^blob:/i.test(raw)) {
+      return raw;
+    }
+    if (raw.startsWith('/')) {
+      return appPath(raw);
+    }
+    return appPath('/' + raw.replace(/^\.?\//, ''));
   }
 
   function playersForTableOrder(seatPlayers) {

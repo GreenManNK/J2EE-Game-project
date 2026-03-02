@@ -1,5 +1,6 @@
 package com.game.hub.games.chess.websocket;
 
+import com.game.hub.service.AchievementService;
 import com.game.hub.games.chess.service.ChessOnlineRoomService;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.UserAccountRepository;
@@ -26,14 +27,17 @@ public class ChessWebSocketController {
     private final ChessOnlineRoomService roomService;
     private final SimpMessagingTemplate messagingTemplate;
     private final UserAccountRepository userAccountRepository;
+    private final AchievementService achievementService;
     private final Map<String, RoomPresence> sessionRoomPresence = new ConcurrentHashMap<>();
 
     public ChessWebSocketController(ChessOnlineRoomService roomService,
                                     SimpMessagingTemplate messagingTemplate,
-                                    UserAccountRepository userAccountRepository) {
+                                    UserAccountRepository userAccountRepository,
+                                    AchievementService achievementService) {
         this.roomService = roomService;
         this.messagingTemplate = messagingTemplate;
         this.userAccountRepository = userAccountRepository;
+        this.achievementService = achievementService;
     }
 
     @MessageMapping("/chess.join")
@@ -65,6 +69,31 @@ public class ChessWebSocketController {
         payload.put("message", "Da vao phong");
         messagingTemplate.convertAndSend("/topic/chess.room." + roomId, payload);
         broadcastRoomList();
+    }
+    
+    @MessageMapping("/chess.spectate")
+    public void spectate(ChessJoinMessage message, SimpMessageHeaderAccessor headers) {
+        if (message == null) {
+            return;
+        }
+        String roomId = safeTrim(message.getRoomId());
+        String userId = requireConnectionUser(roomId, message.getUserId(), headers);
+        if (roomId == null || userId == null) {
+            return;
+        }
+
+        ChessOnlineRoomService.JoinResult result = roomService.joinAsSpectator(roomId, userId);
+        if (!result.ok()) {
+            sendUserError(roomId, userId, result.error());
+            return;
+        }
+
+        rememberRoomPresence(headers, roomId, userId);
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("type", "ROOM_STATE");
+        payload.put("room", result.room());
+        payload.put("message", "Da vao xem");
+        messagingTemplate.convertAndSend("/topic/chess.room." + roomId, payload);
     }
 
     @MessageMapping("/chess.move")
@@ -98,6 +127,14 @@ public class ChessWebSocketController {
             }
             return;
         }
+
+        if (result.room() != null && result.room().isGameOver()) {
+            String winnerId = result.room().getWinnerId();
+            String loserId = result.room().getLoserId(winnerId);
+            achievementService.checkAndAward(winnerId, "Chess", true);
+            achievementService.checkAndAward(loserId, "Chess", false);
+        }
+
         broadcastRoomState(roomId, "MOVE", result.room(), result.room() == null ? null : result.room().statusMessage());
     }
 
@@ -142,6 +179,14 @@ public class ChessWebSocketController {
             }
             return;
         }
+
+        if (result.room() != null && result.room().isGameOver()) {
+            String winnerId = result.room().getWinnerId();
+            String loserId = result.room().getLoserId(winnerId);
+            achievementService.checkAndAward(winnerId, "Chess", true);
+            achievementService.checkAndAward(loserId, "Chess", false);
+        }
+
         broadcastRoomState(roomId, "SURRENDER", result.room(), result.room() == null ? "Nguoi choi da dau hang" : result.room().statusMessage());
     }
 

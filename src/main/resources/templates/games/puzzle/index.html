@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Puzzle Arena')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-puzzle')}"></div>
+
+<main class="hub-portal-shell hub-portal-theme-puzzle">
+    <section class="hub-portal-hero">
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
+
+        <div class="hub-portal-hero__main">
+            <div class="hub-portal-eyebrow">
+                <i class="bi bi-puzzle-fill"></i>
+                <span>PUZZLE / SOLO CHALLENGE</span>
+            </div>
+
+            <h1 class="hub-portal-title">Puzzle Arena: bo game tri tue trong 1 giao dien</h1>
+            <p class="hub-portal-subtitle">
+                Tat ca game puzzle da duoc dong bo layout, thao tac va thong tin huong dan.
+                Ban co the chuyen game nhanh ma khong bi vo trai nghiem giao dien.
+            </p>
+
+            <div class="hub-portal-chip-row">
+                <span class="hub-portal-chip is-live"><i class="bi bi-check-circle-fill"></i> 4 game puzzle san sang</span>
+                <span class="hub-portal-chip"><i class="bi bi-stopwatch-fill"></i> Co dong ho + thong ke</span>
+                <span class="hub-portal-chip"><i class="bi bi-phone-fill"></i> Responsive desktop/mobile</span>
+                <span class="hub-portal-chip"><i class="bi bi-lightning-fill"></i> Choi nhanh khong can lobby</span>
+            </div>
+
+            <div class="hub-portal-action-grid">
+                <a th:href="@{/games/puzzle/jigsaw}" class="hub-portal-action hub-portal-action--primary">
+                    <span class="hub-portal-action__icon"><i class="bi bi-grid-3x3-gap-fill"></i></span>
+                    <span class="hub-portal-action__text">
+                        <strong>Jigsaw Puzzle</strong>
+                        <small>Keo tha manh ghep vao dung vi tri</small>
+                    </span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+                <a th:href="@{/games/puzzle/sliding}" class="hub-portal-action hub-portal-action--accent">
+                    <span class="hub-portal-action__icon"><i class="bi bi-border-all"></i></span>
+                    <span class="hub-portal-action__text">
+                        <strong>Sliding Puzzle</strong>
+                        <small>Truot o ve trang thai hoan chinh</small>
+                    </span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+                <a th:href="@{/games/puzzle/word}" class="hub-portal-action hub-portal-action--soft">
+                    <span class="hub-portal-action__icon"><i class="bi bi-fonts"></i></span>
+                    <span class="hub-portal-action__text">
+                        <strong>Word Puzzle</strong>
+                        <small>Tim tu theo hang, cot va duong cheo</small>
+                    </span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+                <a th:href="@{/games/puzzle/sudoku}" class="hub-portal-action hub-portal-action--soft">
+                    <span class="hub-portal-action__icon"><i class="bi bi-grid-1x2-fill"></i></span>
+                    <span class="hub-portal-action__text">
+                        <strong>Sudoku</strong>
+                        <small>Dien so 1-9 khong trung lap</small>
+                    </span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <aside class="hub-portal-hero__side">
+            <section class="hub-portal-panel">
+                <div class="hub-portal-panel__head">
+                    <div>
+                        <div class="hub-portal-panel__label">Huong choi nhanh</div>
+                        <div class="hub-portal-panel__title">3 buoc vao game</div>
+                    </div>
+                    <span class="hub-portal-pill">Quick start</span>
+                </div>
+                <ol class="hub-portal-inline-list mb-0">
+                    <li><span>Chon game phu hop</span><strong>Step 1</strong></li>
+                    <li><span>Dat do kho hoac tao ban moi</span><strong>Step 2</strong></li>
+                    <li><span>Hoan thanh van nhanh nhat</span><strong>Step 3</strong></li>
+                </ol>
+            </section>
+
+            <div class="hub-portal-mini-grid">
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Loi ich chung</div>
+                    <ul class="hub-portal-bullet-list mb-0">
+                        <li>Moi game deu co HUD de theo doi tien do.</li>
+                        <li>Noi dung huong dan duoc dat ngay tren trang.</li>
+                        <li>Co trang thai thanh cong/that bai ro rang.</li>
+                    </ul>
+                </section>
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Dieu huong</div>
+                    <div class="hub-portal-inline-actions">
+                        <a th:href="@{/games}" class="hub-portal-inline-btn">Thu vien</a>
+                        <a th:href="@{/games/quiz}" class="hub-portal-inline-btn">Quiz</a>
+                        <a th:href="@{/}" class="hub-portal-inline-btn">Trang chu</a>
+                    </div>
+                </section>
+            </div>
+        </aside>
+    </section>
+
+    <section class="hub-portal-highlights">
+        <article class="hub-portal-highlight">
+            <div class="hub-portal-highlight__icon"><i class="bi bi-layout-text-window-reverse"></i></div>
+            <div>
+                <h2>Dong bo bo cuc tung game</h2>
+                <p>Cac trang puzzle dung chung hero, panel thong tin va bo nut thao tac.</p>
+            </div>
+        </article>
+        <article class="hub-portal-highlight">
+            <div class="hub-portal-highlight__icon"><i class="bi bi-controller"></i></div>
+            <div>
+                <h2>Gameplay ro rang ngay khi vao</h2>
+                <p>Moi game co luat choi ngan gon va huong dan thao tac ngay trong man hinh dau.</p>
+            </div>
+        </article>
+        <article class="hub-portal-highlight">
+            <div class="hub-portal-highlight__icon"><i class="bi bi-brush-fill"></i></div>
+            <div>
+                <h2>Dong nhat voi giao dien web</h2>
+                <p>Mau sac, card, chip va action button theo chung design system cua site.</p>
+            </div>
+        </article>
+    </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-puzzle')}"></th:block>
+</body>
+</html>

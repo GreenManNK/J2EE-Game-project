@@ -97,8 +97,8 @@ class XiangqiOnlineRoomServiceTest {
         assertEquals("WAITING", snapshot.status());
         assertNull(snapshot.currentTurnUserId());
         assertEquals(1, service.availableRooms().size());
-        assertEquals("XQ-3", service.availableRooms().getFirst().roomId());
-        assertEquals("r", snapshot.players().getFirst().color());
+        assertEquals("XQ-3", service.availableRooms().get(0).roomId());
+        assertEquals("r", snapshot.players().get(0).color());
     }
 
     @Test
@@ -115,7 +115,7 @@ class XiangqiOnlineRoomServiceTest {
         assertEquals("GAME_OVER", surrender.room().status());
         assertNull(surrender.room().currentTurnUserId());
         assertTrue(surrender.room().statusMessage().contains("dau hang"));
-        assertEquals("Do dau hang", surrender.room().moveHistory().getLast());
+        assertEquals("Do dau hang", surrender.room().moveHistory().get(surrender.room().moveHistory().size() - 1));
 
         XiangqiOnlineRoomService.ActionResult moveAfterSurrender = service.move("XQ-4", "blackUser", 0, 0, 1, 0, null);
         assertFalse(moveAfterSurrender.ok());

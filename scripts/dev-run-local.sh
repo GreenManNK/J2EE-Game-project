@@ -45,6 +45,26 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+resolve_run_tool() {
+  if [[ -f "$REPO_ROOT/mvnw" ]]; then
+    echo "maven:$REPO_ROOT/mvnw"
+    return 0
+  fi
+  if command -v mvn >/dev/null 2>&1; then
+    echo "maven:mvn"
+    return 0
+  fi
+  if [[ -f "$REPO_ROOT/gradlew" ]]; then
+    echo "gradle:$REPO_ROOT/gradlew"
+    return 0
+  fi
+  if command -v gradle >/dev/null 2>&1; then
+    echo "gradle:gradle"
+    return 0
+  fi
+  return 1
+}
+
 if [[ "$SKIP_DOCTOR" -eq 0 ]]; then
   if [[ "$FORCE_BOOTSTRAP" -eq 1 ]]; then
     bash "$SCRIPT_DIR/dev-env-bootstrap.sh" --mode local --db auto --force
@@ -61,6 +81,21 @@ if [[ "$NO_H2_FALLBACK" -eq 0 ]]; then
 fi
 
 cd "$REPO_ROOT"
+tool_entry="$(resolve_run_tool || true)"
+if [[ -z "$tool_entry" ]]; then
+  echo "[ERR] Khong tim thay Maven/Gradle. Hay dung mvnw/mvn hoac gradlew/gradle." >&2
+  exit 2
+fi
+tool_kind="${tool_entry%%:*}"
+tool_cmd="${tool_entry#*:}"
+tool_exec=("$tool_cmd")
+if [[ "$tool_cmd" == */mvnw || "$tool_cmd" == */gradlew ]]; then
+  tool_exec=(bash "$tool_cmd")
+fi
+
 echo "[INFO] Starting Game Hub locally at http://127.0.0.1:${PORT}/Game"
-echo "[INFO] Profile=${PROFILE} | H2Fallback=$([[ "$NO_H2_FALLBACK" -eq 0 ]] && echo true || echo false)"
-exec mvn "-Dspring-boot.run.profiles=${PROFILE}" "-Dspring-boot.run.arguments=--server.port=${PORT}" spring-boot:run
+echo "[INFO] Profile=${PROFILE} | H2Fallback=$([[ "$NO_H2_FALLBACK" -eq 0 ]] && echo true || echo false) | BuildTool=${tool_kind}"
+if [[ "$tool_kind" == "maven" ]]; then
+  exec "${tool_exec[@]}" "-Dspring-boot.run.profiles=${PROFILE}" "-Dspring-boot.run.arguments=--server.port=${PORT}" spring-boot:run
+fi
+exec "${tool_exec[@]}" --no-daemon bootRun "-PspringProfile=${PROFILE}" "-PserverPort=${PORT}"

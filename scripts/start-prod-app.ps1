@@ -13,6 +13,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $pidFile = Join-Path $repoRoot "app-prod.pid"
 $outLog = Join-Path $repoRoot "run-prod-public.out.log"
 $errLog = Join-Path $repoRoot "run-prod-public.err.log"
+$buildScript = Join-Path $PSScriptRoot "build-prod.ps1"
 
 function Load-EnvFile([string]$Path) {
     if (-not (Test-Path $Path)) {
@@ -46,14 +47,30 @@ function Set-EnvDefaultIfMissing([string]$Name, [string]$Value) {
 }
 
 function Find-AppJar {
+    $candidates = @()
     $targetDir = Join-Path $repoRoot "target"
-    if (-not (Test-Path $targetDir)) {
-        return $null
+    if (Test-Path $targetDir) {
+        $candidates += Get-ChildItem $targetDir -File -Filter "*.jar" |
+            Where-Object { $_.Name -notlike "*original*" }
     }
-    return (Get-ChildItem $targetDir -File -Filter "*.jar" |
-        Where-Object { $_.Name -notlike "*original*" } |
+    $gradleLibDir = Join-Path $repoRoot "build\\libs"
+    if (Test-Path $gradleLibDir) {
+        $candidates += Get-ChildItem $gradleLibDir -File -Filter "*.jar" |
+            Where-Object { $_.Name -notlike "*-plain.jar" }
+    }
+    return ($candidates |
         Sort-Object LastWriteTime -Descending |
         Select-Object -First 1)
+}
+
+function Build-AppJar {
+    if (-not (Test-Path $buildScript)) {
+        throw "Khong tim thay script build: $buildScript"
+    }
+    & powershell -NoProfile -ExecutionPolicy Bypass -File $buildScript
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
+    }
 }
 
 function Stop-PreviousApp {
@@ -108,10 +125,9 @@ try {
     }
 
     if ($AutoBuild) {
-        & powershell -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "build-prod.ps1")
-        if ($LASTEXITCODE -ne 0) {
-            exit $LASTEXITCODE
-        }
+        # Stop running app before clean/package so target JAR is not locked.
+        Stop-PreviousApp
+        Build-AppJar
     }
 
     $jarFile = $null
@@ -125,7 +141,14 @@ try {
     }
 
     if (-not $jarFile) {
-        throw "Khong tim thay JAR. Hay chay scripts\\build-prod.ps1 truoc hoac dung -AutoBuild."
+        Write-Warning "Khong tim thay JAR. Dang auto-build 1 lan..."
+        Stop-PreviousApp
+        Build-AppJar
+        $jarFile = Find-AppJar
+    }
+
+    if (-not $jarFile) {
+        throw "Khong tim thay JAR sau khi build. Hay kiem tra scripts\\build-prod.ps1."
     }
 
     Stop-PreviousApp

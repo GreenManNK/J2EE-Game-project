@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Typing Battle')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-typing')}"></div>
+
+<main class="hub-portal-shell hub-portal-theme-typing">
+    <section class="hub-portal-hero">
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
+
+        <div class="hub-portal-hero__main">
+            <div class="hub-portal-eyebrow">
+                <i class="bi bi-keyboard-fill"></i>
+                <span>TYPING / SPEED RACE</span>
+            </div>
+
+            <h1 class="hub-portal-title">Typing Battle theo phong realtime</h1>
+            <p class="hub-portal-subtitle">
+                Dua toc do go va do chinh xac tren cung mot cau mau. Giao dien phong choi, HUD va
+                ket qua da dong bo voi phong cach chung cua web.
+            </p>
+
+            <div class="hub-portal-chip-row">
+                <span class="hub-portal-chip is-live"><i class="bi bi-people-fill"></i> 2+ nguoi la bat dau</span>
+                <span class="hub-portal-chip"><i class="bi bi-check2-circle"></i> Chi thang khi go dung 100%</span>
+                <span class="hub-portal-chip"><i class="bi bi-speedometer2"></i> Theo doi WPM + Accuracy</span>
+                <span class="hub-portal-chip"><i class="bi bi-arrow-repeat"></i> Co rematch sau tran</span>
+            </div>
+
+            <details class="game-rules">
+                <summary>Luat choi typing race</summary>
+                <ul>
+                    <li>Phong bat dau khi co it nhat 2 nguoi choi.</li>
+                    <li>Chi duoc tinh ve dich khi go chinh xac toan bo cau.</li>
+                    <li>Nguoi hoan thanh dung dau tien la nguoi thang.</li>
+                    <li>Sau tran co the bam Rematch de choi tiep ngay.</li>
+                </ul>
+            </details>
+
+            <div id="room-selection" class="typing-room-panel">
+                <div class="typing-lobby-head">
+                    <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">
+                        <span class="hub-portal-action__icon"><i class="bi bi-plus-circle-fill"></i></span>
+                        <span class="hub-portal-action__text">Tao phong</span>
+                    </button>
+                    <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
+                </div>
+                <div class="hub-portal-action typing-join-row">
+                    <input type="text" id="room-id-input" placeholder="Nhap Room ID" class="form-control">
+                    <button id="join-room-btn" class="hub-portal-action__icon" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
+                </div>
+                <div id="typing-room-list" class="typing-room-list"></div>
+                <p id="typing-connection-status" class="typing-note">Chua ket noi.</p>
+            </div>
+
+            <div id="game-container" class="typing-shell" hidden>
+                <div class="typing-room-tools">
+                    <button id="copy-room-btn" class="hub-portal-action">Sao chep Room ID</button>
+                    <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
+                    <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
+                    <button id="rematch-btn" class="hub-portal-action">Tai dau</button>
+                </div>
+
+                <div class="typing-hud">
+                    <div class="typing-hud__item"><span>Phong</span><strong id="room-id-display">-</strong></div>
+                    <div class="typing-hud__item"><span>Trang thai</span><strong id="race-status">WAITING</strong></div>
+                    <div class="typing-hud__item"><span>WPM</span><strong id="wpm-value">0</strong></div>
+                    <div class="typing-hud__item"><span>Do chinh xac</span><strong id="accuracy-value">0%</strong></div>
+                </div>
+
+                <section class="typing-target-card">
+                    <p class="typing-target-label">Cau mau</p>
+                    <div id="text-to-type" class="typing-target-text"></div>
+                </section>
+
+                <textarea id="typing-input" class="form-control" rows="5" disabled placeholder="Dang cho tran bat dau..."></textarea>
+
+                <div id="players-progress" class="typing-progress-board"></div>
+                <div id="winner-display" class="typing-winner" hidden></div>
+                <p id="typing-status-note" class="typing-note"></p>
+            </div>
+        </div>
+
+        <aside class="hub-portal-hero__side">
+            <section class="hub-portal-panel">
+                <div class="hub-portal-panel__head">
+                    <div>
+                        <div class="hub-portal-panel__label">Flow tran dau</div>
+                        <div class="hub-portal-panel__title">Tu lobby den ket qua</div>
+                    </div>
+                    <span class="hub-portal-pill">Realtime</span>
+                </div>
+                <ol class="hub-portal-inline-list mb-0">
+                    <li><span>Tao/JOIN room</span><strong>Lobby</strong></li>
+                    <li><span>Cho du nguoi choi</span><strong>Cho bat dau</strong></li>
+                    <li><span>Go van ban chinh xac</span><strong>Dang dua</strong></li>
+                    <li><span>Thong bao nguoi thang + rematch</span><strong>Ket thuc</strong></li>
+                </ol>
+            </section>
+
+            <div class="hub-portal-mini-grid">
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Luat tinh thang</div>
+                    <ul class="hub-portal-bullet-list mb-0">
+                        <li>Chi can du toc do la chua du, phai go dung.</li>
+                        <li>Nguoi ve dich truoc duoc uu tien thang.</li>
+                        <li>Neu go sai, van tiep tuc sua den khi dung.</li>
+                    </ul>
+                </section>
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Dieu huong</div>
+                    <div class="hub-portal-inline-actions">
+                        <a th:href="@{/games}" class="hub-portal-inline-btn">Thu vien</a>
+                        <a th:href="@{/games/quiz}" class="hub-portal-inline-btn">Quiz</a>
+                        <a th:href="@{/games/cards/blackjack}" class="hub-portal-inline-btn">Blackjack</a>
+                    </div>
+                </section>
+            </div>
+        </aside>
+    </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-typing')}"></th:block>
+<style>
+    .typing-room-panel {
+        display: grid;
+        gap: 0.75rem;
+        max-width: 860px;
+    }
+
+    .game-rules {
+        margin: 0.55rem 0 0.8rem;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.08);
+        padding: 0.55rem 0.7rem;
+    }
+
+    .game-rules summary {
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .game-rules ul {
+        margin: 0.45rem 0 0;
+        padding-left: 1.1rem;
+        display: grid;
+        gap: 0.25rem;
+        font-size: 0.88rem;
+    }
+
+    .typing-lobby-head {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+    }
+
+    .typing-join-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .typing-room-list {
+        display: grid;
+        gap: 0.45rem;
+        max-height: 190px;
+        overflow: auto;
+        padding-right: 4px;
+    }
+
+    .typing-room-item {
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 0.5rem 0.6rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 0.55rem;
+        align-items: center;
+        font-size: 0.85rem;
+    }
+
+    .typing-shell {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .typing-room-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .typing-hud {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.55rem;
+    }
+
+    .typing-hud__item {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 12px;
+        padding: 0.7rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .typing-hud__item span {
+        font-size: 0.75rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        opacity: 0.85;
+    }
+
+    .typing-target-card {
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(9, 25, 40, 0.34);
+        padding: 0.85rem;
+        display: grid;
+        gap: 0.4rem;
+    }
+
+    .typing-target-label {
+        margin: 0;
+        font-size: 0.8rem;
+        opacity: 0.8;
+        text-transform: uppercase;
+    }
+
+    .typing-target-text {
+        line-height: 1.5;
+        min-height: 58px;
+        word-break: break-word;
+        font-size: 1rem;
+    }
+
+    .typing-target-text .typed-correct {
+        color: #86efac;
+    }
+
+    .typing-target-text .typed-wrong {
+        color: #fecaca;
+        text-decoration: underline;
+    }
+
+    .typing-target-text .typed-pending {
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .typing-progress-board {
+        display: grid;
+        gap: 0.7rem;
+    }
+
+    .typing-player-row {
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 12px;
+        padding: 0.6rem 0.7rem;
+        background: rgba(255, 255, 255, 0.05);
+        display: grid;
+        gap: 0.4rem;
+    }
+
+    .typing-player-row.me {
+        border-color: rgba(56, 189, 248, 0.95);
+        box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.45) inset;
+    }
+
+    .typing-player-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .typing-player-bar {
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.16);
+        overflow: hidden;
+    }
+
+    .typing-player-bar > div {
+        height: 100%;
+        background: linear-gradient(90deg, #22d3ee, #3b82f6);
+        transition: width 0.25s ease;
+    }
+
+    .typing-winner {
+        border: 1px solid rgba(187, 247, 208, 0.7);
+        background: rgba(22, 163, 74, 0.18);
+        color: #dcfce7;
+        border-radius: 12px;
+        padding: 0.7rem 0.75rem;
+        font-weight: 600;
+    }
+
+    .typing-note {
+        margin: 0;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .typing-note.error {
+        color: #fecaca;
+    }
+
+    .typing-note.success {
+        color: #bbf7d0;
+    }
+</style>
+<script>
+    const createRoomBtn = document.getElementById('create-room-btn');
+    const joinRoomBtn = document.getElementById('join-room-btn');
+    const refreshRoomListBtn = document.getElementById('refresh-room-list-btn');
+    const roomIdInput = document.getElementById('room-id-input');
+    const roomListEl = document.getElementById('typing-room-list');
+
+    const roomSelection = document.getElementById('room-selection');
+    const gameContainer = document.getElementById('game-container');
+
+    const roomIdDisplay = document.getElementById('room-id-display');
+    const raceStatusEl = document.getElementById('race-status');
+    const wpmValueEl = document.getElementById('wpm-value');
+    const accuracyValueEl = document.getElementById('accuracy-value');
+    const statusNoteEl = document.getElementById('typing-status-note');
+    const connectionStatusEl = document.getElementById('typing-connection-status');
+
+    const textToType = document.getElementById('text-to-type');
+    const typingInput = document.getElementById('typing-input');
+    const playersProgress = document.getElementById('players-progress');
+    const winnerDisplay = document.getElementById('winner-display');
+
+    const copyRoomBtn = document.getElementById('copy-room-btn');
+    const shareRoomBtn = document.getElementById('share-room-btn');
+    const leaveRoomBtn = document.getElementById('leave-room-btn');
+    const rematchBtn = document.getElementById('rematch-btn');
+
+    const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+        ? window.CaroUrl.path
+        : (value) => value;
+    const appContextPath = (window.CaroUrl && typeof window.CaroUrl.contextPath === 'string')
+        ? window.CaroUrl.contextPath
+        : '';
+
+    let socket;
+    let roomId;
+    let myPlayerId;
+    let latestRoom;
+    let raceStartedAt;
+    let progressSendThrottle;
+    let roomListTimer;
+
+    function buildWsUrl(path) {
+        const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const normalizedPath = path.startsWith('/') ? path : ('/' + path);
+        return protocol + '://' + window.location.host + appContextPath + normalizedPath;
+    }
+
+    function setConnectionStatus(message, type) {
+        connectionStatusEl.textContent = message;
+        connectionStatusEl.classList.remove('error', 'success');
+        if (type) {
+            connectionStatusEl.classList.add(type);
+        }
+    }
+
+    function setStatus(message, type) {
+        statusNoteEl.textContent = message;
+        statusNoteEl.classList.remove('error', 'success');
+        if (type) {
+            statusNoteEl.classList.add(type);
+        }
+    }
+
+    function openSocket(actionPayload) {
+        if (socket && socket.readyState <= 1) {
+            socket.close();
+        }
+        setConnectionStatus('Dang ket noi...', '');
+        socket = new WebSocket(buildWsUrl('/game/typing'));
+        socket.onopen = () => {
+            setConnectionStatus('Da ket noi.', 'success');
+            socket.send(JSON.stringify(actionPayload));
+        };
+        setupSocket();
+    }
+
+    function safeSend(payload) {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify(payload));
+            return true;
+        }
+        return false;
+    }
+
+    createRoomBtn.addEventListener('click', () => {
+        myPlayerId = null;
+        openSocket({ action: 'create' });
+    });
+
+    joinRoomBtn.addEventListener('click', () => {
+        roomId = roomIdInput.value.trim();
+        if (!roomId) {
+            setConnectionStatus('Can nhap Room ID.', 'error');
+            return;
+        }
+        myPlayerId = null;
+        openSocket({ action: 'join', roomId });
+    });
+
+    refreshRoomListBtn.addEventListener('click', () => {
+        fetchRoomList(true);
+    });
+
+    copyRoomBtn.addEventListener('click', async () => {
+        if (!roomId) {
+            setStatus('Room ID dang rong.', 'error');
+            return;
+        }
+        const ok = await copyToClipboard(roomId);
+        setStatus(ok ? 'Da copy Room ID.' : 'Khong the copy Room ID.', ok ? 'success' : 'error');
+    });
+
+    shareRoomBtn.addEventListener('click', async () => {
+        if (!roomId) {
+            setStatus('Room ID dang rong.', 'error');
+            return;
+        }
+        const inviteUrl = buildInviteUrl(roomId);
+        const ok = await copyToClipboard(inviteUrl);
+        setStatus(ok ? 'Da copy link moi.' : 'Khong the copy link moi.', ok ? 'success' : 'error');
+    });
+
+    leaveRoomBtn.addEventListener('click', () => {
+        leaveRoom();
+    });
+
+    rematchBtn.addEventListener('click', () => {
+        if (!roomId) {
+            return;
+        }
+        if (safeSend({ action: 'rematch', roomId })) {
+            setStatus('Da gui yeu cau rematch. Dang chuan bi cau moi...', '');
+        }
+    });
+
+    typingInput.addEventListener('input', () => {
+        if (!latestRoom || latestRoom.gameState !== 'PLAYING') {
+            return;
+        }
+        renderTargetText(latestRoom.textToType || '', typingInput.value);
+        updateLocalStats(typingInput.value, latestRoom.textToType || '');
+
+        if (progressSendThrottle) {
+            window.clearTimeout(progressSendThrottle);
+        }
+        progressSendThrottle = window.setTimeout(() => {
+            safeSend({ action: 'progress', roomId, typed: typingInput.value });
+        }, 70);
+    });
+
+    function setupSocket() {
+        roomSelection.hidden = true;
+        gameContainer.hidden = false;
+
+        socket.onmessage = (event) => {
+            const room = JSON.parse(event.data);
+            if (room.error) {
+                setStatus(room.error, 'error');
+                return;
+            }
+
+            latestRoom = room;
+            roomId = room.id;
+            myPlayerId = room.yourId || myPlayerId;
+
+            roomIdDisplay.textContent = roomId || '-';
+            roomIdInput.value = roomId || '';
+            raceStatusEl.textContent = room.gameState || 'WAITING';
+
+            const text = room.textToType || '';
+            const myTyped = getMyTypedText(room);
+            renderTargetText(text, myTyped);
+            updateLocalStats(myTyped, text);
+
+            if (room.gameState === 'PLAYING') {
+                typingInput.disabled = false;
+                typingInput.placeholder = 'Go tai day...';
+                if (!raceStartedAt) {
+                    raceStartedAt = Date.now();
+                }
+                setStatus('Tran dang dien ra. Tiep tuc go!', '');
+            } else if (room.gameState === 'WAITING') {
+                typingInput.disabled = true;
+                typingInput.placeholder = 'Dang cho them nguoi choi...';
+                raceStartedAt = null;
+                setStatus('Can it nhat 2 nguoi de bat dau.', '');
+            }
+
+            renderPlayers(room);
+
+            if (room.gameState === 'FINISHED') {
+                typingInput.disabled = true;
+                const winner = room.winner || 'Chua xac dinh';
+                winnerDisplay.hidden = false;
+                winnerDisplay.textContent = `Nguoi thang: ${winner}`;
+                rematchBtn.disabled = false;
+                setStatus('Tran da ket thuc. Bam rematch de choi tiep.', 'success');
+            } else {
+                winnerDisplay.hidden = true;
+                rematchBtn.disabled = room.gameState !== 'PLAYING' && room.gameState !== 'WAITING';
+            }
+        };
+
+        socket.onclose = () => {
+            setConnectionStatus('Da ngat ket noi.', 'error');
+            typingInput.disabled = true;
+        };
+
+        socket.onerror = () => {
+            setConnectionStatus('Loi WebSocket.', 'error');
+        };
+    }
+
+    function getMyTypedText(room) {
+        if (!room || !room.players) {
+            return '';
+        }
+        if (myPlayerId && room.players[myPlayerId]) {
+            return room.players[myPlayerId].typed || '';
+        }
+        const entries = Object.entries(room.players);
+        if (entries.length === 1) {
+            myPlayerId = entries[0][0];
+            return entries[0][1].typed || '';
+        }
+        return typingInput.value || '';
+    }
+
+    function renderTargetText(sourceText, typedText) {
+        const source = String(sourceText || '');
+        const typed = String(typedText || '');
+
+        let correctUntil = 0;
+        for (let i = 0; i < Math.min(source.length, typed.length); i += 1) {
+            if (source[i] === typed[i]) {
+                correctUntil += 1;
+            } else {
+                break;
+            }
+        }
+
+        const correctPart = escapeHtml(source.slice(0, correctUntil));
+        const wrongPart = escapeHtml(source.slice(correctUntil, typed.length));
+        const pendingPart = escapeHtml(source.slice(typed.length));
+
+        textToType.innerHTML =
+            `<span class="typed-correct">${correctPart}</span>` +
+            `<span class="typed-wrong">${wrongPart}</span>` +
+            `<span class="typed-pending">${pendingPart}</span>`;
+    }
+
+    function updateLocalStats(typedText, sourceText) {
+        const typed = String(typedText || '');
+        const source = String(sourceText || '');
+        let correctChars = 0;
+
+        for (let i = 0; i < Math.min(typed.length, source.length); i += 1) {
+            if (typed[i] === source[i]) {
+                correctChars += 1;
+            }
+        }
+
+        const accuracy = typed.length === 0 ? 0 : (correctChars / typed.length) * 100;
+        const elapsedMinutes = raceStartedAt ? Math.max((Date.now() - raceStartedAt) / 60000, 1 / 60) : 1 / 60;
+        const wpm = Math.max(0, Math.round((typed.length / 5) / elapsedMinutes));
+
+        accuracyValueEl.textContent = `${accuracy.toFixed(1)}%`;
+        wpmValueEl.textContent = String(wpm);
+    }
+
+    function renderPlayers(room) {
+        const players = room.players || {};
+        const textLength = Math.max(String(room.textToType || '').length, 1);
+
+        const rows = Object.entries(players)
+            .map(([playerId, progress]) => {
+                const typed = String(progress.typed || '');
+                const progressPercentage = Math.min(100, (typed.length / textLength) * 100);
+                const accuracy = Number(progress.accuracy || 0).toFixed(1);
+                return {
+                    playerId,
+                    progressPercentage,
+                    accuracy,
+                    typedLength: typed.length
+                };
+            })
+            .sort((a, b) => b.typedLength - a.typedLength || Number(b.accuracy) - Number(a.accuracy));
+
+        playersProgress.innerHTML = '';
+        rows.forEach((row) => {
+            const el = document.createElement('div');
+            el.className = 'typing-player-row' + (row.playerId === myPlayerId ? ' me' : '');
+            el.innerHTML = `
+                <div class="typing-player-head">
+                    <strong>${escapeHtml(row.playerId)}</strong>
+                    <span>${row.typedLength} ky tu | ${row.accuracy}%</span>
+                </div>
+                <div class="typing-player-bar">
+                    <div style="width: ${row.progressPercentage.toFixed(2)}%;"></div>
+                </div>
+            `;
+            playersProgress.appendChild(el);
+        });
+    }
+
+    function leaveRoom() {
+        if (socket && socket.readyState <= 1) {
+            socket.close();
+        }
+        socket = null;
+        latestRoom = null;
+        roomId = '';
+        myPlayerId = null;
+        raceStartedAt = null;
+
+        typingInput.value = '';
+        typingInput.disabled = true;
+        winnerDisplay.hidden = true;
+        roomSelection.hidden = false;
+        gameContainer.hidden = true;
+        setConnectionStatus('Da quay lai lobby.', 'success');
+        setStatus('', '');
+        fetchRoomList(true);
+    }
+
+    async function fetchRoomList(showFallbackMessage) {
+        try {
+            const response = await fetch(appPath('/games/typing/rooms'));
+            if (!response.ok) {
+                throw new Error('Khong tai duoc danh sach phong');
+            }
+            const rooms = await response.json();
+            renderRoomList(Array.isArray(rooms) ? rooms : []);
+        } catch (error) {
+            if (showFallbackMessage) {
+                roomListEl.innerHTML = '<div class="typing-note error">Khong tai duoc danh sach phong.</div>';
+            }
+        }
+    }
+
+    function renderRoomList(rooms) {
+        roomListEl.innerHTML = '';
+        if (rooms.length === 0) {
+            roomListEl.innerHTML = '<div class="typing-note">Chua co phong dang hoat dong.</div>';
+            return;
+        }
+
+        rooms.forEach((room) => {
+            const row = document.createElement('div');
+            row.className = 'typing-room-item';
+            row.innerHTML = `
+                <div>
+                    <strong>${escapeHtml(room.id)}</strong><br>
+                    <span>${escapeHtml(room.gameState || 'WAITING')} | Nguoi choi: ${room.playerCount || 0}</span>
+                </div>
+                <button class="hub-portal-action__icon" data-join="${escapeHtml(room.id)}" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
+            `;
+            roomListEl.appendChild(row);
+        });
+
+        roomListEl.querySelectorAll('[data-join]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const targetRoom = button.getAttribute('data-join');
+                if (!targetRoom) {
+                    return;
+                }
+                roomIdInput.value = targetRoom;
+                myPlayerId = null;
+                openSocket({ action: 'join', roomId: targetRoom });
+            });
+        });
+    }
+
+    function setupRoomPolling() {
+        if (roomListTimer) {
+            window.clearInterval(roomListTimer);
+        }
+        roomListTimer = window.setInterval(() => {
+            if (!roomSelection.hidden) {
+                fetchRoomList(false);
+            }
+        }, 8000);
+    }
+
+    function buildInviteUrl(roomIdValue) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('room', roomIdValue);
+        return url.toString();
+    }
+
+    async function copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (_) {
+            const fallback = document.createElement('textarea');
+            fallback.value = text;
+            fallback.style.position = 'fixed';
+            fallback.style.left = '-9999px';
+            document.body.appendChild(fallback);
+            fallback.select();
+            const ok = document.execCommand('copy');
+            fallback.remove();
+            return ok;
+        }
+    }
+
+    function applyAutoJoinFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const room = (params.get('room') || '').trim();
+        if (!room) {
+            return;
+        }
+        roomIdInput.value = room;
+        myPlayerId = null;
+        openSocket({ action: 'join', roomId: room });
+    }
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+
+    rematchBtn.disabled = true;
+    fetchRoomList(true);
+    setupRoomPolling();
+    applyAutoJoinFromUrl();
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 <body>
 <div th:replace="~{fragments :: appShell('tien-len')}"></div>
 
-<main class="container py-3 pb-5">
+<main class="container py-3 pb-5 tienlen-arena-shell">
   <section class="gx-page-hero theme-box text-center mb-3">
     <div class="home-dashboard__eyebrow mx-auto">
       <i class="bi bi-suit-spade-fill"></i>
@@ -84,6 +84,8 @@
             </div>
             <div class="tl-table-center__hint">Ban cua ban luon duoc sap xep o vi tri phia duoi</div>
           </div>
+
+          <aside id="tlScoreBoard" class="tl-scoreboard" aria-live="polite"></aside>
         </div>
       </div>
     </section>
@@ -825,6 +827,269 @@
     background: rgba(255,255,255,0.52);
   }
 
+  /* Arena table refresh inspired by reference image */
+  .tienlen-arena-shell .tienlen-players-board.tl-table-stage {
+    min-height: 560px;
+    padding: 20px 18px;
+    border-radius: 26px;
+    border: 1px solid rgba(8, 54, 34, 0.55);
+    background:
+      radial-gradient(circle at 50% 50%, rgba(12, 114, 67, 0.86), rgba(2, 75, 42, 0.94) 60%, rgba(2, 59, 33, 1)),
+      linear-gradient(180deg, rgba(5, 67, 39, 0.95), rgba(2, 54, 30, 0.98));
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.03),
+      inset 0 24px 46px rgba(255,255,255,0.04),
+      0 16px 32px rgba(2, 22, 12, 0.35);
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    min-height: 102px;
+    padding: 2px;
+    overflow: visible;
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot::before {
+    content: none;
+  }
+
+  .tienlen-arena-shell .tl-seat-slot--top,
+  .tienlen-arena-shell .tl-seat-slot--left,
+  .tienlen-arena-shell .tl-seat-slot--right {
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .tienlen-arena-shell .tl-seat-slot--bottom {
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot.is-turn,
+  .tienlen-arena-shell .tienlen-player-slot.is-control,
+  .tienlen-arena-shell .tienlen-player-slot.is-me,
+  .tienlen-arena-shell .tienlen-player-slot.is-winner {
+    border: 0;
+    box-shadow: none;
+    animation: none;
+  }
+
+  .tienlen-arena-shell .tl-player-slot__head {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tienlen-arena-shell .tl-player-avatar {
+    width: 66px;
+    height: 66px;
+    border: 3px solid rgba(255, 255, 255, 0.68);
+    background: linear-gradient(140deg, #2ea770, #1d7fbd);
+    box-shadow:
+      0 8px 16px rgba(0,0,0,0.36),
+      0 0 0 4px rgba(0,0,0,0.14);
+    overflow: hidden;
+  }
+
+  .tienlen-arena-shell .tl-player-avatar__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot.is-turn .tl-player-avatar {
+    box-shadow:
+      0 8px 16px rgba(0,0,0,0.36),
+      0 0 0 4px rgba(220, 20, 90, 0.28),
+      0 0 0 8px rgba(220, 20, 90, 0.18);
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot.is-me .tl-player-avatar {
+    border-color: rgba(255, 224, 136, 0.95);
+  }
+
+  .tienlen-arena-shell .tl-player-slot__name {
+    color: #f6fff9;
+    font-size: 0.86rem;
+    max-width: 122px;
+  }
+
+  .tienlen-arena-shell .tl-player-slot__uid,
+  .tienlen-arena-shell .tl-player-slot__footer,
+  .tienlen-arena-shell .tl-player-slot__count {
+    display: none;
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot.is-compact .tl-player-slot__meta {
+    justify-content: center;
+  }
+
+  .tienlen-arena-shell .tl-player-slot__chips {
+    justify-content: center;
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot.is-compact .tl-seat-badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
+
+  .tienlen-arena-shell .tl-player-fan {
+    width: 66px;
+    height: 34px;
+    border-radius: 12px 12px 6px 6px;
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .tienlen-arena-shell .tl-player-fan::before,
+  .tienlen-arena-shell .tl-player-fan::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: 16px;
+    height: 26px;
+    border-radius: 5px 5px 2px 2px;
+    border: 1px solid rgba(255,255,255,0.65);
+    background:
+      repeating-linear-gradient(
+        90deg,
+        rgba(185, 116, 152, 0.92) 0 2px,
+        rgba(240, 210, 228, 0.65) 2px 3px
+      );
+    box-shadow: 0 5px 10px rgba(0,0,0,0.26);
+  }
+
+  .tienlen-arena-shell .tl-player-fan::before {
+    left: 10px;
+    transform: rotate(-12deg);
+  }
+
+  .tienlen-arena-shell .tl-player-fan::after {
+    right: 10px;
+    transform: rotate(12deg);
+  }
+
+  .tienlen-arena-shell .tl-table-center {
+    border: 0;
+    min-height: 190px;
+    background: rgba(0, 0, 0, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+    backdrop-filter: blur(1px);
+    justify-content: center;
+    align-items: center;
+  }
+
+  .tienlen-arena-shell .tl-table-center__header,
+  .tienlen-arena-shell .tl-table-center__hint {
+    text-align: center;
+    align-items: center;
+  }
+
+  .tienlen-arena-shell .tl-table-center .tl-trick-cards {
+    width: min(420px, 100%);
+    min-height: 120px;
+    border: 0;
+    background: rgba(0, 0, 0, 0.10);
+  }
+
+  .tienlen-arena-shell .tl-trick-cards .tienlen-card-btn.readonly {
+    margin-right: -14px;
+  }
+
+  .tienlen-arena-shell .tl-scoreboard {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 176px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(0, 0, 0, 0.22);
+    padding: 8px;
+    display: grid;
+    gap: 6px;
+    z-index: 5;
+    color: #f1fff7;
+  }
+
+  .tienlen-arena-shell .tl-scoreboard__head {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #ffde7a;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .tienlen-arena-shell .tl-scoreboard__empty {
+    font-size: 0.74rem;
+    color: rgba(241, 255, 247, 0.72);
+  }
+
+  .tienlen-arena-shell .tl-score-item {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    color: rgba(245, 255, 250, 0.95);
+  }
+
+  .tienlen-arena-shell .tl-score-item__avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.5);
+    object-fit: cover;
+    background: rgba(255,255,255,0.16);
+  }
+
+  .tienlen-arena-shell .tl-score-item__avatar--text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.56rem;
+    font-weight: 700;
+    color: #f4fff9;
+    text-transform: uppercase;
+  }
+
+  .tienlen-arena-shell .tl-score-item__name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .tienlen-arena-shell .tl-score-item__points {
+    font-weight: 700;
+    color: #fff2b9;
+  }
+
+  .tienlen-arena-shell .tl-score-item.is-turn .tl-score-item__points {
+    color: #ff99bd;
+  }
+
+  .tienlen-arena-shell .tl-player-hand {
+    justify-content: center;
+  }
+
+  .tienlen-arena-shell .tl-player-hand .tienlen-card-btn {
+    margin-right: -24px;
+  }
+
+  .tienlen-arena-shell .tl-player-hand .tienlen-card-btn:last-child {
+    margin-right: 0;
+  }
+
   .tienlen-player-slot.turn-flash {
     animation: tlSeatFlash 520ms ease-out;
   }
@@ -906,6 +1171,35 @@
 
     .tl-table-center__hint {
       display: none;
+    }
+
+    .tienlen-arena-shell .tl-player-avatar {
+      width: 58px;
+      height: 58px;
+    }
+
+    .tienlen-arena-shell .tl-player-fan {
+      width: 58px;
+      top: -16px;
+    }
+
+    .tienlen-arena-shell .tl-scoreboard {
+      width: 154px;
+      top: 8px;
+      right: 8px;
+      padding: 6px;
+      gap: 5px;
+    }
+
+    .tienlen-arena-shell .tl-score-item {
+      grid-template-columns: 21px 1fr auto;
+      gap: 5px;
+      font-size: 0.72rem;
+    }
+
+    .tienlen-arena-shell .tl-score-item__avatar {
+      width: 21px;
+      height: 21px;
     }
   }
 
@@ -1019,6 +1313,49 @@
 
     .tl-trick-cards .tienlen-card-btn.readonly {
       margin-right: -7px;
+    }
+
+    .tienlen-arena-shell .tl-player-avatar {
+      width: 48px;
+      height: 48px;
+      border-width: 2px;
+    }
+
+    .tienlen-arena-shell .tl-player-fan {
+      width: 48px;
+      height: 26px;
+      top: -14px;
+    }
+
+    .tienlen-arena-shell .tl-player-fan::before,
+    .tienlen-arena-shell .tl-player-fan::after {
+      width: 12px;
+      height: 20px;
+    }
+
+    .tienlen-arena-shell .tl-scoreboard {
+      width: 122px;
+      top: 6px;
+      right: 6px;
+      border-radius: 10px;
+      padding: 5px;
+      gap: 4px;
+    }
+
+    .tienlen-arena-shell .tl-scoreboard__head {
+      font-size: 0.66rem;
+      gap: 3px;
+    }
+
+    .tienlen-arena-shell .tl-score-item {
+      grid-template-columns: 18px 1fr auto;
+      gap: 4px;
+      font-size: 0.64rem;
+    }
+
+    .tienlen-arena-shell .tl-score-item__avatar {
+      width: 18px;
+      height: 18px;
     }
   }
 

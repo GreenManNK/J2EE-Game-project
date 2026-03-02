@@ -54,6 +54,30 @@
   --gp-primary-deep: #0b5b55;
 }
 
+.hub-portal-theme-quiz {
+  --gp-primary: #0f62fe;
+  --gp-secondary: #f97316;
+  --gp-primary-deep: #1049c5;
+}
+
+.hub-portal-theme-typing {
+  --gp-primary: #0ea5e9;
+  --gp-secondary: #14b8a6;
+  --gp-primary-deep: #0369a1;
+}
+
+.hub-portal-theme-blackjack {
+  --gp-primary: #047857;
+  --gp-secondary: #f59e0b;
+  --gp-primary-deep: #065f46;
+}
+
+.hub-portal-theme-puzzle {
+  --gp-primary: #2563eb;
+  --gp-secondary: #22c55e;
+  --gp-primary-deep: #1e40af;
+}
+
 .hub-portal-shell * {
   box-sizing: border-box;
 }

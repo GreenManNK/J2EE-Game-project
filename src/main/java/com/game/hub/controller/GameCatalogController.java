@@ -46,6 +46,9 @@ public class GameCatalogController {
             case "xiangqi" -> "games/xiangqi";
             case "minesweeper" -> "games/minesweeper";
             case "cards" -> "games/cards";
+            case "quiz" -> "games/quiz";
+            case "typing" -> "games/typing";
+            case "puzzle" -> "games/puzzle/index";
             default -> "games/detail";
         };
     }

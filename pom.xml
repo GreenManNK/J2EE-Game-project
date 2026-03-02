@@ -18,7 +18,8 @@
     <description>Java conversion of the original ASP.NET Caro project</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
+        <maven.enforcer.min.version>3.8.6</maven.enforcer.min.version>
     </properties>
 
     <dependencies>
@@ -84,6 +85,31 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-toolchain-compatibility</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[17,)</version>
+                                    <message>Yeu cau Java 17+ de build/run du an.</message>
+                                </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>[${maven.enforcer.min.version},)</version>
+                                    <message>Yeu cau Maven ${maven.enforcer.min.version}+ (hoac su dung ./mvnw / mvnw.cmd).</message>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

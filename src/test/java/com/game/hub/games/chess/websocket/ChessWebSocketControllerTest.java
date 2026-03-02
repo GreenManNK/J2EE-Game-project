@@ -1,5 +1,6 @@
 package com.game.hub.games.chess.websocket;
 
+import com.game.hub.service.AchievementService;
 import com.game.hub.games.chess.service.ChessOnlineRoomService;
 import com.game.hub.repository.UserAccountRepository;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ class ChessWebSocketControllerTest {
         ChessOnlineRoomService roomService = mock(ChessOnlineRoomService.class);
         SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        AchievementService achievementService = mock(AchievementService.class);
         SimpMessageHeaderAccessor headers = mock(SimpMessageHeaderAccessor.class);
 
         when(headers.getSessionAttributes()).thenReturn(Map.of("AUTH_USER_ID", "blackUser"));
@@ -29,6 +31,7 @@ class ChessWebSocketControllerTest {
             "CHESS-FINAL",
             2,
             2,
+            0,
             "GAME_OVER",
             "Chieu het. Den thang.",
             null,
@@ -44,7 +47,7 @@ class ChessWebSocketControllerTest {
         when(roomService.move("CHESS-FINAL", "blackUser", 0, 3, 4, 7, null))
             .thenReturn(ChessOnlineRoomService.ActionResult.ok("MOVE", room));
 
-        ChessWebSocketController controller = new ChessWebSocketController(roomService, messagingTemplate, userAccountRepository);
+        ChessWebSocketController controller = new ChessWebSocketController(roomService, messagingTemplate, userAccountRepository, achievementService);
         ChessMoveMessage message = new ChessMoveMessage();
         message.setRoomId("CHESS-FINAL");
         message.setUserId("blackUser");

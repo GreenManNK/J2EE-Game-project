@@ -1,5 +1,6 @@
 package com.game.hub.games.caro.websocket;
 
+import com.game.hub.service.AchievementService;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.UserAccountRepository;
 import com.game.hub.games.caro.service.GameRoomService;
@@ -27,14 +28,17 @@ public class GameWebSocketController {
     private final GameRoomService gameRoomService;
     private final SimpMessagingTemplate messagingTemplate;
     private final UserAccountRepository userAccountRepository;
+    private final AchievementService achievementService;
     private final Map<String, RoomPresence> sessionRoomPresence = new ConcurrentHashMap<>();
 
     public GameWebSocketController(GameRoomService gameRoomService,
                                    SimpMessagingTemplate messagingTemplate,
-                                   UserAccountRepository userAccountRepository) {
+                                   UserAccountRepository userAccountRepository,
+                                   AchievementService achievementService) {
         this.gameRoomService = gameRoomService;
         this.messagingTemplate = messagingTemplate;
         this.userAccountRepository = userAccountRepository;
+        this.achievementService = achievementService;
     }
 
     @MessageMapping("/game.join")
@@ -60,6 +64,7 @@ public class GameWebSocketController {
             "symbol", result.symbol(),
             "currentTurnUserId", result.currentTurnUserId() == null ? "" : result.currentTurnUserId(),
             "playerCount", result.playerCount(),
+            "spectatorCount", result.spectatorCount(),
             "board", gameRoomService.getBoardSnapshot(message.getRoomId()),
             "displayName", playerMeta.displayName(),
             "avatarPath", playerMeta.avatarPath()
@@ -68,6 +73,32 @@ public class GameWebSocketController {
         messagingTemplate.convertAndSend("/topic/lobby.rooms", Map.of(
             "type", "ROOM_LIST",
             "rooms", gameRoomService.availableRooms()
+        ));
+    }
+    
+    @MessageMapping("/game.spectate")
+    public void spectate(JoinGameMessage message, SimpMessageHeaderAccessor headers) {
+        if (message == null) {
+            return;
+        }
+        String userId = requireConnectionUser(message.getRoomId(), message.getUserId(), headers);
+        if (userId == null) {
+            return;
+        }
+        GameRoomService.JoinResult result = gameRoomService.joinAsSpectator(message.getRoomId(), userId);
+        if (!result.ok()) {
+            sendUserError(message.getRoomId(), userId, result.error());
+            return;
+        }
+        rememberRoomPresence(headers, message.getRoomId(), userId);
+
+        PlayerMeta playerMeta = playerMeta(userId);
+        messagingTemplate.convertAndSend("/topic/room." + message.getRoomId(), Map.of(
+            "type", "SPECTATOR_JOINED",
+            "userId", userId,
+            "spectatorCount", result.spectatorCount(),
+            "displayName", playerMeta.displayName(),
+            "avatarPath", playerMeta.avatarPath()
         ));
     }
 
@@ -97,6 +128,8 @@ public class GameWebSocketController {
         messagingTemplate.convertAndSend("/topic/room." + message.getRoomId(), movePayload);
 
         if (result.win()) {
+            achievementService.checkAndAward(result.winnerUserId(), "Caro", true);
+            achievementService.checkAndAward(result.loserUserId(), "Caro", false);
             Map<String, Object> gameOverPayload = new HashMap<>();
             gameOverPayload.put("type", "GAME_OVER");
             gameOverPayload.put("winnerUserId", result.winnerUserId());
@@ -163,6 +196,9 @@ public class GameWebSocketController {
             sendUserError(message.getRoomId(), userId, result.error());
             return;
         }
+
+        achievementService.checkAndAward(result.winnerUserId(), "Caro", true);
+        achievementService.checkAndAward(result.loserUserId(), "Caro", false);
 
         Map<String, Object> gameOverPayload = new HashMap<>();
         gameOverPayload.put("type", "GAME_OVER");

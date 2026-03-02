@@ -15,6 +15,21 @@ if not "%RC%"=="0" (
   echo   run-prod-public.out.log
   echo   run-prod-public.err.log
   echo   cloudflared.err.log hoac cloudflared-named.err.log
+  echo.
+  echo ===== STATUS NHANH =====
+  call ".\scripts\manual-status.cmd" --no-pause
+  echo.
+  echo ===== TAIL run-prod-public.out.log =====
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "if(Test-Path 'run-prod-public.out.log'){Get-Content -Path 'run-prod-public.out.log' -Tail 40}"
+  echo.
+  echo ===== TAIL run-prod-public.err.log =====
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "if(Test-Path 'run-prod-public.err.log'){Get-Content -Path 'run-prod-public.err.log' -Tail 40}"
+  echo.
+  echo ===== TAIL cloudflared.err.log =====
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "if(Test-Path 'cloudflared.err.log'){Get-Content -Path 'cloudflared.err.log' -Tail 40}"
+  echo.
+  echo ===== TAIL cloudflared-named.err.log =====
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "if(Test-Path 'cloudflared-named.err.log'){Get-Content -Path 'cloudflared-named.err.log' -Tail 40}"
   if exist "public-game-url.txt" del /q "public-game-url.txt" >nul 2>nul
 ) else (
   if exist "public-game-url.txt" (

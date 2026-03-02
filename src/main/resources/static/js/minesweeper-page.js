@@ -565,6 +565,7 @@
     stopTimer();
 
     if (win) {
+      fetch('/minesweeper/win', { method: 'POST' });
       if (state.progressive.enabled) {
         state.progressive.canAdvance = true;
         state.progressive.winStreak += 1;

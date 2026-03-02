@@ -18,8 +18,9 @@ spring:
             enable: ${MAIL_SMTP_STARTTLS:true}
   jpa:
     hibernate:
-      ddl-auto: ${APP_JPA_DDL_AUTO:validate}
+      ddl-auto: ${APP_JPA_DDL_AUTO:update}
     show-sql: false
+    defer-datasource-initialization: true
   thymeleaf:
     cache: false
 

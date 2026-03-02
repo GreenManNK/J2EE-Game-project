@@ -172,7 +172,19 @@
         }
       });
 
-      actions.append(chooseBtn, playBtn);
+      const spectateBtn = document.createElement('button');
+      spectateBtn.type = 'button';
+      spectateBtn.className = 'btn btn-sm btn-info';
+      spectateBtn.textContent = 'Xem';
+      spectateBtn.disabled = !roomId;
+      spectateBtn.addEventListener('click', () => {
+          const url = new URL(appPath(state.playUrlBase), window.location.origin);
+          url.searchParams.set('roomId', roomId);
+          url.searchParams.set('spectate', 'true');
+          window.location.href = url.pathname + url.search;
+      });
+
+      actions.append(chooseBtn, playBtn, spectateBtn);
       row.append(info, actions);
       els.roomList.appendChild(row);
     });

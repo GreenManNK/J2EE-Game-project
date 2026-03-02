@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Sudoku')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-puzzle-sudoku')}"></div>
+
+<main class="hub-portal-shell hub-portal-theme-puzzle">
+    <section class="hub-portal-hero">
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
+        <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
+
+        <div class="hub-portal-hero__main">
+            <div class="hub-portal-eyebrow">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>SUDOKU / LOGIC PUZZLE</span>
+            </div>
+            <h1 class="hub-portal-title">Sudoku</h1>
+            <p class="hub-portal-subtitle">Dien so 1-9 sao cho moi hang, cot va o 3x3 khong bi trung lap.</p>
+
+            <div class="hub-portal-chip-row">
+                <span class="hub-portal-chip is-live"><i class="bi bi-shuffle"></i> Puzzle ngau nhien moi van</span>
+                <span class="hub-portal-chip"><i class="bi bi-stopwatch-fill"></i> Co dong ho + mistakes</span>
+                <span class="hub-portal-chip"><i class="bi bi-lightbulb-fill"></i> Co check va show solution</span>
+            </div>
+
+            <div class="sudoku-controls">
+                <button id="new-sudoku-btn" class="hub-portal-action hub-portal-action--primary">Puzzle moi</button>
+                <button id="check-sudoku-btn" class="hub-portal-action">Kiem tra tien do</button>
+                <button id="solve-sudoku-btn" class="hub-portal-action">Hien dap an</button>
+            </div>
+
+            <div class="sudoku-hud">
+                <div><span>Loi sai</span><strong id="sudoku-mistakes">0</strong></div>
+                <div><span>Thoi gian</span><strong id="sudoku-time">00:00</strong></div>
+                <div><span>Do kho</span><strong id="sudoku-level">Trung binh</strong></div>
+            </div>
+
+            <div id="grid-container" class="sudoku-grid"></div>
+            <p id="sudoku-status" class="sudoku-note"></p>
+        </div>
+
+        <aside class="hub-portal-hero__side">
+            <section class="hub-portal-panel">
+                <div class="hub-portal-panel__head">
+                    <div>
+                        <div class="hub-portal-panel__label">Luat co ban</div>
+                        <div class="hub-portal-panel__title">Khong trung lap gia tri</div>
+                    </div>
+                    <span class="hub-portal-pill">9x9</span>
+                </div>
+                <ul class="hub-portal-bullet-list mb-0">
+                    <li>Moi hang phai co du cac so 1 den 9.</li>
+                    <li>Moi cot phai co du cac so 1 den 9.</li>
+                    <li>Moi o 3x3 phai co du cac so 1 den 9.</li>
+                </ul>
+            </section>
+            <div class="hub-portal-mini-grid">
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Meo nhanh</div>
+                    <ul class="hub-portal-bullet-list mb-0">
+                        <li>Dien cac o bat buoc truoc de mo khoa van.</li>
+                        <li>Neu bi roi, bam Kiem tra tien do de debug.</li>
+                    </ul>
+                </section>
+                <section class="hub-portal-mini-card">
+                    <div class="hub-portal-mini-card__title">Dieu huong</div>
+                    <div class="hub-portal-inline-actions">
+                        <a th:href="@{/games/puzzle}" class="hub-portal-inline-btn">Puzzle hub</a>
+                        <a th:href="@{/games/puzzle/word}" class="hub-portal-inline-btn">Word</a>
+                        <a th:href="@{/games/puzzle/sliding}" class="hub-portal-inline-btn">Sliding</a>
+                    </div>
+                </section>
+            </div>
+        </aside>
+    </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-puzzle-sudoku')}"></th:block>
+<style>
+    .sudoku-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .sudoku-hud {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.5rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .sudoku-hud > div {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        padding: 0.55rem 0.65rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .sudoku-hud span {
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        opacity: 0.85;
+    }
+
+    .sudoku-grid {
+        display: grid;
+        grid-template-columns: repeat(9, minmax(32px, 46px));
+        gap: 0;
+        justify-content: start;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        width: fit-content;
+        background: rgba(2, 6, 23, 0.45);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .sudoku-cell {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        text-align: center;
+        font-size: 1.02rem;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.02);
+        color: #f8fafc;
+    }
+
+    .sudoku-cell:focus {
+        outline: none;
+        background: rgba(56, 189, 248, 0.18);
+    }
+
+    .sudoku-cell.fixed {
+        background: rgba(255, 255, 255, 0.2);
+        color: #e2e8f0;
+    }
+
+    .sudoku-cell.conflict {
+        background: rgba(220, 38, 38, 0.28);
+        color: #fecaca;
+    }
+
+    .sudoku-cell.hint-wrong {
+        background: rgba(245, 158, 11, 0.25);
+        color: #fde68a;
+    }
+
+    .sudoku-cell[data-row="2"],
+    .sudoku-cell[data-row="5"] {
+        border-bottom-width: 2px;
+        border-bottom-color: rgba(255, 255, 255, 0.65);
+    }
+
+    .sudoku-cell[data-col="2"],
+    .sudoku-cell[data-col="5"] {
+        border-right-width: 2px;
+        border-right-color: rgba(255, 255, 255, 0.65);
+    }
+
+    .sudoku-note {
+        margin: 0.75rem 0 0;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .sudoku-note.success {
+        color: #bbf7d0;
+    }
+
+    .sudoku-note.error {
+        color: #fecaca;
+    }
+
+    @media (max-width: 560px) {
+        .sudoku-grid {
+            grid-template-columns: repeat(9, minmax(28px, 1fr));
+            width: 100%;
+        }
+    }
+</style>
+<script>
+    const gridContainer = document.getElementById('grid-container');
+    const newBtn = document.getElementById('new-sudoku-btn');
+    const checkBtn = document.getElementById('check-sudoku-btn');
+    const solveBtn = document.getElementById('solve-sudoku-btn');
+    const mistakesEl = document.getElementById('sudoku-mistakes');
+    const timeEl = document.getElementById('sudoku-time');
+    const levelEl = document.getElementById('sudoku-level');
+    const statusEl = document.getElementById('sudoku-status');
+
+    const PUZZLES = [
+        {
+            level: 'Trung binh',
+            puzzle: '530070000600195000098000060800060003400803001700020006060000280000419005000080079',
+            solution: '534678912672195348198342567859761423426853791713924856961537284287419635345286179'
+        },
+        {
+            level: 'Kho',
+            puzzle: '000260701680070090190004500820100040004602900050003028009300074040050036703018000',
+            solution: '435269781682571493197834562826195347374682915951743628519326874248957136763418259'
+        },
+        {
+            level: 'De',
+            puzzle: '200080300060070084030500209000105408000000000402706000301007040720040060004010003',
+            solution: '245981376169273584837564219976125438513498627482736951391657842728349165654812793'
+        }
+    ];
+
+    let currentPuzzle;
+    let mistakes = 0;
+    let timerHandle;
+    let startedAt;
+
+    newBtn.addEventListener('click', startPuzzle);
+    checkBtn.addEventListener('click', checkProgress);
+    solveBtn.addEventListener('click', showSolution);
+
+    function startPuzzle() {
+        currentPuzzle = PUZZLES[Math.floor(Math.random() * PUZZLES.length)];
+        mistakes = 0;
+        mistakesEl.textContent = '0';
+        levelEl.textContent = currentPuzzle.level;
+        statusEl.textContent = 'Dien tat ca o trong. O trung lap se duoc to mau.';
+        statusEl.classList.remove('success', 'error');
+
+        buildGrid();
+        startTimer();
+    }
+
+    function buildGrid() {
+        gridContainer.innerHTML = '';
+
+        for (let i = 0; i < 81; i += 1) {
+            const row = Math.floor(i / 9);
+            const col = i % 9;
+            const fixed = currentPuzzle.puzzle[i] !== '0';
+
+            const cell = document.createElement('input');
+            cell.type = 'text';
+            cell.maxLength = 1;
+            cell.className = 'sudoku-cell' + (fixed ? ' fixed' : '');
+            cell.dataset.index = String(i);
+            cell.dataset.row = String(row);
+            cell.dataset.col = String(col);
+
+            if (fixed) {
+                cell.value = currentPuzzle.puzzle[i];
+                cell.readOnly = true;
+            } else {
+                cell.addEventListener('input', () => handleInput(cell));
+                cell.addEventListener('blur', () => checkSingleCell(cell));
+            }
+
+            gridContainer.appendChild(cell);
+        }
+    }
+
+    function handleInput(cell) {
+        const raw = cell.value.replace(/[^1-9]/g, '');
+        cell.value = raw.slice(0, 1);
+        cell.classList.remove('hint-wrong');
+        highlightConflicts();
+        checkCompletion();
+    }
+
+    function checkSingleCell(cell) {
+        const value = cell.value.trim();
+        if (!value) {
+            return;
+        }
+        const index = Number(cell.dataset.index);
+        const expected = currentPuzzle.solution[index];
+        if (value !== expected) {
+            mistakes += 1;
+            mistakesEl.textContent = String(mistakes);
+            cell.classList.add('hint-wrong');
+        }
+    }
+
+    function checkProgress() {
+        const conflicts = highlightConflicts();
+        const emptyCount = getCells().filter((cell) => !cell.value.trim()).length;
+
+        if (conflicts > 0) {
+            statusEl.textContent = `Dang co ${conflicts} o bi trung lap.`;
+            statusEl.classList.add('error');
+            statusEl.classList.remove('success');
+            return;
+        }
+
+        if (emptyCount > 0) {
+            statusEl.textContent = `Con ${emptyCount} o chua dien.`;
+            statusEl.classList.remove('success', 'error');
+            return;
+        }
+
+        checkCompletion();
+    }
+
+    function showSolution() {
+        const cells = getCells();
+        cells.forEach((cell, index) => {
+            cell.value = currentPuzzle.solution[index];
+            cell.classList.remove('conflict', 'hint-wrong');
+        });
+        clearInterval(timerHandle);
+        statusEl.textContent = 'Da hien dap an.';
+        statusEl.classList.remove('success');
+        statusEl.classList.add('error');
+    }
+
+    function highlightConflicts() {
+        const cells = getCells();
+        cells.forEach((cell) => cell.classList.remove('conflict'));
+
+        const groups = [];
+
+        for (let row = 0; row < 9; row += 1) {
+            groups.push(cells.filter((cell) => Number(cell.dataset.row) === row));
+        }
+        for (let col = 0; col < 9; col += 1) {
+            groups.push(cells.filter((cell) => Number(cell.dataset.col) === col));
+        }
+        for (let boxRow = 0; boxRow < 3; boxRow += 1) {
+            for (let boxCol = 0; boxCol < 3; boxCol += 1) {
+                groups.push(cells.filter((cell) => {
+                    const row = Number(cell.dataset.row);
+                    const col = Number(cell.dataset.col);
+                    return Math.floor(row / 3) === boxRow && Math.floor(col / 3) === boxCol;
+                }));
+            }
+        }
+
+        let conflictCount = 0;
+        groups.forEach((group) => {
+            const map = new Map();
+            group.forEach((cell) => {
+                const value = cell.value.trim();
+                if (!value) {
+                    return;
+                }
+                if (!map.has(value)) {
+                    map.set(value, [cell]);
+                } else {
+                    map.get(value).push(cell);
+                }
+            });
+            map.forEach((duplicates) => {
+                if (duplicates.length > 1) {
+                    duplicates.forEach((cell) => cell.classList.add('conflict'));
+                    conflictCount += duplicates.length;
+                }
+            });
+        });
+
+        return conflictCount;
+    }
+
+    function checkCompletion() {
+        const cells = getCells();
+        const hasEmpty = cells.some((cell) => !cell.value.trim());
+        const hasConflict = highlightConflicts() > 0;
+
+        if (hasEmpty || hasConflict) {
+            return;
+        }
+
+        const solved = cells.every((cell, index) => cell.value === currentPuzzle.solution[index]);
+        if (!solved) {
+            return;
+        }
+
+        clearInterval(timerHandle);
+        statusEl.textContent = `Hoan thanh trong ${timeEl.textContent} voi ${mistakes} loi sai.`;
+        statusEl.classList.remove('error');
+        statusEl.classList.add('success');
+    }
+
+    function getCells() {
+        return Array.from(gridContainer.querySelectorAll('.sudoku-cell'));
+    }
+
+    function startTimer() {
+        clearInterval(timerHandle);
+        startedAt = Date.now();
+        timeEl.textContent = '00:00';
+
+        timerHandle = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+            const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const seconds = String(elapsed % 60).padStart(2, '0');
+            timeEl.textContent = `${minutes}:${seconds}`;
+        }, 1000);
+    }
+
+    startPuzzle();
+</script>
+</body>
+</html>

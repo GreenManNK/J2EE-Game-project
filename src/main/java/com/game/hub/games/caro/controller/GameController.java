@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.Map;
 import java.util.UUID;
 
-@Controller
+@Controller("caroGameController")
 @RequestMapping("/game")
 public class GameController {
     private static final String AUTH_USER_ID = "AUTH_USER_ID";

@@ -1,5 +1,6 @@
 package com.game.hub.games.caro.websocket;
 
+import com.game.hub.service.AchievementService;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.UserAccountRepository;
 import com.game.hub.games.caro.service.GameRoomService;
@@ -26,16 +27,17 @@ class GameWebSocketControllerTest {
         GameRoomService gameRoomService = mock(GameRoomService.class);
         SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        AchievementService achievementService = mock(AchievementService.class);
         SimpMessageHeaderAccessor headers = mock(SimpMessageHeaderAccessor.class);
 
         when(headers.getSessionAttributes()).thenReturn(Map.of("AUTH_USER_ID", "u1"));
         when(gameRoomService.joinRoom("room-1", "u1"))
-            .thenReturn(new GameRoomService.JoinResult(true, "X", null, "u1", 1));
+            .thenReturn(new GameRoomService.JoinResult(true, "X", null, "u1", 1, 0));
         when(gameRoomService.getBoardSnapshot("room-1")).thenReturn(new String[10][10]);
         when(gameRoomService.availableRooms()).thenReturn(List.of());
         when(userAccountRepository.findById("u1")).thenReturn(Optional.of(user("u1", "ServerName", "/server.png")));
 
-        GameWebSocketController controller = new GameWebSocketController(gameRoomService, messagingTemplate, userAccountRepository);
+        GameWebSocketController controller = new GameWebSocketController(gameRoomService, messagingTemplate, userAccountRepository, achievementService);
         JoinGameMessage message = new JoinGameMessage();
         message.setRoomId("room-1");
         message.setUserId("u1");
@@ -57,12 +59,13 @@ class GameWebSocketControllerTest {
         GameRoomService gameRoomService = mock(GameRoomService.class);
         SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        AchievementService achievementService = mock(AchievementService.class);
         SimpMessageHeaderAccessor headers = mock(SimpMessageHeaderAccessor.class);
 
         when(headers.getSessionAttributes()).thenReturn(Map.of("AUTH_USER_ID", "u1"));
         when(userAccountRepository.findById("u1")).thenReturn(Optional.of(user("u1", "Alice", "/alice.jpg")));
 
-        GameWebSocketController controller = new GameWebSocketController(gameRoomService, messagingTemplate, userAccountRepository);
+        GameWebSocketController controller = new GameWebSocketController(gameRoomService, messagingTemplate, userAccountRepository, achievementService);
         ChatMessage message = new ChatMessage();
         message.setRoomId("room-2");
         message.setUserId("u1");
@@ -87,16 +90,17 @@ class GameWebSocketControllerTest {
         GameRoomService gameRoomService = mock(GameRoomService.class);
         SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        AchievementService achievementService = mock(AchievementService.class);
         SimpMessageHeaderAccessor headers = mock(SimpMessageHeaderAccessor.class);
 
         when(headers.getSessionAttributes()).thenReturn(Map.of("GUEST_USER_ID", "guest-abcd1234"));
         when(gameRoomService.joinRoom("room-g", "guest-abcd1234"))
-            .thenReturn(new GameRoomService.JoinResult(true, "X", null, "guest-abcd1234", 1));
+            .thenReturn(new GameRoomService.JoinResult(true, "X", null, "guest-abcd1234", 1, 0));
         when(gameRoomService.getBoardSnapshot("room-g")).thenReturn(new String[10][10]);
         when(gameRoomService.availableRooms()).thenReturn(List.of("room-g"));
         when(userAccountRepository.findById("guest-abcd1234")).thenReturn(Optional.empty());
 
-        GameWebSocketController controller = new GameWebSocketController(gameRoomService, messagingTemplate, userAccountRepository);
+        GameWebSocketController controller = new GameWebSocketController(gameRoomService, messagingTemplate, userAccountRepository, achievementService);
         JoinGameMessage message = new JoinGameMessage();
         message.setRoomId("room-g");
         message.setUserId("guest-abcd1234");
@@ -119,6 +123,7 @@ class GameWebSocketControllerTest {
         GameRoomService gameRoomService = mock(GameRoomService.class);
         SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        AchievementService achievementService = mock(AchievementService.class);
         SimpMessageHeaderAccessor headers = mock(SimpMessageHeaderAccessor.class);
 
         when(headers.getSessionAttributes()).thenReturn(Map.of("AUTH_USER_ID", "u1"));
@@ -137,7 +142,7 @@ class GameWebSocketControllerTest {
         when(gameRoomService.getBoardSnapshot("room-win")).thenReturn(new String[10][10]);
         when(gameRoomService.getCurrentTurnUserId("room-win")).thenReturn("u1");
 
-        GameWebSocketController controller = new GameWebSocketController(gameRoomService, messagingTemplate, userAccountRepository);
+        GameWebSocketController controller = new GameWebSocketController(gameRoomService, messagingTemplate, userAccountRepository, achievementService);
         MoveMessage message = new MoveMessage();
         message.setRoomId("room-win");
         message.setUserId("u1");
@@ -170,13 +175,14 @@ class GameWebSocketControllerTest {
         GameRoomService gameRoomService = mock(GameRoomService.class);
         SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        AchievementService achievementService = mock(AchievementService.class);
         SimpMessageHeaderAccessor headers = mock(SimpMessageHeaderAccessor.class);
 
         when(headers.getSessionAttributes()).thenReturn(Map.of("AUTH_USER_ID", "u1"));
         when(gameRoomService.surrender("room-s", "u1"))
             .thenReturn(GameRoomService.SurrenderResult.ok("u2", "u1", null, null));
 
-        GameWebSocketController controller = new GameWebSocketController(gameRoomService, messagingTemplate, userAccountRepository);
+        GameWebSocketController controller = new GameWebSocketController(gameRoomService, messagingTemplate, userAccountRepository, achievementService);
         LeaveGameMessage message = new LeaveGameMessage();
         message.setRoomId("room-s");
         message.setUserId("u1");

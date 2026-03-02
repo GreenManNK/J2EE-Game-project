@@ -626,7 +626,7 @@ public class TienLenRoomService {
                     return null;
                 }
             }
-            Combination opening = candidates.getFirst();
+            Combination opening = firstOf(candidates);
             return opening.cards().stream().map(TienLenCard::code).toList();
         }
 
@@ -641,7 +641,7 @@ public class TienLenRoomService {
         Comparator<Combination> beatingComparator = Comparator
             .comparing((Combination combo) -> combo.type() != current.type() || combo.length() != current.length())
             .thenComparing(this::botComboSortKey);
-        Combination choice = beaters.stream().sorted(beatingComparator).findFirst().orElse(beaters.getFirst());
+        Combination choice = beaters.stream().sorted(beatingComparator).findFirst().orElse(firstOf(beaters));
         return choice.cards().stream().map(TienLenCard::code).toList();
     }
 
@@ -753,7 +753,7 @@ public class TienLenRoomService {
         }
         int index = order.indexOf(fromUserId);
         if (index < 0) {
-            return order.getFirst();
+            return firstOf(order);
         }
         for (int step = 1; step <= order.size(); step++) {
             String candidate = order.get((index + step) % order.size());
@@ -864,21 +864,21 @@ public class TienLenRoomService {
         int size = sorted.size();
 
         if (size == 1) {
-            TienLenCard c = sorted.getFirst();
+            TienLenCard c = firstOf(sorted);
             return new Combination(CombinationType.SINGLE, 1, c.rankValue(), c.suitOrder(), sorted, "don " + c.label());
         }
 
         boolean sameRank = sorted.stream().map(TienLenCard::rankValue).distinct().count() == 1;
         if (sameRank && size == 2) {
-            TienLenCard hi = sorted.getLast();
+            TienLenCard hi = lastOf(sorted);
             return new Combination(CombinationType.PAIR, 2, hi.rankValue(), hi.suitOrder(), sorted, "doi " + rankLabel(hi.rankValue()));
         }
         if (sameRank && size == 3) {
-            TienLenCard hi = sorted.getLast();
+            TienLenCard hi = lastOf(sorted);
             return new Combination(CombinationType.TRIPLE, 3, hi.rankValue(), hi.suitOrder(), sorted, "sam " + rankLabel(hi.rankValue()));
         }
         if (sameRank && size == 4) {
-            TienLenCard hi = sorted.getLast();
+            TienLenCard hi = lastOf(sorted);
             return new Combination(CombinationType.FOUR_KIND, 4, hi.rankValue(), hi.suitOrder(), sorted, "tu quy " + rankLabel(hi.rankValue()));
         }
 
@@ -900,7 +900,7 @@ public class TienLenRoomService {
                     prevRank = currentRank;
                 }
                 if (validDoubleStraight) {
-                    TienLenCard hi = sorted.getLast();
+                    TienLenCard hi = lastOf(sorted);
                     int pairCount = size / 2;
                     return new Combination(
                         CombinationType.DOUBLE_STRAIGHT,
@@ -908,7 +908,7 @@ public class TienLenRoomService {
                         hi.rankValue(),
                         hi.suitOrder(),
                         sorted,
-                        "doi thong " + pairCount + " doi (" + sorted.getFirst().label() + " - " + hi.label() + ")"
+                        "doi thong " + pairCount + " doi (" + firstOf(sorted).label() + " - " + hi.label() + ")"
                     );
                 }
             }
@@ -925,9 +925,9 @@ public class TienLenRoomService {
                     return null;
                 }
             }
-            TienLenCard hi = sorted.getLast();
+            TienLenCard hi = lastOf(sorted);
             return new Combination(CombinationType.STRAIGHT, size, hi.rankValue(), hi.suitOrder(), sorted,
-                "sanh " + size + " la (" + sorted.getFirst().label() + " - " + hi.label() + ")");
+                "sanh " + size + " la (" + firstOf(sorted).label() + " - " + hi.label() + ")");
         }
 
         return null;
@@ -1255,7 +1255,7 @@ public class TienLenRoomService {
         if (cards == null || cards.isEmpty()) {
             return 0;
         }
-        return twoCardPenaltyPoints(cards.getFirst());
+        return twoCardPenaltyPoints(firstOf(cards));
     }
 
     private int pairTwoPenaltyPoints(List<TienLenCard> cards) {
@@ -1276,6 +1276,20 @@ public class TienLenRoomService {
             return 0;
         }
         return card.suitOrder() >= 2 ? PENALTY_TWO_RED : PENALTY_TWO_BLACK;
+    }
+
+    private <T> T firstOf(List<T> list) {
+        if (list == null || list.isEmpty()) {
+            throw new IllegalArgumentException("List is empty");
+        }
+        return list.get(0);
+    }
+
+    private <T> T lastOf(List<T> list) {
+        if (list == null || list.isEmpty()) {
+            throw new IllegalArgumentException("List is empty");
+        }
+        return list.get(list.size() - 1);
     }
 
     private String recordSpecialBeatPenalty(RoomState room,
