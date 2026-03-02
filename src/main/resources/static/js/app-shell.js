@@ -1,7 +1,20 @@
 ﻿(function () {
+  const FRIEND_LIST_REFRESH_MS = 5000;
+  let friendListPollTimerId = null;
+  let friendListLoading = false;
+
   const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
     ? window.CaroUrl.path
     : function (value) { return value; };
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
   function appendCurrentUserId(url, userId, paramName) {
     try {
@@ -18,6 +31,9 @@
     if (!container || !window.CaroUser) {
       return;
     }
+    if (friendListLoading) {
+      return;
+    }
 
     const current = window.CaroUser.get();
     if (!current || !current.userId) {
@@ -25,6 +41,7 @@
       return;
     }
 
+    friendListLoading = true;
     try {
       const res = await fetch('/friendship/friend-list?currentUserId=' + encodeURIComponent(current.userId), {
         cache: 'no-store'
@@ -41,19 +58,48 @@
       const items = friends.map((f) => {
         const name = f.displayName || f.email || f.id;
         const avatar = appPath(f.avatarPath || '/uploads/avatars/default-avatar.jpg');
-        const online = f.online ? '🟢' : '⚪';
+        const detailHref = appPath('/friendship/user-detail/' + encodeURIComponent(f.id)) + '?currentUserId=' + encodeURIComponent(current.userId);
+        const online = !!f.online;
+        const stateLabel = online ? 'Online' : 'Offline';
+        const stateClass = online ? 'app-shell-friend-state--online' : 'app-shell-friend-state--offline';
+
         return '' +
-          '<a class="d-flex align-items-center text-decoration-none theme-text border rounded p-2 mb-2" href="' + appPath('/friendship/user-detail/' + encodeURIComponent(f.id)) + '?currentUserId=' + encodeURIComponent(current.userId) + '">' +
-            '<img src="' + avatar + '" alt="avatar" width="28" height="28" class="rounded-circle me-2">' +
-            '<span class="small flex-grow-1">' + name + '</span>' +
-            '<span class="small">' + online + '</span>' +
+          '<a class="app-shell-friend-item text-decoration-none theme-text border rounded" href="' + escapeHtml(detailHref) + '">' +
+            '<img src="' + escapeHtml(avatar) + '" alt="avatar" class="app-shell-friend-avatar">' +
+            '<span class="app-shell-friend-name">' + escapeHtml(name) + '</span>' +
+            '<span class="app-shell-friend-state ' + stateClass + '">' + stateLabel + '</span>' +
           '</a>';
       }).join('');
 
       container.innerHTML = items;
     } catch (_) {
       container.innerHTML = '<div class="small text-danger">Không tải được danh sách bạn bè.</div>';
+    } finally {
+      friendListLoading = false;
     }
+  }
+
+  function startFriendListPolling() {
+    if (friendListPollTimerId) {
+      window.clearInterval(friendListPollTimerId);
+    }
+
+    void loadFriendList();
+    friendListPollTimerId = window.setInterval(() => {
+      void loadFriendList();
+    }, FRIEND_LIST_REFRESH_MS);
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        void loadFriendList();
+      }
+    });
+    window.addEventListener('focus', () => {
+      void loadFriendList();
+    });
+    window.addEventListener('online', () => {
+      void loadFriendList();
+    });
   }
 
   function bindCurrentUserLinks() {
@@ -99,7 +145,6 @@
   document.addEventListener('DOMContentLoaded', () => {
     bindCurrentUserLinks();
     bindFriendSearch();
-    loadFriendList();
-    window.setInterval(loadFriendList, 10000);
+    startFriendListPolling();
   });
 })();

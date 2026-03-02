@@ -369,29 +369,33 @@ body:not(.game-index) .theme-box > .h5:first-child {
 /* Shared shell (sidebar + friend panel) */
 #friendSidebar {
   background:
-    radial-gradient(circle at 14% 8%, rgba(14, 165, 233, 0.16), transparent 44%),
-    radial-gradient(circle at 88% 14%, rgba(249, 115, 22, 0.14), transparent 44%),
-    color-mix(in srgb, var(--gx-panel-strong) 96%, transparent) !important;
-  border-right: 1px solid var(--gx-border) !important;
-  box-shadow: 18px 0 38px rgba(15, 23, 42, 0.10);
-  backdrop-filter: blur(12px);
-  padding: 18px 14px 14px !important;
+    radial-gradient(circle at 8% 4%, rgba(52, 190, 255, 0.26), transparent 40%),
+    radial-gradient(circle at 96% 94%, rgba(251, 146, 60, 0.13), transparent 44%),
+    linear-gradient(180deg, rgba(10, 26, 54, 0.98), rgba(7, 18, 40, 0.98)) !important;
+  border-right: 1px solid rgba(133, 186, 255, 0.24) !important;
+  box-shadow: 20px 0 48px rgba(2, 10, 25, 0.52);
+  backdrop-filter: blur(8px);
+  padding: 14px 10px 12px !important;
 }
 
 body.dark-mode #friendSidebar {
-  box-shadow: 18px 0 42px rgba(2, 6, 23, 0.42);
+  border-right-color: rgba(120, 172, 255, 0.28) !important;
+  box-shadow: 20px 0 52px rgba(2, 6, 23, 0.62);
 }
 
 #friendSidebar .app-shell-sidebar-scroll {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
 }
 
 #friendSidebar .app-shell-sidebar-menu {
-  flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
   padding-right: 2px;
   display: flex;
   flex-direction: column;
@@ -399,24 +403,26 @@ body.dark-mode #friendSidebar {
 }
 
 #friendSidebar .app-shell-sidebar-friends {
-  flex: 0 0 auto;
+  min-height: 0;
 }
 
 #friendSidebar .d-flex.flex-column {
-  gap: 12px !important;
+  gap: 10px !important;
   height: 100%;
   align-items: stretch !important;
   justify-content: flex-start !important;
 }
 
 .app-shell-sidebar-brand {
-  border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--gx-accent) 22%, var(--gx-border));
+  border-radius: 14px;
+  border: 1px solid rgba(124, 176, 255, 0.24);
   background:
-    linear-gradient(145deg, color-mix(in srgb, var(--gx-accent) 10%, var(--gx-panel-strong)), color-mix(in srgb, var(--gx-accent-2) 8%, var(--gx-panel)));
-  padding: 12px;
+    linear-gradient(150deg, rgba(18, 39, 78, 0.96), rgba(14, 32, 66, 0.96));
+  padding: 11px;
   text-align: left;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(150, 202, 255, 0.14),
+    0 8px 20px rgba(2, 10, 25, 0.34);
 }
 
 .app-shell-sidebar-brand__badge {
@@ -424,49 +430,74 @@ body.dark-mode #friendSidebar {
   align-items: center;
   gap: 6px;
   border-radius: 999px;
-  padding: 5px 10px;
-  font-size: 0.72rem;
+  padding: 4px 10px;
+  font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--gx-accent) 82%, #082f49);
-  background: rgba(255, 255, 255, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: #7fd4ff;
+  background: rgba(12, 31, 64, 0.86);
+  border: 1px solid rgba(125, 193, 255, 0.3);
 }
 
 body.dark-mode .app-shell-sidebar-brand__badge {
-  background: rgba(8, 15, 30, 0.7);
-  color: #7dd3fc;
-  border-color: rgba(125, 211, 252, 0.18);
+  background: rgba(11, 28, 57, 0.88);
+  color: #8bd8ff;
+  border-color: rgba(128, 198, 255, 0.32);
 }
 
 .app-shell-sidebar-brand__title {
-  margin-top: 10px;
+  margin-top: 9px;
   font-family: var(--gx-font-display);
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.14;
+  color: #e9f4ff;
 }
 
 .app-shell-sidebar-brand__meta {
   margin-top: 4px;
-  color: var(--gx-page-muted);
-  font-size: 0.78rem;
+  color: #98b2d7;
+  font-size: 0.8rem;
   line-height: 1.35;
 }
 
 #friendSidebar .btn.theme-outline-btn {
   justify-content: flex-start;
-  padding: 10px 12px;
+  padding: 7px 10px;
   border-radius: 12px !important;
-  font-size: 0.9rem;
+  font-size: 0.93rem;
   position: relative;
   overflow: hidden;
+  border: 1px solid rgba(125, 180, 255, 0.24) !important;
+  background: rgba(8, 25, 53, 0.74) !important;
+  color: #e5f1ff !important;
+  box-shadow: inset 0 1px 0 rgba(167, 209, 255, 0.09);
+}
+
+#friendSidebar .btn.theme-outline-btn:hover {
+  border-color: rgba(151, 205, 255, 0.48) !important;
+  background: rgba(11, 34, 69, 0.92) !important;
+  color: #ffffff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(186, 223, 255, 0.22),
+    0 8px 18px rgba(1, 12, 33, 0.34) !important;
+}
+
+#friendSidebar .btn.theme-outline-btn.is-active,
+#friendSidebar .btn.theme-outline-btn[aria-current="page"] {
+  border-color: rgba(170, 220, 255, 0.62) !important;
+  background: linear-gradient(180deg, rgba(27, 66, 122, 0.96), rgba(19, 49, 95, 0.96)) !important;
+  color: #f8fcff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(200, 232, 255, 0.3),
+    0 10px 24px rgba(4, 17, 40, 0.44) !important;
 }
 
 #friendSidebar .btn.theme-outline-btn i {
   width: 1rem;
   text-align: center;
+  color: #e9f3ff;
 }
 
 #friendSidebar .btn.theme-outline-btn::after {
@@ -489,8 +520,8 @@ body.dark-mode .app-shell-sidebar-brand__badge {
   margin-top: 2px;
   padding: 8px;
   border-radius: 14px;
-  border: 1px solid var(--gx-border);
-  background: color-mix(in srgb, var(--gx-panel) 96%, transparent);
+  border: 1px solid rgba(114, 170, 245, 0.22);
+  background: rgba(6, 20, 43, 0.72);
   gap: 8px;
   flex-wrap: wrap;
 }
@@ -498,6 +529,13 @@ body.dark-mode .app-shell-sidebar-brand__badge {
 #friendSearchForm .form-control {
   margin-right: 0 !important;
   flex: 1 1 100%;
+  border-color: rgba(128, 186, 255, 0.36) !important;
+  background: rgba(2, 17, 38, 0.88) !important;
+  color: #dfeeff !important;
+}
+
+#friendSearchForm .form-control::placeholder {
+  color: rgba(185, 208, 238, 0.8) !important;
 }
 
 #friendSearchForm .btn {
@@ -518,19 +556,19 @@ body.dark-mode .app-shell-sidebar-brand__badge {
   width: 100%;
   border-radius: 12px;
   padding: 8px 10px;
-  border: 1px solid var(--gx-border);
-  background: color-mix(in srgb, var(--gx-panel-soft) 96%, transparent);
+  border: 1px solid rgba(119, 175, 247, 0.2);
+  background: rgba(8, 25, 50, 0.68);
   font-weight: 600;
-  color: var(--gx-page-muted) !important;
+  color: #b3c9e5 !important;
   text-align: left;
 }
 
 #friendListInlineContainer {
   border-radius: 18px !important;
-  border: 1px solid var(--gx-border) !important;
+  border: 1px solid rgba(114, 168, 240, 0.24) !important;
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--gx-panel-strong) 94%, transparent), color-mix(in srgb, var(--gx-panel) 96%, transparent)) !important;
-  box-shadow: -12px 14px 40px rgba(15, 23, 42, 0.12) !important;
+    linear-gradient(180deg, rgba(13, 34, 67, 0.92), rgba(9, 24, 50, 0.92)) !important;
+  box-shadow: -10px 12px 32px rgba(2, 11, 28, 0.44) !important;
   padding: 12px !important;
 }
 
@@ -544,8 +582,11 @@ body.dark-mode #friendListInlineContainer {
 }
 
 #friendSidebar #friendListContainer {
-  max-height: clamp(120px, 24vh, 220px);
+  max-height: clamp(120px, 28vh, 260px);
+  min-height: 86px;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
   padding-right: 2px;
 }
 
@@ -560,7 +601,8 @@ body.dark-mode #friendListInlineContainer {
   gap: 10px;
   padding-bottom: 8px;
   margin-bottom: 10px;
-  border-bottom: 1px solid var(--gx-border);
+  border-bottom: 1px solid rgba(121, 174, 244, 0.22);
+  color: #ecf5ff;
 }
 
 .app-shell-friends-head__title {
@@ -570,7 +612,7 @@ body.dark-mode #friendListInlineContainer {
 }
 
 .app-shell-friends-head__meta {
-  color: var(--gx-page-muted);
+  color: #9eb7d7;
   font-size: 0.72rem;
 }
 
@@ -581,37 +623,107 @@ body.dark-mode #friendListInlineContainer {
 }
 
 #friendListContainer > a {
-  background: color-mix(in srgb, var(--gx-panel-strong) 96%, transparent);
-  border-color: var(--gx-border) !important;
+  background: rgba(8, 27, 56, 0.84);
+  border-color: rgba(117, 172, 241, 0.26) !important;
   border-radius: 12px !important;
   padding: 10px !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
   transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease, background-color 0.14s ease;
 }
 
 #friendListContainer > a:hover {
   transform: translateX(-1px);
-  border-color: color-mix(in srgb, var(--gx-accent) 34%, var(--gx-border)) !important;
-  box-shadow: 0 10px 20px rgba(14, 165, 233, 0.10);
-  background: color-mix(in srgb, var(--gx-accent) 5%, var(--gx-panel-strong));
+  border-color: rgba(170, 218, 255, 0.56) !important;
+  box-shadow: 0 10px 20px rgba(1, 10, 28, 0.34);
+  background: rgba(14, 38, 74, 0.92);
+}
+
+#friendListContainer > a:last-child {
+  margin-bottom: 0;
+}
+
+#friendListContainer .app-shell-friend-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(157, 204, 255, 0.42);
+  flex: 0 0 auto;
+}
+
+#friendListContainer .app-shell-friend-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #eaf4ff;
+  font-size: 0.84rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#friendListContainer .app-shell-friend-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  flex: 0 0 auto;
+}
+
+#friendListContainer .app-shell-friend-state::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+#friendListContainer .app-shell-friend-state--online {
+  color: #c8ffd8;
+  background: rgba(28, 95, 54, 0.36);
+  border-color: rgba(119, 231, 160, 0.4);
+}
+
+#friendListContainer .app-shell-friend-state--online::before {
+  background: #63f08e;
+  box-shadow: 0 0 0 2px rgba(53, 176, 106, 0.22);
+}
+
+#friendListContainer .app-shell-friend-state--offline {
+  color: #d6e5f9;
+  background: rgba(42, 67, 98, 0.46);
+  border-color: rgba(142, 171, 205, 0.32);
+}
+
+#friendListContainer .app-shell-friend-state--offline::before {
+  background: #9db4cf;
+  box-shadow: 0 0 0 2px rgba(131, 156, 187, 0.18);
 }
 
 .sidebar-toggle-btn {
-  width: 46px;
-  height: 58px;
+  width: 40px;
+  height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0 16px 16px 0 !important;
-  border: 1px solid color-mix(in srgb, var(--gx-accent) 26%, var(--gx-border)) !important;
+  border-radius: 0 12px 12px 0 !important;
+  border: 1px solid rgba(246, 165, 88, 0.44) !important;
   border-left: 0 !important;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--gx-accent) 16%, var(--gx-panel-strong)), color-mix(in srgb, var(--gx-panel) 96%, transparent)) !important;
-  box-shadow: 8px 12px 26px rgba(15, 23, 42, 0.12);
-  color: var(--gx-page-ink);
+  background: linear-gradient(180deg, #fb923c, #ea580c) !important;
+  box-shadow: 10px 14px 30px rgba(234, 88, 12, 0.32);
+  color: #fff;
   cursor: pointer;
   pointer-events: auto;
   z-index: 2005 !important;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(6px);
 }
 
 .sidebar-toggle-btn i {
@@ -622,10 +734,10 @@ body.dark-mode #friendListInlineContainer {
 }
 
 body:not(.sidebar-open) .sidebar-toggle-btn {
-  background: linear-gradient(180deg, #0ea5e9, #1d4ed8) !important;
-  border-color: rgba(56, 189, 248, 0.35) !important;
+  background: linear-gradient(180deg, #0e5bb8, #0d4287) !important;
+  border-color: rgba(107, 174, 255, 0.38) !important;
   color: #eff8ff !important;
-  box-shadow: 10px 16px 30px rgba(14, 165, 233, 0.28);
+  box-shadow: 10px 14px 28px rgba(8, 48, 102, 0.34);
 }
 
 body:not(.sidebar-open) .sidebar-toggle-btn i {
@@ -644,7 +756,7 @@ body.sidebar-open .sidebar-toggle-btn i {
 }
 
 .sidebar-toggle-btn:hover {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--gx-accent) 24%, var(--gx-panel-strong)), color-mix(in srgb, var(--gx-panel) 98%, transparent)) !important;
+  filter: brightness(1.06);
 }
 
 #backButton,
@@ -1939,7 +2051,7 @@ body.dark-mode .hub-portal-action--accent {
     width: 40px;
     height: 48px;
     border-radius: 14px 14px 0 0 !important;
-    border-left: 1px solid color-mix(in srgb, var(--gx-accent) 26%, var(--gx-border)) !important;
+    border-left: 1px solid rgba(246, 165, 88, 0.44) !important;
     border-bottom: 0 !important;
   }
 
