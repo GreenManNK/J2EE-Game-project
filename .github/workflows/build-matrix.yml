@@ -1,0 +1,71 @@
+name: Build Matrix
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  maven:
+    name: Maven | ${{ matrix.os }} | JDK ${{ matrix.java }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        java: [17, 21]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+
+      - name: Maven Compile (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -ntp -DskipTests compile
+
+      - name: Maven Compile (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: .\mvnw.cmd -B -ntp -DskipTests compile
+
+  gradle:
+    name: Gradle | ${{ matrix.os }} | JDK ${{ matrix.java }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        java: [17, 21]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: gradle
+
+      - name: Gradle Test Classes (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon testClasses
+
+      - name: Gradle Test Classes (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: .\gradlew.bat --no-daemon testClasses

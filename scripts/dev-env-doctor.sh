@@ -117,6 +117,11 @@ node_version() {
   node -v 2>/dev/null | sed 's/^v//'
 }
 
+docker_version() {
+  cmd_exists docker || return 1
+  docker --version 2>/dev/null | awk -F'version ' '{print $2}' | awk -F',' '{print $1}' | head -n1
+}
+
 version_ge() {
   local actual="${1:-0}"
   local min="${2:-0}"
@@ -168,6 +173,7 @@ try_install_tool() {
         git) run_install brew install git ;;
         node) run_install brew install node ;;
         cloudflared) run_install brew install cloudflared ;;
+        docker) run_install brew install docker colima ;;
         *) return 1 ;;
       esac
       ;;
@@ -180,6 +186,7 @@ try_install_tool() {
         git) run_install apt-get install -y git ;;
         node) run_install apt-get install -y nodejs npm ;;
         cloudflared) run_install apt-get install -y cloudflared ;;
+        docker) run_install apt-get install -y docker.io ;;
         *) return 1 ;;
       esac
       ;;
@@ -191,6 +198,7 @@ try_install_tool() {
         git) run_install dnf install -y git ;;
         node) run_install dnf install -y nodejs ;;
         cloudflared) run_install dnf install -y cloudflared ;;
+        docker) run_install dnf install -y docker ;;
         *) return 1 ;;
       esac
       ;;
@@ -202,6 +210,7 @@ try_install_tool() {
         git) run_install yum install -y git ;;
         node) run_install yum install -y nodejs npm ;;
         cloudflared) run_install yum install -y cloudflared ;;
+        docker) run_install yum install -y docker ;;
         *) return 1 ;;
       esac
       ;;
@@ -213,6 +222,7 @@ try_install_tool() {
         git) run_install pacman -S --noconfirm git ;;
         node) run_install pacman -S --noconfirm nodejs npm ;;
         cloudflared) run_install pacman -S --noconfirm cloudflared ;;
+        docker) run_install pacman -S --noconfirm docker ;;
         *) return 1 ;;
       esac
       ;;
@@ -224,6 +234,7 @@ try_install_tool() {
         git) run_install zypper --non-interactive install git ;;
         node) run_install zypper --non-interactive install nodejs ;;
         cloudflared) run_install zypper --non-interactive install cloudflared ;;
+        docker) run_install zypper --non-interactive install docker ;;
         *) return 1 ;;
       esac
       ;;
@@ -269,6 +280,7 @@ ensure_tool() {
       maven) version="$(maven_version || true)" ;;
       gradle) version="$(gradle_version || true)" ;;
       node) version="$(node_version || true)" ;;
+      docker) version="$(docker_version || true)" ;;
       none) version="" ;;
     esac
   fi
@@ -321,6 +333,7 @@ ensure_tool() {
       maven) version="$(maven_version || true)" ;;
       gradle) version="$(gradle_version || true)" ;;
       node) version="$(node_version || true)" ;;
+      docker) version="$(docker_version || true)" ;;
       none) version="" ;;
     esac
   fi
@@ -360,6 +373,7 @@ fi
 ensure_tool "Gradle (hoac Gradle Wrapper)" "gradle" "gradle" 0 "8.7.0" "gradle" "$PM" || true
 ensure_tool "Git" "git" "git" 0 "" "none" "$PM" || true
 ensure_tool "Node.js" "node" "node" 0 "18.0.0" "node" "$PM" || true
+ensure_tool "Docker (optional)" "docker" "docker" 0 "" "docker" "$PM" || true
 
 if [[ "$MODE" == "public" ]]; then
   if ! ensure_tool "cloudflared" "cloudflared" "cloudflared" 1 "" "none" "$PM"; then
@@ -385,6 +399,7 @@ echo "Windows (PowerShell): powershell -ExecutionPolicy Bypass -File .\\scripts\
 echo "macOS/Linux (bash):  bash ./scripts/dev-run-local.sh"
 echo "Maven wrapper: .\\mvnw.cmd spring-boot:run (Windows) | ./mvnw spring-boot:run (macOS/Linux)"
 echo "Gradle wrapper: .\\gradlew.bat bootRun (Windows) | ./gradlew bootRun (macOS/Linux)"
+echo "Docker: docker compose up --build -d  (neu muon chay khong phu thuoc JDK local)"
 if [[ "$MODE" == "public" ]]; then
   echo "Windows public helper: cmd /c scripts\\manual-start-public.cmd"
 fi

@@ -52,6 +52,7 @@ run.err.log
 app-*.log
 public-game-url.txt
 .data/
+.data-docker/
 csrf-cookies.txt
 register-payload.json
 elevated-hosts-result.txt

@@ -134,6 +134,19 @@ function Get-NodeVersionText {
     return $null
 }
 
+function Get-DockerVersionText {
+    if (-not (Test-CommandExists "docker")) { return $null }
+    try {
+        $line = (& docker --version 2>&1 | Select-Object -First 1)
+        $s = [string]$line
+        if ($s -match 'version\s+(?<v>\d+(\.\d+){1,3})') {
+            return $Matches.v
+        }
+    } catch {
+    }
+    return $null
+}
+
 function Convert-ToVersion([string]$VersionText) {
     if ([string]::IsNullOrWhiteSpace($VersionText)) { return $null }
     $parts = $VersionText.Split(".")
@@ -250,6 +263,7 @@ function Try-InstallTool([string]$ToolKey) {
                 "git" { @("Git.Git") }
                 "node" { @("OpenJS.NodeJS.LTS") }
                 "cloudflared" { @("Cloudflare.cloudflared") }
+                "docker" { @("Docker.DockerDesktop") }
                 default { @() }
             }
             foreach ($id in $ids) {
@@ -269,6 +283,7 @@ function Try-InstallTool([string]$ToolKey) {
                 "git" { @("git") }
                 "node" { @("nodejs-lts") }
                 "cloudflared" { @("cloudflared") }
+                "docker" { @("docker-desktop") }
                 default { @() }
             }
             foreach ($name in $names) {
@@ -288,6 +303,7 @@ function Try-InstallTool([string]$ToolKey) {
                 "git" { @("git") }
                 "node" { @("nodejs-lts") }
                 "cloudflared" { @("cloudflared") }
+                "docker" { @("docker") }
                 default { @() }
             }
             foreach ($name in $names) {
@@ -307,6 +323,7 @@ function Try-InstallTool([string]$ToolKey) {
                 "git" { @("git") }
                 "node" { @("node") }
                 "cloudflared" { @("cloudflared") }
+                "docker" { @("docker", "colima") }
                 default { @() }
             }
             foreach ($name in $names) {
@@ -324,6 +341,7 @@ function Try-InstallTool([string]$ToolKey) {
                 "git" { @("git") }
                 "node" { @("nodejs", "npm") }
                 "cloudflared" { @("cloudflared") }
+                "docker" { @("docker.io") }
                 default { @() }
             }
             if ($ToolKey -eq "node") {
@@ -345,6 +363,7 @@ function Try-InstallTool([string]$ToolKey) {
                 "git" { @("git") }
                 "node" { @("nodejs", "npm") }
                 "cloudflared" { @("cloudflared") }
+                "docker" { @("docker") }
                 default { @() }
             }
             if ($ToolKey -eq "node") {
@@ -365,6 +384,7 @@ function Try-InstallTool([string]$ToolKey) {
                 "git" { @("git") }
                 "node" { @("nodejs", "npm") }
                 "cloudflared" { @("cloudflared") }
+                "docker" { @("docker") }
                 default { @() }
             }
             foreach ($name in $names) {
@@ -381,6 +401,7 @@ function Try-InstallTool([string]$ToolKey) {
                 "git" { @("git") }
                 "node" { @("nodejs", "npm") }
                 "cloudflared" { @("cloudflared") }
+                "docker" { @("docker") }
                 default { @() }
             }
             if ($ToolKey -eq "node") {
@@ -402,6 +423,7 @@ function Try-InstallTool([string]$ToolKey) {
                 "git" { @("git") }
                 "node" { @("nodejs18", "nodejs") }
                 "cloudflared" { @("cloudflared") }
+                "docker" { @("docker") }
                 default { @() }
             }
             foreach ($name in $names) {
@@ -530,6 +552,7 @@ if (-not (Ensure-Tool -DisplayName "Maven (hoac Maven Wrapper)" -CommandName "mv
 [void](Ensure-Tool -DisplayName "Gradle (hoac Gradle Wrapper)" -CommandName "gradle" -InstallerKey "gradle" -Required $false -VersionGetter { Get-GradleVersionText } -MinVersion "8.7.0")
 [void](Ensure-Tool -DisplayName "Git" -CommandName "git" -InstallerKey "git" -Required $false -VersionGetter $null -MinVersion "")
 [void](Ensure-Tool -DisplayName "Node.js" -CommandName "node" -InstallerKey "node" -Required $false -VersionGetter { Get-NodeVersionText } -MinVersion "18.0.0")
+[void](Ensure-Tool -DisplayName "Docker (optional)" -CommandName "docker" -InstallerKey "docker" -Required $false -VersionGetter { Get-DockerVersionText } -MinVersion "")
 
 if ($Mode -eq "public") {
     if (-not (Ensure-Tool -DisplayName "cloudflared" -CommandName "cloudflared" -InstallerKey "cloudflared" -Required $true -VersionGetter $null -MinVersion "")) {
@@ -562,6 +585,7 @@ Write-Host "Windows (PowerShell): powershell -ExecutionPolicy Bypass -File .\scr
 Write-Host "macOS/Linux (bash):  bash ./scripts/dev-run-local.sh" -ForegroundColor White
 Write-Host "Maven wrapper: ./mvnw spring-boot:run (macOS/Linux) | .\mvnw.cmd spring-boot:run (Windows)" -ForegroundColor White
 Write-Host "Gradle wrapper: ./gradlew bootRun (macOS/Linux) | .\gradlew.bat bootRun (Windows)" -ForegroundColor White
+Write-Host "Docker: docker compose up --build -d  (neu muon chay khong phu thuoc JDK local)" -ForegroundColor White
 if ($Mode -eq "public") {
     Write-Host "Public mode (Windows): cmd /c scripts\manual-start-public.cmd" -ForegroundColor White
 }

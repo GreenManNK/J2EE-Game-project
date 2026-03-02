@@ -45,7 +45,7 @@ bash ./scripts/dev-env-setup.sh --mode local --db auto
 ```
 
 Ghi chu:
-- Script se co gang cai `Java 17+` (thuong cai ban 21 LTS), `Maven`, `Gradle`, `Git`, `Node.js` (khuyen nghi), va `cloudflared` neu chon `Mode public`.
+- Script se co gang cai `Java 17+` (thuong cai ban 21 LTS), `Maven`, `Gradle`, `Git`, `Node.js` (khuyen nghi), `Docker` (optional), va `cloudflared` neu chon `Mode public`.
 - Viec cai tu dong phu thuoc package manager cua may (`winget/choco/scoop`, `brew`, `apt/dnf/yum/pacman/zypper`).
 - Neu script bao da cai xong nhung terminal van khong nhan lenh, hay mo terminal moi va chay lai script.
 
@@ -95,6 +95,38 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-run-local.ps1 
 bash ./scripts/dev-run-local.sh --force-bootstrap
 ```
 
+### 4) Chay bang Docker (khong phu thuoc JDK/Maven/Gradle local)
+
+Neu may khac version Java/tool hoac khong muon cai moi truong local, co the chay bang Docker.
+
+Windows (PowerShell):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-run-docker.ps1
+```
+
+macOS / Linux (bash):
+
+```bash
+bash ./scripts/dev-run-docker.sh
+```
+
+Lenh nhanh tai root project (Windows):
+
+- `RUN_DOCKER.cmd` (start)
+- `STOP_DOCKER.cmd` (stop)
+
+Link sau khi start:
+
+- `http://127.0.0.1:8080/Game`
+
+Mac dinh Docker mode se dung profile `prod` + H2 fallback (du lieu luu o `./.data-docker`).
+Neu can xem log:
+
+```bash
+docker compose logs -f --tail=200
+```
+
 ## Chay bang nut bam trong IntelliJ (khuyen nghi)
 
 Project da co san run configurations dung chung trong thu muc `.run/`.
@@ -140,6 +172,8 @@ Cach chay:
    - `Game: Start Local (J2EE)`
    - `Game: Status (App + Tunnel)`
    - `Game: Stop All (App + Tunnel)`
+   - `Game: Start Docker`
+   - `Game: Stop Docker`
 
 Meo:
 - Co the mo `Command Palette` (`Ctrl+Shift+P`) -> `Tasks: Run Task`
@@ -157,6 +191,7 @@ Chay file:
 
 - `RUN.cmd` (alias moi, mac dinh = PUBLIC, khuyen nghi de "bam Run" nhanh)
 - `RUN_PUBLIC.cmd` (khuyen nghi nhat, bam truc tiep tai root project)
+- `RUN_DOCKER.cmd` (neu muon chay nhanh theo Docker)
 - `scripts/manual-start.cmd` (mac dinh, khuyen nghi)
 - `scripts/manual-start-public.cmd`
 
@@ -219,7 +254,9 @@ Ghi chu:
 Chay file:
 
 - `STOP_PUBLIC.cmd` (bam truc tiep tai root project)
+- `STOP_DOCKER.cmd` (neu dang chay Docker mode)
 - `scripts/manual-stop-all.cmd`
+- `scripts/manual-stop-docker.cmd`
 
 ## Chi test tren may nay / LAN
 
@@ -265,11 +302,15 @@ cmd /c scripts\manual-start.cmd
 cmd /c scripts\manual-start-public.cmd
 cmd /c scripts\manual-start-public-mysql.cmd
 cmd /c scripts\manual-start-public-postgres.cmd
+cmd /c scripts\manual-start-docker.cmd
 cmd /c scripts\manual-status.cmd
 cmd /c scripts\manual-stop-all.cmd
+cmd /c scripts\manual-stop-docker.cmd
 cmd /c RUN_PUBLIC.cmd
 cmd /c RUN_PUBLIC_MYSQL.cmd
 cmd /c RUN_PUBLIC_POSTGRES.cmd
+cmd /c RUN_DOCKER.cmd
 cmd /c STATUS_PUBLIC.cmd
 cmd /c STOP_PUBLIC.cmd
+cmd /c STOP_DOCKER.cmd
 ```

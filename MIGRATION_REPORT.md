@@ -64,7 +64,10 @@
 ./mvnw spring-boot:run
 # or
 ./gradlew bootRun
+# or (no local JDK/Maven/Gradle required)
+docker compose up --build -d
 ```
 
 ## Note about validation in this environment
 - Uu tien dung wrapper (`mvnw` / `gradlew`) de khong phu thuoc cong cu co san trong PATH.
+- Ho tro them Docker mode de chay doc lap voi moi truong host.

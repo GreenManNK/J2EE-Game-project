@@ -12,10 +12,14 @@ val gameJavaVersion = providers.gradleProperty("gameJavaVersion")
     .orElse(providers.environmentVariable("GAME_JAVA_VERSION"))
     .orElse("17")
 val gameJavaRelease = gameJavaVersion.map { it.toInt() }
+val gameJavaLanguageVersion = gameJavaRelease.map { JavaLanguageVersion.of(it) }
 
 java {
     sourceCompatibility = JavaVersion.toVersion(gameJavaVersion.get())
     targetCompatibility = JavaVersion.toVersion(gameJavaVersion.get())
+    toolchain {
+        languageVersion.set(gameJavaLanguageVersion)
+    }
 }
 
 configurations {

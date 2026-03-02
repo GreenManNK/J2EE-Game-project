@@ -139,6 +139,44 @@
       "problemMatcher": []
     },
     {
+      "label": "Game: Start Docker",
+      "type": "shell",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "scripts\\manual-start-docker.cmd",
+        "--no-pause"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Game: Stop Docker",
+      "type": "shell",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "scripts\\manual-stop-docker.cmd",
+        "--no-pause"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Game: Verify Public (All-in-One)",
       "type": "shell",
       "command": "cmd",
