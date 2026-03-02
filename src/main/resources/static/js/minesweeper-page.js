@@ -57,6 +57,7 @@
     board: document.getElementById('msBoard'),
     boardMeta: document.getElementById('msBoardMeta'),
     minesLeft: document.getElementById('msMinesLeft'),
+    unopenedCount: document.getElementById('msUnopenedCount'),
     timer: document.getElementById('msTimer'),
     statusText: document.getElementById('msStatusText'),
     statusPill: document.getElementById('msStatusPill'),
@@ -256,9 +257,8 @@
 
   function updateFlagModeUi() {
     refs.flagModeBtn.setAttribute('aria-pressed', state.flagMode ? 'true' : 'false');
-    refs.flagModeBtn.textContent = 'Che do dat co: ' + (state.flagMode ? 'Bat' : 'Tat');
-    refs.flagModeBtn.classList.toggle('btn-outline-secondary', !state.flagMode);
-    refs.flagModeBtn.classList.toggle('btn-warning', state.flagMode);
+    refs.flagModeBtn.textContent = 'Dat co: ' + (state.flagMode ? 'Bat' : 'Tat');
+    refs.flagModeBtn.classList.toggle('is-on', state.flagMode);
   }
 
   function updateProgressiveUi() {
@@ -288,12 +288,27 @@
   function updateCounters() {
     refs.minesLeft.textContent = String(state.mines - state.flagsPlaced);
     refs.timer.textContent = state.timerSeconds + 's';
+    if (refs.unopenedCount) {
+      refs.unopenedCount.textContent = String(countUnopenedCells());
+    }
 
     const label = state.progressive.enabled
       ? ('Leo thang V' + state.progressive.round)
       : (state.currentConfig?.label || 'Minesweeper');
     refs.levelPill.textContent = label;
     refs.boardMeta.textContent = describeConfig(state.currentConfig);
+  }
+
+  function countUnopenedCells() {
+    let hidden = 0;
+    for (let r = 0; r < state.rows; r += 1) {
+      for (let c = 0; c < state.cols; c += 1) {
+        if (!state.board[r][c].revealed) {
+          hidden += 1;
+        }
+      }
+    }
+    return hidden;
   }
 
   function syncCustomInputs() {
@@ -441,7 +456,7 @@
       el.classList.add('revealed');
       if (cell.mine) {
         el.classList.add('mine');
-        el.textContent = '*';
+        el.textContent = '✹';
       } else if (cell.adjacent > 0) {
         el.textContent = String(cell.adjacent);
         el.classList.add('n' + cell.adjacent);
@@ -450,18 +465,18 @@
       }
     } else if (cell.flagged) {
       el.classList.add('flagged');
-      el.textContent = 'F';
+      el.textContent = '⚑';
     } else if (cell.questioned) {
       el.classList.add('questioned');
       el.textContent = '?';
     } else if (cell.wrongFlagged) {
       el.classList.add('wrong-flag');
-      el.textContent = 'X';
+      el.textContent = '×';
     }
 
     if (cell.exploded) {
       el.classList.add('exploded');
-      el.textContent = '*';
+      el.textContent = '✹';
     }
   }
 

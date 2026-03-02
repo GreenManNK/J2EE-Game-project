@@ -1,195 +1,272 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Minesweeper')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('minesweeper')}"></div>
 
-<main class="container py-4">
-  <section class="card shadow-sm theme-box mb-3 gx-page-hero">
-    <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
-      <div>
-        <div class="home-dashboard__eyebrow mb-2">
-          <i class="bi bi-asterisk"></i>
-          <span>Minesweeper</span>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-          <i class="bi bi-asterisk fs-3 theme-text"></i>
-          <h1 class="h3 mb-0 theme-text">MINESWEEPER</h1>
-        </div>
-        <p class="theme-text mb-0 mt-2">
-          Mo o an toan, danh dau vi tri nghi co min, va hoan thanh ban co nhanh nhat co the.
-        </p>
+<main class="container py-4 ms-classic-page">
+  <section class="ms-classic-window" aria-label="Minesweeper classic table">
+    <div class="ms-classic-titlebar">
+      <span>MineSweeper</span>
+    </div>
+
+    <div class="ms-classic-top">
+      <div class="ms-unopened-label">
+        So o chua mo: <strong id="msUnopenedCount">0</strong>
       </div>
-      <div class="d-flex flex-wrap gap-2">
-        <span id="msStatusPill" class="badge text-bg-primary fs-6">San sang</span>
-        <span id="msLevelPill" class="badge text-bg-secondary fs-6">De</span>
+      <button type="button" id="msRestartBtn" class="ms-classic-btn">Choi lai</button>
+    </div>
+
+    <div class="ms-classic-toolbar" role="group" aria-label="Minesweeper controls">
+      <div class="ms-level-group" role="group" aria-label="Muc do">
+        <button type="button" class="ms-level-btn js-ms-level" data-level="beginner">De</button>
+        <button type="button" class="ms-level-btn js-ms-level" data-level="intermediate">Trung binh</button>
+        <button type="button" class="ms-level-btn js-ms-level" data-level="expert">Kho</button>
       </div>
+      <button type="button" id="msFlagModeBtn" class="ms-level-btn ms-flag-toggle" aria-pressed="false">Dat co: Tat</button>
+      <span id="msBoardMeta" class="ms-chip">9 x 9 - 10 min</span>
+      <span id="msLevelPill" class="ms-chip">De</span>
+      <span id="msStatusPill" class="ms-chip">San sang</span>
+    </div>
+
+    <div class="ms-classic-statusline">
+      <span>Trang thai: <strong id="msStatusText">Cho nuoc dau</strong></span>
+      <span>Thoi gian: <strong id="msTimer">0s</strong></span>
+      <span>Min con lai: <strong id="msMinesLeft">0</strong></span>
+    </div>
+
+    <div class="ms-board-wrap">
+      <div id="msBoard" class="ms-board" role="grid" aria-label="Minesweeper board"></div>
     </div>
   </section>
 
-  <section class="card shadow-sm theme-box mb-3 gx-section-card">
-    <div class="card-body">
-      <div class="row g-3 align-items-end">
-        <div class="col-12 col-xl-7">
-          <div class="d-flex flex-wrap gap-2">
-            <button type="button" class="btn theme-outline-btn js-ms-level" data-level="beginner">De</button>
-            <button type="button" class="btn theme-outline-btn js-ms-level" data-level="intermediate">Trung binh</button>
-            <button type="button" class="btn theme-outline-btn js-ms-level" data-level="expert">Kho</button>
-            <button type="button" id="msRestartBtn" class="btn btn-outline-secondary">Choi lai</button>
-            <button type="button" id="msFlagModeBtn" class="btn btn-outline-secondary" aria-pressed="false">
-              Che do dat co: Tat
-            </button>
-          </div>
+  <details class="ms-advanced mt-3">
+    <summary>Tuy chon nang cao</summary>
+    <div class="ms-advanced-grid">
+      <section class="ms-advanced-card">
+        <h3>Che do leo thang</h3>
+        <div class="ms-inline-row">
+          <span id="msProgressiveStateBadge" class="ms-chip">Tat</span>
+          <button type="button" id="msProgressiveModeBtn" class="ms-level-btn">Bat leo thang</button>
+          <button type="button" id="msNextRoundBtn" class="ms-level-btn" disabled>Van tiep theo</button>
         </div>
-        <div class="col-12 col-xl-5">
-          <div class="row g-2 text-center">
-            <div class="col-4">
-              <div class="ms-stat-box">
-                <div class="small text-muted">Min con lai</div>
-                <div id="msMinesLeft" class="fw-bold theme-text">0</div>
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="ms-stat-box">
-                <div class="small text-muted">Thoi gian</div>
-                <div id="msTimer" class="fw-bold theme-text">0s</div>
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="ms-stat-box">
-                <div class="small text-muted">Trang thai</div>
-                <div id="msStatusText" class="fw-bold theme-text">Cho nuoc dau</div>
-              </div>
-            </div>
-          </div>
+        <div class="ms-advanced-meta">
+          <div>Van hien tai: <strong id="msProgressiveRound">1</strong></div>
+          <div>Chuoi thang: <strong id="msWinStreak">0</strong></div>
+          <div>Vong tiep theo: <span id="msNextRoundPreview">-</span></div>
         </div>
-      </div>
-      <p class="small text-muted mb-0 mt-3">
-        Desktop: click trai de mo o, click phai de dat co/? , click vao o so da mo de mo nhanh quanh o, click phai o so da mo de auto-dat co neu du dieu kien. Mobile/tablet: bat "Che do dat co" de dat/go co/? hoac long-press tren o de dung thao tac nhu click phai.
-      </p>
+      </section>
 
-      <div class="row g-3 mt-1">
-        <div class="col-12 col-lg-6">
-          <div class="ms-control-panel h-100">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-              <h3 class="h6 mb-0 theme-text">Che do leo thang</h3>
-              <span id="msProgressiveStateBadge" class="badge text-bg-secondary">Tat</span>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mb-2">
-              <button type="button" id="msProgressiveModeBtn" class="btn btn-outline-secondary btn-sm">Bat leo thang</button>
-              <button type="button" id="msNextRoundBtn" class="btn btn-outline-secondary btn-sm" disabled>Van tiep theo</button>
-            </div>
-            <div class="small text-muted d-grid gap-1">
-              <div>Van hien tai: <strong id="msProgressiveRound" class="theme-text">1</strong></div>
-              <div>Chuoi thang: <strong id="msWinStreak" class="theme-text">0</strong></div>
-              <div>Vong tiep theo: <span id="msNextRoundPreview">-</span></div>
-            </div>
-          </div>
-        </div>
+      <section class="ms-advanced-card">
+        <h3>Tuy chinh kich thuoc</h3>
+        <div class="ms-custom-grid">
+          <label for="msCustomRowsInput">Hang</label>
+          <input id="msCustomRowsInput" type="number" min="5" max="30" step="1" value="9">
 
-        <div class="col-12 col-lg-6">
-          <div class="ms-control-panel h-100">
-            <h3 class="h6 mb-2 theme-text">Tuy chinh van choi (2 huong)</h3>
-            <div class="row g-2">
-              <div class="col-6">
-                <label for="msCustomRowsInput" class="form-label small mb-1">So hang (doc)</label>
-                <input id="msCustomRowsInput" class="form-control form-control-sm" type="number" min="5" max="30" step="1" value="9">
-              </div>
-              <div class="col-6">
-                <label for="msCustomColsInput" class="form-label small mb-1">So cot (ngang)</label>
-                <input id="msCustomColsInput" class="form-control form-control-sm" type="number" min="5" max="40" step="1" value="9">
-              </div>
-              <div class="col-12">
-                <label for="msCustomDensityInput" class="form-label small mb-1">Mat do min (%)</label>
-                <input id="msCustomDensityInput" class="form-control form-control-sm" type="number" min="6" max="40" step="1" value="16">
-              </div>
-              <div class="col-12 d-flex flex-wrap gap-2">
-                <button type="button" id="msApplyCustomBtn" class="btn theme-outline-btn btn-sm">Ap dung tuy chinh</button>
-                <button type="button" id="msApplyCustomProgressiveBtn" class="btn btn-outline-secondary btn-sm">Ap dung + Leo thang</button>
-              </div>
-            </div>
-            <p class="small text-muted mb-0 mt-2">
-              Ban co the thiet ke ban co theo 2 huong (hang/cot). Mat do min giup can bang do kho cho kich thuoc tuy chinh.
-            </p>
-          </div>
+          <label for="msCustomColsInput">Cot</label>
+          <input id="msCustomColsInput" type="number" min="5" max="40" step="1" value="9">
+
+          <label for="msCustomDensityInput">Mat do min (%)</label>
+          <input id="msCustomDensityInput" type="number" min="6" max="40" step="1" value="16">
         </div>
-      </div>
+        <div class="ms-inline-row">
+          <button type="button" id="msApplyCustomBtn" class="ms-level-btn">Ap dung</button>
+          <button type="button" id="msApplyCustomProgressiveBtn" class="ms-level-btn">Ap dung + Leo thang</button>
+        </div>
+      </section>
     </div>
-  </section>
+  </details>
 
-  <section class="card shadow-sm theme-box mb-3 gx-section-card">
-    <div class="card-body">
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-        <h2 class="h5 theme-text mb-0">Ban choi</h2>
-        <small id="msBoardMeta" class="text-muted">9 x 9 - 10 min</small>
-      </div>
-      <div class="ms-board-wrap">
-        <div id="msBoard" class="ms-board" role="grid" aria-label="Minesweeper board"></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="card shadow-sm theme-box gx-section-card">
-    <div class="card-body">
-      <h2 class="h5 theme-text mb-2">Muc tieu</h2>
-      <ul class="mb-0 theme-text">
-        <li>So tren o cho biet co bao nhieu min xung quanh o do.</li>
-        <li>O trong (0) se tu dong mo lan sang vung xung quanh.</li>
-        <li>Co the dung thao tac nhanh tren o so da mo: mo nhanh khi du co, hoac auto-dat co cho cac o con lai.</li>
-        <li>Ban thang khi mo het o khong co min.</li>
-      </ul>
-      <div class="d-flex flex-wrap gap-2 mt-3">
-        <a th:href="@{/games/minesweeper}" class="btn theme-outline-btn">Ve trang chi tiet game</a>
-        <a th:href="@{/games}" class="btn theme-outline-btn">Thu vien game</a>
-      </div>
-    </div>
-  </section>
+  <div class="d-flex flex-wrap gap-2 mt-3">
+    <a th:href="@{/games/minesweeper}" class="btn theme-outline-btn">Ve trang chi tiet game</a>
+    <a th:href="@{/games}" class="btn theme-outline-btn">Thu vien game</a>
+  </div>
 </main>
 
 <style>
-  .ms-stat-box {
-    border: 1px solid var(--border-color, #d0d7de);
-    border-radius: 10px;
-    padding: 8px;
-    background: rgba(255, 255, 255, 0.45);
+  body.page-minesweeper {
+    background: #a8a8a8 !important;
+    color: #1d1d1d !important;
   }
 
-  .ms-control-panel {
-    border: 1px solid var(--border-color, #d0d7de);
-    border-radius: 10px;
+  body.page-minesweeper::before {
+    display: none !important;
+  }
+
+  body.page-minesweeper .ms-classic-page {
+    width: min(1320px, calc(100vw - 20px));
+    padding-top: 12px !important;
+    padding-bottom: 80px !important;
+  }
+
+  .ms-classic-window {
+    border: 2px solid #7a7a7a;
+    background: #cfcfcf;
+    box-shadow: inset 0 1px 0 #efefef;
     padding: 10px;
-    background: rgba(255, 255, 255, 0.38);
+  }
+
+  .ms-classic-titlebar {
+    height: 34px;
+    border: 1px solid #6f6f6f;
+    background: linear-gradient(180deg, #9b9b9b, #858585);
+    color: #202020;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    font-size: 1.75rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    letter-spacing: 0.02em;
+  }
+
+  .ms-classic-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .ms-unopened-label {
+    font-size: 2rem;
+    color: #101010;
+    line-height: 1.1;
+  }
+
+  .ms-unopened-label strong {
+    font-weight: 700;
+  }
+
+  .ms-classic-btn,
+  .ms-level-btn {
+    appearance: none;
+    border: 1px solid #5c5c5c;
+    background: #dedede;
+    color: #111;
+    border-radius: 0;
+    padding: 7px 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: inset 0 1px 0 #f8f8f8;
+  }
+
+  .ms-classic-btn {
+    min-width: 180px;
+    font-size: 2rem;
+  }
+
+  .ms-classic-btn:hover,
+  .ms-level-btn:hover {
+    background: #e8e8e8;
+  }
+
+  .ms-classic-btn:active,
+  .ms-level-btn:active {
+    background: #d2d2d2;
+    box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.16);
+  }
+
+  .ms-level-btn.active {
+    background: #c6c6c6;
+    border-color: #4c4c4c;
+  }
+
+  .ms-level-btn.is-on {
+    background: #f3dc97;
+    border-color: #8b7126;
+  }
+
+  .ms-classic-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .ms-level-group {
+    display: inline-flex;
+    gap: 6px;
+  }
+
+  .ms-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    border: 1px solid #666;
+    background: #efefef;
+    padding: 0 10px;
+    font-size: 0.95rem;
+    color: #1b1b1b;
+  }
+
+  .ms-chip.text-bg-primary {
+    background: #d9e8ff;
+    border-color: #5f7ab0;
+  }
+
+  .ms-chip.text-bg-success {
+    background: #d9f4dc;
+    border-color: #3f8b52;
+  }
+
+  .ms-chip.text-bg-danger {
+    background: #ffd7d7;
+    border-color: #b04545;
+  }
+
+  .ms-chip.text-bg-warning {
+    background: #ffe7b3;
+    border-color: #ab7e1b;
+  }
+
+  .ms-chip.text-bg-secondary {
+    background: #ececec;
+    border-color: #6d6d6d;
+  }
+
+  .ms-classic-statusline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 0.96rem;
+    color: #171717;
+  }
+
+  .ms-classic-statusline strong {
+    color: #090909;
   }
 
   .ms-board-wrap {
     overflow: auto;
-    border: 1px solid var(--border-color, #d0d7de);
-    border-radius: 12px;
-    padding: 10px;
-    background:
-      radial-gradient(circle at 10% 10%, rgba(0, 255, 255, 0.08), transparent 55%),
-      radial-gradient(circle at 90% 10%, rgba(255, 255, 0, 0.08), transparent 50%),
-      rgba(255, 255, 255, 0.35);
+    border: 2px solid #777;
+    background: #b6b6b6;
+    padding: 0;
   }
 
   .ms-board {
     --ms-cols: 9;
-    --ms-cell-size: 30px;
+    --ms-cell-size: 34px;
     display: grid;
     grid-template-columns: repeat(var(--ms-cols), var(--ms-cell-size));
-    gap: 4px;
-    min-width: min-content;
+    gap: 0;
+    min-width: max-content;
   }
 
   .ms-cell {
     width: var(--ms-cell-size);
     height: var(--ms-cell-size);
-    border: 1px solid #7f8c8d;
-    border-radius: 6px;
-    background: linear-gradient(180deg, #f2f7f7, #d9e7e7);
-    color: #102a43;
+    border: 1px solid #898989;
+    border-radius: 0;
+    background: #bfbfbf;
+    color: #101010;
+    font-family: "Segoe UI", Tahoma, sans-serif;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 1.15rem;
     line-height: 1;
     display: inline-flex;
     align-items: center;
@@ -200,58 +277,149 @@
     touch-action: manipulation;
   }
 
-  .ms-cell:hover:not(:disabled) {
-    filter: brightness(0.97);
+  .ms-cell:hover:not(.revealed) {
+    filter: brightness(1.05);
   }
 
   .ms-cell.revealed {
-    background: #eef2f6;
-    border-color: #b8c3cc;
+    background: #f2f2f2;
+    border-color: #8a8a8a;
   }
 
   .ms-cell.mine {
-    background: #ffe3e3;
-    border-color: #e03131;
-    color: #a61e1e;
+    color: #1f1f1f;
+    background: #eeeeee;
   }
 
   .ms-cell.exploded {
-    background: #ff8787;
-    border-color: #c92a2a;
-    color: #fff;
+    background: #f57575;
+    color: #111;
   }
 
   .ms-cell.flagged {
-    color: #c92a2a;
+    color: #111;
+    font-size: 1.05rem;
   }
 
   .ms-cell.questioned {
-    color: #9c6b00;
+    color: #6d5a0b;
   }
 
   .ms-cell.wrong-flag {
-    background: #fff0f0;
-    border-color: #fa5252;
-    color: #c92a2a;
+    background: #ffe1e1;
+    color: #c21d1d;
   }
 
-  .ms-cell.n1 { color: #1971c2; }
-  .ms-cell.n2 { color: #2b8a3e; }
-  .ms-cell.n3 { color: #c92a2a; }
-  .ms-cell.n4 { color: #5f3dc4; }
-  .ms-cell.n5 { color: #a61e4d; }
-  .ms-cell.n6 { color: #0b7285; }
-  .ms-cell.n7 { color: #343a40; }
-  .ms-cell.n8 { color: #495057; }
+  .ms-cell.n1 { color: #204a9e; }
+  .ms-cell.n2 { color: #1f7e2f; }
+  .ms-cell.n3 { color: #d32626; }
+  .ms-cell.n4 { color: #5246c9; }
+  .ms-cell.n5 { color: #8b1d1d; }
+  .ms-cell.n6 { color: #0b7d7a; }
+  .ms-cell.n7 { color: #1d1d1d; }
+  .ms-cell.n8 { color: #5a5a5a; }
+
+  .ms-advanced {
+    border: 1px solid #757575;
+    background: #d0d0d0;
+    padding: 10px;
+  }
+
+  .ms-advanced summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: #1b1b1b;
+    margin-bottom: 8px;
+  }
+
+  .ms-advanced-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ms-advanced-card {
+    border: 1px solid #7a7a7a;
+    background: #e4e4e4;
+    padding: 10px;
+  }
+
+  .ms-advanced-card h3 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    color: #131313;
+  }
+
+  .ms-inline-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .ms-advanced-meta {
+    display: grid;
+    gap: 4px;
+    font-size: 0.92rem;
+  }
+
+  .ms-custom-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 10px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .ms-custom-grid input {
+    border: 1px solid #6f6f6f;
+    background: #f4f4f4;
+    height: 32px;
+    padding: 4px 8px;
+    border-radius: 0;
+  }
+
+  @media (max-width: 991.98px) {
+    .ms-unopened-label,
+    .ms-classic-btn {
+      font-size: 1.5rem;
+    }
+
+    .ms-board {
+      --ms-cell-size: 30px;
+    }
+
+    .ms-advanced-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 
   @media (max-width: 767.98px) {
+    body.page-minesweeper .ms-classic-page {
+      width: min(100%, calc(100vw - 14px));
+      padding-bottom: 70px !important;
+    }
+
+    .ms-classic-titlebar {
+      font-size: 1.35rem;
+      height: 30px;
+    }
+
+    .ms-unopened-label,
+    .ms-classic-btn {
+      font-size: 1.1rem;
+    }
+
+    .ms-classic-btn {
+      min-width: 130px;
+    }
+
     .ms-board {
       --ms-cell-size: 26px;
-      gap: 3px;
     }
+
     .ms-cell {
-      font-size: 0.85rem;
-      border-radius: 5px;
+      font-size: 1rem;
     }
   }
 </style>
