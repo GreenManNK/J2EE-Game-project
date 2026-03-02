@@ -1,0 +1,31 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="Sliding Puzzle">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#bg)"/>
+  <g>
+    <rect x="156" y="58" width="328" height="244" rx="16" fill="#e6fffb" opacity="0.95"/>
+    <g fill="#0f766e" font-family="Segoe UI, Arial" font-size="42" font-weight="700" text-anchor="middle" dominant-baseline="middle">
+      <rect x="174" y="76" width="90" height="70" rx="10" fill="#ccfbf1"/>
+      <rect x="275" y="76" width="90" height="70" rx="10" fill="#ccfbf1"/>
+      <rect x="376" y="76" width="90" height="70" rx="10" fill="#ccfbf1"/>
+      <rect x="174" y="157" width="90" height="70" rx="10" fill="#ccfbf1"/>
+      <rect x="275" y="157" width="90" height="70" rx="10" fill="#99f6e4"/>
+      <rect x="376" y="157" width="90" height="70" rx="10" fill="#ccfbf1"/>
+      <rect x="174" y="238" width="90" height="70" rx="10" fill="#ccfbf1"/>
+      <rect x="275" y="238" width="90" height="70" rx="10" fill="#ccfbf1"/>
+      <rect x="376" y="238" width="90" height="70" rx="10" fill="#134e4a"/>
+      <text x="219" y="112">1</text>
+      <text x="320" y="112">2</text>
+      <text x="421" y="112">3</text>
+      <text x="219" y="193">4</text>
+      <text x="421" y="193">5</text>
+      <text x="219" y="274">7</text>
+      <text x="320" y="274">8</text>
+    </g>
+  </g>
+  <text x="34" y="325" fill="#f3fffd" font-family="Segoe UI, Arial" font-size="38" font-weight="700">Sliding Puzzle</text>
+</svg>

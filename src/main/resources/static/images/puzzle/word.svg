@@ -1,0 +1,35 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="Word Puzzle">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6d28d9"/>
+      <stop offset="100%" stop-color="#9333ea"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#bg)"/>
+  <g transform="translate(120 70)">
+    <rect x="0" y="0" width="400" height="220" rx="18" fill="#f6f0ff" opacity="0.94"/>
+    <g fill="#5b21b6" font-family="Segoe UI, Arial" font-size="30" font-weight="700" text-anchor="middle" dominant-baseline="middle">
+      <g>
+        <rect x="20" y="18" width="52" height="44" rx="8" fill="#ede9fe"/><text x="46" y="40">W</text>
+        <rect x="80" y="18" width="52" height="44" rx="8" fill="#ede9fe"/><text x="106" y="40">O</text>
+        <rect x="140" y="18" width="52" height="44" rx="8" fill="#ddd6fe"/><text x="166" y="40">R</text>
+        <rect x="200" y="18" width="52" height="44" rx="8" fill="#ede9fe"/><text x="226" y="40">D</text>
+      </g>
+      <g>
+        <rect x="20" y="72" width="52" height="44" rx="8" fill="#ede9fe"/><text x="46" y="94">P</text>
+        <rect x="80" y="72" width="52" height="44" rx="8" fill="#ddd6fe"/><text x="106" y="94">U</text>
+        <rect x="140" y="72" width="52" height="44" rx="8" fill="#ede9fe"/><text x="166" y="94">Z</text>
+        <rect x="200" y="72" width="52" height="44" rx="8" fill="#ede9fe"/><text x="226" y="94">Z</text>
+        <rect x="260" y="72" width="52" height="44" rx="8" fill="#ddd6fe"/><text x="286" y="94">L</text>
+        <rect x="320" y="72" width="52" height="44" rx="8" fill="#ede9fe"/><text x="346" y="94">E</text>
+      </g>
+      <g>
+        <rect x="20" y="126" width="52" height="44" rx="8" fill="#ddd6fe"/><text x="46" y="148">G</text>
+        <rect x="80" y="126" width="52" height="44" rx="8" fill="#ede9fe"/><text x="106" y="148">A</text>
+        <rect x="140" y="126" width="52" height="44" rx="8" fill="#ede9fe"/><text x="166" y="148">M</text>
+        <rect x="200" y="126" width="52" height="44" rx="8" fill="#ddd6fe"/><text x="226" y="148">E</text>
+      </g>
+    </g>
+  </g>
+  <text x="34" y="325" fill="#f8f3ff" font-family="Segoe UI, Arial" font-size="38" font-weight="700">Word Puzzle</text>
+</svg>
