@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Cai dat')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('settings')}"></div>
+
+<main id="settingsRoot"
+      class="gx-page-shell theme-text"
+      th:attr="data-authenticated=${isAuthenticated},data-auth-user-id=${authUserId}">
+  <section class="gx-page-hero theme-box">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-gear-fill"></i>
+          <span>SETTINGS CENTER</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Cai dat he thong</h1>
+        <p class="gx-page-subtitle">
+          Quan ly tai khoan, doi mat khau va dong bo cac tuy chon giao dien/toi uu trai nghiem tren toan bo web.
+        </p>
+      </div>
+      <div class="gx-page-badge">
+        <i class="bi bi-sliders"></i>
+        <span th:text="${isAuthenticated} ? 'Dang dang nhap' : 'Chua dang nhap'">Dang dang nhap</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="row g-3 mt-1">
+    <div class="col-xl-6">
+      <section class="theme-box rounded p-3 gx-section-card">
+        <div class="gx-section-card__head">
+          <h2 class="h5 mb-0 theme-text">Cai dat tai khoan</h2>
+          <div class="gx-section-card__meta">Cap nhat thong tin ca nhan dung cho profile va cac game online.</div>
+        </div>
+
+        <div class="alert alert-info py-2 px-3 mb-3" th:if="${!isAuthenticated}">
+          Ban can dang nhap de chinh sua tai khoan.
+          <a class="alert-link" th:href="@{/account/login-page}">Dang nhap ngay</a>.
+        </div>
+
+        <form id="accountSettingsForm" class="row g-3">
+          <input type="hidden" id="settingsUserId" th:value="${authUserId}">
+          <div class="col-md-6">
+            <label class="form-label" for="settingsDisplayName">Display name</label>
+            <input id="settingsDisplayName"
+                   class="form-control"
+                   th:value="${settingsUser != null ? settingsUser.displayName : ''}"
+                   th:disabled="${!isAuthenticated}"
+                   placeholder="Nhap ten hien thi">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="settingsEmail">Email</label>
+            <input id="settingsEmail"
+                   type="email"
+                   class="form-control"
+                   th:value="${settingsUser != null ? settingsUser.email : ''}"
+                   th:disabled="${!isAuthenticated}"
+                   placeholder="you@example.com">
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="settingsAvatarPath">Avatar path</label>
+            <input id="settingsAvatarPath"
+                   class="form-control"
+                   th:value="${settingsUser != null ? settingsUser.avatarPath : '/uploads/avatars/default-avatar.jpg'}"
+                   th:disabled="${!isAuthenticated}"
+                   placeholder="/uploads/avatars/default-avatar.jpg">
+          </div>
+          <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-primary" th:disabled="${!isAuthenticated}">
+              <i class="bi bi-check2-circle me-1"></i> Luu tai khoan
+            </button>
+            <a class="btn theme-outline-btn" th:if="${isAuthenticated}" th:href="@{/profile/{id}(id=${authUserId})}">
+              <i class="bi bi-person-circle me-1"></i> Mo Profile
+            </a>
+            <a class="btn theme-outline-btn" th:if="${!isAuthenticated}" th:href="@{/account/login-page}">
+              <i class="bi bi-person-circle me-1"></i> Mo Profile
+            </a>
+          </div>
+        </form>
+        <div id="accountSettingsStatus" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="theme-box rounded p-3 mt-3 gx-section-card">
+        <div class="gx-section-card__head">
+          <h2 class="h5 mb-0 theme-text">Doi mat khau</h2>
+          <div class="gx-section-card__meta">Bao mat tai khoan voi mat khau moi.</div>
+        </div>
+        <form id="changePasswordSettingsForm" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="settingsCurrentPassword">Mat khau hien tai</label>
+            <input id="settingsCurrentPassword" class="form-control" type="password" th:disabled="${!isAuthenticated}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="settingsNewPassword">Mat khau moi</label>
+            <input id="settingsNewPassword" class="form-control" type="password" th:disabled="${!isAuthenticated}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="settingsConfirmPassword">Nhap lai mat khau moi</label>
+            <input id="settingsConfirmPassword" class="form-control" type="password" th:disabled="${!isAuthenticated}">
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-outline-primary" th:disabled="${!isAuthenticated}">
+              <i class="bi bi-shield-lock me-1"></i> Doi mat khau
+            </button>
+          </div>
+        </form>
+        <div id="passwordSettingsStatus" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
+      </section>
+    </div>
+
+    <div class="col-xl-6">
+      <section class="theme-box rounded p-3 gx-section-card">
+        <div class="gx-section-card__head">
+          <h2 class="h5 mb-0 theme-text">Cai dat giao dien va chuc nang</h2>
+          <div class="gx-section-card__meta">Ap dung dong bo cho ca sidebar, topbar va cac trang game.</div>
+        </div>
+
+        <form id="appPreferencesForm" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="themeModeSelect">Theme mode</label>
+            <select id="themeModeSelect" class="form-select">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="languageModeSelect">Ngon ngu</label>
+            <select id="languageModeSelect" class="form-select">
+              <option value="vi">Tieng Viet</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="desktopSidebarVisibleByDefault">
+              <label class="form-check-label" for="desktopSidebarVisibleByDefault">
+                Sidebar desktop mo san mac dinh
+              </label>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="mobileSidebarAutoClose">
+              <label class="form-check-label" for="mobileSidebarAutoClose">
+                Tu dong dong sidebar mobile sau khi bam menu
+              </label>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="homeMusicEnabled">
+              <label class="form-check-label" for="homeMusicEnabled">
+                Bat nhac trang chu
+              </label>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toastNotificationsEnabled">
+              <label class="form-check-label" for="toastNotificationsEnabled">
+                Bat toast thong bao toan he thong
+              </label>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="showOfflineFriendsInSidebar">
+              <label class="form-check-label" for="showOfflineFriendsInSidebar">
+                Hien thi ban offline trong sidebar ban be
+              </label>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="autoRefreshFriendList">
+              <label class="form-check-label" for="autoRefreshFriendList">
+                Tu dong refresh danh sach ban be
+              </label>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="friendListRefreshMsSelect">Chu ky refresh ban be</label>
+            <select id="friendListRefreshMsSelect" class="form-select">
+              <option value="5000">5 giay</option>
+              <option value="10000">10 giay</option>
+              <option value="15000">15 giay</option>
+              <option value="20000">20 giay</option>
+              <option value="30000">30 giay</option>
+              <option value="60000">60 giay</option>
+            </select>
+          </div>
+        </form>
+
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <button id="savePreferencesBtn" class="btn btn-primary" type="button">
+            <i class="bi bi-save me-1"></i> Luu tuy chon
+          </button>
+          <button id="resetPreferencesBtn" class="btn theme-outline-btn" type="button">
+            <i class="bi bi-arrow-counterclockwise me-1"></i> Ve mac dinh
+          </button>
+        </div>
+        <div id="preferencesStatus" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="theme-box rounded p-3 mt-3 gx-section-card">
+        <div class="gx-section-card__head">
+          <h2 class="h5 mb-0 theme-text">Bao mat nang cao</h2>
+          <div class="gx-section-card__meta">Kich hoat quyen admin bang ma kich hoat.</div>
+        </div>
+
+        <div class="row g-2 align-items-end">
+          <div class="col-md-8">
+            <label class="form-label" for="settingsAdminCode">Ma kich hoat admin</label>
+            <input id="settingsAdminCode"
+                   class="form-control"
+                   type="password"
+                   th:disabled="${!isAuthenticated}"
+                   placeholder="Nhap ma kich hoat">
+          </div>
+          <div class="col-md-4 d-grid">
+            <button id="activateAdminFromSettingsBtn"
+                    class="btn btn-outline-warning"
+                    type="button"
+                    th:disabled="${!isAuthenticated}">
+              <i class="bi bi-key-fill me-1"></i> Kich hoat
+            </button>
+          </div>
+        </div>
+        <div id="securitySettingsStatus" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="theme-box rounded p-3 mt-3 gx-section-card">
+        <div class="gx-section-card__head">
+          <h2 class="h6 mb-0 theme-text">Huong dan nhanh</h2>
+          <div class="gx-section-card__meta">Cac thay doi luu ngay tren trinh duyet va ap dung toan bo trang.</div>
+        </div>
+        <ul class="mb-0 small">
+          <li>Theme va ngon ngu se doi ngay lap tuc.</li>
+          <li>Cau hinh sidebar se co hieu luc tu lan mo trang tiep theo.</li>
+          <li>Nen dang nhap de cap nhat thong tin tai khoan va doi mat khau.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('settings')}"></th:block>
+<script th:src="@{/js/settings.js}"></script>
+</body>
+</html>

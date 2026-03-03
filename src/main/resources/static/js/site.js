@@ -104,6 +104,7 @@
   }
 
   const USER_KEY = 'caro_current_user';
+  const TOAST_ENABLED_KEY = 'caroToastEnabled.v1';
 
   function getCurrentUser() {
     const stored = parseJsonSafe(localStorage.getItem(USER_KEY));
@@ -207,6 +208,17 @@
       return;
     }
     const variant = normalizeToastVariant(opts.type);
+    let toastEnabled = true;
+    try {
+      const raw = window.localStorage.getItem(TOAST_ENABLED_KEY);
+      if (raw != null) {
+        toastEnabled = raw === '1' || raw === 'true';
+      }
+    } catch (_) {
+    }
+    if (!toastEnabled && variant !== 'danger') {
+      return;
+    }
     const delay = Number.isFinite(Number(opts.delay)) ? Number(opts.delay) : 2800;
     const container = ensureToastContainer();
 

@@ -2,6 +2,10 @@ package com.game.hub.controller;
 
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.support.UserExportSupport;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -146,6 +150,37 @@ public class ManagerController {
         return Map.of("success", true);
     }
 
+    @GetMapping("/export-users-csv")
+    public ResponseEntity<byte[]> exportCsv(@RequestParam(required = false) String searchTerm,
+                                            @RequestParam(required = false) String banFilter,
+                                            @RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "10") int size,
+                                            @RequestParam(defaultValue = "page") String scope) {
+        List<UserAccount> users = resolveUsersForExport(searchTerm, banFilter, page, size, scope);
+        byte[] body = UserExportSupport.toCsv(users);
+        String filename = "manager-users-" + exportSuffix(scope, page) + ".csv";
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+            .contentType(MediaType.parseMediaType("text/csv"))
+            .body(body);
+    }
+
+    @GetMapping("/export-users-excel")
+    public ResponseEntity<byte[]> exportExcel(@RequestParam(required = false) String searchTerm,
+                                              @RequestParam(required = false) String banFilter,
+                                              @RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "10") int size,
+                                              @RequestParam(defaultValue = "page") String scope) {
+        List<UserAccount> users = resolveUsersForExport(searchTerm, banFilter, page, size, scope);
+        byte[] body = UserExportSupport.toExcel(users);
+        String filename = "manager-users-" + exportSuffix(scope, page) + ".xlsx";
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+            .contentType(MediaType.parseMediaType(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+            .body(body);
+    }
+
     private List<UserAccount> filterUsers(String searchTerm, String banFilter) {
         List<UserAccount> users = new ArrayList<>(userAccountRepository.findAll());
 
@@ -177,6 +212,26 @@ public class ManagerController {
     }
 
     private record PageSlice<T>(List<T> items, int page, int size, int totalPages) {
+    }
+
+    private List<UserAccount> resolveUsersForExport(String searchTerm,
+                                                    String banFilter,
+                                                    int page,
+                                                    int size,
+                                                    String scope) {
+        List<UserAccount> filtered = filterUsers(searchTerm, banFilter);
+        if ("all".equalsIgnoreCase(scope)) {
+            return filtered;
+        }
+        return paginate(filtered, page, size).items();
+    }
+
+    private String exportSuffix(String scope, int page) {
+        if ("all".equalsIgnoreCase(scope)) {
+            return "all";
+        }
+        int safePage = Math.max(page, 0);
+        return "page-" + (safePage + 1);
     }
 
     public record CreateUserRequest(String email, String displayName, String password, int score, String role, String avatarPath) {

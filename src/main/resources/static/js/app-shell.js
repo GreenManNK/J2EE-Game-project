@@ -1,5 +1,9 @@
 ﻿(function () {
   const FRIEND_LIST_REFRESH_MS = 5000;
+  const FRIEND_LIST_REFRESH_KEY = 'caroFriendListRefreshMs.v1';
+  const FRIEND_LIST_AUTO_REFRESH_KEY = 'caroFriendListAutoRefresh.v1';
+  const FRIEND_LIST_SHOW_OFFLINE_KEY = 'caroFriendListShowOffline.v1';
+  const FRIEND_LIST_ALLOWED_REFRESH_VALUES = [5000, 10000, 15000, 20000, 30000, 60000];
   let friendListPollTimerId = null;
   let friendListLoading = false;
 
@@ -12,7 +16,7 @@
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
+      .replace(/\"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
 
@@ -24,6 +28,31 @@
     } catch (_) {
       return url;
     }
+  }
+
+  function readStorage(key, fallbackValue) {
+    try {
+      const value = window.localStorage.getItem(key);
+      return value == null ? fallbackValue : value;
+    } catch (_) {
+      return fallbackValue;
+    }
+  }
+
+  function readBooleanPref(key, fallbackValue) {
+    const raw = readStorage(key, null);
+    if (raw == null) {
+      return fallbackValue;
+    }
+    return raw === '1' || raw === 'true';
+  }
+
+  function readFriendListRefreshMs() {
+    const raw = Number.parseInt(String(readStorage(FRIEND_LIST_REFRESH_KEY, FRIEND_LIST_REFRESH_MS)), 10);
+    if (Number.isFinite(raw) && FRIEND_LIST_ALLOWED_REFRESH_VALUES.includes(raw)) {
+      return raw;
+    }
+    return FRIEND_LIST_REFRESH_MS;
   }
 
   async function loadFriendList() {
@@ -55,7 +84,27 @@
         return;
       }
 
-      const items = friends.map((f) => {
+      const showOfflineFriends = readBooleanPref(FRIEND_LIST_SHOW_OFFLINE_KEY, true);
+      const visibleFriends = friends
+        .filter((f) => showOfflineFriends ? true : !!f.online)
+        .sort((a, b) => {
+          const onlineDiff = Number(!!b.online) - Number(!!a.online);
+          if (onlineDiff !== 0) {
+            return onlineDiff;
+          }
+          const nameA = String(a.displayName || a.email || a.id || '').toLowerCase();
+          const nameB = String(b.displayName || b.email || b.id || '').toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+
+      if (visibleFriends.length === 0) {
+        container.innerHTML = showOfflineFriends
+          ? '<div class="small text-muted">Chưa có bạn bè nào.</div>'
+          : '<div class="small text-muted">Hiện chưa có bạn nào đang online.</div>';
+        return;
+      }
+
+      const items = visibleFriends.map((f) => {
         const name = f.displayName || f.email || f.id;
         const avatar = appPath(f.avatarPath || '/uploads/avatars/default-avatar.jpg');
         const detailHref = appPath('/friendship/user-detail/' + encodeURIComponent(f.id)) + '?currentUserId=' + encodeURIComponent(current.userId);
@@ -82,12 +131,17 @@
   function startFriendListPolling() {
     if (friendListPollTimerId) {
       window.clearInterval(friendListPollTimerId);
+      friendListPollTimerId = null;
     }
 
     void loadFriendList();
-    friendListPollTimerId = window.setInterval(() => {
-      void loadFriendList();
-    }, FRIEND_LIST_REFRESH_MS);
+
+    const autoRefresh = readBooleanPref(FRIEND_LIST_AUTO_REFRESH_KEY, true);
+    if (autoRefresh) {
+      friendListPollTimerId = window.setInterval(() => {
+        void loadFriendList();
+      }, readFriendListRefreshMs());
+    }
 
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {

@@ -86,6 +86,49 @@ public class AccountController {
         return toResponse(accountService.changePassword(request.userId(), request.currentPassword(), request.newPassword()));
     }
 
+    @PostMapping("/update-profile")
+    public Object updateProfile(@RequestBody(required = false) UpdateProfileRequest request,
+                                HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        String requestedUserId = request == null ? null : request.userId();
+        if (requestedUserId != null && !requestedUserId.isBlank() && !sessionUserId.equals(requestedUserId)) {
+            return Map.of("success", false, "error", "User mismatch");
+        }
+
+        return toResponse(accountService.updateProfile(
+            sessionUserId,
+            request == null ? null : request.displayName(),
+            request == null ? null : request.email(),
+            request == null ? null : request.avatarPath()
+        ));
+    }
+
+    @PostMapping("/activate-admin")
+    public Object activateAdmin(@RequestBody(required = false) ActivateAdminRequest request,
+                                HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        String requestedUserId = request == null ? null : request.userId();
+        if (requestedUserId != null && !requestedUserId.isBlank() && !sessionUserId.equals(requestedUserId)) {
+            return Map.of("success", false, "error", "User mismatch");
+        }
+
+        AccountService.ServiceResult result =
+            accountService.activateAdminRole(sessionUserId, request == null ? null : request.activationCode());
+        if (result.success() && session != null) {
+            session.setAttribute("AUTH_USER_ID", sessionUserId);
+            session.setAttribute("AUTH_ROLE", "Admin");
+        }
+        return toResponse(result);
+    }
+
     @PostMapping("/send-reset-code")
     public Object sendResetCode(@RequestBody SendResetRequest request) {
         return toResponse(accountService.sendResetCode(request.email()));
@@ -153,6 +196,12 @@ public class AccountController {
     }
 
     public record ChangePasswordRequest(String userId, String currentPassword, String newPassword) {
+    }
+
+    public record UpdateProfileRequest(String userId, String displayName, String email, String avatarPath) {
+    }
+
+    public record ActivateAdminRequest(String userId, String activationCode) {
     }
 
     public record SendResetRequest(String email) {

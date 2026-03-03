@@ -17,7 +17,18 @@
       </div>
       <div class="gx-inline-actions">
         <span class="gx-page-badge"><i class="bi bi-people-fill"></i><span th:text="${totalItems} + ' users'">0 users</span></span>
-        <a class="btn theme-outline-btn" th:href="@{/admin/export-users-csv}">Export CSV</a>
+        <a class="btn theme-outline-btn"
+           th:href="@{/admin/export-users-csv(searchTerm=${searchTerm},banFilter=${banFilter},page=${page},size=${size},scope='page')}">
+          CSV Trang nay
+        </a>
+        <a class="btn theme-outline-btn"
+           th:href="@{/admin/export-users-excel(searchTerm=${searchTerm},banFilter=${banFilter},page=${page},size=${size},scope='page')}">
+          Excel Trang nay
+        </a>
+        <a class="btn theme-outline-btn"
+           th:href="@{/admin/export-users-excel(searchTerm=${searchTerm},banFilter=${banFilter},page=${page},size=${size},scope='all')}">
+          Excel Tat ca da loc
+        </a>
       </div>
     </div>
   </section>

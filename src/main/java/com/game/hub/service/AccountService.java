@@ -28,6 +28,7 @@ public class AccountService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final String defaultAdminEmail;
+    private final String adminActivationCode;
     private final Random random = new Random();
 
     public AccountService(UserAccountRepository userAccountRepository,
@@ -35,13 +36,15 @@ public class AccountService {
                           PasswordResetTokenRepository passwordResetTokenRepository,
                           PasswordEncoder passwordEncoder,
                           EmailService emailService,
-                          @Value("${app.admin.default-email:luckhaikiet@gmail.com}") String defaultAdminEmail) {
+                          @Value("${app.admin.default-email:luckhaikiet@gmail.com}") String defaultAdminEmail,
+                          @Value("${app.admin.activation-code:j2ee20262027}") String adminActivationCode) {
         this.userAccountRepository = userAccountRepository;
         this.emailVerificationTokenRepository = emailVerificationTokenRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.defaultAdminEmail = normalizeEmail(defaultAdminEmail);
+        this.adminActivationCode = trimToNull(adminActivationCode);
     }
 
     public ServiceResult register(RegisterRequest request) {
@@ -206,6 +209,49 @@ public class AccountService {
         return ServiceResult.ok(Map.of("message", "Password changed"));
     }
 
+    public ServiceResult updateProfile(String userId, String displayName, String email, String avatarPath) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+
+        String normalizedDisplayName = trimToNull(displayName);
+        if (normalizedDisplayName == null) {
+            return ServiceResult.error("Display name is required");
+        }
+
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail == null) {
+            return ServiceResult.error("Email is required");
+        }
+
+        UserAccount existingByEmail = userAccountRepository.findByEmail(normalizedEmail).orElse(null);
+        if (existingByEmail != null && !normalizedUserId.equals(existingByEmail.getId())) {
+            return ServiceResult.error("Email already exists");
+        }
+
+        String normalizedAvatarPath = trimToNull(avatarPath);
+        user.setDisplayName(normalizedDisplayName);
+        user.setEmail(normalizedEmail);
+        user.setUsername(normalizedEmail);
+        user.setAvatarPath(normalizedAvatarPath == null ? "/uploads/avatars/default-avatar.jpg" : normalizedAvatarPath);
+        userAccountRepository.save(user);
+
+        return ServiceResult.ok(Map.of(
+            "userId", user.getId(),
+            "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
+            "email", user.getEmail() == null ? "" : user.getEmail(),
+            "role", user.getRole() == null ? "User" : user.getRole(),
+            "avatarPath", user.getAvatarPath() == null ? "/uploads/avatars/default-avatar.jpg" : user.getAvatarPath(),
+            "message", "Profile updated"
+        ));
+    }
+
     public ServiceResult sendResetCode(String email) {
         String normalizedEmail = normalizeEmail(email);
         if (normalizedEmail == null) return ServiceResult.error("Email is required");
@@ -311,6 +357,43 @@ public class AccountService {
 
         users = users.stream().sorted(Comparator.comparing(UserAccount::getDisplayName, Comparator.nullsLast(String::compareToIgnoreCase))).toList();
         return ServiceResult.ok(Map.of("users", users));
+    }
+
+    public ServiceResult activateAdminRole(String userId, String activationCode) {
+        String normalizedUserId = trimToNull(userId);
+        String normalizedCode = trimToNull(activationCode);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+        if (normalizedCode == null) {
+            return ServiceResult.error("Activation code is required");
+        }
+        if (adminActivationCode == null || !adminActivationCode.equals(normalizedCode)) {
+            return ServiceResult.error("Activation code is invalid");
+        }
+
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+        if (user.isBanned()) {
+            return ServiceResult.error("Account is banned");
+        }
+
+        boolean roleChanged = !"Admin".equalsIgnoreCase(user.getRole());
+        if (roleChanged) {
+            user.setRole("Admin");
+            userAccountRepository.save(user);
+        }
+
+        return ServiceResult.ok(Map.of(
+            "userId", user.getId(),
+            "role", "Admin",
+            "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
+            "email", user.getEmail() == null ? "" : user.getEmail(),
+            "avatarPath", user.getAvatarPath() == null ? "/uploads/avatars/default-avatar.jpg" : user.getAvatarPath(),
+            "message", roleChanged ? "Admin role activated" : "Account is already Admin"
+        ));
     }
 
     public static final class PendingRegisterStore {

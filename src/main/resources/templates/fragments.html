@@ -299,7 +299,13 @@
 <div id="appShellLayer" th:fragment="appShell(pageKey)">
   <script>
     if (window.matchMedia && window.matchMedia("(min-width: 1200px)").matches) {
-      document.body.classList.add("sidebar-desktop-hidden");
+      let desktopHidden = true;
+      try {
+        const stored = window.localStorage.getItem("caroSidebarDesktopHidden.v2");
+        desktopHidden = stored == null ? true : (stored === "1" || stored === "true");
+      } catch (_) {
+      }
+      document.body.classList.toggle("sidebar-desktop-hidden", desktopHidden);
     }
   </script>
   <div id="sidebarScrim" class="app-shell-scrim" aria-hidden="true"></div>
@@ -324,6 +330,7 @@
         <button id="toggleThemeTopbar" class="cg-topbar__icon-btn" type="button" aria-label="Chuyen giao dien" title="Chuyen giao dien"><i class="bi bi-circle-half"></i></button>
         <a class="cg-topbar__icon-btn" th:href="@{/friendship/notifications}" data-require-user-id="true" aria-label="Thong bao"><i class="bi bi-bell"></i></a>
         <a class="cg-topbar__icon-btn" th:href="@{/games}" aria-label="Yeu thich"><i class="bi bi-heart"></i></a>
+        <a class="cg-topbar__icon-btn" th:href="@{/settings}" aria-label="Cai dat"><i class="bi bi-gear"></i></a>
         <a class="cg-topbar__icon-btn" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true" aria-label="Tai khoan"><i class="bi bi-person"></i></a>
         <a class="cg-topbar__login-btn" th:href="@{/account/login-page}" data-guest-only="true">Dang nhap</a>
         <small class="cg-topbar__user-badge" data-current-user-badge="true" data-auth-only="true">Nguoi choi</small>
@@ -381,12 +388,16 @@
 
         <div class="app-shell-menu-group">
           <div class="app-shell-menu-group__title">Tai khoan</div>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/settings}"><i class="bi bi-gear-fill me-2"></i> Cai dat</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/leaderboard}"><i class="bi bi-bar-chart-fill me-2"></i> Bang xep hang</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/history}" data-require-user-id="true" data-user-param="userId"><i class="bi bi-clock-history me-2"></i> Lich su dau</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship}" data-require-user-id="true"><i class="bi bi-people-fill me-2"></i> Ban be</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship/notifications}" data-require-user-id="true"><i class="bi bi-bell-fill me-2"></i> Thong bao</a>
           <a id="myProfileLink" class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true"><i class="bi bi-person-circle me-2"></i> Ho so cua toi</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/chat-bot}"><i class="bi bi-robot me-2"></i> Chat Bot</a>
+          <button id="activateAdminBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true">
+            <i class="bi bi-key-fill me-2"></i> Kich hoat Admin
+          </button>
           <a class="btn theme-outline-btn w-100 text-start theme-text"
              th:href="@{/manager/users}"
              data-auth-only="true"
@@ -480,11 +491,28 @@
 
       if (sidebar && toggleBtn) {
         const desktopQuery = window.matchMedia("(min-width: 1200px)");
-        let desktopSidebarHidden = true;
-        try {
-          window.localStorage.removeItem("caroSidebarDesktopHidden.v1");
-        } catch (_) {
-        }
+        const SIDEBAR_DESKTOP_HIDDEN_KEY = "caroSidebarDesktopHidden.v2";
+        const SIDEBAR_MOBILE_AUTO_CLOSE_KEY = "caroSidebarMobileAutoClose.v1";
+        const readBooleanPref = (key, defaultValue) => {
+          try {
+            const raw = window.localStorage.getItem(key);
+            if (raw == null) {
+              return defaultValue;
+            }
+            return raw === "1" || raw === "true";
+          } catch (_) {
+            return defaultValue;
+          }
+        };
+        const writeBooleanPref = (key, value) => {
+          try {
+            window.localStorage.setItem(key, value ? "1" : "0");
+          } catch (_) {
+          }
+        };
+
+        let desktopSidebarHidden = readBooleanPref(SIDEBAR_DESKTOP_HIDDEN_KEY, true);
+        const shouldAutoCloseMobileSidebar = () => readBooleanPref(SIDEBAR_MOBILE_AUTO_CLOSE_KEY, true);
 
         const syncSidebarToggleUi = () => {
           const isDesktop = desktopQuery.matches;
@@ -519,6 +547,7 @@
         toggleBtn.addEventListener("click", () => {
           if (desktopQuery.matches) {
             desktopSidebarHidden = !desktopSidebarHidden;
+            writeBooleanPref(SIDEBAR_DESKTOP_HIDDEN_KEY, desktopSidebarHidden);
             syncSidebarToggleUi();
             return;
           }
@@ -561,7 +590,7 @@
           } catch (_) {
           }
           link.addEventListener("click", () => {
-            if (!desktopQuery.matches && body.classList.contains("sidebar-open")) {
+            if (!desktopQuery.matches && body.classList.contains("sidebar-open") && shouldAutoCloseMobileSidebar()) {
               body.classList.remove("sidebar-open");
               syncSidebarToggleUi();
             }
@@ -627,6 +656,7 @@
       });
       const toggleThemeBtn = document.getElementById("toggle-theme");
       const toggleThemeTopbarBtn = document.getElementById("toggleThemeTopbar");
+      const activateAdminBtn = document.getElementById("activateAdminBtn");
       const readStoredTheme = () => {
         try {
           return window.localStorage.getItem("theme");
@@ -652,6 +682,58 @@
       };
       toggleThemeBtn?.addEventListener("click", toggleTheme);
       toggleThemeTopbarBtn?.addEventListener("click", toggleTheme);
+
+      activateAdminBtn?.addEventListener("click", async () => {
+        const current = window.CaroUser?.get?.();
+        if (!current || !current.userId) {
+          window.CaroUi?.toast?.("Login required", { type: "warning" });
+          return;
+        }
+        const enteredCode = window.prompt("Nhap ma kich hoat Admin:");
+        if (enteredCode === null) {
+          return;
+        }
+        const activationCode = String(enteredCode || "").trim();
+        if (!activationCode) {
+          window.CaroUi?.toast?.("Activation code is required", { type: "warning" });
+          return;
+        }
+
+        activateAdminBtn.disabled = true;
+        try {
+          const response = await fetch(toAppPath("/account/activate-admin"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: current.userId, activationCode })
+          });
+          const payload = await response.json();
+          const success = !!(payload && payload.success);
+          const message = success
+            ? String(payload?.data?.message || "Admin role activated")
+            : String(payload?.error || "Cannot activate admin role");
+
+          window.CaroUi?.toast?.(message, { type: success ? "success" : "danger" });
+          if (!success) {
+            return;
+          }
+
+          if (window.CaroUser && typeof window.CaroUser.set === "function") {
+            window.CaroUser.set({
+              userId: current.userId,
+              displayName: payload?.data?.displayName || current.displayName || "Player",
+              email: payload?.data?.email || current.email || "",
+              role: "Admin",
+              avatarPath: payload?.data?.avatarPath || current.avatarPath || "/uploads/avatars/default-avatar.jpg"
+            });
+          }
+          window.setTimeout(() => window.location.reload(), 200);
+        } catch (error) {
+          const message = String(error?.message || error || "Cannot activate admin role");
+          window.CaroUi?.toast?.(message, { type: "danger" });
+        } finally {
+          activateAdminBtn.disabled = false;
+        }
+      });
       const pageKey = /*[[${pageKey}]]*/ 'home';
       const normalizedPageKey = String(pageKey || 'home')
         .toLowerCase()

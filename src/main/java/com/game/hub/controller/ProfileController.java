@@ -1,13 +1,15 @@
 package com.game.hub.controller;
 
-import com.game.hub.entity.UserAccount;
-import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.AccountService;
 import com.game.hub.service.ProfileStatsService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Map;
@@ -15,12 +17,11 @@ import java.util.Optional;
 
 @Controller
 public class ProfileController {
-
-    private final UserAccountRepository userAccountRepository;
+    private final AccountService accountService;
     private final ProfileStatsService profileStatsService;
 
-    public ProfileController(UserAccountRepository userAccountRepository, ProfileStatsService profileStatsService) {
-        this.userAccountRepository = userAccountRepository;
+    public ProfileController(AccountService accountService, ProfileStatsService profileStatsService) {
+        this.accountService = accountService;
         this.profileStatsService = profileStatsService;
     }
 
@@ -42,5 +43,48 @@ public class ProfileController {
             .orElse("");
 
         return profileStatsService.buildProfileStats(userId, viewerId);
+    }
+
+    @PatchMapping("/profile")
+    @ResponseBody
+    public Map<String, Object> updateProfile(@RequestBody(required = false) UpdateProfileRequest request,
+                                             HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest == null ? null : httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : toTrimmed(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        if (request == null) {
+            return Map.of("success", false, "error", "Invalid request");
+        }
+        String requestedUserId = toTrimmed(request.userId());
+        if (requestedUserId != null && !sessionUserId.equals(requestedUserId)) {
+            return Map.of("success", false, "error", "User mismatch");
+        }
+
+        AccountService.ServiceResult result = accountService.updateProfile(
+            sessionUserId,
+            request.displayName(),
+            request.email(),
+            request.avatarPath()
+        );
+        if (!result.success()) {
+            return Map.of("success", false, "error", result.error());
+        }
+        if (result.data() instanceof Map<?, ?> userMap) {
+            return Map.of("success", true, "user", userMap);
+        }
+        return Map.of("success", true);
+    }
+
+    private String toTrimmed(Object value) {
+        if (value == null) {
+            return null;
+        }
+        String raw = String.valueOf(value).trim();
+        return raw.isEmpty() ? null : raw;
+    }
+
+    public record UpdateProfileRequest(String userId, String displayName, String email, String avatarPath) {
     }
 }

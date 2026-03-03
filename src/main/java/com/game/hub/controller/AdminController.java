@@ -4,6 +4,7 @@ import com.game.hub.entity.Friendship;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.FriendshipRepository;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.support.UserExportSupport;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -175,23 +175,33 @@ public class AdminController {
     }
 
     @GetMapping("/export-users-csv")
-    public ResponseEntity<byte[]> exportCsv() {
-        StringBuilder csv = new StringBuilder();
-        csv.append("User ID,Email,DisplayName,Score,Role\n");
-
-        for (UserAccount user : userAccountRepository.findAll()) {
-            csv.append(sanitize(user.getId())).append(',')
-                .append(sanitize(user.getEmail())).append(',')
-                .append(sanitize(user.getDisplayName())).append(',')
-                .append(user.getScore()).append(',')
-                .append(sanitize(user.getRole()))
-                .append('\n');
-        }
-
-        byte[] body = csv.toString().getBytes(StandardCharsets.UTF_8);
+    public ResponseEntity<byte[]> exportCsv(@RequestParam(required = false) String searchTerm,
+                                            @RequestParam(required = false) String banFilter,
+                                            @RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "10") int size,
+                                            @RequestParam(defaultValue = "page") String scope) {
+        List<UserAccount> users = resolveUsersForExport(searchTerm, banFilter, page, size, scope);
+        byte[] body = UserExportSupport.toCsv(users);
+        String filename = "users-" + exportSuffix(scope, page) + ".csv";
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=users.csv")
-            .contentType(MediaType.TEXT_PLAIN)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+            .contentType(MediaType.parseMediaType("text/csv"))
+            .body(body);
+    }
+
+    @GetMapping("/export-users-excel")
+    public ResponseEntity<byte[]> exportExcel(@RequestParam(required = false) String searchTerm,
+                                              @RequestParam(required = false) String banFilter,
+                                              @RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "10") int size,
+                                              @RequestParam(defaultValue = "page") String scope) {
+        List<UserAccount> users = resolveUsersForExport(searchTerm, banFilter, page, size, scope);
+        byte[] body = UserExportSupport.toExcel(users);
+        String filename = "users-" + exportSuffix(scope, page) + ".xlsx";
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+            .contentType(MediaType.parseMediaType(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
             .body(body);
     }
 
@@ -228,9 +238,24 @@ public class AdminController {
     private record PageSlice<T>(List<T> items, int page, int size, int totalPages) {
     }
 
-    private String sanitize(String v) {
-        if (v == null) return "";
-        return '"' + v.replace("\"", "\"\"") + '"';
+    private List<UserAccount> resolveUsersForExport(String searchTerm,
+                                                    String banFilter,
+                                                    int page,
+                                                    int size,
+                                                    String scope) {
+        List<UserAccount> filtered = filterUsers(searchTerm, banFilter);
+        if ("all".equalsIgnoreCase(scope)) {
+            return filtered;
+        }
+        return paginate(filtered, page, size).items();
+    }
+
+    private String exportSuffix(String scope, int page) {
+        if ("all".equalsIgnoreCase(scope)) {
+            return "all";
+        }
+        int safePage = Math.max(page, 0);
+        return "page-" + (safePage + 1);
     }
 
     public record CreateUserRequest(String email, String displayName, String password, int score, String role, String avatarPath) {
