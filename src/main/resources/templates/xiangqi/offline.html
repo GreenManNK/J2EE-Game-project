@@ -24,6 +24,7 @@
             <div id="xiangqiGameStatus" class="text-muted small">Chon quan co de bat dau.</div>
           </div>
           <div class="d-flex gap-2 flex-wrap">
+            <button id="xiangqiUndoBtn" type="button" class="btn btn-sm theme-outline-btn">Undo</button>
             <button id="xiangqiResetBtn" type="button" class="btn btn-sm theme-outline-btn">Van moi</button>
             <button id="xiangqiSurrenderBtn" type="button" class="btn btn-sm btn-outline-warning">Dau hang</button>
             <a th:href="@{/games/xiangqi}" class="btn btn-sm theme-outline-btn">Chi tiet game</a>
@@ -43,8 +44,10 @@
           <div class="theme-text">Trang thai: <span id="xiangqiResultLabel">Dang choi</span></div>
           <div class="theme-text">Nuoc di: <span id="xiangqiMoveCount">0</span></div>
           <div class="theme-text">Luot hien tai: <span id="xiangqiCurrentColor">Do</span></div>
+          <div class="theme-text">Thong ke (Do/Den/Hoa): <span id="xiangqiStatsWld">0/0/0</span></div>
         </div>
 
+        <div class="small text-muted mb-2">Phim tat: U Undo, R Van moi, S Dau hang</div>
         <h3 class="h6 theme-text">Nhat ky nuoc di</h3>
         <ol id="xiangqiMoveLog" class="small xiangqi-move-log mb-0"></ol>
       </div>

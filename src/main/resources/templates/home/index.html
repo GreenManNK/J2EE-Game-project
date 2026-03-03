@@ -25,6 +25,7 @@
         <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="chess" data-game-name="Co vua"><i class="bi bi-activity"></i> Co vua</button>
         <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="xiangqi" data-game-name="Co tuong"><i class="bi bi-diagram-3-fill"></i> Co tuong</button>
         <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="cards" data-game-name="Danh bai"><i class="bi bi-suit-spade-fill"></i> Danh bai</button>
+        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="blackjack" data-game-name="Blackjack"><i class="bi bi-suit-club-fill"></i> Blackjack</button>
         <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="minesweeper" data-game-name="Minesweeper"><i class="bi bi-asterisk"></i> Minesweeper</button>
         <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="quiz" data-game-name="Quiz"><i class="bi bi-patch-question-fill"></i> Quiz</button>
         <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="typing" data-game-name="Typing"><i class="bi bi-keyboard-fill"></i> Typing</button>
@@ -221,7 +222,7 @@
           <a th:href="@{/games}" class="hub-portal-inline-btn">Thu vien game</a>
           <a th:href="@{/leaderboard}" class="hub-portal-inline-btn">Bang xep hang</a>
           <a th:href="@{/history}" class="hub-portal-inline-btn" data-require-user-id="true">Lich su dau</a>
-          <a th:href="@{/online-hub}" class="hub-portal-inline-btn">Online hub</a>
+          <a th:href="@{/online-hub(game='caro')}" class="hub-portal-inline-btn">Online hub</a>
         </div>
       </section>
     </aside>
@@ -251,6 +252,7 @@
       chess: { detailHref: '/games/chess' },
       xiangqi: { detailHref: '/games/xiangqi' },
       cards: { detailHref: '/games/cards' },
+      blackjack: { detailHref: '/games/blackjack' },
       minesweeper: { detailHref: '/games/minesweeper' },
       quiz: { detailHref: '/games/quiz' },
       typing: { detailHref: '/games/typing' },

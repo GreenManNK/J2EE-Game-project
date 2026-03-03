@@ -47,20 +47,7 @@ public class AdminAccessLogController {
                        @RequestParam(defaultValue = "0") int page,
                        @RequestParam(defaultValue = "50") int size,
                        Model model) {
-        List<PageAccessLogView> filtered = applyFilters(loadViews(), q, method, fromDate, toDate);
-        PageSlice<PageAccessLogView> slice = paginate(filtered, page, size);
-
-        model.addAttribute("q", safe(q));
-        model.addAttribute("method", safe(method));
-        model.addAttribute("fromDate", safe(fromDate));
-        model.addAttribute("toDate", safe(toDate));
-        model.addAttribute("page", slice.page());
-        model.addAttribute("size", slice.size());
-        model.addAttribute("totalPages", slice.totalPages());
-        model.addAttribute("totalItems", filtered.size());
-        model.addAttribute("logs", slice.items());
-        model.addAttribute("summary", buildSummary(filtered));
-        return "admin/access-logs";
+        return "redirect:/admin";
     }
 
     @ResponseBody

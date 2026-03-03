@@ -100,7 +100,7 @@
   <section class="cg-lane" data-lane-section>
     <header class="cg-lane-head">
       <h2>Multiplayer</h2>
-      <a th:href="@{/online-hub}" class="cg-lane-more">Xem them</a>
+      <a th:href="@{/online-hub(game='caro')}" class="cg-lane-more">Xem them</a>
     </header>
     <div class="cg-lane-track" data-lane-track>
       <article class="cg-tile"
@@ -165,13 +165,13 @@
 
   <section class="cg-lane" data-lane-section>
     <header class="cg-lane-head">
-      <h2>Cards, Puzzle va Nhanh</h2>
+      <h2>Cards, Blackjack va Nhanh</h2>
       <a th:href="@{/games/cards}" class="cg-lane-more">Xem them</a>
     </header>
     <div class="cg-lane-track" data-lane-track>
       <article class="cg-tile"
                th:each="g : ${games}"
-               th:if="${g.code == 'cards' or g.code == 'puzzle' or g.code == 'quiz' or g.code == 'typing' or g.code == 'minesweeper'}"
+               th:if="${g.code == 'cards' or g.code == 'blackjack' or g.code == 'puzzle' or g.code == 'quiz' or g.code == 'typing' or g.code == 'minesweeper'}"
                th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' or g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 65 : 42) + (g.supportsGuest ? 12 : 0)}">
         <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
           <span class="cg-tile-badge">New</span>

@@ -120,6 +120,7 @@
           <div class="col-md-6">
             <label class="form-label" for="themeModeSelect">Theme mode</label>
             <select id="themeModeSelect" class="form-select">
+              <option value="system">Theo he thong</option>
               <option value="light">Light</option>
               <option value="dark">Dark</option>
             </select>
@@ -270,22 +271,11 @@
             Users Excel (Manager)
           </a>
           <a class="btn theme-outline-btn"
-             th:href="@{/admin/export-users-excel(scope='all')}"
+             th:href="@{/admin}"
+             data-admin-only="true"
              data-auth-only="true"
              data-role-allowed="Admin">
-            Users Excel (Admin)
-          </a>
-          <a class="btn theme-outline-btn"
-             th:href="@{/admin/access-logs}"
-             data-auth-only="true"
-             data-role-allowed="Admin">
-            Access Logs (Admin)
-          </a>
-          <a class="btn theme-outline-btn"
-             th:href="@{/admin/access-logs/export-excel(scope='all')}"
-             data-auth-only="true"
-             data-role-allowed="Admin">
-            Access Excel (Admin)
+            Admin Center
           </a>
         </div>
       </section>

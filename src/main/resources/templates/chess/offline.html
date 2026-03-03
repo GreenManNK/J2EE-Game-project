@@ -24,6 +24,7 @@
             <div id="chessGameStatus" class="text-muted small">Chon quan co de bat dau.</div>
           </div>
           <div class="d-flex gap-2 flex-wrap">
+            <button id="chessUndoBtn" type="button" class="btn btn-sm theme-outline-btn">Undo</button>
             <button id="chessResetBtn" type="button" class="btn btn-sm theme-outline-btn">Van moi</button>
             <button id="chessSurrenderBtn" type="button" class="btn btn-sm btn-outline-warning">Dau hang</button>
             <a th:href="@{/games/chess}" class="btn btn-sm theme-outline-btn">Chi tiet game</a>
@@ -43,8 +44,10 @@
           <div class="theme-text">Trang thai: <span id="chessResultLabel">Dang choi</span></div>
           <div class="theme-text">Nuoc di: <span id="chessMoveCount">0</span></div>
           <div class="theme-text">Luot hien tai: <span id="chessCurrentColor">Trang</span></div>
+          <div class="theme-text">Thong ke (Trang/Den/Hoa): <span id="chessStatsWld">0/0/0</span></div>
         </div>
 
+        <div class="small text-muted mb-2">Phim tat: U Undo, R Van moi, S Dau hang</div>
         <h3 class="h6 theme-text">Nhat ky nuoc di</h3>
         <ol id="chessMoveLog" class="small chess-move-log mb-0"></ol>
       </div>

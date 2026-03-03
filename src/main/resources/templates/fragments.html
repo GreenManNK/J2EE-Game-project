@@ -9,6 +9,44 @@
   <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
   <title th:text="${title} + ' - Caro'">Caro</title>
   <meta name="theme-color" content="#0b1220">
+  <script>
+    (function () {
+      const THEME_MODE_KEY = "caroThemeMode.v1";
+      const LEGACY_THEME_KEY = "theme";
+      const normalizeMode = function (mode) {
+        const value = String(mode || "").trim().toLowerCase();
+        if (value === "dark" || value === "light" || value === "system") {
+          return value;
+        }
+        return "light";
+      };
+      let mode = "light";
+      try {
+        const raw = window.localStorage.getItem(THEME_MODE_KEY);
+        const normalized = normalizeMode(raw);
+        if (normalized !== "light" || String(raw || "").trim().toLowerCase() === "light") {
+          mode = normalized;
+        } else {
+          const legacy = normalizeMode(window.localStorage.getItem(LEGACY_THEME_KEY));
+          if (legacy === "dark" || legacy === "light") {
+            mode = legacy;
+          }
+        }
+      } catch (_) {
+      }
+      const effectiveTheme = mode === "dark"
+        ? "dark"
+        : (mode === "system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      const root = document.documentElement;
+      if (!root) {
+        return;
+      }
+      root.setAttribute("data-theme", effectiveTheme);
+      root.setAttribute("data-theme-mode", mode);
+      root.classList.toggle("dark-mode", effectiveTheme === "dark");
+      root.classList.toggle("light-mode", effectiveTheme === "light");
+    })();
+  </script>
   <link rel="stylesheet" th:href="@{/lib/bootstrap/dist/css/bootstrap.min.css}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +58,7 @@
   <link rel="stylesheet" th:href="@{/css/cg-market.css(v=20260303c)}">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
+    [data-admin-only] { display: none; }
     body {
       --app-sidebar-width: 258px;
       --app-sidebar-compact-width: 58px;
@@ -345,11 +384,12 @@
     <a th:href="@{/games/chess}" class="cg-top-rail__item"><i class="bi bi-activity"></i> Chess</a>
     <a th:href="@{/games/xiangqi}" class="cg-top-rail__item"><i class="bi bi-diagram-3-fill"></i> Xiangqi</a>
     <a th:href="@{/games/cards}" class="cg-top-rail__item"><i class="bi bi-suit-spade-fill"></i> Cards</a>
+    <a th:href="@{/games/blackjack}" class="cg-top-rail__item"><i class="bi bi-suit-club-fill"></i> Blackjack</a>
     <a th:href="@{/games/minesweeper}" class="cg-top-rail__item"><i class="bi bi-asterisk"></i> Minesweeper</a>
     <a th:href="@{/games/quiz}" class="cg-top-rail__item"><i class="bi bi-patch-question-fill"></i> Quiz</a>
     <a th:href="@{/games/typing}" class="cg-top-rail__item"><i class="bi bi-keyboard-fill"></i> Typing</a>
     <a th:href="@{/games/puzzle}" class="cg-top-rail__item"><i class="bi bi-puzzle-fill"></i> Puzzle</a>
-    <a th:href="@{/online-hub}" class="cg-top-rail__item"><i class="bi bi-wifi"></i> Online hub</a>
+    <a th:href="@{/online-hub(game='caro')}" class="cg-top-rail__item"><i class="bi bi-wifi"></i> Online hub</a>
   </nav>
 
   <div id="friendSidebar" class="theme-text">
@@ -371,18 +411,19 @@
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-fire me-2"></i> Xu huong</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-arrow-repeat me-2"></i> Cap nhat</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-grid-3x3-gap-fill me-2"></i> Originals</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/online-hub}"><i class="bi bi-people-fill me-2"></i> Multiplayer</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/online-hub(game='caro')}"><i class="bi bi-people-fill me-2"></i> Multiplayer</a>
         </div>
 
         <div class="app-shell-menu-group">
           <div class="app-shell-menu-group__title">Danh muc</div>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/cards}"><i class="bi bi-suit-spade-fill me-2"></i> Bai</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/chess}"><i class="bi bi-activity me-2"></i> Ban sung</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/minesweeper}"><i class="bi bi-asterisk me-2"></i> Bao ve toa thap</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/quiz}"><i class="bi bi-dribbble me-2"></i> Bi da 6 lo</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/typing}"><i class="bi bi-basket2-fill me-2"></i> Bong ro</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/puzzle}"><i class="bi bi-puzzle-fill me-2"></i> Giai do</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/caro}"><i class="bi bi-controller me-2"></i> Casual</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/cards}"><i class="bi bi-suit-spade-fill me-2"></i> Danh bai</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/blackjack}"><i class="bi bi-suit-club-fill me-2"></i> Blackjack</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/chess}"><i class="bi bi-activity me-2"></i> Co vua</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/minesweeper}"><i class="bi bi-asterisk me-2"></i> Do min</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/quiz}"><i class="bi bi-patch-question-fill me-2"></i> Quiz</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/typing}"><i class="bi bi-keyboard-fill me-2"></i> Typing</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/puzzle}"><i class="bi bi-puzzle-fill me-2"></i> Puzzle</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/caro}"><i class="bi bi-controller me-2"></i> Caro</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/xiangqi}"><i class="bi bi-diagram-3-fill me-2"></i> Co tuong</a>
         </div>
 
@@ -403,17 +444,10 @@
              data-auth-only="true"
              data-role-allowed="Manager,Admin"><i class="bi bi-people me-2"></i> Manager Users</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text"
-             th:href="@{/admin/users}"
+             th:href="@{/admin}"
              data-auth-only="true"
-             data-role-allowed="Admin"><i class="bi bi-shield-lock me-2"></i> Admin Users</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text"
-             th:href="@{/notification-admin}"
-             data-auth-only="true"
-             data-role-allowed="Admin"><i class="bi bi-megaphone me-2"></i> System Notices</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text"
-             th:href="@{/admin/access-logs}"
-             data-auth-only="true"
-             data-role-allowed="Admin"><i class="bi bi-activity me-2"></i> Access Logs</a>
+             data-admin-only="true"
+             data-role-allowed="Admin"><i class="bi bi-shield-lock me-2"></i> Admin Center</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/login-page}" data-guest-only="true"><i class="bi bi-box-arrow-in-right me-2"></i> Dang nhap</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/register-page}" data-guest-only="true"><i class="bi bi-person-plus-fill me-2"></i> Dang ky</a>
           <button id="logoutBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true"><i class="bi bi-box-arrow-right me-2"></i> Dang xuat</button>
@@ -670,31 +704,62 @@
       const toggleThemeBtn = document.getElementById("toggle-theme");
       const toggleThemeTopbarBtn = document.getElementById("toggleThemeTopbar");
       const activateAdminBtn = document.getElementById("activateAdminBtn");
-      const readStoredTheme = () => {
-        try {
-          return window.localStorage.getItem("theme");
-        } catch (_) {
-          return null;
+      const themeApi = window.CaroTheme;
+      const computeNextThemeMode = (mode) => {
+        if (themeApi && typeof themeApi.nextMode === "function") {
+          return themeApi.nextMode(mode);
+        }
+        if (mode === "system") {
+          return "light";
+        }
+        if (mode === "light") {
+          return "dark";
+        }
+        return "system";
+      };
+      const syncThemeUi = () => {
+        const mode = themeApi?.getMode?.() || "light";
+        const effectiveTheme = themeApi?.getTheme?.() || (body.classList.contains("dark-mode") ? "dark" : "light");
+        const nextMode = computeNextThemeMode(mode);
+        const iconClass = mode === "system"
+          ? "bi-circle-half"
+          : (effectiveTheme === "dark" ? "bi-moon-stars-fill" : "bi-sun-fill");
+        const sidebarLabel = mode === "system"
+          ? "Giao dien: Tu dong (" + (effectiveTheme === "dark" ? "Toi" : "Sang") + ")"
+          : (effectiveTheme === "dark" ? "Giao dien: Toi" : "Giao dien: Sang");
+        const nextModeLabel = nextMode === "system"
+          ? "Tu dong"
+          : (nextMode === "dark" ? "Toi" : "Sang");
+        const topbarTitle = "Bam de chuyen sang: " + nextModeLabel;
+
+        if (toggleThemeBtn) {
+          toggleThemeBtn.innerHTML = '<i class="bi ' + iconClass + ' me-2"></i>' + sidebarLabel;
+          toggleThemeBtn.setAttribute("title", topbarTitle);
+          toggleThemeBtn.setAttribute("aria-label", sidebarLabel);
+          toggleThemeBtn.setAttribute("data-theme-mode", mode);
+        }
+        if (toggleThemeTopbarBtn) {
+          const icon = toggleThemeTopbarBtn.querySelector("i");
+          if (icon) {
+            icon.className = "bi " + iconClass;
+          }
+          toggleThemeTopbarBtn.setAttribute("title", topbarTitle);
+          toggleThemeTopbarBtn.setAttribute("aria-label", "Chuyen giao dien (" + sidebarLabel + ", tiep theo: " + nextModeLabel + ")");
+          toggleThemeTopbarBtn.setAttribute("data-theme-mode", mode);
         }
       };
-      const writeStoredTheme = (value) => {
-        try {
-          window.localStorage.setItem("theme", value);
-        } catch (_) {
-        }
-      };
-      const applyTheme = (theme) => {
-        const normalized = theme === "dark" ? "dark" : "light";
-        body.classList.toggle("dark-mode", normalized === "dark");
-        body.classList.toggle("light-mode", normalized === "light");
-        writeStoredTheme(normalized);
-      };
-      applyTheme(readStoredTheme() === "dark" ? "dark" : "light");
       const toggleTheme = () => {
-        applyTheme(body.classList.contains("dark-mode") ? "light" : "dark");
+        if (themeApi && typeof themeApi.toggle === "function") {
+          themeApi.toggle();
+          return;
+        }
+        body.classList.toggle("dark-mode", !body.classList.contains("dark-mode"));
+        body.classList.toggle("light-mode", body.classList.contains("dark-mode") === false);
       };
       toggleThemeBtn?.addEventListener("click", toggleTheme);
       toggleThemeTopbarBtn?.addEventListener("click", toggleTheme);
+      themeApi?.onChange?.(syncThemeUi);
+      syncThemeUi();
 
       activateAdminBtn?.addEventListener("click", async () => {
         const current = window.CaroUser?.get?.();

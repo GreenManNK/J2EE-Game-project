@@ -18,12 +18,13 @@ class GameCatalogServiceTest {
         var games = service.findAll();
         Set<String> codes = games.stream().map(GameCatalogItem::code).collect(Collectors.toSet());
 
-        assertEquals(8, games.size());
+        assertEquals(9, games.size());
         assertTrue(codes.contains("caro"));
         assertTrue(codes.contains("chess"));
         assertTrue(codes.contains("xiangqi"));
         assertTrue(codes.contains("minesweeper"));
         assertTrue(codes.contains("cards"));
+        assertTrue(codes.contains("blackjack"));
         assertTrue(codes.contains("quiz"));
         assertTrue(codes.contains("typing"));
         assertTrue(codes.contains("puzzle"));
@@ -39,6 +40,12 @@ class GameCatalogServiceTest {
         assertTrue(cards.supportsOnline());
         assertTrue(cards.supportsOffline());
         assertEquals("/games/cards", cards.primaryActionUrl());
+
+        var blackjack = service.findByCode("blackjack").orElseThrow();
+        assertTrue(blackjack.availableNow());
+        assertTrue(blackjack.supportsOnline());
+        assertEquals(false, blackjack.supportsOffline());
+        assertEquals("/games/blackjack", blackjack.primaryActionUrl());
 
         var xiangqi = service.findByCode("xiangqi").orElseThrow();
         assertTrue(xiangqi.availableNow());

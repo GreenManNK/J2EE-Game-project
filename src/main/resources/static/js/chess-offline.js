@@ -1,6 +1,7 @@
 (function () {
     const boot = window.ChessBoot || {};
     const BOARD_SIZE = 8;
+    const CHESS_STATS_KEY = "caroChessOfflineStats.v1";
     const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
     const PIECE_ICONS = {
         wK: "♔", wQ: "♕", wR: "♖", wB: "♗", wN: "♘", wP: "♙",
@@ -27,7 +28,13 @@
         botEnabled: Boolean(boot.botEnabled),
         botSide: (boot.botSide === "w" ? "w" : "b"),
         botDifficulty: String(boot.botDifficulty || "easy").toLowerCase() === "hard" ? "hard" : "easy",
-        botThinking: false
+        botThinking: false,
+        snapshots: [],
+        stats: {
+            whiteWins: 0,
+            blackWins: 0,
+            draws: 0
+        }
     };
 
     const PIECE_VALUES = {
@@ -50,14 +57,20 @@
             moveCount: document.getElementById("chessMoveCount"),
             currentColor: document.getElementById("chessCurrentColor"),
             moveLog: document.getElementById("chessMoveLog"),
+            statsWld: document.getElementById("chessStatsWld"),
+            undoBtn: document.getElementById("chessUndoBtn"),
             resetBtn: document.getElementById("chessResetBtn"),
             surrenderBtn: document.getElementById("chessSurrenderBtn"),
             boardCells: []
         };
 
+        state.stats = readStats();
         initBoardUi();
+        els.undoBtn?.addEventListener("click", undoLastMove);
         els.resetBtn?.addEventListener("click", resetGame);
         els.surrenderBtn?.addEventListener("click", surrenderGame);
+        document.addEventListener("keydown", handleHotkeys);
+        updateStatsUi();
         resetGame();
     });
 
@@ -71,8 +84,100 @@
         state.resultText = "Dang choi";
         state.lastMove = null;
         state.botThinking = false;
+        state.snapshots = [];
         renderAll();
         maybeQueueBotMove();
+    }
+
+    function readStats() {
+        try {
+            const raw = JSON.parse(window.localStorage.getItem(CHESS_STATS_KEY) || "{}");
+            return {
+                whiteWins: Math.max(0, Number.parseInt(String(raw.whiteWins || 0), 10) || 0),
+                blackWins: Math.max(0, Number.parseInt(String(raw.blackWins || 0), 10) || 0),
+                draws: Math.max(0, Number.parseInt(String(raw.draws || 0), 10) || 0)
+            };
+        } catch (_) {
+            return { whiteWins: 0, blackWins: 0, draws: 0 };
+        }
+    }
+
+    function writeStats() {
+        try {
+            window.localStorage.setItem(CHESS_STATS_KEY, JSON.stringify(state.stats));
+        } catch (_) {
+        }
+    }
+
+    function updateStatsUi() {
+        if (!els.statsWld) {
+            return;
+        }
+        els.statsWld.textContent = String(state.stats.whiteWins) + "/" + String(state.stats.blackWins) + "/" + String(state.stats.draws);
+    }
+
+    function recordOutcome(outcome) {
+        if (outcome === "w") {
+            state.stats.whiteWins += 1;
+        } else if (outcome === "b") {
+            state.stats.blackWins += 1;
+        } else {
+            state.stats.draws += 1;
+        }
+        writeStats();
+        updateStatsUi();
+    }
+
+    function cloneMove(move) {
+        if (!move) {
+            return null;
+        }
+        return {
+            from: move.from ? { ...move.from } : null,
+            to: move.to ? { ...move.to } : null
+        };
+    }
+
+    function captureSnapshot() {
+        return {
+            board: cloneBoard(state.board),
+            turn: state.turn,
+            moveHistory: state.moveHistory.slice(),
+            gameOver: state.gameOver,
+            resultText: state.resultText,
+            lastMove: cloneMove(state.lastMove),
+            gameStatusText: els.gameStatus ? String(els.gameStatus.textContent || "") : ""
+        };
+    }
+
+    function restoreSnapshot(snapshot) {
+        if (!snapshot) {
+            return;
+        }
+        state.board = cloneBoard(snapshot.board || createInitialBoard());
+        state.turn = snapshot.turn === "b" ? "b" : "w";
+        state.moveHistory = Array.isArray(snapshot.moveHistory) ? snapshot.moveHistory.slice() : [];
+        state.gameOver = !!snapshot.gameOver;
+        state.resultText = String(snapshot.resultText || "Dang choi");
+        state.lastMove = cloneMove(snapshot.lastMove);
+        state.selected = null;
+        state.legalMoves = [];
+        state.botThinking = false;
+        renderAll();
+        setGameStatus(snapshot.gameStatusText || "Da quay lai nuoc truoc");
+    }
+
+    function undoLastMove() {
+        if (state.botThinking) {
+            setGameStatus("Bot dang suy nghi...");
+            return;
+        }
+        if (!state.snapshots.length) {
+            setGameStatus("Khong co nuoc de undo");
+            return;
+        }
+        const snapshot = state.snapshots.pop();
+        restoreSnapshot(snapshot);
     }
 
     function createInitialBoard() {
@@ -163,6 +268,7 @@
         if (!fromPiece) {
             return;
         }
+        state.snapshots.push(captureSnapshot());
         const targetPiece = state.board[move.to.row][move.to.col];
 
         const nextBoard = cloneBoard(state.board);
@@ -194,10 +300,12 @@
             state.gameOver = true;
             state.resultText = "Checkmate - " + colorName(sideJustMoved) + " thang";
             setGameStatus("Checkmate! " + colorName(sideJustMoved) + " thang.");
+            recordOutcome(sideJustMoved);
         } else if (!opponentHasMove) {
             state.gameOver = true;
             state.resultText = "Hoa (stalemate)";
             setGameStatus("Stalemate - hoa.");
+            recordOutcome("draw");
         } else if (opponentInCheck) {
             state.resultText = "Dang choi";
             setGameStatus(sideName + " dang bi chieu!");
@@ -318,6 +426,9 @@
         if (els.surrenderBtn) {
             els.surrenderBtn.disabled = state.gameOver;
         }
+        if (els.undoBtn) {
+            els.undoBtn.disabled = state.snapshots.length === 0 || state.botThinking;
+        }
         if (!els.gameStatus) {
             return;
         }
@@ -341,6 +452,7 @@
         if (!window.confirm(messagePrefix + " chac chan muon dau hang?")) {
             return;
         }
+        state.snapshots.push(captureSnapshot());
 
         state.selected = null;
         state.legalMoves = [];
@@ -349,6 +461,7 @@
         state.resultText = winnerLabel + " thang";
         state.moveHistory.push(surrenderLabel + " dau hang");
         setGameStatus(messagePrefix + " da dau hang. " + winnerLabel + " thang.");
+        recordOutcome(winnerSide);
         renderAll();
     }
 
@@ -738,5 +851,36 @@
 
     function moveKey(row, col) {
         return row + ":" + col;
+    }
+
+    function isTypingTarget(target) {
+        if (!target || !(target instanceof Element)) {
+            return false;
+        }
+        return !!target.closest("input, textarea, select, [contenteditable='true']");
+    }
+
+    function handleHotkeys(event) {
+        if (!event || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) {
+            return;
+        }
+        if (isTypingTarget(event.target)) {
+            return;
+        }
+        const key = String(event.key || "").toLowerCase();
+        if (key === "u") {
+            event.preventDefault();
+            undoLastMove();
+            return;
+        }
+        if (key === "r") {
+            event.preventDefault();
+            resetGame();
+            return;
+        }
+        if (key === "s") {
+            event.preventDefault();
+            surrenderGame();
+        }
     }
 })();

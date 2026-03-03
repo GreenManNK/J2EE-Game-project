@@ -107,9 +107,10 @@ public class LegacyRouteController {
     }
 
     @GetMapping("/Online/Hub")
-    public String onlineHub(@RequestParam String game,
+    public String onlineHub(@RequestParam(required = false) String game,
                             @RequestParam(required = false) String roomId) {
-        StringBuilder redirect = new StringBuilder("redirect:/online-hub?game=").append(game);
+        String selectedGame = (game == null || game.isBlank()) ? "caro" : game;
+        StringBuilder redirect = new StringBuilder("redirect:/online-hub?game=").append(selectedGame);
         if (roomId != null && !roomId.isBlank()) {
             redirect.append("&roomId=").append(roomId);
         }

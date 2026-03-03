@@ -1,5 +1,6 @@
 ﻿(function () {
   const THEME_KEY = "theme";
+  const THEME_MODE_KEY = "caroThemeMode.v1";
   const MUSIC_KEY = "music";
   const TOAST_ENABLED_KEY = "caroToastEnabled.v1";
   const SIDEBAR_DESKTOP_HIDDEN_KEY = "caroSidebarDesktopHidden.v2";
@@ -52,11 +53,49 @@
     return "5000";
   }
 
+  function normalizeThemeMode(mode) {
+    const value = String(mode || "").trim().toLowerCase();
+    if (value === "dark" || value === "light" || value === "system") {
+      return value;
+    }
+    return "light";
+  }
+
+  function getThemeMode() {
+    if (window.CaroTheme && typeof window.CaroTheme.getMode === "function") {
+      return normalizeThemeMode(window.CaroTheme.getMode());
+    }
+    const fromModeKey = normalizeThemeMode(readStorage(THEME_MODE_KEY, "light"));
+    if (fromModeKey !== "light" || String(readStorage(THEME_MODE_KEY, "") || "").trim().toLowerCase() === "light") {
+      return fromModeKey;
+    }
+    const legacy = normalizeThemeMode(readStorage(THEME_KEY, "light"));
+    return legacy === "dark" || legacy === "light" ? legacy : "light";
+  }
+
   function applyTheme(mode) {
-    const normalized = mode === "dark" ? "dark" : "light";
-    document.body.classList.toggle("dark-mode", normalized === "dark");
-    document.body.classList.toggle("light-mode", normalized === "light");
-    writeStorage(THEME_KEY, normalized);
+    const normalizedMode = normalizeThemeMode(mode);
+    if (window.CaroTheme && typeof window.CaroTheme.setMode === "function") {
+      const result = window.CaroTheme.setMode(normalizedMode);
+      return normalizeThemeMode(result && result.mode ? result.mode : normalizedMode);
+    }
+    const effectiveTheme = normalizedMode === "dark"
+      ? "dark"
+      : (normalizedMode === "system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const root = document.documentElement;
+    if (root) {
+      root.classList.toggle("dark-mode", effectiveTheme === "dark");
+      root.classList.toggle("light-mode", effectiveTheme === "light");
+      root.setAttribute("data-theme", effectiveTheme);
+      root.setAttribute("data-theme-mode", normalizedMode);
+    }
+    document.body.classList.toggle("dark-mode", effectiveTheme === "dark");
+    document.body.classList.toggle("light-mode", effectiveTheme === "light");
+    document.body.dataset.theme = effectiveTheme;
+    document.body.dataset.themeMode = normalizedMode;
+    writeStorage(THEME_MODE_KEY, normalizedMode);
+    writeStorage(THEME_KEY, effectiveTheme);
+    return normalizedMode;
   }
 
   function setStatus(target, message, isSuccess) {
@@ -122,10 +161,12 @@
 
     const buildPreferencesPayload = () => {
       const refreshValue = Number.parseInt(String(friendListRefreshMsSelect?.value || "5000"), 10);
+      const selectedThemeMode = normalizeThemeMode(themeSelect?.value || getThemeMode());
       return {
         version: 1,
         savedAt: new Date().toISOString(),
-        theme: themeSelect && themeSelect.value === "dark" ? "dark" : "light",
+        themeMode: selectedThemeMode,
+        theme: selectedThemeMode,
         language: languageSelect && languageSelect.value === "en" ? "en" : "vi",
         sidebarDesktopVisibleByDefault: !!(desktopSidebarVisibleByDefault && desktopSidebarVisibleByDefault.checked),
         sidebarMobileAutoClose: !!(mobileSidebarAutoClose && mobileSidebarAutoClose.checked),
@@ -142,11 +183,11 @@
 
     const applyPreferencesPayload = (prefs, persistChanges) => {
       const data = prefs || {};
-      const theme = data.theme === "dark" ? "dark" : "light";
+      const themeMode = normalizeThemeMode(data.themeMode || data.theme || getThemeMode());
+      const appliedThemeMode = applyTheme(themeMode);
       if (themeSelect) {
-        themeSelect.value = theme;
+        themeSelect.value = appliedThemeMode;
       }
-      applyTheme(theme);
 
       const language = data.language === "en" ? "en" : "vi";
       if (languageSelect) {
@@ -206,7 +247,7 @@
       friendListRefreshMsSelect.disabled = !autoRefreshFriendList.checked;
     };
 
-    const currentTheme = readStorage(THEME_KEY, "light") === "dark" ? "dark" : "light";
+    const currentTheme = getThemeMode();
     if (themeSelect) {
       themeSelect.value = currentTheme;
     }
@@ -247,7 +288,16 @@
     syncFriendRefreshSelectState();
 
     themeSelect?.addEventListener("change", () => {
-      applyTheme(themeSelect.value);
+      const appliedMode = applyTheme(themeSelect.value);
+      if (themeSelect) {
+        themeSelect.value = appliedMode;
+      }
+    });
+    window.CaroTheme?.onChange?.((event) => {
+      if (!themeSelect) {
+        return;
+      }
+      themeSelect.value = normalizeThemeMode(event && event.mode ? event.mode : getThemeMode());
     });
 
     languageSelect?.addEventListener("change", () => {
@@ -274,7 +324,7 @@
 
     resetPreferencesBtn?.addEventListener("click", () => {
       applyPreferencesPayload({
-        theme: "light",
+        themeMode: "system",
         language: "vi",
         sidebarDesktopVisibleByDefault: false,
         sidebarMobileAutoClose: true,

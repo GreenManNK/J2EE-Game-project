@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/notification-admin")
+@RequestMapping({"/notification-admin", "/admin/notices"})
 public class NotificationAdminController {
     private final SystemNotificationRepository systemNotificationRepository;
 
@@ -26,8 +26,7 @@ public class NotificationAdminController {
 
     @GetMapping
     public String page(Model model) {
-        model.addAttribute("notifications", index());
-        return "notification-admin/index";
+        return "redirect:/admin";
     }
 
     @ResponseBody

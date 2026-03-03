@@ -2,13 +2,11 @@ package com.game.hub.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -21,9 +19,21 @@ import java.nio.charset.StandardCharsets;
 @Configuration
 public class SecurityConfig {
     private final SessionRoleAuthenticationFilter sessionRoleAuthenticationFilter;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
+    private final String googleClientId;
+    private final String facebookClientId;
 
-    public SecurityConfig(SessionRoleAuthenticationFilter sessionRoleAuthenticationFilter) {
+    public SecurityConfig(SessionRoleAuthenticationFilter sessionRoleAuthenticationFilter,
+                          OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+                          OAuth2LoginFailureHandler oAuth2LoginFailureHandler,
+                          @Value("${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID:}") String googleClientId,
+                          @Value("${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID:}") String facebookClientId) {
         this.sessionRoleAuthenticationFilter = sessionRoleAuthenticationFilter;
+        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+        this.oAuth2LoginFailureHandler = oAuth2LoginFailureHandler;
+        this.googleClientId = googleClientId;
+        this.facebookClientId = facebookClientId;
     }
 
     @Bean
@@ -40,16 +50,28 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin/**", "/notification-admin/**", "/account/users").hasRole("ADMIN")
                 .requestMatchers("/manager/**").hasAnyRole("MANAGER", "ADMIN")
-                .anyRequest().permitAll())
+                .anyRequest().permitAll());
+
+        if (isSocialLoginConfigured()) {
+            http.oauth2Login(oauth2 -> oauth2
+                .loginPage("/account/login-page")
+                .successHandler(oAuth2LoginSuccessHandler)
+                .failureHandler(oAuth2LoginFailureHandler));
+        }
+
+        http
             .httpBasic(httpBasic -> httpBasic.disable())
             .formLogin(form -> form.disable())
             .logout(logout -> logout.disable());
         return http.build();
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    private boolean isSocialLoginConfigured() {
+        return hasText(googleClientId) || hasText(facebookClientId);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     private AuthenticationEntryPoint authenticationEntryPoint() {

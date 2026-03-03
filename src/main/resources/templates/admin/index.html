@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Admin Center')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('admin-center')}"></div>
+
+<main id="adminCenterRoot" class="gx-page-shell theme-text">
+  <section class="gx-page-hero theme-box">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-shield-lock"></i>
+          <span>ADMIN CENTER</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Dieu khien he thong</h1>
+        <p class="gx-page-subtitle">Tat ca chuc nang quan tri duoc gom vao mot trang duy nhat.</p>
+      </div>
+      <div class="gx-inline-actions">
+        <span class="gx-page-badge"><i class="bi bi-people-fill"></i><span id="adminCenterUserCount">0 users</span></span>
+        <span class="gx-page-badge"><i class="bi bi-bell-fill"></i><span id="adminCenterNoticeCount">0 notices</span></span>
+        <span class="gx-page-badge"><i class="bi bi-activity"></i><span id="adminCenterLogCount">0 logs</span></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="theme-box rounded p-3 mb-3 gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Quan ly user</h2>
+      <div class="gx-section-card__meta">Loc, tao user va quan ly quyen/trang thai.</div>
+    </div>
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label" for="adminUsersSearch">Search</label>
+        <input id="adminUsersSearch" class="form-control" placeholder="name, email">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="adminUsersBanFilter">Ban filter</label>
+        <select id="adminUsersBanFilter" class="form-select">
+          <option value="">All</option>
+          <option value="banned">Banned</option>
+          <option value="active">Active</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="adminUsersPageSize">Page size</label>
+        <select id="adminUsersPageSize" class="form-select">
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button id="adminUsersReloadBtn" type="button" class="btn btn-primary w-100">Tai lai</button>
+      </div>
+      <div class="col-md-2 d-grid gap-2">
+        <a id="adminUsersExportCsvPage" class="btn theme-outline-btn" href="#">CSV page</a>
+        <a id="adminUsersExportExcelAll" class="btn theme-outline-btn" href="#">Excel all</a>
+      </div>
+    </div>
+
+    <form id="adminCenterCreateUserForm" class="row g-2 align-items-end mt-2">
+      <div class="col-md-3">
+        <label class="form-label" for="adminCreateEmail">Email</label>
+        <input id="adminCreateEmail" class="form-control" type="email" required>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="adminCreateDisplayName">Name</label>
+        <input id="adminCreateDisplayName" class="form-control">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="adminCreatePassword">Password</label>
+        <input id="adminCreatePassword" class="form-control" type="password" required>
+      </div>
+      <div class="col-md-1">
+        <label class="form-label" for="adminCreateScore">Score</label>
+        <input id="adminCreateScore" class="form-control" type="number" value="0">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="adminCreateRole">Role</label>
+        <select id="adminCreateRole" class="form-select">
+          <option value="User" selected>User</option>
+          <option value="Manager">Manager</option>
+          <option value="Admin">Admin</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="adminCreateAvatarPath">Avatar</label>
+        <input id="adminCreateAvatarPath" class="form-control" placeholder="/uploads/avatars/default-avatar.jpg">
+      </div>
+      <div class="col-12 d-flex flex-wrap gap-2">
+        <button type="submit" class="btn btn-primary">Tao user</button>
+        <div id="adminUsersStatus" class="small mb-0 theme-text flex-grow-1" role="status" aria-live="polite"></div>
+      </div>
+    </form>
+
+    <div class="gx-inline-actions mt-2 mb-2 theme-text">
+      <button id="adminUsersPrevBtn" type="button" class="btn btn-sm btn-outline-secondary">Prev</button>
+      <span class="small" id="adminUsersPagerText">Page 1/1</span>
+      <button id="adminUsersNextBtn" type="button" class="btn btn-sm btn-outline-secondary">Next</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle mb-0">
+        <thead>
+        <tr class="theme-table-header">
+          <th>ID</th>
+          <th>Email</th>
+          <th>Name</th>
+          <th>Score</th>
+          <th>Role</th>
+          <th>Ban</th>
+          <th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="adminUsersTableBody">
+        <tr><td colspan="7" class="text-center text-muted">Dang tai...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="theme-box rounded p-3 mb-3 gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">System notices</h2>
+      <div class="gx-section-card__meta">Tao/xoa thong bao he thong.</div>
+    </div>
+    <form id="adminNoticeForm" class="row g-2 align-items-end">
+      <div class="col-md-9">
+        <label class="form-label" for="adminNoticeContent">Content</label>
+        <input id="adminNoticeContent" class="form-control" required>
+      </div>
+      <div class="col-md-3">
+        <button type="submit" class="btn btn-primary w-100">Tao notice</button>
+      </div>
+      <div class="col-12">
+        <div id="adminNoticesStatus" class="small mb-0 theme-text" role="status" aria-live="polite"></div>
+      </div>
+    </form>
+    <ul id="adminNoticeList" class="list-group list-group-flush mt-2">
+      <li class="list-group-item text-muted">Dang tai...</li>
+    </ul>
+  </section>
+
+  <section class="theme-box rounded p-3 gx-section-card gx-table-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Access logs</h2>
+      <div class="gx-section-card__meta">Theo doi request va xuat bao cao.</div>
+    </div>
+
+    <form id="adminLogsFilterForm" class="row g-2 align-items-end">
+      <div class="col-lg-4">
+        <label class="form-label" for="adminLogsQ">Search</label>
+        <input id="adminLogsQ" class="form-control" placeholder="path, user, ip">
+      </div>
+      <div class="col-lg-2">
+        <label class="form-label" for="adminLogsMethod">Method</label>
+        <select id="adminLogsMethod" class="form-select">
+          <option value="">All</option>
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="PATCH">PATCH</option>
+          <option value="PUT">PUT</option>
+          <option value="DELETE">DELETE</option>
+        </select>
+      </div>
+      <div class="col-lg-2">
+        <label class="form-label" for="adminLogsFromDate">From date</label>
+        <input id="adminLogsFromDate" class="form-control" type="date">
+      </div>
+      <div class="col-lg-2">
+        <label class="form-label" for="adminLogsToDate">To date</label>
+        <input id="adminLogsToDate" class="form-control" type="date">
+      </div>
+      <div class="col-lg-1">
+        <label class="form-label" for="adminLogsSize">Size</label>
+        <select id="adminLogsSize" class="form-select">
+          <option value="20">20</option>
+          <option value="50" selected>50</option>
+          <option value="100">100</option>
+          <option value="200">200</option>
+        </select>
+      </div>
+      <div class="col-lg-1">
+        <button type="submit" class="btn btn-primary w-100">Loc</button>
+      </div>
+    </form>
+
+    <div class="d-flex flex-wrap gap-2 mt-2">
+      <a id="adminLogsExportCsvPage" class="btn theme-outline-btn" href="#">CSV page</a>
+      <a id="adminLogsExportExcelAll" class="btn theme-outline-btn" href="#">Excel all</a>
+    </div>
+
+    <div class="row g-2 mt-2">
+      <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">Hom nay</small><div class="fw-bold" id="adminLogsTodayCount">0</div></div></div>
+      <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">Guest</small><div class="fw-bold" id="adminLogsGuestCount">0</div></div></div>
+      <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">User duy nhat</small><div class="fw-bold" id="adminLogsUniqueUsers">0</div></div></div>
+      <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">IP duy nhat</small><div class="fw-bold" id="adminLogsUniqueIps">0</div></div></div>
+      <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">POST</small><div class="fw-bold" id="adminLogsPostCount">0</div></div></div>
+      <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">Tong logs</small><div class="fw-bold" id="adminLogsTotalCount">0</div></div></div>
+    </div>
+
+    <div class="gx-inline-actions mt-2 mb-2 theme-text">
+      <button id="adminLogsPrevBtn" type="button" class="btn btn-sm btn-outline-secondary">Prev</button>
+      <span class="small" id="adminLogsPagerText">Page 1/1</span>
+      <button id="adminLogsNextBtn" type="button" class="btn btn-sm btn-outline-secondary">Next</button>
+      <div id="adminLogsStatus" class="small mb-0 theme-text ms-auto" role="status" aria-live="polite"></div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle mb-0">
+        <thead>
+        <tr class="theme-table-header">
+          <th style="min-width: 150px;">Thoi gian</th>
+          <th>Method</th>
+          <th style="min-width: 220px;">Path</th>
+          <th style="min-width: 180px;">User</th>
+          <th>Role</th>
+          <th style="min-width: 130px;">IP</th>
+          <th style="min-width: 260px;">User-Agent</th>
+        </tr>
+        </thead>
+        <tbody id="adminLogsTableBody">
+        <tr><td colspan="7" class="text-center text-muted">Dang tai...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('admin-center')}"></th:block>
+<script th:src="@{/js/admin-center.js}"></script>
+</body>
+</html>

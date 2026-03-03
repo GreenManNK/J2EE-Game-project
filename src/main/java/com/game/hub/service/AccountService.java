@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 public class AccountService {
@@ -162,24 +163,61 @@ public class AccountService {
             return ServiceResult.error("Invalid email or password");
         }
 
-        boolean updated = false;
-        if (isDefaultAdminEmail(user.getEmail()) && !"Admin".equalsIgnoreCase(user.getRole())) {
-            user.setRole("Admin");
-            updated = true;
+        applyPostLoginState(user);
+        return ServiceResult.ok(toLoginPayload(user));
+    }
+
+    public ServiceResult loginWithOAuth2(OAuth2LoginRequest request) {
+        String provider = trimToNull(request == null ? null : request.provider());
+        String providerUserId = trimToNull(request == null ? null : request.providerUserId());
+        String normalizedEmail = normalizeEmail(request == null ? null : request.email());
+        String displayName = trimToNull(request == null ? null : request.displayName());
+
+        if (provider == null) {
+            provider = "social";
+        }
+        if (providerUserId == null) {
+            return ServiceResult.error("Cannot read social account id");
         }
 
-        user.setOnline(true);
-        updated = true;
-        if (updated) {
-            userAccountRepository.save(user);
+        if (normalizedEmail == null) {
+            normalizedEmail = syntheticOauthEmail(provider, providerUserId);
         }
-        return ServiceResult.ok(Map.of(
-            "userId", user.getId(),
-            "email", user.getEmail(),
-            "displayName", user.getDisplayName(),
-            "role", user.getRole(),
-            "avatarPath", user.getAvatarPath() == null ? "/uploads/avatars/default-avatar.jpg" : user.getAvatarPath()
-        ));
+        if (displayName == null) {
+            displayName = defaultDisplayNameFromEmail(normalizedEmail);
+        }
+
+        UserAccount user = userAccountRepository.findByEmail(normalizedEmail).orElse(null);
+        if (user == null) {
+            user = new UserAccount();
+            user.setEmail(normalizedEmail);
+            user.setUsername(normalizedEmail);
+            user.setDisplayName(displayName);
+            user.setAvatarPath("/uploads/avatars/default-avatar.jpg");
+            user.setPassword(passwordEncoder.encode(UUID.randomUUID() + ":" + provider + ":" + providerUserId));
+            user.setEmailConfirmed(true);
+            user.setRole(isDefaultAdminEmail(normalizedEmail) ? "Admin" : "User");
+        } else {
+            if (trimToNull(user.getDisplayName()) == null && displayName != null) {
+                user.setDisplayName(displayName);
+            }
+            if (trimToNull(user.getUsername()) == null) {
+                user.setUsername(normalizedEmail);
+            }
+            if (trimToNull(user.getAvatarPath()) == null) {
+                user.setAvatarPath("/uploads/avatars/default-avatar.jpg");
+            }
+            if (user.getPassword() == null || user.getPassword().isBlank()) {
+                user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+            }
+        }
+
+        if (user.isBanned()) {
+            return ServiceResult.error("Account banned until " + user.getBannedUntil());
+        }
+
+        applyPostLoginState(user);
+        return ServiceResult.ok(toLoginPayload(user));
     }
 
     public ServiceResult logout(String userId) {
@@ -429,6 +467,9 @@ public class AccountService {
     public record RegisterRequest(String email, String displayName, String password, String avatarPath) {
     }
 
+    public record OAuth2LoginRequest(String provider, String providerUserId, String email, String displayName) {
+    }
+
     public record ServiceResult(boolean success, String error, Object data) {
         public static ServiceResult ok(Object data) {
             return new ServiceResult(true, null, data);
@@ -447,6 +488,56 @@ public class AccountService {
     private boolean isDefaultAdminEmail(String email) {
         String normalized = normalizeEmail(email);
         return normalized != null && normalized.equals(defaultAdminEmail);
+    }
+
+    private void applyPostLoginState(UserAccount user) {
+        boolean updated = false;
+        if (isDefaultAdminEmail(user.getEmail()) && !"Admin".equalsIgnoreCase(user.getRole())) {
+            user.setRole("Admin");
+            updated = true;
+        }
+
+        if (!user.isEmailConfirmed()) {
+            user.setEmailConfirmed(true);
+            updated = true;
+        }
+
+        if (!user.isOnline()) {
+            user.setOnline(true);
+            updated = true;
+        }
+
+        if (updated || user.getId() == null || user.getId().isBlank()) {
+            userAccountRepository.save(user);
+        }
+    }
+
+    private Map<String, Object> toLoginPayload(UserAccount user) {
+        return Map.of(
+            "userId", user.getId(),
+            "email", user.getEmail() == null ? "" : user.getEmail(),
+            "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
+            "role", user.getRole() == null ? "User" : user.getRole(),
+            "avatarPath", user.getAvatarPath() == null ? "/uploads/avatars/default-avatar.jpg" : user.getAvatarPath()
+        );
+    }
+
+    private String syntheticOauthEmail(String provider, String providerUserId) {
+        String providerPart = provider == null ? "social" : provider.trim().toLowerCase().replaceAll("[^a-z0-9]+", "-");
+        String idPart = providerUserId.trim().toLowerCase().replaceAll("[^a-z0-9]+", "-");
+        return providerPart + "-" + idPart + "@oauth.local";
+    }
+
+    private String defaultDisplayNameFromEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return "Player";
+        }
+        int at = email.indexOf('@');
+        if (at <= 0) {
+            return "Player";
+        }
+        String prefix = email.substring(0, at).trim();
+        return prefix.isEmpty() ? "Player" : prefix;
     }
 
     private String trimToNull(String value) {

@@ -66,6 +66,10 @@
             resultLabel: document.getElementById("xiangqiResultLabel"),
             moveCount: document.getElementById("xiangqiMoveCount"),
             currentColor: document.getElementById("xiangqiCurrentColor"),
+            myMoveCount: document.getElementById("xiangqiOnlineMyMoveCount"),
+            opponentMoveCount: document.getElementById("xiangqiOnlineOpponentMoveCount"),
+            myCaptureCount: document.getElementById("xiangqiOnlineMyCaptureCount"),
+            opponentCaptureCount: document.getElementById("xiangqiOnlineOpponentCaptureCount"),
             moveLog: document.getElementById("xiangqiMoveLog"),
             resetBtn: document.getElementById("xiangqiOnlineResetBtn"),
             surrenderBtn: document.getElementById("xiangqiOnlineSurrenderBtn"),
@@ -413,6 +417,7 @@
         if (els.surrenderBtn) {
             els.surrenderBtn.disabled = !canSurrenderGame();
         }
+        updateSessionStatsUi();
         if (state.gameOver && els.gameStatus && !els.gameStatus.textContent) {
             els.gameStatus.textContent = state.resultText;
         }
@@ -422,6 +427,67 @@
         if (els.gameStatus) {
             els.gameStatus.textContent = text;
         }
+    }
+
+    function updateSessionStatsUi() {
+        const stats = computeSessionStats();
+        if (els.myMoveCount) {
+            els.myMoveCount.textContent = stats ? String(stats.myMoves) : "-";
+        }
+        if (els.opponentMoveCount) {
+            els.opponentMoveCount.textContent = stats ? String(stats.opponentMoves) : "-";
+        }
+        if (els.myCaptureCount) {
+            els.myCaptureCount.textContent = stats ? String(stats.myCaptures) : "-";
+        }
+        if (els.opponentCaptureCount) {
+            els.opponentCaptureCount.textContent = stats ? String(stats.opponentCaptures) : "-";
+        }
+    }
+
+    function computeSessionStats() {
+        if (state.myColor !== "r" && state.myColor !== "b") {
+            return null;
+        }
+        let redMoves = 0;
+        let blackMoves = 0;
+        let redCaptures = 0;
+        let blackCaptures = 0;
+
+        for (let i = 0; i < state.moveHistory.length; i++) {
+            const notation = String(state.moveHistory[i] || "");
+            const redTurn = i % 2 === 0;
+            if (redTurn) {
+                redMoves += 1;
+                if (isCaptureNotation(notation)) {
+                    redCaptures += 1;
+                }
+            } else {
+                blackMoves += 1;
+                if (isCaptureNotation(notation)) {
+                    blackCaptures += 1;
+                }
+            }
+        }
+
+        if (state.myColor === "r") {
+            return {
+                myMoves: redMoves,
+                opponentMoves: blackMoves,
+                myCaptures: redCaptures,
+                opponentCaptures: blackCaptures
+            };
+        }
+        return {
+            myMoves: blackMoves,
+            opponentMoves: redMoves,
+            myCaptures: blackCaptures,
+            opponentCaptures: redCaptures
+        };
+    }
+
+    function isCaptureNotation(text) {
+        return /(^|\s)(an|x)(\s|$)/i.test(String(text || ""));
     }
 
     function getLegalMovesForPiece(board, row, col, side) {
@@ -694,6 +760,7 @@
         els.resetBtn?.addEventListener("click", resetGame);
         els.surrenderBtn?.addEventListener("click", surrenderGame);
         els.leaveBtn?.addEventListener("click", () => leaveAndRedirect());
+        document.addEventListener("keydown", handleHotkeys);
         window.addEventListener("beforeunload", () => {
             try {
                 if (state.client && state.connected && state.roomId && state.userId) {
@@ -1091,6 +1158,45 @@
             .replaceAll(">", "&gt;")
             .replaceAll('"', "&quot;")
             .replaceAll("'", "&#39;");
+    }
+
+    function isTypingTarget(target) {
+        if (!target || !(target instanceof Element)) {
+            return false;
+        }
+        return !!target.closest("input, textarea, select, [contenteditable='true']");
+    }
+
+    function handleHotkeys(event) {
+        if (!event || event.defaultPrevented || event.repeat || event.altKey || event.ctrlKey || event.metaKey) {
+            return;
+        }
+        if (isTypingTarget(event.target)) {
+            return;
+        }
+        const keyName = String(event.key || "").toLowerCase();
+        if (keyName === "r") {
+            event.preventDefault();
+            if (canResetGame()) {
+                resetGame();
+            } else {
+                setGameStatus("Chua the bat dau van moi luc nay.");
+            }
+            return;
+        }
+        if (keyName === "s") {
+            event.preventDefault();
+            if (canSurrenderGame()) {
+                surrenderGame();
+            } else {
+                setGameStatus("Khong the dau hang luc nay.");
+            }
+            return;
+        }
+        if (keyName === "l") {
+            event.preventDefault();
+            leaveAndRedirect();
+        }
     }
 
     function maybeQueueBotMove() {

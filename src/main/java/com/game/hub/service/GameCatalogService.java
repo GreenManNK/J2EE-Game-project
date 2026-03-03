@@ -107,6 +107,24 @@ public class GameCatalogService {
                 )
             ),
             new GameCatalogItem(
+                "blackjack",
+                "Blackjack",
+                "Blackjack",
+                "Blackjack realtime: tao/join/spectate room, dat cuoc va dau dealer.",
+                "bi-suit-club-fill",
+                true,
+                true,
+                false,
+                true,
+                "Mo Blackjack",
+                "/games/blackjack",
+                List.of(
+                    "Tao/join/spectate room blackjack.",
+                    "Dat cuoc + hit/stand/double theo luat co ban.",
+                    "Dong bo state realtime giua player va spectator."
+                )
+            ),
+            new GameCatalogItem(
                 "quiz",
                 "Quiz",
                 "Quiz",

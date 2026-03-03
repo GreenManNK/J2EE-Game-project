@@ -15,6 +15,8 @@
   };
   const LONG_PRESS_MS = 420;
   const LONG_PRESS_MOVE_CANCEL_PX = 12;
+  const STATS_STORAGE_KEY = 'caroMinesweeperStats.v1';
+  const MAX_HINTS_PER_GAME = 3;
 
   const state = {
     level: 'beginner',
@@ -32,6 +34,13 @@
     timerSeconds: 0,
     timerId: null,
     flagMode: false,
+    hintsUsed: 0,
+    stats: {
+      totalGames: 0,
+      wins: 0,
+      losses: 0,
+      bestTimes: {}
+    },
     progressive: {
       enabled: false,
       round: 1,
@@ -64,6 +73,10 @@
     levelPill: document.getElementById('msLevelPill'),
     restartBtn: document.getElementById('msRestartBtn'),
     flagModeBtn: document.getElementById('msFlagModeBtn'),
+    hintBtn: document.getElementById('msHintBtn'),
+    hintMeta: document.getElementById('msHintMeta'),
+    bestTime: document.getElementById('msBestTime'),
+    winRate: document.getElementById('msWinRate'),
     levelButtons: Array.from(document.querySelectorAll('.js-ms-level')),
     progressiveStateBadge: document.getElementById('msProgressiveStateBadge'),
     progressiveModeBtn: document.getElementById('msProgressiveModeBtn'),
@@ -214,6 +227,113 @@
     return config.rows + ' x ' + config.cols + ' - ' + config.mines + ' min';
   }
 
+  function defaultStats() {
+    return {
+      totalGames: 0,
+      wins: 0,
+      losses: 0,
+      bestTimes: {}
+    };
+  }
+
+  function normalizeStats(raw) {
+    const source = raw && typeof raw === 'object' ? raw : {};
+    const totalGames = Math.max(0, parseInteger(source.totalGames, 0));
+    const wins = Math.max(0, parseInteger(source.wins, 0));
+    const losses = Math.max(0, parseInteger(source.losses, Math.max(0, totalGames - wins)));
+    const bestTimes = {};
+    if (source.bestTimes && typeof source.bestTimes === 'object') {
+      Object.keys(source.bestTimes).forEach((key) => {
+        const sec = parseInteger(source.bestTimes[key], -1);
+        if (sec >= 0) {
+          bestTimes[String(key)] = sec;
+        }
+      });
+    }
+    return {
+      totalGames: Math.max(totalGames, wins + losses),
+      wins,
+      losses,
+      bestTimes
+    };
+  }
+
+  function readStatsFromStorage() {
+    try {
+      const raw = window.localStorage.getItem(STATS_STORAGE_KEY);
+      if (!raw) {
+        return defaultStats();
+      }
+      return normalizeStats(JSON.parse(raw));
+    } catch (_) {
+      return defaultStats();
+    }
+  }
+
+  function writeStatsToStorage() {
+    try {
+      window.localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(normalizeStats(state.stats)));
+    } catch (_) {
+    }
+  }
+
+  function statsConfigKey(config) {
+    const current = config || state.currentConfig;
+    if (!current) {
+      return 'unknown';
+    }
+    if (current.levelKey && PRESET_LEVELS[current.levelKey]) {
+      return 'preset:' + current.levelKey;
+    }
+    return 'custom:' + current.rows + 'x' + current.cols + ':' + current.mines;
+  }
+
+  function formatSeconds(seconds) {
+    const safe = Math.max(0, parseInteger(seconds, 0));
+    const mm = Math.floor(safe / 60);
+    const ss = safe % 60;
+    if (mm <= 0) {
+      return ss + 's';
+    }
+    return mm + 'm ' + String(ss).padStart(2, '0') + 's';
+  }
+
+  function currentBestTime() {
+    const key = statsConfigKey(state.currentConfig);
+    const sec = parseInteger(state.stats.bestTimes[key], -1);
+    return sec >= 0 ? sec : null;
+  }
+
+  function updateStatsUi() {
+    const total = Math.max(0, parseInteger(state.stats.totalGames, 0));
+    const wins = Math.max(0, parseInteger(state.stats.wins, 0));
+    const rate = total > 0 ? Math.round((wins * 1000) / total) / 10 : 0;
+    const best = currentBestTime();
+    if (refs.bestTime) {
+      refs.bestTime.textContent = best == null ? '--' : formatSeconds(best);
+    }
+    if (refs.winRate) {
+      refs.winRate.textContent = wins + '/' + total + ' (' + rate + '%)';
+    }
+  }
+
+  function recordGameResult(win) {
+    const resultWin = !!win;
+    state.stats.totalGames = Math.max(0, parseInteger(state.stats.totalGames, 0)) + 1;
+    if (resultWin) {
+      state.stats.wins = Math.max(0, parseInteger(state.stats.wins, 0)) + 1;
+      const key = statsConfigKey(state.currentConfig);
+      const previous = parseInteger(state.stats.bestTimes[key], -1);
+      if (previous < 0 || state.timerSeconds < previous) {
+        state.stats.bestTimes[key] = state.timerSeconds;
+      }
+    } else {
+      state.stats.losses = Math.max(0, parseInteger(state.stats.losses, 0)) + 1;
+    }
+    writeStatsToStorage();
+    updateStatsUi();
+  }
+
   function toast(message, type) {
     const ui = window.CaroUi || {};
     if (ui.toast) {
@@ -261,6 +381,15 @@
     refs.flagModeBtn.classList.toggle('is-on', state.flagMode);
   }
 
+  function updateHintUi() {
+    if (refs.hintMeta) {
+      refs.hintMeta.textContent = 'Goi y: ' + state.hintsUsed + '/' + MAX_HINTS_PER_GAME;
+    }
+    if (refs.hintBtn) {
+      refs.hintBtn.disabled = state.gameOver || state.hintsUsed >= MAX_HINTS_PER_GAME;
+    }
+  }
+
   function updateProgressiveUi() {
     const p = state.progressive;
     if (refs.progressiveRound) refs.progressiveRound.textContent = String(p.round);
@@ -297,6 +426,8 @@
       : (state.currentConfig?.label || 'Minesweeper');
     refs.levelPill.textContent = label;
     refs.boardMeta.textContent = describeConfig(state.currentConfig);
+    updateHintUi();
+    updateStatsUi();
   }
 
   function countUnopenedCells() {
@@ -575,9 +706,13 @@
   }
 
   function finishGame(win) {
+    if (state.gameOver) {
+      return;
+    }
     state.gameOver = true;
     state.win = !!win;
     stopTimer();
+    recordGameResult(!!win);
 
     if (win) {
       fetch('/minesweeper/win', { method: 'POST' });
@@ -601,6 +736,7 @@
     }
 
     updateProgressiveUi();
+    updateHintUi();
   }
 
   function checkWin() {
@@ -740,6 +876,80 @@
     return changed;
   }
 
+  function collectSafeHintCandidates() {
+    if (state.gameOver) {
+      return [];
+    }
+
+    const deterministic = new Set();
+    if (!state.firstMove) {
+      for (let r = 0; r < state.rows; r += 1) {
+        for (let c = 0; c < state.cols; c += 1) {
+          const cell = state.board[r][c];
+          if (!cell || !cell.revealed || cell.mine || cell.adjacent <= 0) {
+            continue;
+          }
+          const info = collectNeighborInfo(r, c);
+          if (info.flaggedCount !== cell.adjacent) {
+            continue;
+          }
+          info.hiddenUnflagged.forEach(([nr, nc]) => {
+            deterministic.add(nr + ',' + nc);
+          });
+        }
+      }
+    }
+
+    if (deterministic.size > 0) {
+      return Array.from(deterministic).map((key) => {
+        const [row, col] = key.split(',').map((v) => parseInteger(v, -1));
+        return [row, col];
+      }).filter(([row, col]) => row >= 0 && col >= 0);
+    }
+
+    const fallback = [];
+    for (let r = 0; r < state.rows; r += 1) {
+      for (let c = 0; c < state.cols; c += 1) {
+        const cell = state.board[r][c];
+        if (!cell || cell.revealed || cell.flagged) {
+          continue;
+        }
+        if (state.firstMove || !cell.mine) {
+          fallback.push([r, c]);
+        }
+      }
+    }
+    return fallback;
+  }
+
+  function useSafeHint() {
+    if (state.gameOver) {
+      setStatus('Van da ket thuc', 'text-bg-secondary');
+      return;
+    }
+    if (state.hintsUsed >= MAX_HINTS_PER_GAME) {
+      setStatus('Da het luot goi y', 'text-bg-warning');
+      return;
+    }
+    const candidates = collectSafeHintCandidates();
+    if (!candidates.length) {
+      setStatus('Khong con o an toan de goi y', 'text-bg-warning');
+      return;
+    }
+
+    const [row, col] = candidates[Math.floor(Math.random() * candidates.length)];
+    state.hintsUsed += 1;
+    revealCell(row, col);
+    updateCounters();
+    if (!state.gameOver) {
+      setStatus('Da mo 1 o an toan', 'text-bg-warning');
+    }
+    const el = state.cellEls[row]?.[col];
+    if (el && typeof el.focus === 'function') {
+      el.focus();
+    }
+  }
+
   function handlePrimaryAction(row, col) {
     const cell = state.board[row][col];
     if (!cell) return;
@@ -774,6 +984,7 @@
     state.win = false;
     state.revealedSafeCells = 0;
     state.flagsPlaced = 0;
+    state.hintsUsed = 0;
     state.timerSeconds = 0;
     state.suppressNextClickKey = '';
     state.suppressNextClickUntil = 0;
@@ -975,6 +1186,64 @@
     };
   }
 
+  function isTypingTarget(target) {
+    if (!target || !(target instanceof Element)) {
+      return false;
+    }
+    if (target.closest('input, textarea, select, [contenteditable="true"]')) {
+      return true;
+    }
+    return false;
+  }
+
+  function handleGlobalHotkeys(event) {
+    if (!event || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) {
+      return;
+    }
+    if (isTypingTarget(event.target)) {
+      return;
+    }
+    const key = String(event.key || '').toLowerCase();
+    if (!key) {
+      return;
+    }
+    if (key === 'r') {
+      event.preventDefault();
+      restartCurrentBoard();
+      return;
+    }
+    if (key === 'f') {
+      event.preventDefault();
+      state.flagMode = !state.flagMode;
+      updateFlagModeUi();
+      return;
+    }
+    if (key === 'h') {
+      event.preventDefault();
+      useSafeHint();
+      return;
+    }
+    if (key === 'n') {
+      event.preventDefault();
+      advanceToNextRound();
+      return;
+    }
+    if (key === '1') {
+      event.preventDefault();
+      startPresetLevel('beginner');
+      return;
+    }
+    if (key === '2') {
+      event.preventDefault();
+      startPresetLevel('intermediate');
+      return;
+    }
+    if (key === '3') {
+      event.preventDefault();
+      startPresetLevel('expert');
+    }
+  }
+
   function bindEvents() {
     refs.board.addEventListener('click', handleBoardClick);
     refs.board.addEventListener('contextmenu', handleBoardContextMenu);
@@ -988,6 +1257,7 @@
       state.flagMode = !state.flagMode;
       updateFlagModeUi();
     });
+    refs.hintBtn?.addEventListener('click', useSafeHint);
 
     refs.levelButtons.forEach((btn) => {
       btn.addEventListener('click', () => startPresetLevel(btn.dataset.level || 'beginner'));
@@ -1001,13 +1271,17 @@
 
     refs.applyCustomBtn?.addEventListener('click', () => applyCustomFromInputs(false));
     refs.applyCustomProgressiveBtn?.addEventListener('click', () => applyCustomFromInputs(true));
+    document.addEventListener('keydown', handleGlobalHotkeys);
   }
 
   function boot() {
+    state.stats = readStatsFromStorage();
     bindEvents();
     clearLongPressGesture();
     state.flagMode = false;
     updateFlagModeUi();
+    updateHintUi();
+    updateStatsUi();
     updateProgressiveUi();
 
     const initial = readInitialConfigFromUrl();

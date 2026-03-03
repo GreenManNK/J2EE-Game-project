@@ -145,7 +145,8 @@
           <div class="hub-portal-mini-card__title">Dieu huong nhanh</div>
           <div class="hub-portal-inline-actions">
             <a th:href="@{/games}" class="hub-portal-inline-btn">Catalog</a>
-            <a th:href="@{/online-hub}" class="hub-portal-inline-btn">Online Hub</a>
+            <a th:if="${game.supportsOnline}" th:href="@{/online-hub(game=${game.code})}" class="hub-portal-inline-btn">Online Hub</a>
+            <a th:if="${!game.supportsOnline}" th:href="@{/online-hub(game='caro')}" class="hub-portal-inline-btn">Online Hub</a>
             <a th:href="@{/}" class="hub-portal-inline-btn">Home</a>
           </div>
         </section>

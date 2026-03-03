@@ -41,22 +41,18 @@ public class AdminController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @GetMapping({"", "/"})
+    public String adminCenterPage() {
+        return "admin/index";
+    }
+
     @GetMapping("/users")
     public String usersPage(@RequestParam(required = false) String searchTerm,
                             @RequestParam(required = false) String banFilter,
                             @RequestParam(defaultValue = "0") int page,
                             @RequestParam(defaultValue = "10") int size,
                             Model model) {
-        List<UserAccount> filtered = filterUsers(searchTerm, banFilter);
-        PageSlice<UserAccount> slice = paginate(filtered, page, size);
-        model.addAttribute("users", slice.items());
-        model.addAttribute("searchTerm", searchTerm == null ? "" : searchTerm);
-        model.addAttribute("banFilter", banFilter == null ? "" : banFilter);
-        model.addAttribute("page", slice.page());
-        model.addAttribute("size", slice.size());
-        model.addAttribute("totalPages", slice.totalPages());
-        model.addAttribute("totalItems", filtered.size());
-        return "admin/users";
+        return "redirect:/admin";
     }
 
     @ResponseBody

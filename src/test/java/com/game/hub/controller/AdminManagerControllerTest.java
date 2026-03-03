@@ -30,6 +30,8 @@ class AdminManagerControllerTest {
 
         AdminController controller = new AdminController(userRepo, friendshipRepo, mock(org.springframework.security.crypto.password.PasswordEncoder.class));
 
+        assertEquals("admin/index", controller.adminCenterPage());
+
         Model model = new ConcurrentModel();
         String view = controller.userDetailPage("missing", model);
         assertEquals("redirect:/admin/users", view);

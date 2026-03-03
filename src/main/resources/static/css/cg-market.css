@@ -477,7 +477,8 @@ body:not(.sidebar-desktop).sidebar-open #appShellLayer .cg-topbar__menu-toggle {
 }
 
 .cg-tile-thumb.tone-cards,
-.cg-tile-thumb.tone-quiz {
+.cg-tile-thumb.tone-quiz,
+.cg-tile-thumb.tone-blackjack {
   background: linear-gradient(135deg, rgba(153, 67, 32, 0.95), rgba(112, 42, 22, 0.95));
 }
 

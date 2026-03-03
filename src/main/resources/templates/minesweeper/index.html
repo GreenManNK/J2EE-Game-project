@@ -24,15 +24,20 @@
         <button type="button" class="ms-level-btn js-ms-level" data-level="expert">Kho</button>
       </div>
       <button type="button" id="msFlagModeBtn" class="ms-level-btn ms-flag-toggle" aria-pressed="false">Dat co: Tat</button>
+      <button type="button" id="msHintBtn" class="ms-level-btn" title="Goi y an toan (phim tat H)">Goi y an toan</button>
       <span id="msBoardMeta" class="ms-chip">9 x 9 - 10 min</span>
       <span id="msLevelPill" class="ms-chip">De</span>
       <span id="msStatusPill" class="ms-chip">San sang</span>
+      <span id="msHintMeta" class="ms-chip">Goi y: 0/3</span>
+      <span class="ms-chip ms-shortcut-chip">Phim tat: 1/2/3 level, R choi lai, F co, H goi y, N van tiep</span>
     </div>
 
     <div class="ms-classic-statusline">
       <span>Trang thai: <strong id="msStatusText">Cho nuoc dau</strong></span>
       <span>Thoi gian: <strong id="msTimer">0s</strong></span>
       <span>Min con lai: <strong id="msMinesLeft">0</strong></span>
+      <span>Ky luc: <strong id="msBestTime">--</strong></span>
+      <span>Thang/Tran: <strong id="msWinRate">0/0 (0%)</strong></span>
     </div>
 
     <div class="ms-board-wrap">
@@ -229,6 +234,13 @@
     padding: 0 10px;
     font-size: 0.9rem;
     color: var(--ms-ink);
+  }
+
+  .ms-shortcut-chip {
+    max-width: min(100%, 520px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .ms-chip.text-bg-primary {

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dang nhap mang xa hoi</title>
+</head>
+<body>
+<p>Dang xu ly dang nhap, vui long cho...</p>
+<script th:inline="javascript">
+  (function () {
+    const user = {
+      userId: /*[[${userId}]]*/ "",
+      displayName: /*[[${displayName}]]*/ "Player",
+      email: /*[[${email}]]*/ "",
+      role: /*[[${role}]]*/ "User",
+      avatarPath: /*[[${avatarPath}]]*/ "/uploads/avatars/default-avatar.jpg"
+    };
+
+    if (user.userId) {
+      try {
+        localStorage.setItem("caro_current_user", JSON.stringify(user));
+        localStorage.setItem("userId", user.userId);
+        localStorage.setItem("displayName", user.displayName || "Player");
+        localStorage.setItem("email", user.email || "");
+        localStorage.setItem("role", user.role || "User");
+        localStorage.setItem("avatarPath", user.avatarPath || "/uploads/avatars/default-avatar.jpg");
+      } catch (_) {
+      }
+    }
+
+    window.location.replace(/*[[@{/}]]*/ "/");
+  })();
+</script>
+</body>
+</html>

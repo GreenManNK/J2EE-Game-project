@@ -11,6 +11,9 @@
         <h4 class="mb-0 theme-text">Đăng nhập</h4>
       </div>
       <div class="card-body theme-text">
+        <div th:if="${socialError != null}" class="alert alert-danger py-2" role="alert" th:text="${socialError}">
+          Dang nhap mang xa hoi that bai.
+        </div>
         <form id="loginForm">
           <div class="mb-3">
             <label for="email" class="form-label">Email</label>
@@ -28,6 +31,22 @@
             <a th:href="@{/account/reset-page}" class="btn btn-link">Quên mật khẩu?</a>
           </div>
         </form>
+
+        <div th:if="${googleLoginEnabled or facebookLoginEnabled}">
+          <div class="d-flex align-items-center gap-2 my-3">
+            <hr class="flex-grow-1 m-0">
+            <span class="small text-muted">hoặc</span>
+            <hr class="flex-grow-1 m-0">
+          </div>
+          <div class="d-grid gap-2">
+            <a th:if="${googleLoginEnabled}" class="btn btn-outline-danger" th:href="@{/oauth2/authorization/google}">
+              <i class="bi bi-google me-2"></i> Đăng nhập với Google
+            </a>
+            <a th:if="${facebookLoginEnabled}" class="btn btn-outline-primary" th:href="@{/oauth2/authorization/facebook}">
+              <i class="bi bi-facebook me-2"></i> Đăng nhập với Facebook
+            </a>
+          </div>
+        </div>
         <div id="out" class="small mt-3" role="status" aria-live="polite"></div>
       </div>
     </div>

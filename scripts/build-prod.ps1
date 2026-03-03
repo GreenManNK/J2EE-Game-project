@@ -120,7 +120,7 @@ try {
     $build = Resolve-BuildCommand
     if ($build.Kind -eq "maven") {
         if ($SkipTests) {
-            & $build.Command "-DskipTests" clean package
+            & $build.Command "-Dmaven.test.skip=true" clean package
         } else {
             & $build.Command clean package
         }

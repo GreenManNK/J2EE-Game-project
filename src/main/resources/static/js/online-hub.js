@@ -9,7 +9,11 @@
     gameName: String(boot.gameName || '').trim(),
     roomId: String(boot.selectedRoomId || '').trim(),
     onlineSupportedNow: Boolean(boot.onlineSupportedNow),
+    supportsSpectateNow: Boolean(boot.supportsSpectateNow),
     playUrlBase: String(boot.playUrlBase || '').trim(),
+    playRoomParam: String(boot.playRoomParam || '').trim(),
+    spectateParamName: String(boot.spectateParamName || '').trim(),
+    spectateParamValue: String(boot.spectateParamValue || '').trim(),
     inviteUrlPathTemplate: String(boot.inviteUrlPathTemplate || '').trim()
   };
 
@@ -41,14 +45,17 @@
   }
 
   function bindActions() {
-    els.createBtn?.addEventListener('click', () => {
-      const generated = generateRoomId();
-      state.roomId = generated;
+    els.createBtn?.addEventListener('click', async () => {
+      const created = await createRoomViaApi();
+      const nextRoomId = created || generateRoomId();
+      state.roomId = nextRoomId;
       if (els.roomInput) {
-        els.roomInput.value = generated;
+        els.roomInput.value = nextRoomId;
       }
-      setStatus('Da tao ma phong moi. Ban co the moi nguoi choi hoac vao ban.');
-      setRoomQueryInUrl(generated);
+      setStatus(created
+        ? ('Da tao phong moi: ' + nextRoomId)
+        : ('Da tao ma phong moi: ' + nextRoomId));
+      setRoomQueryInUrl(nextRoomId);
       syncRoomUi();
     });
 
@@ -68,9 +75,10 @@
       if (!state.roomId || !state.onlineSupportedNow || !state.playUrlBase) {
         return;
       }
-      const url = new URL(appPath(state.playUrlBase), window.location.origin);
-      url.searchParams.set('roomId', state.roomId);
-      window.location.href = url.pathname + url.search;
+      const target = buildPlayUrl(state.roomId, false);
+      if (target) {
+        window.location.href = target;
+      }
     });
 
     els.refreshBtn?.addEventListener('click', () => loadRooms());
@@ -135,10 +143,13 @@
       const info = document.createElement('div');
       info.className = 'small';
       const roomId = String(room.roomId || '').trim();
+      const playerCount = Number(room.playerCount || 0);
+      const playerLimit = Number(room.playerLimit || 0);
+      const playerLimitLabel = playerLimit > 0 ? String(playerLimit) : '?';
       info.innerHTML =
         '<div><strong>' + escapeHtml(roomId) + '</strong></div>' +
         '<div class="text-muted">' +
-          Number(room.playerCount || 0) + '/' + Number(room.playerLimit || 0) + ' nguoi' +
+          playerCount + '/' + playerLimitLabel + ' nguoi' +
           (room.note ? ' - ' + escapeHtml(String(room.note)) : '') +
         '</div>';
 
@@ -176,12 +187,15 @@
       spectateBtn.type = 'button';
       spectateBtn.className = 'btn btn-sm btn-info';
       spectateBtn.textContent = 'Xem';
-      spectateBtn.disabled = !roomId;
+      spectateBtn.disabled = !roomId || !state.supportsSpectateNow || !state.playUrlBase;
+      if (!state.supportsSpectateNow) {
+        spectateBtn.style.display = 'none';
+      }
       spectateBtn.addEventListener('click', () => {
-          const url = new URL(appPath(state.playUrlBase), window.location.origin);
-          url.searchParams.set('roomId', roomId);
-          url.searchParams.set('spectate', 'true');
-          window.location.href = url.pathname + url.search;
+          const target = buildPlayUrl(roomId, true);
+          if (target) {
+            window.location.href = target;
+          }
       });
 
       actions.append(chooseBtn, playBtn, spectateBtn);
@@ -222,6 +236,38 @@
     return new URL(appPath(path), window.location.origin).toString();
   }
 
+  async function createRoomViaApi() {
+    try {
+      const res = await fetch(appPath('/online-hub/api/create-room?game=' + encodeURIComponent(state.gameCode)), {
+        method: 'POST'
+      });
+      if (!res.ok) {
+        throw new Error('HTTP ' + res.status);
+      }
+      const data = await res.json();
+      const roomId = normalizeRoomId(data?.roomId);
+      return roomId || '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function buildPlayUrl(roomId, spectateMode) {
+    if (!state.playUrlBase || !roomId) {
+      return '';
+    }
+    const url = new URL(appPath(state.playUrlBase), window.location.origin);
+    url.searchParams.set(normalizeRoomParamName(state.playRoomParam), String(roomId).trim());
+
+    if (spectateMode) {
+      const name = normalizeSpectateParamName(state.spectateParamName);
+      if (name) {
+        url.searchParams.set(name, normalizeSpectateParamValue(state.spectateParamValue));
+      }
+    }
+    return url.pathname + url.search;
+  }
+
   function setRoomQueryInUrl(roomId) {
     try {
       const url = new URL(window.location.href);
@@ -240,7 +286,10 @@
       caro: 'CARO',
       chess: 'CHESS',
       xiangqi: 'XQ',
-      cards: 'TL'
+      cards: 'TL',
+      blackjack: 'BJ',
+      typing: 'TYP',
+      quiz: 'QUIZ'
     };
     const prefix = prefixes[state.gameCode] || 'ROOM';
     const token = Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -256,6 +305,21 @@
     if (els.status) {
       els.status.textContent = text || '-';
     }
+  }
+
+  function normalizeRoomParamName(value) {
+    const text = String(value || '').trim();
+    return text || 'roomId';
+  }
+
+  function normalizeSpectateParamName(value) {
+    const text = String(value || '').trim();
+    return text || '';
+  }
+
+  function normalizeSpectateParamValue(value) {
+    const text = String(value || '').trim();
+    return text || 'true';
   }
 
   function escapeHtml(value) {
