@@ -15,11 +15,61 @@
   --cg-danger: #ef4444;
 }
 
+body:not(.dark-mode) {
+  --cg-bg-1: #dcecff;
+  --cg-bg-2: #ebf4ff;
+  --cg-bg-3: #bdd7f6;
+  --cg-panel: rgba(242, 249, 255, 0.94);
+  --cg-panel-soft: rgba(235, 244, 255, 0.82);
+  --cg-border: rgba(57, 103, 171, 0.3);
+  --cg-ink: #102644;
+  --cg-muted: #4b6c94;
+  --cg-accent: #1f6fe5;
+  --cg-accent-2: #0ea57f;
+  --cg-warn: #b7791f;
+  --cg-danger: #d13a4a;
+}
+
+body.dark-mode {
+  --cg-bg-1: #061329;
+  --cg-bg-2: #081b38;
+  --cg-bg-3: #0b2450;
+  --cg-panel: rgba(9, 22, 46, 0.86);
+  --cg-panel-soft: rgba(12, 30, 62, 0.72);
+  --cg-border: rgba(118, 163, 231, 0.28);
+  --cg-ink: #eaf2ff;
+  --cg-muted: #9fb5d8;
+  --cg-accent: #27a3ff;
+  --cg-accent-2: #20c38f;
+  --cg-warn: #f59e0b;
+  --cg-danger: #ef4444;
+}
+
 body {
   background:
     radial-gradient(circle at 8% -4%, rgba(39, 163, 255, 0.24), transparent 32%),
     radial-gradient(circle at 94% 4%, rgba(32, 195, 143, 0.2), transparent 32%),
     linear-gradient(180deg, var(--cg-bg-2), var(--cg-bg-1));
+}
+
+body:not(.dark-mode) #appShellLayer .cg-topbar {
+  border-bottom-color: rgba(57, 103, 171, 0.28);
+  background:
+    radial-gradient(circle at 4% 6%, rgba(39, 163, 255, 0.14), transparent 35%),
+    radial-gradient(circle at 96% 10%, rgba(32, 195, 143, 0.14), transparent 35%),
+    linear-gradient(180deg, rgba(234, 243, 255, 0.96), rgba(220, 234, 251, 0.96));
+  box-shadow: 0 10px 24px rgba(39, 90, 162, 0.18);
+}
+
+body:not(.dark-mode) #appShellLayer .cg-topbar__brand,
+body:not(.dark-mode) #appShellLayer .cg-topbar__search,
+body:not(.dark-mode) #appShellLayer .cg-topbar__icon-btn,
+body:not(.dark-mode) #appShellLayer .cg-topbar__login-btn,
+body:not(.dark-mode) #appShellLayer .cg-topbar__menu-toggle,
+body:not(.dark-mode) #appShellLayer .cg-topbar__user-badge {
+  background: rgba(247, 252, 255, 0.94);
+  color: #12315b !important;
+  border-color: rgba(63, 112, 183, 0.34);
 }
 
 body::before {
@@ -51,10 +101,46 @@ body::before {
   margin: 0 auto;
   min-height: 56px;
   display: grid;
-  grid-template-columns: auto minmax(220px, 1fr) auto auto;
+  grid-template-columns: auto minmax(220px, 1fr) auto;
   align-items: center;
   gap: 10px;
   padding: 8px 4px;
+}
+
+#appShellLayer .cg-topbar__left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+#appShellLayer .cg-topbar__menu-toggle {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(121, 166, 236, 0.34);
+  background: rgba(8, 27, 55, 0.9);
+  color: #dce9ff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
+}
+
+#appShellLayer .cg-topbar__menu-toggle:hover {
+  border-color: rgba(157, 200, 255, 0.58);
+  background: rgba(14, 44, 86, 0.94);
+  color: #f5f9ff;
+}
+
+body.sidebar-desktop-hidden #appShellLayer .cg-topbar__menu-toggle,
+body:not(.sidebar-desktop).sidebar-open #appShellLayer .cg-topbar__menu-toggle {
+  border-color: rgba(80, 201, 161, 0.62);
+  background: rgba(10, 74, 67, 0.92);
+  color: #d8fff2;
 }
 
 #appShellLayer .cg-topbar__brand {
@@ -189,10 +275,6 @@ body::before {
   padding-top: 72px !important;
 }
 
-.sidebar-toggle-btn {
-  top: calc(50% + 4px) !important;
-}
-
 .app-shell-menu-group {
   display: grid;
   gap: 7px;
@@ -213,13 +295,22 @@ body::before {
 }
 
 @media (min-width: 1200px) {
-  body.sidebar-desktop:not(.game-index) {
+  body:not(.sidebar-desktop-hidden):not(.game-index) {
+    padding-left: calc(var(--app-sidebar-compact-width) + 18px) !important;
+  }
+
+  body.sidebar-desktop-hidden:not(.game-index) {
     padding-left: 18px !important;
   }
 
-  body.sidebar-desktop #friendSidebar {
+  body:not(.sidebar-desktop-hidden) #friendSidebar {
     transform: translateX(0) !important;
     pointer-events: auto !important;
+  }
+
+  body.sidebar-desktop-hidden #friendSidebar {
+    transform: translateX(calc(-100% - 10px)) !important;
+    pointer-events: none !important;
   }
 }
 
@@ -1047,6 +1138,16 @@ body::before {
     grid-template-columns: auto minmax(0, 1fr) auto;
   }
 
+  #appShellLayer .cg-topbar__left {
+    gap: 6px;
+  }
+
+  #appShellLayer .cg-topbar__menu-toggle {
+    width: 30px;
+    height: 30px;
+    font-size: 0.84rem;
+  }
+
   #appShellLayer .cg-topbar__brand {
     padding: 7px 9px;
     font-size: 0.84rem;
@@ -1073,11 +1174,6 @@ body::before {
   #appShellLayer .cg-topbar__login-btn {
     padding: 4px 8px;
     font-size: 0.7rem;
-  }
-
-  .sidebar-toggle-btn {
-    top: auto !important;
-    bottom: 74px !important;
   }
 
   #friendSidebar {

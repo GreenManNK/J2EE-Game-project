@@ -16,8 +16,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <link rel="stylesheet" th:href="@{/css/site.css}">
   <link rel="stylesheet" th:href="@{/css/games-portal.css}">
-  <link rel="stylesheet" th:href="@{/css/layout-refresh.css}">
-  <link rel="stylesheet" th:href="@{/css/cg-market.css}">
+  <link rel="stylesheet" th:href="@{/css/layout-refresh.css(v=20260303a)}">
+  <link rel="stylesheet" th:href="@{/css/cg-market.css(v=20260303c)}">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     body {
@@ -34,7 +34,6 @@
     #appShellLayer #friendSidebar,
     #appShellLayer #cgTopbar,
     #appShellLayer #cgTopRail,
-    #appShellLayer .sidebar-toggle-btn,
     #appShellLayer #backButton,
     #appShellLayer #siteMusicToggleBtn {
       pointer-events: auto;
@@ -43,6 +42,7 @@
       padding-top: 72px;
       padding-left: 18px;
       padding-right: 18px;
+      transition: padding-left 0.22s ease;
     }
     .app-shell-scrim {
       position: fixed;
@@ -96,34 +96,25 @@
       overflow-x: hidden;
       padding-right: 2px;
     }
+    #friendSidebar .app-shell-sidebar-menu .btn.theme-outline-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #friendSidebar .app-shell-sidebar-menu .btn.theme-outline-btn i {
+      flex: 0 0 1rem;
+      width: 1rem;
+      text-align: center;
+    }
     .app-shell-sidebar-friends {
       width: 100%;
       min-height: 0;
       display: flex;
       flex-direction: column;
-    }
-    .sidebar-toggle-btn {
-      position: fixed;
-      top: 50%;
-      left: 8px;
-      transform: translateY(-50%);
-      background-color: #0ff;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      z-index: 2005;
-      border-radius: 0 8px 8px 0;
-      transition: all 0.3s ease;
-      pointer-events: auto;
-    }
-    .sidebar-toggle-btn i {
-      font-size: 1rem;
-      line-height: 1;
-      pointer-events: none;
-    }
-    body:not(.sidebar-desktop).sidebar-open .sidebar-toggle-btn {
-      left: clamp(8px, calc(var(--app-sidebar-width) - 20px), calc(100vw - 42px));
-      transform: translateY(-50%);
     }
     #friendListInlineContainer {
       position: static;
@@ -164,6 +155,12 @@
         padding-left: 18px;
         padding-right: 18px;
       }
+      body:not(.sidebar-desktop-hidden):not(.game-index) {
+        padding-left: calc(var(--app-sidebar-compact-width) + 18px);
+      }
+      body.sidebar-desktop-hidden:not(.game-index) {
+        padding-left: 18px;
+      }
       #friendSidebar {
         width: var(--app-sidebar-compact-width);
         transform: translateX(0);
@@ -171,48 +168,85 @@
         padding-top: 74px;
         transition: width 0.22s ease, box-shadow 0.22s ease;
       }
-      #friendSidebar:hover,
-      #friendSidebar:focus-within {
+      body:not(.sidebar-desktop-hidden) #friendSidebar:hover,
+      body:not(.sidebar-desktop-hidden) #friendSidebar:focus-within {
         width: var(--app-sidebar-width);
       }
-      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand {
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand {
         padding: 8px 6px;
         display: grid;
         place-items: center;
       }
-      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__badge {
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) {
+        padding-left: 6px;
+        padding-right: 6px;
+      }
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-scroll {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__badge {
         min-width: 34px;
         justify-content: center;
         padding: 6px;
       }
-      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__badge span,
-      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__title,
-      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__meta,
-      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-menu-group__title,
-      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) #friendSearchForm,
-      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) [data-current-user-badge],
-      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) #toggle-language #currentLanguageLabel,
-      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-friends {
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__badge i {
+        margin: 0 !important;
+        font-size: 1rem !important;
+        line-height: 1 !important;
+      }
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__badge span,
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__title,
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__meta,
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-menu-group__title,
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) #friendSearchForm,
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) [data-current-user-badge],
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) #toggle-language #currentLanguageLabel,
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-friends {
         display: none !important;
       }
-      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-menu {
-        align-items: center;
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-menu {
+        align-items: stretch;
         overflow-x: hidden;
         padding-right: 0;
       }
-      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-menu .btn.theme-outline-btn {
-        width: 42px;
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-menu .btn.theme-outline-btn {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
         min-height: 40px;
         padding: 0 !important;
         justify-content: center;
         border-radius: 12px !important;
-        font-size: 0 !important;
-        line-height: 0 !important;
-      }
-      body.sidebar-desktop #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-menu .btn.theme-outline-btn i {
-        margin-right: 0 !important;
-        font-size: 1rem !important;
+        position: relative;
+        text-indent: -9999px;
+        white-space: nowrap;
+        overflow: hidden;
         line-height: 1 !important;
+        color: transparent !important;
+      }
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-menu .btn.theme-outline-btn i {
+        margin-right: 0 !important;
+        position: absolute;
+        inset: 50% auto auto 50%;
+        transform: translate(-50%, -50%);
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 1.1rem;
+        height: 1.1rem;
+        font-size: 1.02rem !important;
+        line-height: 1 !important;
+        text-indent: 0;
+        color: #e9f3ff !important;
+      }
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-menu .btn.theme-outline-btn::after {
+        display: none;
+      }
+      body.sidebar-desktop-hidden #friendSidebar {
+        transform: translateX(calc(-100% - 10px));
+        pointer-events: none;
+        box-shadow: none;
       }
     }
 
@@ -245,16 +279,6 @@
       #friendSidebar {
         padding-top: 78px;
       }
-      .sidebar-toggle-btn {
-        top: auto;
-        left: 10px;
-        bottom: 76px;
-        transform: none;
-      }
-      body:not(.sidebar-desktop).sidebar-open .sidebar-toggle-btn {
-        left: clamp(10px, calc(var(--app-sidebar-width) - 20px), calc(100vw - 42px));
-        transform: none;
-      }
       #friendListInlineContainer {
         min-height: 150px;
         max-height: min(34vh, 220px);
@@ -273,13 +297,23 @@
 </th:block>
 
 <div id="appShellLayer" th:fragment="appShell(pageKey)">
+  <script>
+    if (window.matchMedia && window.matchMedia("(min-width: 1200px)").matches) {
+      document.body.classList.add("sidebar-desktop-hidden");
+    }
+  </script>
   <div id="sidebarScrim" class="app-shell-scrim" aria-hidden="true"></div>
   <header id="cgTopbar" class="cg-topbar">
     <div class="cg-topbar__inner">
-      <a class="cg-topbar__brand" th:href="@{/}">
-        <i class="bi bi-controller"></i>
-        <span>Game Hub</span>
-      </a>
+      <div class="cg-topbar__left">
+        <button id="toggleSidebar" class="cg-topbar__menu-toggle" type="button" aria-label="Tat mo sidebar" aria-expanded="false" title="Tat mo sidebar">
+          <i class="bi bi-list"></i>
+        </button>
+        <a class="cg-topbar__brand" th:href="@{/}">
+          <i class="bi bi-controller"></i>
+          <span>Game Hub</span>
+        </a>
+      </div>
 
       <form id="cgGlobalSearchForm" class="cg-topbar__search" role="search">
         <i class="bi bi-search"></i>
@@ -287,6 +321,7 @@
       </form>
 
       <div class="cg-topbar__actions">
+        <button id="toggleThemeTopbar" class="cg-topbar__icon-btn" type="button" aria-label="Chuyen giao dien" title="Chuyen giao dien"><i class="bi bi-circle-half"></i></button>
         <a class="cg-topbar__icon-btn" th:href="@{/friendship/notifications}" data-require-user-id="true" aria-label="Thong bao"><i class="bi bi-bell"></i></a>
         <a class="cg-topbar__icon-btn" th:href="@{/games}" aria-label="Yeu thich"><i class="bi bi-heart"></i></a>
         <a class="cg-topbar__icon-btn" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true" aria-label="Tai khoan"><i class="bi bi-person"></i></a>
@@ -394,10 +429,6 @@
     </div>
   </div>
 
-  <button id="toggleSidebar" class="sidebar-toggle-btn" type="button" aria-label="Mở sidebar" aria-expanded="false" title="Mở sidebar">
-    <i class="bi bi-chevron-double-right"></i>
-  </button>
-
   <a id="backButton" th:if="${pageKey != 'home'}" th:href="@{/}" class="btn btn-outline-secondary">⬅ Quay lại</a>
 </div>
 
@@ -449,21 +480,30 @@
 
       if (sidebar && toggleBtn) {
         const desktopQuery = window.matchMedia("(min-width: 1200px)");
+        let desktopSidebarHidden = true;
+        try {
+          window.localStorage.removeItem("caroSidebarDesktopHidden.v1");
+        } catch (_) {
+        }
 
         const syncSidebarToggleUi = () => {
           const isDesktop = desktopQuery.matches;
           body.classList.toggle("sidebar-desktop", isDesktop);
           if (isDesktop) {
             body.classList.remove("sidebar-open");
+            body.classList.toggle("sidebar-desktop-hidden", desktopSidebarHidden);
             sidebarScrim?.setAttribute("aria-hidden", "true");
-            toggleBtn.hidden = true;
-            toggleBtn.setAttribute("aria-hidden", "true");
-            toggleBtn.setAttribute("aria-expanded", "false");
+            const expandedDesktop = !desktopSidebarHidden;
+            if (icon) {
+              icon.className = expandedDesktop ? "bi bi-layout-sidebar-inset" : "bi bi-layout-sidebar";
+            }
+            toggleBtn.setAttribute("aria-expanded", String(expandedDesktop));
+            toggleBtn.setAttribute("aria-label", expandedDesktop ? "An sidebar" : "Hien sidebar");
+            toggleBtn.setAttribute("title", expandedDesktop ? "An sidebar" : "Hien sidebar");
             return;
           }
 
-          toggleBtn.hidden = false;
-          toggleBtn.removeAttribute("aria-hidden");
+          body.classList.remove("sidebar-desktop-hidden");
 
           const isMobileOpen = body.classList.contains("sidebar-open");
           if (icon) {
@@ -478,6 +518,8 @@
 
         toggleBtn.addEventListener("click", () => {
           if (desktopQuery.matches) {
+            desktopSidebarHidden = !desktopSidebarHidden;
+            syncSidebarToggleUi();
             return;
           }
           const isOpen = body.classList.contains("sidebar-open");
@@ -558,7 +600,6 @@
       });
 
       const i18n = window.CaroI18n;
-      i18n?.init();
       const toggleLanguageBtn = document.getElementById("toggle-language");
       const languageLabel = document.getElementById("currentLanguageLabel");
       const syncLanguageUi = () => {
@@ -570,20 +611,47 @@
           toggleLanguageBtn.setAttribute("title", lang === "vi" ? "Chuyển sang tiếng Anh" : "Switch to Vietnamese");
         }
       };
-      syncLanguageUi();
-      i18n?.onChange?.(syncLanguageUi);
+      try {
+        i18n?.init?.();
+        syncLanguageUi();
+        i18n?.onChange?.(syncLanguageUi);
+      } catch (_) {
+      }
       toggleLanguageBtn?.addEventListener("click", () => {
-        if (!i18n) return;
-        const current = i18n.getLanguage?.() || "vi";
-        i18n.setLanguage?.(current === "vi" ? "en" : "vi");
+        if (!i18n || typeof i18n.getLanguage !== "function" || typeof i18n.setLanguage !== "function") return;
+        try {
+          const current = i18n.getLanguage() || "vi";
+          i18n.setLanguage(current === "vi" ? "en" : "vi");
+        } catch (_) {
+        }
       });
       const toggleThemeBtn = document.getElementById("toggle-theme");
-      const savedTheme = localStorage.getItem("theme");
-      if (savedTheme === "dark") body.classList.add("dark-mode");
-      toggleThemeBtn?.addEventListener("click", () => {
-        const isDark = body.classList.toggle("dark-mode");
-        localStorage.setItem("theme", isDark ? "dark" : "light");
-      });
+      const toggleThemeTopbarBtn = document.getElementById("toggleThemeTopbar");
+      const readStoredTheme = () => {
+        try {
+          return window.localStorage.getItem("theme");
+        } catch (_) {
+          return null;
+        }
+      };
+      const writeStoredTheme = (value) => {
+        try {
+          window.localStorage.setItem("theme", value);
+        } catch (_) {
+        }
+      };
+      const applyTheme = (theme) => {
+        const normalized = theme === "dark" ? "dark" : "light";
+        body.classList.toggle("dark-mode", normalized === "dark");
+        body.classList.toggle("light-mode", normalized === "light");
+        writeStoredTheme(normalized);
+      };
+      applyTheme(readStoredTheme() === "dark" ? "dark" : "light");
+      const toggleTheme = () => {
+        applyTheme(body.classList.contains("dark-mode") ? "light" : "dark");
+      };
+      toggleThemeBtn?.addEventListener("click", toggleTheme);
+      toggleThemeTopbarBtn?.addEventListener("click", toggleTheme);
       const pageKey = /*[[${pageKey}]]*/ 'home';
       const normalizedPageKey = String(pageKey || 'home')
         .toLowerCase()
