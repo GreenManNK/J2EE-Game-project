@@ -219,10 +219,10 @@
         justify-content: center;
         border-radius: 12px !important;
         position: relative;
-        text-indent: -9999px;
         white-space: nowrap;
         overflow: hidden;
         line-height: 1 !important;
+        font-size: 0 !important;
         color: transparent !important;
       }
       body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-menu .btn.theme-outline-btn i {
@@ -410,6 +410,10 @@
              th:href="@{/notification-admin}"
              data-auth-only="true"
              data-role-allowed="Admin"><i class="bi bi-megaphone me-2"></i> System Notices</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text"
+             th:href="@{/admin/access-logs}"
+             data-auth-only="true"
+             data-role-allowed="Admin"><i class="bi bi-activity me-2"></i> Access Logs</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/login-page}" data-guest-only="true"><i class="bi bi-box-arrow-in-right me-2"></i> Dang nhap</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/register-page}" data-guest-only="true"><i class="bi bi-person-plus-fill me-2"></i> Dang ky</a>
           <button id="logoutBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true"><i class="bi bi-box-arrow-right me-2"></i> Dang xuat</button>
@@ -595,6 +599,15 @@
               syncSidebarToggleUi();
             }
           });
+        });
+
+        sidebar.querySelectorAll(".app-shell-sidebar-menu .btn.theme-outline-btn").forEach((item) => {
+          const fallbackLabel = String(item.getAttribute("data-menu-label") || item.textContent || "")
+            .replace(/\s+/g, " ")
+            .trim();
+          if (fallbackLabel && !item.getAttribute("title")) {
+            item.setAttribute("title", fallbackLabel);
+          }
         });
       }
 

@@ -19,6 +19,7 @@ public class Post {
     private Long id;
     private String content;
     private String author;
+    private String authorUserId;
     private LocalDateTime createdAt = LocalDateTime.now();
     private String imagePath;
 
@@ -32,6 +33,8 @@ public class Post {
     public void setContent(String content) { this.content = content; }
     public String getAuthor() { return author; }
     public void setAuthor(String author) { this.author = author; }
+    public String getAuthorUserId() { return authorUserId; }
+    public void setAuthorUserId(String authorUserId) { this.authorUserId = authorUserId; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public String getImagePath() { return imagePath; }

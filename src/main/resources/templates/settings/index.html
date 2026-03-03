@@ -207,6 +207,13 @@
           <button id="resetPreferencesBtn" class="btn theme-outline-btn" type="button">
             <i class="bi bi-arrow-counterclockwise me-1"></i> Ve mac dinh
           </button>
+          <button id="exportPreferencesBtn" class="btn theme-outline-btn" type="button">
+            <i class="bi bi-download me-1"></i> Export cai dat
+          </button>
+          <button id="importPreferencesBtn" class="btn theme-outline-btn" type="button">
+            <i class="bi bi-upload me-1"></i> Import cai dat
+          </button>
+          <input id="importPreferencesFileInput" type="file" accept="application/json" class="d-none">
         </div>
         <div id="preferencesStatus" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
       </section>
@@ -236,6 +243,51 @@
           </div>
         </div>
         <div id="securitySettingsStatus" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="theme-box rounded p-3 mt-3 gx-section-card">
+        <div class="gx-section-card__head">
+          <h2 class="h5 mb-0 theme-text">Du lieu va bao cao</h2>
+          <div class="gx-section-card__meta">Tai du lieu he thong va thong ke nguoi choi.</div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn theme-outline-btn" th:href="@{/history/export-csv(userId=${authUserId})}" data-auth-only="true">
+            Lich su CSV
+          </a>
+          <a class="btn theme-outline-btn" th:href="@{/history/export-excel(userId=${authUserId})}" data-auth-only="true">
+            Lich su Excel
+          </a>
+          <a class="btn theme-outline-btn" th:href="@{/leaderboard/export-csv}">
+            BXH CSV
+          </a>
+          <a class="btn theme-outline-btn" th:href="@{/leaderboard/export-excel}">
+            BXH Excel
+          </a>
+          <a class="btn theme-outline-btn"
+             th:href="@{/manager/export-users-excel(scope='all')}"
+             data-auth-only="true"
+             data-role-allowed="Manager,Admin">
+            Users Excel (Manager)
+          </a>
+          <a class="btn theme-outline-btn"
+             th:href="@{/admin/export-users-excel(scope='all')}"
+             data-auth-only="true"
+             data-role-allowed="Admin">
+            Users Excel (Admin)
+          </a>
+          <a class="btn theme-outline-btn"
+             th:href="@{/admin/access-logs}"
+             data-auth-only="true"
+             data-role-allowed="Admin">
+            Access Logs (Admin)
+          </a>
+          <a class="btn theme-outline-btn"
+             th:href="@{/admin/access-logs/export-excel(scope='all')}"
+             data-auth-only="true"
+             data-role-allowed="Admin">
+            Access Excel (Admin)
+          </a>
+        </div>
       </section>
 
       <section class="theme-box rounded p-3 mt-3 gx-section-card">

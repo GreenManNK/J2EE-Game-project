@@ -25,9 +25,43 @@
           <option value="smart">De xuat</option>
           <option value="popular">Pho bien</option>
           <option value="new">Moi cap nhat</option>
+          <option value="favorite">Yeu thich truoc</option>
           <option value="az">Ten A-Z</option>
         </select>
       </label>
+
+      <label class="cg-control" aria-label="Bo loc yeu thich">
+        <span>Loc</span>
+        <select id="gamesBrowserFilter">
+          <option value="all">Tat ca</option>
+          <option value="favorite">Chi yeu thich</option>
+        </select>
+      </label>
+
+      <button id="gamesClearRecentBtn" type="button" class="btn theme-outline-btn">Xoa gan day</button>
+    </div>
+  </section>
+
+  <section id="gamesQuickState" class="hub-portal-panel cg-browser-head">
+    <div class="row g-2">
+      <div class="col-lg-6">
+        <div class="theme-box rounded p-3 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong>Yeu thich</strong>
+            <small id="gamesFavoriteCount" class="text-muted">0</small>
+          </div>
+          <div id="gamesFavoriteList" class="d-flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="theme-box rounded p-3 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong>Gan day</strong>
+            <small id="gamesRecentCount" class="text-muted">0</small>
+          </div>
+          <div id="gamesRecentList" class="d-flex flex-wrap gap-2"></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -52,6 +86,11 @@
             <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
                th:href="@{${g.primaryActionUrl}}"
                class="hub-portal-inline-btn primary">Play</a>
+            <button type="button"
+                    class="hub-portal-inline-btn js-favorite-toggle"
+                    th:attr="data-game-code=${g.code},data-game-name=${g.displayName}">
+              <i class="bi bi-star"></i> Yeu thich
+            </button>
           </div>
         </div>
       </article>
@@ -80,6 +119,11 @@
             <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
                th:href="@{${g.primaryActionUrl}}"
                class="hub-portal-inline-btn primary">Play</a>
+            <button type="button"
+                    class="hub-portal-inline-btn js-favorite-toggle"
+                    th:attr="data-game-code=${g.code},data-game-name=${g.displayName}">
+              <i class="bi bi-star"></i> Yeu thich
+            </button>
           </div>
         </div>
       </article>
@@ -108,6 +152,11 @@
             <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
                th:href="@{${g.primaryActionUrl}}"
                class="hub-portal-inline-btn primary">Play</a>
+            <button type="button"
+                    class="hub-portal-inline-btn js-favorite-toggle"
+                    th:attr="data-game-code=${g.code},data-game-name=${g.displayName}">
+              <i class="bi bi-star"></i> Yeu thich
+            </button>
           </div>
         </div>
       </article>
@@ -136,6 +185,11 @@
             <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
                th:href="@{${g.primaryActionUrl}}"
                class="hub-portal-inline-btn primary">Play</a>
+            <button type="button"
+                    class="hub-portal-inline-btn js-favorite-toggle"
+                    th:attr="data-game-code=${g.code},data-game-name=${g.displayName}">
+              <i class="bi bi-star"></i> Yeu thich
+            </button>
           </div>
         </div>
       </article>
@@ -148,15 +202,81 @@
 <th:block th:replace="~{fragments :: appScripts('games')}"/>
 <script th:inline="javascript">
   document.addEventListener('DOMContentLoaded', () => {
+    const FAVORITES_KEY = 'caroFavoriteGames.v1';
+    const RECENT_KEY = 'caroRecentlyPlayedGames.v1';
+    const RECENT_MAX_ITEMS = 20;
+
+    const toAppPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+      ? window.CaroUrl.path
+      : ((value) => value);
+
     const searchInput = document.getElementById('gamesBrowserSearch');
     const sortSelect = document.getElementById('gamesBrowserSort');
+    const filterSelect = document.getElementById('gamesBrowserFilter');
+    const clearRecentBtn = document.getElementById('gamesClearRecentBtn');
+    const favoriteListEl = document.getElementById('gamesFavoriteList');
+    const recentListEl = document.getElementById('gamesRecentList');
+    const favoriteCountEl = document.getElementById('gamesFavoriteCount');
+    const recentCountEl = document.getElementById('gamesRecentCount');
+
     const tracks = Array.from(document.querySelectorAll('[data-lane-track]'));
-    const laneSections = Array.from(document.querySelectorAll('[data-lane-section]'));
     const emptyState = document.getElementById('gamesBrowserEmpty');
+    const allTiles = Array.from(document.querySelectorAll('.cg-tile'));
+    const favoriteButtons = Array.from(document.querySelectorAll('.js-favorite-toggle'));
 
     if (tracks.length === 0) {
       return;
     }
+
+    const normalizeCode = (value) => String(value || '').trim().toLowerCase();
+    const normalizeName = (value, fallback) => {
+      const txt = String(value || '').trim();
+      return txt || String(fallback || '').trim() || 'Game';
+    };
+    const parseJsonArray = (key, fallback) => {
+      try {
+        const raw = window.localStorage.getItem(key);
+        if (!raw) {
+          return fallback;
+        }
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : fallback;
+      } catch (_) {
+        return fallback;
+      }
+    };
+    const writeJsonArray = (key, value) => {
+      try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+      } catch (_) {
+      }
+    };
+
+    const favoriteSet = new Set(
+      parseJsonArray(FAVORITES_KEY, [])
+        .map((item) => normalizeCode(item))
+        .filter(Boolean)
+    );
+    let recentGames = parseJsonArray(RECENT_KEY, [])
+      .map((item) => ({
+        code: normalizeCode(item && item.code),
+        name: normalizeName(item && item.name, item && item.code),
+        at: Number.isFinite(Number(item && item.at)) ? Number(item.at) : Date.now()
+      }))
+      .filter((item) => !!item.code)
+      .slice(0, RECENT_MAX_ITEMS);
+
+    const catalogByCode = new Map();
+    allTiles.forEach((tile) => {
+      const code = normalizeCode(tile.dataset.code);
+      if (!code || catalogByCode.has(code)) {
+        return;
+      }
+      const name = normalizeName(tile.dataset.name, code);
+      const detailLink = tile.querySelector('.cg-tile-actions a[href]');
+      const href = detailLink ? detailLink.getAttribute('href') : ('/games/' + code);
+      catalogByCode.set(code, { code, name, href: toAppPath(href) });
+    });
 
     const urlParams = new URLSearchParams(window.location.search);
     const queryFromUrl = String(urlParams.get('q') || '').trim();
@@ -176,6 +296,10 @@
     }
 
     const tileText = (tile) => (String(tile.dataset.name || '') + ' ' + String(tile.dataset.code || '') + ' ' + String(tile.textContent || '')).toLowerCase();
+    const isFavorite = (code) => favoriteSet.has(normalizeCode(code));
+    const saveFavorites = () => writeJsonArray(FAVORITES_KEY, Array.from(favoriteSet));
+    const saveRecent = () => writeJsonArray(RECENT_KEY, recentGames);
+    const favoriteMode = () => String(filterSelect?.value || 'all');
 
     const sortTiles = (tiles, mode) => {
       const arr = [...tiles];
@@ -183,20 +307,103 @@
         arr.sort((a, b) => String(a.dataset.name || '').localeCompare(String(b.dataset.name || ''), 'vi'));
       } else if (mode === 'new') {
         arr.sort((a, b) => Number(b.dataset.release || 0) - Number(a.dataset.release || 0));
+      } else if (mode === 'favorite') {
+        arr.sort((a, b) => {
+          const favDiff = Number(isFavorite(b.dataset.code)) - Number(isFavorite(a.dataset.code));
+          if (favDiff !== 0) {
+            return favDiff;
+          }
+          return Number(b.dataset.popularity || 0) - Number(a.dataset.popularity || 0);
+        });
       } else {
         arr.sort((a, b) => Number(b.dataset.popularity || 0) - Number(a.dataset.popularity || 0));
       }
       return arr;
     };
 
+    const createQuickLink = (item, index, type) => {
+      const link = document.createElement('a');
+      link.className = 'badge rounded-pill text-bg-dark text-decoration-none px-3 py-2';
+      link.href = toAppPath(item.href || ('/games/' + item.code));
+      link.textContent = type === 'recent' ? ((index + 1) + '. ' + item.name) : item.name;
+      link.dataset.gameCode = item.code;
+      return link;
+    };
+
+    const renderQuickState = () => {
+      const favoriteItems = Array.from(favoriteSet)
+        .map((code) => catalogByCode.get(code) || { code, name: code.toUpperCase(), href: '/games/' + code })
+        .sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+      favoriteListEl.innerHTML = '';
+      if (favoriteItems.length === 0) {
+        favoriteListEl.innerHTML = '<small class="text-muted">Chua co game yeu thich.</small>';
+      } else {
+        favoriteItems.forEach((item, index) => favoriteListEl.appendChild(createQuickLink(item, index, 'favorite')));
+      }
+      if (favoriteCountEl) {
+        favoriteCountEl.textContent = String(favoriteItems.length);
+      }
+
+      const recentItems = recentGames
+        .map((entry) => {
+          const fromCatalog = catalogByCode.get(entry.code);
+          return fromCatalog
+            ? { ...fromCatalog, at: entry.at }
+            : { code: entry.code, name: normalizeName(entry.name, entry.code), href: '/games/' + entry.code, at: entry.at };
+        });
+      recentListEl.innerHTML = '';
+      if (recentItems.length === 0) {
+        recentListEl.innerHTML = '<small class="text-muted">Chua co game gan day.</small>';
+      } else {
+        recentItems.forEach((item, index) => recentListEl.appendChild(createQuickLink(item, index, 'recent')));
+      }
+      if (recentCountEl) {
+        recentCountEl.textContent = String(recentItems.length);
+      }
+    };
+
+    const syncFavoriteButtons = () => {
+      favoriteButtons.forEach((button) => {
+        const code = normalizeCode(button.dataset.gameCode);
+        const active = isFavorite(code);
+        button.classList.toggle('primary', active);
+        button.innerHTML = active
+          ? '<i class="bi bi-star-fill"></i> Bo yeu thich'
+          : '<i class="bi bi-star"></i> Yeu thich';
+      });
+      allTiles.forEach((tile) => {
+        tile.classList.toggle('is-favorite', isFavorite(tile.dataset.code));
+      });
+    };
+
+    const trackRecent = (code, name) => {
+      const normalizedCode = normalizeCode(code);
+      if (!normalizedCode) {
+        return;
+      }
+      recentGames = recentGames.filter((item) => item.code !== normalizedCode);
+      recentGames.unshift({
+        code: normalizedCode,
+        name: normalizeName(name, normalizedCode),
+        at: Date.now()
+      });
+      recentGames = recentGames.slice(0, RECENT_MAX_ITEMS);
+      saveRecent();
+      renderQuickState();
+    };
+
     const applyState = () => {
       const query = String(searchInput?.value || '').trim().toLowerCase();
       const mode = String(sortSelect?.value || 'smart');
+      const activeFilter = favoriteMode();
       let totalVisible = 0;
 
       tracks.forEach((track) => {
         const tiles = Array.from(track.querySelectorAll('.cg-tile'));
         const filtered = tiles.filter((tile) => {
+          if (activeFilter === 'favorite' && !isFavorite(tile.dataset.code)) {
+            return false;
+          }
           if (!query) {
             return true;
           }
@@ -231,6 +438,41 @@
 
     searchInput?.addEventListener('input', applyState);
     sortSelect?.addEventListener('change', applyState);
+    filterSelect?.addEventListener('change', applyState);
+
+    clearRecentBtn?.addEventListener('click', () => {
+      recentGames = [];
+      saveRecent();
+      renderQuickState();
+    });
+
+    favoriteButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const code = normalizeCode(button.dataset.gameCode);
+        if (!code) {
+          return;
+        }
+        if (favoriteSet.has(code)) {
+          favoriteSet.delete(code);
+        } else {
+          favoriteSet.add(code);
+        }
+        saveFavorites();
+        syncFavoriteButtons();
+        renderQuickState();
+        applyState();
+      });
+    });
+
+    allTiles.forEach((tile) => {
+      const code = normalizeCode(tile.dataset.code);
+      const name = normalizeName(tile.dataset.name, code);
+      tile.querySelectorAll('.cg-tile-actions a[href]').forEach((link) => {
+        link.addEventListener('click', () => {
+          trackRecent(code, name);
+        });
+      });
+    });
 
     tracks.forEach((track) => {
       track.addEventListener('wheel', (event) => {
@@ -242,6 +484,8 @@
       }, { passive: false });
     });
 
+    syncFavoriteButtons();
+    renderQuickState();
     applyState();
   });
 </script>

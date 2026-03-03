@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Leaderboard')}"></head>
 <body>
@@ -13,36 +13,74 @@
           <span>Rankings</span>
         </div>
         <h1 class="gx-page-title theme-text mt-2">Bang xep hang</h1>
-        <p class="gx-page-subtitle">Xem thu hang nguoi choi theo diem so va theo doi tien do canh tranh.</p>
+        <p class="gx-page-subtitle">Tim kiem nguoi choi, loc nguong diem va xuat bao cao nhanh.</p>
       </div>
       <div class="gx-page-badge">
         <i class="bi bi-people-fill"></i>
-        <span th:text="${(players != null ? #lists.size(players) : 0)} + ' nguoi choi'">0 nguoi choi</span>
+        <span th:text="${totalItems} + ' nguoi choi'">0 nguoi choi</span>
       </div>
     </div>
-    <div class="gx-chip-row">
+
+    <form method="get" th:action="@{/leaderboard}" class="row g-2 align-items-end">
+      <div class="col-12 col-md-5 col-lg-4">
+        <label class="form-label" for="q">Tim kiem</label>
+        <input id="q" class="form-control" name="q" th:value="${q}" placeholder="Nhap user id hoac ten hien thi">
+      </div>
+      <div class="col-6 col-md-3 col-lg-2">
+        <label class="form-label" for="minScore">Diem toi thieu</label>
+        <input id="minScore" class="form-control" name="minScore" type="number" th:value="${minScore}" placeholder="0">
+      </div>
+      <div class="col-6 col-md-2 col-lg-2">
+        <label class="form-label" for="size">Size</label>
+        <select id="size" class="form-select" name="size">
+          <option value="10" th:selected="${size == 10}">10</option>
+          <option value="20" th:selected="${size == 20}">20</option>
+          <option value="50" th:selected="${size == 50}">50</option>
+          <option value="100" th:selected="${size == 100}">100</option>
+        </select>
+      </div>
+      <input type="hidden" name="page" value="0">
+      <div class="col-12 col-md-2 col-lg-2">
+        <button type="submit" class="btn btn-primary w-100">Ap dung</button>
+      </div>
+
+      <div class="col-12 d-flex flex-wrap gap-2 justify-content-md-end mt-2">
+        <a class="btn theme-outline-btn"
+           th:href="@{/leaderboard/export-csv(q=${q},minScore=${minScore},page=${page},size=${size},scope='page')}">CSV Trang nay</a>
+        <a class="btn theme-outline-btn"
+           th:href="@{/leaderboard/export-excel(q=${q},minScore=${minScore},page=${page},size=${size},scope='page')}">Excel Trang nay</a>
+        <a class="btn theme-outline-btn"
+           th:href="@{/leaderboard/export-excel(q=${q},minScore=${minScore},page=${page},size=${size},scope='all')}">Excel Tat ca da loc</a>
+      </div>
+    </form>
+
+    <div class="gx-chip-row mt-2">
       <span class="gx-chip"><i class="bi bi-graph-up-arrow"></i> Thu hang theo diem</span>
       <span class="gx-chip"><i class="bi bi-arrow-repeat"></i> Cap nhat tu server</span>
     </div>
   </section>
 
-  <section class="gx-section-card theme-box gx-table-card">
+  <div class="gx-empty-state" th:if="${#lists.isEmpty(players)}">Khong co nguoi choi phu hop bo loc hien tai.</div>
+
+  <section class="gx-section-card theme-box gx-table-card" th:if="${!#lists.isEmpty(players)}">
     <div class="gx-section-card__head">
       <h2 class="gx-section-card__title theme-text mb-0">Danh sach xep hang</h2>
-      <div class="gx-section-card__meta">Top players</div>
+      <div class="gx-section-card__meta">Trang <span th:text="${page+1}">1</span>/<span th:text="${totalPages}">1</span></div>
     </div>
     <div class="table-responsive">
       <table class="table table-bordered table-hover align-middle mb-0">
         <thead>
         <tr class="theme-table-header">
           <th>#</th>
+          <th>User ID</th>
           <th>Name</th>
           <th>Score</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="p, i : ${players}">
-          <td th:text="${i.count}"></td>
+          <td th:text="${page * size + i.count}"></td>
+          <td th:text="${p.userId}"></td>
           <td th:text="${p.displayName}"></td>
           <td th:text="${p.score}"></td>
         </tr>
@@ -50,6 +88,16 @@
       </table>
     </div>
   </section>
+
+  <div class="gx-inline-actions">
+    <a class="btn btn-sm btn-outline-secondary"
+       th:if="${page > 0}"
+       th:href="@{/leaderboard(q=${q},minScore=${minScore},page=${page-1},size=${size})}">Prev</a>
+    <span class="small">Page <span th:text="${page+1}"></span>/<span th:text="${totalPages}"></span></span>
+    <a class="btn btn-sm btn-outline-secondary"
+       th:if="${page+1 < totalPages}"
+       th:href="@{/leaderboard(q=${q},minScore=${minScore},page=${page+1},size=${size})}">Next</a>
+  </div>
 
   <div class="gx-inline-actions">
     <a class="btn theme-outline-btn" th:href="@{/}">Ve Home</a>

@@ -111,11 +111,93 @@
     const friendListRefreshMsSelect = document.getElementById("friendListRefreshMsSelect");
     const savePreferencesBtn = document.getElementById("savePreferencesBtn");
     const resetPreferencesBtn = document.getElementById("resetPreferencesBtn");
+    const exportPreferencesBtn = document.getElementById("exportPreferencesBtn");
+    const importPreferencesBtn = document.getElementById("importPreferencesBtn");
+    const importPreferencesFileInput = document.getElementById("importPreferencesFileInput");
 
     const activateAdminCodeInput = document.getElementById("settingsAdminCode");
     const activateAdminFromSettingsBtn = document.getElementById("activateAdminFromSettingsBtn");
 
     const i18n = window.CaroI18n;
+
+    const buildPreferencesPayload = () => {
+      const refreshValue = Number.parseInt(String(friendListRefreshMsSelect?.value || "5000"), 10);
+      return {
+        version: 1,
+        savedAt: new Date().toISOString(),
+        theme: themeSelect && themeSelect.value === "dark" ? "dark" : "light",
+        language: languageSelect && languageSelect.value === "en" ? "en" : "vi",
+        sidebarDesktopVisibleByDefault: !!(desktopSidebarVisibleByDefault && desktopSidebarVisibleByDefault.checked),
+        sidebarMobileAutoClose: !!(mobileSidebarAutoClose && mobileSidebarAutoClose.checked),
+        homeMusicEnabled: !!(homeMusicEnabled && homeMusicEnabled.checked),
+        toastNotificationsEnabled: !!(toastNotificationsEnabled && toastNotificationsEnabled.checked),
+        showOfflineFriendsInSidebar: !!(showOfflineFriendsInSidebar && showOfflineFriendsInSidebar.checked),
+        autoRefreshFriendList: !!(autoRefreshFriendList && autoRefreshFriendList.checked),
+        friendListRefreshMs:
+          Number.isFinite(refreshValue) && FRIEND_LIST_ALLOWED_REFRESH_VALUES.includes(refreshValue)
+            ? refreshValue
+            : 5000
+      };
+    };
+
+    const applyPreferencesPayload = (prefs, persistChanges) => {
+      const data = prefs || {};
+      const theme = data.theme === "dark" ? "dark" : "light";
+      if (themeSelect) {
+        themeSelect.value = theme;
+      }
+      applyTheme(theme);
+
+      const language = data.language === "en" ? "en" : "vi";
+      if (languageSelect) {
+        languageSelect.value = language;
+      }
+      if (i18n && typeof i18n.setLanguage === "function") {
+        try {
+          i18n.setLanguage(language);
+        } catch (_) {
+        }
+      }
+
+      if (desktopSidebarVisibleByDefault) {
+        desktopSidebarVisibleByDefault.checked = !!data.sidebarDesktopVisibleByDefault;
+      }
+      if (mobileSidebarAutoClose) {
+        mobileSidebarAutoClose.checked = data.sidebarMobileAutoClose !== false;
+      }
+      if (homeMusicEnabled) {
+        homeMusicEnabled.checked = data.homeMusicEnabled !== false;
+      }
+      if (toastNotificationsEnabled) {
+        toastNotificationsEnabled.checked = data.toastNotificationsEnabled !== false;
+      }
+      if (showOfflineFriendsInSidebar) {
+        showOfflineFriendsInSidebar.checked = data.showOfflineFriendsInSidebar !== false;
+      }
+      if (autoRefreshFriendList) {
+        autoRefreshFriendList.checked = data.autoRefreshFriendList !== false;
+      }
+      if (friendListRefreshMsSelect) {
+        const refreshMs = Number.parseInt(String(data.friendListRefreshMs || 5000), 10);
+        friendListRefreshMsSelect.value =
+          Number.isFinite(refreshMs) && FRIEND_LIST_ALLOWED_REFRESH_VALUES.includes(refreshMs)
+            ? String(refreshMs)
+            : "5000";
+      }
+      syncFriendRefreshSelectState();
+
+      if (!persistChanges) {
+        return;
+      }
+      const normalized = buildPreferencesPayload();
+      writeBooleanPref(SIDEBAR_DESKTOP_HIDDEN_KEY, !normalized.sidebarDesktopVisibleByDefault);
+      writeBooleanPref(SIDEBAR_MOBILE_AUTO_CLOSE_KEY, normalized.sidebarMobileAutoClose);
+      writeStorage(MUSIC_KEY, normalized.homeMusicEnabled ? "on" : "off");
+      writeBooleanPref(TOAST_ENABLED_KEY, normalized.toastNotificationsEnabled);
+      writeBooleanPref(FRIEND_LIST_SHOW_OFFLINE_KEY, normalized.showOfflineFriendsInSidebar);
+      writeBooleanPref(FRIEND_LIST_AUTO_REFRESH_KEY, normalized.autoRefreshFriendList);
+      writeStorage(FRIEND_LIST_REFRESH_MS_KEY, String(normalized.friendListRefreshMs));
+    };
 
     const syncFriendRefreshSelectState = () => {
       if (!friendListRefreshMsSelect || !autoRefreshFriendList) {
@@ -181,24 +263,7 @@
     autoRefreshFriendList?.addEventListener("change", syncFriendRefreshSelectState);
 
     const savePreferences = () => {
-      const theme = themeSelect && themeSelect.value === "dark" ? "dark" : "light";
-      applyTheme(theme);
-
-      writeBooleanPref(SIDEBAR_DESKTOP_HIDDEN_KEY, !(desktopSidebarVisibleByDefault && desktopSidebarVisibleByDefault.checked));
-      writeBooleanPref(SIDEBAR_MOBILE_AUTO_CLOSE_KEY, !!(mobileSidebarAutoClose && mobileSidebarAutoClose.checked));
-      writeStorage(MUSIC_KEY, (homeMusicEnabled && homeMusicEnabled.checked) ? "on" : "off");
-      writeBooleanPref(TOAST_ENABLED_KEY, !!(toastNotificationsEnabled && toastNotificationsEnabled.checked));
-      writeBooleanPref(FRIEND_LIST_SHOW_OFFLINE_KEY, !!(showOfflineFriendsInSidebar && showOfflineFriendsInSidebar.checked));
-      writeBooleanPref(FRIEND_LIST_AUTO_REFRESH_KEY, !!(autoRefreshFriendList && autoRefreshFriendList.checked));
-
-      const refreshValue = Number.parseInt(String(friendListRefreshMsSelect?.value || "5000"), 10);
-      writeStorage(
-        FRIEND_LIST_REFRESH_MS_KEY,
-        Number.isFinite(refreshValue) && FRIEND_LIST_ALLOWED_REFRESH_VALUES.includes(refreshValue)
-          ? String(refreshValue)
-          : "5000"
-      );
-
+      applyPreferencesPayload(buildPreferencesPayload(), true);
       setStatus(preferencesStatus, "Da luu tuy chon. Reload trang de cap nhat sidebar/friend list ngay.", true);
       if (toastNotificationsEnabled && toastNotificationsEnabled.checked) {
         notify("Da luu cai dat", "success");
@@ -208,54 +273,66 @@
     savePreferencesBtn?.addEventListener("click", savePreferences);
 
     resetPreferencesBtn?.addEventListener("click", () => {
-      if (themeSelect) {
-        themeSelect.value = "light";
-      }
-      applyTheme("light");
-
-      if (languageSelect) {
-        languageSelect.value = "vi";
-      }
-      if (i18n && typeof i18n.setLanguage === "function") {
-        try {
-          i18n.setLanguage("vi");
-        } catch (_) {
-        }
-      }
-
-      if (desktopSidebarVisibleByDefault) {
-        desktopSidebarVisibleByDefault.checked = false;
-      }
-      if (mobileSidebarAutoClose) {
-        mobileSidebarAutoClose.checked = true;
-      }
-      if (homeMusicEnabled) {
-        homeMusicEnabled.checked = true;
-      }
-      if (toastNotificationsEnabled) {
-        toastNotificationsEnabled.checked = true;
-      }
-      if (showOfflineFriendsInSidebar) {
-        showOfflineFriendsInSidebar.checked = true;
-      }
-      if (autoRefreshFriendList) {
-        autoRefreshFriendList.checked = true;
-      }
-      if (friendListRefreshMsSelect) {
-        friendListRefreshMsSelect.value = "5000";
-      }
-      syncFriendRefreshSelectState();
-
-      writeBooleanPref(SIDEBAR_DESKTOP_HIDDEN_KEY, true);
-      writeBooleanPref(SIDEBAR_MOBILE_AUTO_CLOSE_KEY, true);
-      writeStorage(MUSIC_KEY, "on");
-      writeBooleanPref(TOAST_ENABLED_KEY, true);
-      writeBooleanPref(FRIEND_LIST_SHOW_OFFLINE_KEY, true);
-      writeBooleanPref(FRIEND_LIST_AUTO_REFRESH_KEY, true);
-      writeStorage(FRIEND_LIST_REFRESH_MS_KEY, "5000");
-
+      applyPreferencesPayload({
+        theme: "light",
+        language: "vi",
+        sidebarDesktopVisibleByDefault: false,
+        sidebarMobileAutoClose: true,
+        homeMusicEnabled: true,
+        toastNotificationsEnabled: true,
+        showOfflineFriendsInSidebar: true,
+        autoRefreshFriendList: true,
+        friendListRefreshMs: 5000
+      }, true);
       setStatus(preferencesStatus, "Da dua tat ca tuy chon ve mac dinh.", true);
       notify("Da reset cai dat", "success");
+    });
+
+    exportPreferencesBtn?.addEventListener("click", () => {
+      try {
+        const payload = buildPreferencesPayload();
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "caro-settings.json";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        setStatus(preferencesStatus, "Da export file cai dat JSON.", true);
+      } catch (error) {
+        setStatus(preferencesStatus, "Khong the export cai dat.", false);
+      }
+    });
+
+    importPreferencesBtn?.addEventListener("click", () => {
+      importPreferencesFileInput?.click?.();
+    });
+
+    importPreferencesFileInput?.addEventListener("change", () => {
+      const file = importPreferencesFileInput.files && importPreferencesFileInput.files[0];
+      if (!file) {
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result || "{}"));
+          applyPreferencesPayload(parsed, true);
+          setStatus(preferencesStatus, "Da import cai dat thanh cong.", true);
+          notify("Da import cai dat", "success");
+        } catch (_) {
+          setStatus(preferencesStatus, "File cai dat khong hop le.", false);
+        } finally {
+          importPreferencesFileInput.value = "";
+        }
+      };
+      reader.onerror = () => {
+        setStatus(preferencesStatus, "Khong doc duoc file cai dat.", false);
+        importPreferencesFileInput.value = "";
+      };
+      reader.readAsText(file);
     });
 
     accountForm?.addEventListener("submit", async (event) => {

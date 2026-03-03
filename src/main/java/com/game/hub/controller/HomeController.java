@@ -9,7 +9,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,6 +58,7 @@ public class HomeController {
         }
         Post post = new Post();
         post.setAuthor(displayNameOf(user));
+        post.setAuthorUserId(user.getId());
         post.setContent(content);
         post.setImagePath(trimToNull(request == null ? null : request.imagePath()));
         post.setCreatedAt(LocalDateTime.now());
@@ -92,6 +95,43 @@ public class HomeController {
         return Map.of("success", true, "postId", post.getId());
     }
 
+    @ResponseBody
+    @DeleteMapping("posts/{postId}")
+    public Map<String, Object> deletePost(@PathVariable Long postId, HttpServletRequest httpRequest) {
+        UserAccount user = sessionUser(httpRequest);
+        if (user == null) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        if (postId == null) {
+            return Map.of("success", false, "error", "PostId is required");
+        }
+
+        Post post = postRepository.findById(postId).orElse(null);
+        if (post == null) {
+            return Map.of("success", false, "error", "Post not found");
+        }
+
+        String role = sessionRole(httpRequest);
+        boolean isAdmin = role != null && "Admin".equalsIgnoreCase(role);
+        String sessionUserId = trimToNull(user.getId());
+        String postAuthorUserId = trimToNull(post.getAuthorUserId());
+        String postAuthor = trimToNull(post.getAuthor());
+
+        boolean isOwner = sessionUserId != null && sessionUserId.equals(postAuthorUserId);
+        if (!isOwner && postAuthorUserId == null && postAuthor != null) {
+            String currentDisplayName = trimToNull(displayNameOf(user));
+            isOwner = postAuthor.equalsIgnoreCase(sessionUserId)
+                || postAuthor.equalsIgnoreCase(currentDisplayName);
+        }
+
+        if (!isAdmin && !isOwner) {
+            return Map.of("success", false, "error", "No permission to delete this post");
+        }
+
+        postRepository.delete(post);
+        return Map.of("success", true, "postId", postId, "message", "Post deleted");
+    }
+
     @GetMapping("multiplayer")
     public String multiplayer() {
         return "home/multiplayer";
@@ -125,6 +165,22 @@ public class HomeController {
             return null;
         }
         return userAccountRepository.findById(userId).orElse(null);
+    }
+
+    private String sessionRole(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        Object authRole = session.getAttribute("AUTH_ROLE");
+        if (authRole == null) {
+            return null;
+        }
+        String role = String.valueOf(authRole).trim();
+        return role.isEmpty() ? null : role;
     }
 
     private String displayNameOf(UserAccount user) {
