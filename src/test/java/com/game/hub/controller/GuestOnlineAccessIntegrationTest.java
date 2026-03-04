@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -26,8 +27,11 @@ class GuestOnlineAccessIntegrationTest {
     @Test
     void anonymousUserCanOpenLobby() throws Exception {
         mockMvc.perform(get("/lobby"))
-            .andExpect(status().isOk())
-            .andExpect(view().name("lobby/index"));
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/online-hub?game=caro"));
+
+        mockMvc.perform(get("/online-hub").param("game", "caro"))
+            .andExpect(status().isOk());
     }
 
     @Test
