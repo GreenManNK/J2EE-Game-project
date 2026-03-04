@@ -120,4 +120,39 @@ class ChessOnlineRoomServiceTest {
         assertFalse(moveAfterSurrender.ok());
         assertEquals("Game already ended", moveAfterSurrender.error());
     }
+
+    @Test
+    void spectatorShouldJoinFullRoomWithoutTakingPlayerSeat() {
+        ChessOnlineRoomService service = new ChessOnlineRoomService();
+        service.joinRoom("CHESS-SPEC", "whiteUser", "White", "");
+        service.joinRoom("CHESS-SPEC", "blackUser", "Black", "");
+
+        ChessOnlineRoomService.JoinResult spectator = service.joinAsSpectator("CHESS-SPEC", "viewer-1");
+
+        assertTrue(spectator.ok());
+        assertEquals("spectator", spectator.assignedColor());
+        assertNotNull(spectator.room());
+        assertEquals(2, spectator.room().playerCount());
+        assertEquals(1, spectator.room().spectatorCount());
+    }
+
+    @Test
+    void spectatorLeaveShouldNotResetCurrentBoardState() {
+        ChessOnlineRoomService service = new ChessOnlineRoomService();
+        service.joinRoom("CHESS-SPEC-LEAVE", "whiteUser", "White", "");
+        service.joinRoom("CHESS-SPEC-LEAVE", "blackUser", "Black", "");
+        service.move("CHESS-SPEC-LEAVE", "whiteUser", 6, 4, 4, 4, null);
+        service.joinAsSpectator("CHESS-SPEC-LEAVE", "viewer-1");
+
+        service.leaveRoom("CHESS-SPEC-LEAVE", "viewer-1");
+        ChessOnlineRoomService.RoomSnapshot snapshot = service.roomSnapshot("CHESS-SPEC-LEAVE");
+
+        assertNotNull(snapshot);
+        assertEquals("PLAYING", snapshot.status());
+        assertEquals("blackUser", snapshot.currentTurnUserId());
+        assertEquals(1, snapshot.moveHistory().size());
+        assertEquals("wP", snapshot.board()[4][4]);
+        assertNull(snapshot.board()[6][4]);
+        assertEquals(0, snapshot.spectatorCount());
+    }
 }

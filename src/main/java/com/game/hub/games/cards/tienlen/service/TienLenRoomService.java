@@ -107,7 +107,7 @@ public class TienLenRoomService {
             }
             reseat(room);
             if (room.players.size() < PLAYER_LIMIT) {
-                resetToWaiting(room, "Phong dang cho them nguoi choi de bat dau vÃ¡n moi");
+                resetToWaiting(room, "Phong dang cho them nguoi choi de bat dau van moi");
             } else {
                 room.statusMessage = "Da roi phong. San sang bat dau lai.";
             }
@@ -150,7 +150,7 @@ public class TienLenRoomService {
                 clearCurrentTrick(room);
                 room.statusMessage = "Nguoi choi da roi phong. Tat ca doi thu da pass/roi, mo vong moi.";
             } else {
-                room.statusMessage = "Nguoi choi da roi phong. Bo qua luot cua nguoi nay va tiep tuc vÃ¡n.";
+                room.statusMessage = "Nguoi choi da roi phong. Bo qua luot cua nguoi nay va tiep tuc van.";
             }
         }
 
@@ -315,7 +315,7 @@ public class TienLenRoomService {
         }
 
         if (room.playCount == 0 && selected.stream().noneMatch(card -> "3S".equals(card.code()))) {
-            return ActionResult.error("Nuoc dau tien phai chua la 3â™ ", snapshotOf(room));
+            return ActionResult.error("Nuoc dau tien phai chua la 3S", snapshotOf(room));
         }
 
         if (room.currentCombination != null) {
@@ -445,7 +445,7 @@ public class TienLenRoomService {
             return null;
         }
         reseat(room);
-        resetToWaiting(room, "VÃ¡n dau da ket thuc. Dang cho nguoi choi moi gia nhap.");
+        resetToWaiting(room, "Van dau da ket thuc. Dang cho nguoi choi moi gia nhap.");
         return snapshotOf(room);
     }
 

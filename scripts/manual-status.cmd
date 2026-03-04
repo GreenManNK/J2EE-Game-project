@@ -34,7 +34,6 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$activePublicUrl='';" ^
   "if($activeMode -eq 'named'){ $activePublicUrl=$namedUrl }" ^
   "elseif($activeMode -eq 'quick'){ $activePublicUrl=$quickUrl }" ^
-  "if([string]::IsNullOrWhiteSpace($activePublicUrl) -and -not [string]::IsNullOrWhiteSpace($savedPublicUrl)){ $activePublicUrl=$savedPublicUrl };" ^
   "Write-Output ('APP_PID_FILE=' + ($appPidRaw | ForEach-Object {$_}));" ^
   "Write-Output ('APP_PROCESS_ALIVE=' + ($(if($appProc){'1'} else {'0'})));" ^
   "Write-Output ('APP_LISTEN_8080=' + ($(if($listen){'1'} else {'0'})));" ^
@@ -47,6 +46,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "Write-Output ('NAMED_TUNNEL_URL=' + ($(if($namedUrl){$namedUrl}else{''})));" ^
   "Write-Output ('ACTIVE_TUNNEL_MODE=' + $activeMode);" ^
   "Write-Output ('ACTIVE_PUBLIC_GAME_URL=' + ($(if($activePublicUrl){$activePublicUrl}else{''})));" ^
+  "Write-Output ('STALE_PUBLIC_GAME_URL=' + ($(if((-not $activeMode) -and $savedPublicUrl){$savedPublicUrl}else{''})));" ^
   "Write-Output ('LAST_TUNNEL_MODE=' + ($(if($savedTunnelMode){$savedTunnelMode}else{''})));" ^
   "Write-Output ('LAST_PUBLIC_BASE_URL=' + ($(if($savedPublicBase){$savedPublicBase}else{''})));" ^
   "Write-Output ('LAST_PUBLIC_GAME_URL=' + ($(if($savedPublicUrl){$savedPublicUrl}else{''})));"
@@ -55,6 +55,7 @@ echo ==================
 echo.
 echo Neu ACTIVE_PUBLIC_GAME_URL co gia tri, gui link do cho nguoi choi.
 echo ACTIVE_TUNNEL_MODE cho biet dang dung named hay quick.
+echo STALE_PUBLIC_GAME_URL la link cu duoc luu khi hien tai khong co tunnel active.
 echo LAST_PUBLIC_GAME_URL la link lan chay gan nhat da luu (co the da het hieu luc neu tunnel da tat).
 
 popd

@@ -43,6 +43,10 @@ public class ChessOnlineRoomService {
             return new JoinResult(true, existing.color, snapshotOf(room), null);
         }
 
+        if (room.spectators.contains(normalizedUserId) && room.players.size() < PLAYER_LIMIT) {
+            room.spectators.remove(normalizedUserId);
+        }
+
         if (room.players.size() >= PLAYER_LIMIT) {
             return new JoinResult(false, null, snapshotOf(room), "Room is full");
         }
@@ -80,6 +84,11 @@ public class ChessOnlineRoomService {
         RoomState room = rooms.get(normalizedRoomId);
         if (room == null) {
             return new JoinResult(false, null, null, "Room not found");
+        }
+
+        PlayerSeatState asPlayer = room.players.get(normalizedUserId);
+        if (asPlayer != null) {
+            return new JoinResult(true, asPlayer.color, snapshotOf(room), null);
         }
 
         if (room.spectators.contains(normalizedUserId)) {
@@ -261,14 +270,19 @@ public class ChessOnlineRoomService {
         if (room == null || normalizedUserId == null) {
             return;
         }
-        room.players.remove(normalizedUserId);
-        room.spectators.remove(normalizedUserId);
+        boolean removedPlayer = room.players.remove(normalizedUserId) != null;
+        boolean removedSpectator = room.spectators.remove(normalizedUserId);
+        if (!removedPlayer && !removedSpectator) {
+            return;
+        }
         if (room.players.isEmpty() && room.spectators.isEmpty()) {
             rooms.remove(room.roomId);
             return;
         }
-        reassignColors(room);
-        resetBoardForCurrentPlayers(room, "Nguoi choi da roi phong - dang cho doi thu moi");
+        if (removedPlayer) {
+            reassignColors(room);
+            resetBoardForCurrentPlayers(room, "Nguoi choi da roi phong - dang cho doi thu moi");
+        }
     }
 
     public synchronized RoomSnapshot roomSnapshot(String roomId) {
@@ -278,15 +292,30 @@ public class ChessOnlineRoomService {
 
     public synchronized List<RoomListRow> availableRooms() {
         return rooms.values().stream()
-            .filter(room -> room.players.size() < PLAYER_LIMIT)
+            .filter(room -> !room.players.isEmpty() || !room.spectators.isEmpty())
             .sorted(Comparator.comparing(room -> room.roomId))
             .map(room -> new RoomListRow(
                 room.roomId,
                 room.players.size(),
                 PLAYER_LIMIT,
-                room.players.size() < PLAYER_LIMIT ? "Dang cho doi thu" : "Dang choi"
+                roomNote(room)
             ))
             .toList();
+    }
+
+    private String roomNote(RoomState room) {
+        String base;
+        if (room.players.isEmpty()) {
+            base = "Chua co nguoi choi";
+        } else if (room.players.size() < PLAYER_LIMIT) {
+            base = "Dang cho doi thu";
+        } else {
+            base = "Dang choi";
+        }
+        if (room.spectators.isEmpty()) {
+            return base;
+        }
+        return base + " | Xem: " + room.spectators.size();
     }
 
     private void resetBoardForCurrentPlayers(RoomState room, String statusMessage) {

@@ -122,6 +122,39 @@ class XiangqiOnlineRoomServiceTest {
         assertEquals("Game already ended", moveAfterSurrender.error());
     }
 
+    @Test
+    void spectatorShouldJoinFullRoomWithoutTakingPlayerSeat() {
+        XiangqiOnlineRoomService service = new XiangqiOnlineRoomService();
+        service.joinRoom("XQ-SPEC", "redUser", "Red", "");
+        service.joinRoom("XQ-SPEC", "blackUser", "Black", "");
+
+        XiangqiOnlineRoomService.JoinResult spectator = service.joinAsSpectator("XQ-SPEC", "viewer-1");
+
+        assertTrue(spectator.ok());
+        assertEquals("spectator", spectator.assignedColor());
+        assertNotNull(spectator.room());
+        assertEquals(2, spectator.room().playerCount());
+    }
+
+    @Test
+    void spectatorLeaveShouldNotResetCurrentBoardState() {
+        XiangqiOnlineRoomService service = new XiangqiOnlineRoomService();
+        service.joinRoom("XQ-SPEC-LEAVE", "redUser", "Red", "");
+        service.joinRoom("XQ-SPEC-LEAVE", "blackUser", "Black", "");
+        service.move("XQ-SPEC-LEAVE", "redUser", 9, 0, 8, 0, null);
+        service.joinAsSpectator("XQ-SPEC-LEAVE", "viewer-1");
+
+        service.leaveRoom("XQ-SPEC-LEAVE", "viewer-1");
+        XiangqiOnlineRoomService.RoomSnapshot snapshot = service.roomSnapshot("XQ-SPEC-LEAVE");
+
+        assertNotNull(snapshot);
+        assertEquals("PLAYING", snapshot.status());
+        assertEquals("blackUser", snapshot.currentTurnUserId());
+        assertEquals(1, snapshot.moveHistory().size());
+        assertEquals("rR", snapshot.board()[8][0]);
+        assertNull(snapshot.board()[9][0]);
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static void forceMinimalFlyingGeneralBoard(XiangqiOnlineRoomService service,
                                                        String roomId,

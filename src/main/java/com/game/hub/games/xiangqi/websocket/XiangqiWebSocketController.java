@@ -67,6 +67,31 @@ public class XiangqiWebSocketController {
         broadcastRoomList();
     }
 
+    @MessageMapping("/xiangqi.spectate")
+    public void spectate(XiangqiJoinMessage message, SimpMessageHeaderAccessor headers) {
+        if (message == null) {
+            return;
+        }
+        String roomId = safeTrim(message.getRoomId());
+        String userId = requireConnectionUser(roomId, message.getUserId(), headers);
+        if (roomId == null || userId == null) {
+            return;
+        }
+
+        XiangqiOnlineRoomService.JoinResult result = roomService.joinAsSpectator(roomId, userId);
+        if (!result.ok()) {
+            sendUserError(roomId, userId, result.error());
+            return;
+        }
+
+        rememberRoomPresence(headers, roomId, userId);
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("type", "ROOM_STATE");
+        payload.put("room", result.room());
+        payload.put("message", "Da vao xem");
+        messagingTemplate.convertAndSend("/topic/xiangqi.room." + roomId, payload);
+    }
+
     @MessageMapping("/xiangqi.move")
     public void move(XiangqiMoveMessage message, SimpMessageHeaderAccessor headers) {
         if (message == null) {

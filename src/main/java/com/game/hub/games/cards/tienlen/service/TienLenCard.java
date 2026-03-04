@@ -17,7 +17,7 @@ public record TienLenCard(
             .thenComparingInt(TienLenCard::suitOrder);
 
     private static final List<String> SUIT_CODES = List.of("S", "C", "D", "H");
-    private static final List<String> SUIT_SYMBOLS = List.of("â™ ", "â™£", "â™¦", "â™¥");
+    private static final List<String> SUIT_SYMBOLS = List.of("\u2660", "\u2663", "\u2666", "\u2665");
     private static final Map<Integer, String> RANK_LABELS = Map.ofEntries(
         Map.entry(3, "3"),
         Map.entry(4, "4"),

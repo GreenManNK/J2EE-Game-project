@@ -206,10 +206,10 @@ public class OnlineHubController {
             return "/games/cards/blackjack?room={roomId}";
         }
         if ("chess".equalsIgnoreCase(gameCode)) {
-            return "/online-hub?game=chess&roomId={roomId}";
+            return "/chess/online?roomId={roomId}";
         }
         if ("xiangqi".equalsIgnoreCase(gameCode)) {
-            return "/online-hub?game=xiangqi&roomId={roomId}";
+            return "/xiangqi/online?roomId={roomId}";
         }
         if ("typing".equalsIgnoreCase(gameCode)) {
             return "/games/typing?room={roomId}";

@@ -17,6 +17,8 @@
         N: "Ma",
         P: "Tot"
     };
+    const SESSION_RESYNC_KEY = "chessOnline.sessionResync.v1";
+    const SESSION_RESYNC_COOLDOWN_MS = 20000;
 
     const state = {
         roomId: String(boot.roomId || "").trim(),
@@ -34,6 +36,7 @@
         resultText: "Dang cho doi doi thu",
         roomStatus: "WAITING",
         lastMove: null,
+        spectatorCount: 0,
         players: [],
         myColor: "",
         connected: false,
@@ -65,6 +68,7 @@
             resultLabel: document.getElementById("chessResultLabel"),
             moveCount: document.getElementById("chessMoveCount"),
             currentColor: document.getElementById("chessCurrentColor"),
+            spectatorCount: document.getElementById("chessOnlineSpectatorCount"),
             myMoveCount: document.getElementById("chessOnlineMyMoveCount"),
             opponentMoveCount: document.getElementById("chessOnlineOpponentMoveCount"),
             myCaptureCount: document.getElementById("chessOnlineMyCaptureCount"),
@@ -72,9 +76,12 @@
             moveLog: document.getElementById("chessMoveLog"),
             resetBtn: document.getElementById("chessOnlineResetBtn"),
             surrenderBtn: document.getElementById("chessOnlineSurrenderBtn"),
+            joinPlayBtn: document.getElementById("chessOnlineJoinPlayBtn"),
+            switchSpectateBtn: document.getElementById("chessOnlineSwitchSpectateBtn"),
             leaveBtn: document.getElementById("chessOnlineLeaveBtn"),
             roomLabel: document.getElementById("chessOnlineRoomLabel"),
             userLabel: document.getElementById("chessOnlineUserLabel"),
+            modeLabel: document.getElementById("chessOnlineModeLabel"),
             myColorLabel: document.getElementById("chessOnlineMyColor"),
             connectionStatus: document.getElementById("chessOnlineConnectionStatus"),
             roomStatus: document.getElementById("chessOnlineStatusText"),
@@ -88,6 +95,7 @@
         if (els.userLabel) {
             els.userLabel.textContent = state.displayName || state.userId || "Guest";
         }
+        updateModeUi();
         initBoardUi();
         bindPageActions();
         resetLocalBoardState("Dang khoi tao ket noi...");
@@ -120,6 +128,54 @@
         setGameStatus("Dang gui yeu cau dau hang...");
     }
 
+    function requestJoinAsPlayer() {
+        if (!state.spectate) {
+            setGameStatus("Ban da o che do choi.");
+            return;
+        }
+        if (!state.client || !state.connected) {
+            setGameStatus("Dang mat ket noi... He thong se tu ket noi lai.");
+            return;
+        }
+        if (!state.roomId || !state.userId) {
+            setGameStatus("Phong hoac nguoi choi khong hop le");
+            return;
+        }
+        if (state.players.length >= 2) {
+            setGameStatus("Phong da du nguoi choi. Ban dang o che do xem.");
+            return;
+        }
+        state.client.publish({
+            destination: "/app/chess.join",
+            body: JSON.stringify({
+                roomId: state.roomId,
+                userId: state.userId,
+                displayName: state.displayName,
+                avatarPath: state.avatarPath
+            })
+        });
+        setGameStatus("Dang yeu cau tham gia choi...");
+    }
+
+    function requestSwitchToSpectateMode() {
+        if (state.spectate) {
+            setGameStatus("Ban dang o che do xem.");
+            return;
+        }
+        if (!state.roomId) {
+            setGameStatus("Chua co ma phong.");
+            return;
+        }
+        if (state.myColor) {
+            setGameStatus("Ban dang la nguoi choi. Hay roi phong neu muon vao che do xem.");
+            return;
+        }
+        const target = buildCurrentModeUrl(true);
+        if (target) {
+            window.location.href = target;
+        }
+    }
+
     function resetLocalBoardState(statusText) {
         state.board = createInitialBoard();
         state.turn = "w";
@@ -131,6 +187,7 @@
         state.resultText = "Dang cho doi doi thu";
         state.roomStatus = "WAITING";
         state.lastMove = null;
+        state.spectatorCount = 0;
         state.pendingMove = false;
         renderAll();
         renderPlayers();
@@ -192,7 +249,7 @@
             return;
         }
         if (!state.myColor) {
-            setGameStatus("Ban chua duoc gan mau quan");
+            setGameStatus("Phong da du nguoi choi. Bam 'Vao che do xem' hoac phim V.");
             return;
         }
         if (!isMyTurn()) {
@@ -404,12 +461,25 @@
         if (els.currentColor) {
             els.currentColor.textContent = currentName;
         }
+        if (els.spectatorCount) {
+            els.spectatorCount.textContent = String(state.spectatorCount || 0);
+        }
         if (els.myColorLabel) {
-            els.myColorLabel.textContent = state.myColor ? colorName(state.myColor) : "Chua vao phong";
+            if (state.myColor) {
+                els.myColorLabel.textContent = colorName(state.myColor);
+            } else if (state.spectate) {
+                els.myColorLabel.textContent = "Nguoi xem";
+            } else {
+                els.myColorLabel.textContent = "Chua vao phong";
+            }
         }
         if (els.roomStatus) {
             if (waitingForOpponent) {
                 els.roomStatus.textContent = "Dang cho doi thu vao phong";
+            } else if (!state.myColor) {
+                els.roomStatus.textContent = state.spectate
+                    ? "Ban dang theo doi tran dau"
+                    : "Phong da day - hay vao che do xem";
             } else if (state.gameOver) {
                 els.roomStatus.textContent = state.resultText;
             } else {
@@ -421,6 +491,27 @@
         }
         if (els.surrenderBtn) {
             els.surrenderBtn.disabled = !canSurrenderGame();
+        }
+        if (els.joinPlayBtn) {
+            const canJoinPlay = Boolean(
+                state.spectate &&
+                state.client &&
+                state.connected &&
+                state.roomId &&
+                !state.myColor &&
+                state.players.length < 2
+            );
+            els.joinPlayBtn.disabled = !canJoinPlay;
+            els.joinPlayBtn.classList.toggle("d-none", !state.spectate);
+        }
+        if (els.switchSpectateBtn) {
+            const canSwitchSpectate = Boolean(
+                !state.spectate &&
+                state.roomId &&
+                !state.myColor
+            );
+            els.switchSpectateBtn.disabled = !canSwitchSpectate;
+            els.switchSpectateBtn.classList.toggle("d-none", !canSwitchSpectate);
         }
         updateSessionStatsUi();
         if (!els.gameStatus) {
@@ -703,6 +794,8 @@
     function bindPageActions() {
         els.resetBtn?.addEventListener("click", resetGame);
         els.surrenderBtn?.addEventListener("click", surrenderGame);
+        els.joinPlayBtn?.addEventListener("click", requestJoinAsPlayer);
+        els.switchSpectateBtn?.addEventListener("click", requestSwitchToSpectateMode);
         els.leaveBtn?.addEventListener("click", () => leaveAndRedirect());
         document.addEventListener("keydown", handleHotkeys);
         window.addEventListener("beforeunload", () => {
@@ -748,6 +841,7 @@
                 state.connected = true;
                 setConnectionStatus("Da ket noi");
                 setGameStatus("Dang vao phong...");
+                clearSessionResyncMarker();
 
                 state.client.subscribe("/topic/chess.room." + state.roomId, (frame) => {
                     let payload = {};
@@ -771,7 +865,9 @@
                     }
                     if (payload.error) {
                         state.pendingMove = false;
-                        setGameStatus(String(payload.error));
+                        const errorText = String(payload.error);
+                        setGameStatus(errorText);
+                        handleSessionError(errorText);
                     }
                 });
 
@@ -835,7 +931,9 @@
         if (payload.type === "ERROR") {
             if (!payload.userId || payload.userId === state.userId) {
                 state.pendingMove = false;
-                setGameStatus(String(payload.error || "Loi"));
+                const errorText = String(payload.error || "Loi");
+                setGameStatus(errorText);
+                handleSessionError(errorText);
             }
             return;
         }
@@ -874,9 +972,15 @@
 
         const me = state.players.find((p) => p.userId === state.userId) || null;
         state.myColor = me ? me.color : "";
+        if (state.spectate && state.myColor) {
+            state.spectate = false;
+            updateSpectateQueryInUrl(false);
+        }
+        updateModeUi();
         state.currentTurnUserId = normalizeText(room.currentTurnUserId);
         state.turn = normalizeText(room.currentTurnColor) === "b" ? "b" : "w";
         state.roomStatus = normalizeText(room.status).toUpperCase();
+        state.spectatorCount = Math.max(0, Number.parseInt(String(room.spectatorCount ?? 0), 10) || 0);
         state.board = copyBoard(room.board);
         state.moveHistory = Array.isArray(room.moveHistory)
             ? room.moveHistory.map((m) => String(m || "")).filter((m) => m)
@@ -978,6 +1082,12 @@
             waiting.textContent = "Dang cho them 1 nguoi choi...";
             els.playersBox.appendChild(waiting);
         }
+        if (state.spectatorCount > 0) {
+            const watcher = document.createElement("div");
+            watcher.className = "text-muted small";
+            watcher.textContent = "Nguoi xem: " + String(state.spectatorCount);
+            els.playersBox.appendChild(watcher);
+        }
     }
 
     function sendMoveToServer(move) {
@@ -1048,6 +1158,49 @@
         }
     }
 
+    function handleSessionError(errorText) {
+        const text = normalizeText(errorText).toLowerCase();
+        if (!text) {
+            return;
+        }
+        if (!text.includes("session user not found") && !text.includes("session user mismatch")) {
+            return;
+        }
+        scheduleSessionResync();
+    }
+
+    function scheduleSessionResync() {
+        const now = Date.now();
+        let lastResyncAt = 0;
+        try {
+            lastResyncAt = Number(window.sessionStorage.getItem(SESSION_RESYNC_KEY) || "0");
+        } catch (_) {
+            lastResyncAt = 0;
+        }
+        if (Number.isFinite(lastResyncAt) && now - lastResyncAt < SESSION_RESYNC_COOLDOWN_MS) {
+            return;
+        }
+        try {
+            window.sessionStorage.setItem(SESSION_RESYNC_KEY, String(now));
+        } catch (_) {
+        }
+        setConnectionStatus("Dang dong bo phien");
+        setGameStatus("Phien dang thay doi, trang se tai lai de ket noi on dinh...");
+        window.setTimeout(() => {
+            try {
+                window.location.reload();
+            } catch (_) {
+            }
+        }, 900);
+    }
+
+    function clearSessionResyncMarker() {
+        try {
+            window.sessionStorage.removeItem(SESSION_RESYNC_KEY);
+        } catch (_) {
+        }
+    }
+
     function canResetGame() {
         return Boolean(
             state.client &&
@@ -1094,6 +1247,41 @@
     function normalizeText(value) {
         const text = String(value || "").trim();
         return text || "";
+    }
+
+    function updateModeUi() {
+        if (els.modeLabel) {
+            els.modeLabel.textContent = state.spectate ? "Nguoi xem" : "Nguoi choi";
+        }
+    }
+
+    function updateSpectateQueryInUrl(spectateMode) {
+        try {
+            const target = buildCurrentModeUrl(spectateMode);
+            if (!target) {
+                return;
+            }
+            const parsed = new URL(target, window.location.origin);
+            window.history.replaceState({}, "", parsed.pathname + parsed.search + parsed.hash);
+        } catch (_) {
+        }
+    }
+
+    function buildCurrentModeUrl(spectateMode) {
+        try {
+            const url = new URL(window.location.href);
+            if (state.roomId) {
+                url.searchParams.set("roomId", state.roomId);
+            }
+            if (spectateMode) {
+                url.searchParams.set("spectate", "true");
+            } else {
+                url.searchParams.delete("spectate");
+            }
+            return url.pathname + url.search;
+        } catch (_) {
+            return "";
+        }
     }
 
     function isMyTurn() {
@@ -1151,6 +1339,16 @@
         if (keyName === "l") {
             event.preventDefault();
             leaveAndRedirect();
+            return;
+        }
+        if (keyName === "j") {
+            event.preventDefault();
+            requestJoinAsPlayer();
+            return;
+        }
+        if (keyName === "v") {
+            event.preventDefault();
+            requestSwitchToSpectateMode();
         }
     }
 

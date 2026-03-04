@@ -67,4 +67,50 @@ class ChessWebSocketControllerTest {
             return "GAME_OVER".equals(snapshot.status()) && snapshot.currentTurnUserId() == null;
         }));
     }
+
+    @Test
+    void spectateShouldBroadcastRoomStateWithViewerMessage() {
+        ChessOnlineRoomService roomService = mock(ChessOnlineRoomService.class);
+        SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        AchievementService achievementService = mock(AchievementService.class);
+        SimpMessageHeaderAccessor headers = mock(SimpMessageHeaderAccessor.class);
+
+        when(headers.getSessionAttributes()).thenReturn(Map.of("AUTH_USER_ID", "viewerUser"));
+        when(headers.getSessionId()).thenReturn("sess-chess-watch");
+
+        ChessOnlineRoomService.RoomSnapshot room = new ChessOnlineRoomService.RoomSnapshot(
+            "CHESS-WATCH",
+            2,
+            2,
+            1,
+            "PLAYING",
+            "Dang choi",
+            "whiteUser",
+            "w",
+            new String[8][8],
+            List.of(),
+            null,
+            List.of(
+                new ChessOnlineRoomService.PlayerSnapshot("whiteUser", "White", "", "w"),
+                new ChessOnlineRoomService.PlayerSnapshot("blackUser", "Black", "", "b")
+            )
+        );
+        when(roomService.joinAsSpectator("CHESS-WATCH", "viewerUser"))
+            .thenReturn(new ChessOnlineRoomService.JoinResult(true, "spectator", room, null));
+
+        ChessWebSocketController controller = new ChessWebSocketController(roomService, messagingTemplate, userAccountRepository, achievementService);
+        ChessJoinMessage join = new ChessJoinMessage();
+        join.setRoomId("CHESS-WATCH");
+        join.setUserId("viewerUser");
+
+        controller.spectate(join, headers);
+
+        verify(messagingTemplate).convertAndSend(eq("/topic/chess.room.CHESS-WATCH"), org.mockito.ArgumentMatchers.<Object>argThat(payload -> {
+            if (!(payload instanceof Map<?, ?> map)) return false;
+            return "ROOM_STATE".equals(map.get("type"))
+                && "Da vao xem".equals(map.get("message"))
+                && room.equals(map.get("room"));
+        }));
+    }
 }

@@ -29,6 +29,7 @@ class XiangqiWebSocketControllerTest {
             "XQ-FINAL",
             2,
             2,
+            0,
             "GAME_OVER",
             "Den da an Tuong va chien thang!",
             null,
@@ -62,6 +63,51 @@ class XiangqiWebSocketControllerTest {
             Object roomObj = map.get("room");
             if (!(roomObj instanceof XiangqiOnlineRoomService.RoomSnapshot snapshot)) return false;
             return "GAME_OVER".equals(snapshot.status()) && snapshot.currentTurnUserId() == null;
+        }));
+    }
+
+    @Test
+    void spectateShouldBroadcastRoomStateWithViewerMessage() {
+        XiangqiOnlineRoomService roomService = mock(XiangqiOnlineRoomService.class);
+        SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        SimpMessageHeaderAccessor headers = mock(SimpMessageHeaderAccessor.class);
+
+        when(headers.getSessionAttributes()).thenReturn(Map.of("AUTH_USER_ID", "viewerUser"));
+        when(headers.getSessionId()).thenReturn("sess-1");
+
+        XiangqiOnlineRoomService.RoomSnapshot room = new XiangqiOnlineRoomService.RoomSnapshot(
+            "XQ-WATCH",
+            2,
+            2,
+            1,
+            "PLAYING",
+            "Dang choi",
+            "redUser",
+            "r",
+            new String[10][9],
+            List.of(),
+            null,
+            List.of(
+                new XiangqiOnlineRoomService.PlayerSnapshot("redUser", "Red", "", "r"),
+                new XiangqiOnlineRoomService.PlayerSnapshot("blackUser", "Black", "", "b")
+            )
+        );
+        when(roomService.joinAsSpectator("XQ-WATCH", "viewerUser"))
+            .thenReturn(new XiangqiOnlineRoomService.JoinResult(true, "spectator", room, null));
+
+        XiangqiWebSocketController controller = new XiangqiWebSocketController(roomService, messagingTemplate, userAccountRepository);
+        XiangqiJoinMessage join = new XiangqiJoinMessage();
+        join.setRoomId("XQ-WATCH");
+        join.setUserId("viewerUser");
+
+        controller.spectate(join, headers);
+
+        verify(messagingTemplate).convertAndSend(eq("/topic/xiangqi.room.XQ-WATCH"), org.mockito.ArgumentMatchers.<Object>argThat(payload -> {
+            if (!(payload instanceof Map<?, ?> map)) return false;
+            return "ROOM_STATE".equals(map.get("type"))
+                && "Da vao xem".equals(map.get("message"))
+                && room.equals(map.get("room"));
         }));
     }
 }

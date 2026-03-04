@@ -1,4 +1,5 @@
 (function () {
+  const ROOM_AUTO_REFRESH_MS = 10000;
   const boot = window.OnlineHubBoot || {};
   const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
     ? window.CaroUrl.path
@@ -14,10 +15,12 @@
     playRoomParam: String(boot.playRoomParam || '').trim(),
     spectateParamName: String(boot.spectateParamName || '').trim(),
     spectateParamValue: String(boot.spectateParamValue || '').trim(),
-    inviteUrlPathTemplate: String(boot.inviteUrlPathTemplate || '').trim()
+    inviteUrlPathTemplate: String(boot.inviteUrlPathTemplate || '').trim(),
+    roomRowsById: Object.create(null)
   };
 
   const els = {};
+  let roomAutoRefreshTimer = 0;
 
   document.addEventListener('DOMContentLoaded', () => {
     bindEls();
@@ -26,7 +29,8 @@
       els.roomInput.value = state.roomId;
     }
     syncRoomUi();
-    loadRooms();
+    loadRooms(false);
+    startRoomAutoRefresh();
   });
 
   function bindEls() {
@@ -34,6 +38,7 @@
     els.createBtn = document.getElementById('onlineHubCreateBtn');
     els.joinBtn = document.getElementById('onlineHubJoinBtn');
     els.goPlayBtn = document.getElementById('onlineHubGoPlayBtn');
+    els.goSpectateBtn = document.getElementById('onlineHubGoSpectateBtn');
     els.refreshBtn = document.getElementById('onlineHubRefreshBtn');
     els.currentRoom = document.getElementById('onlineHubCurrentRoom');
     els.status = document.getElementById('onlineHubStatus');
@@ -41,6 +46,10 @@
     els.inviteUrl = document.getElementById('onlineHubInviteUrl');
     els.copyInviteBtn = document.getElementById('onlineHubCopyInviteBtn');
     els.openInviteBtn = document.getElementById('onlineHubOpenInviteBtn');
+    els.spectateInviteWrap = document.getElementById('onlineHubSpectateInviteWrap');
+    els.spectateUrl = document.getElementById('onlineHubSpectateUrl');
+    els.copySpectateBtn = document.getElementById('onlineHubCopySpectateBtn');
+    els.openSpectateBtn = document.getElementById('onlineHubOpenSpectateBtn');
     els.roomListNote = document.getElementById('onlineHubRoomListNote');
   }
 
@@ -66,7 +75,11 @@
         return;
       }
       state.roomId = roomId;
-      setStatus('Da chon phong ' + roomId);
+      if (isRoomFull(selectedRoomRow()) && state.supportsSpectateNow) {
+        setStatus('Phong da day. Bam "Vao che do xem" de theo doi tran dau.');
+      } else {
+        setStatus('Da chon phong ' + roomId);
+      }
       setRoomQueryInUrl(roomId);
       syncRoomUi();
     });
@@ -75,13 +88,30 @@
       if (!state.roomId || !state.onlineSupportedNow || !state.playUrlBase) {
         return;
       }
+      if (isRoomFull(selectedRoomRow()) && state.supportsSpectateNow) {
+        setStatus('Phong da day. Hay vao che do xem.');
+        return;
+      }
       const target = buildPlayUrl(state.roomId, false);
       if (target) {
         window.location.href = target;
       }
     });
 
-    els.refreshBtn?.addEventListener('click', () => loadRooms());
+    els.goSpectateBtn?.addEventListener('click', () => {
+      if (!state.roomId || !state.supportsSpectateNow || !state.playUrlBase) {
+        return;
+      }
+      const target = buildPlayUrl(state.roomId, true);
+      if (target) {
+        window.location.href = target;
+      }
+    });
+
+    els.refreshBtn?.addEventListener('click', () => {
+      setStatus('Dang lam moi danh sach phong...');
+      loadRooms(false);
+    });
 
     els.copyInviteBtn?.addEventListener('click', async () => {
       const invite = buildInviteUrl();
@@ -98,6 +128,21 @@
       }
     });
 
+    els.copySpectateBtn?.addEventListener('click', async () => {
+      const spectateInvite = buildSpectateInviteUrl();
+      if (!spectateInvite) return;
+      try {
+        await navigator.clipboard.writeText(spectateInvite);
+        setStatus('Da copy link xem');
+      } catch (_) {
+        if (els.spectateUrl) {
+          els.spectateUrl.focus();
+          els.spectateUrl.select();
+        }
+        setStatus('Khong copy tu dong duoc. Hay copy thu cong');
+      }
+    });
+
     els.roomInput?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -106,9 +151,33 @@
     });
   }
 
-  async function loadRooms() {
+  function startRoomAutoRefresh() {
+    stopRoomAutoRefresh();
+    roomAutoRefreshTimer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        loadRooms(true);
+      }
+    }, ROOM_AUTO_REFRESH_MS);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        loadRooms(true);
+      }
+    });
+    window.addEventListener('beforeunload', stopRoomAutoRefresh);
+  }
+
+  function stopRoomAutoRefresh() {
+    if (roomAutoRefreshTimer) {
+      window.clearInterval(roomAutoRefreshTimer);
+      roomAutoRefreshTimer = 0;
+    }
+  }
+
+  async function loadRooms(silent) {
     if (!els.roomList) return;
-    els.roomList.innerHTML = '<div class="text-muted">Dang tai danh sach phong...</div>';
+    if (!silent) {
+      els.roomList.innerHTML = '<div class="text-muted">Dang tai danh sach phong...</div>';
+    }
     try {
       const res = await fetch(appPath('/online-hub/api/rooms?game=' + encodeURIComponent(state.gameCode)), {
         cache: 'no-store'
@@ -117,15 +186,18 @@
         throw new Error('HTTP ' + res.status);
       }
       const data = await res.json();
-      renderRoomList(Array.isArray(data.rooms) ? data.rooms : []);
-      if (els.roomListNote) {
-        els.roomListNote.textContent = data.onlineSupportedNow ? 'Nguon du lieu: server' : 'Nguon du lieu: server (chua co room online thuc te)';
-      }
+      const rooms = Array.isArray(data.rooms) ? data.rooms : [];
+      cacheRoomRows(rooms);
+      renderRoomList(rooms);
+      syncRoomUi();
+      setRoomListNote(data.onlineSupportedNow
+        ? 'Nguon du lieu: server'
+        : 'Nguon du lieu: server (chua co room online thuc te)');
     } catch (_) {
-      els.roomList.innerHTML = '<div class="text-danger">Khong tai duoc danh sach phong</div>';
-      if (els.roomListNote) {
-        els.roomListNote.textContent = 'Nguon du lieu: loi ket noi';
+      if (!silent) {
+        els.roomList.innerHTML = '<div class="text-danger">Khong tai duoc danh sach phong</div>';
       }
+      setRoomListNote('Nguon du lieu: loi ket noi');
     }
   }
 
@@ -163,7 +235,11 @@
       chooseBtn.addEventListener('click', () => {
         state.roomId = roomId;
         if (els.roomInput) els.roomInput.value = roomId;
-        setStatus('Da chon phong ' + roomId);
+        if (roomFull && state.supportsSpectateNow) {
+          setStatus('Phong da day. Bam "Vao che do xem" de theo doi tran dau.');
+        } else {
+          setStatus('Da chon phong ' + roomId);
+        }
         setRoomQueryInUrl(roomId);
         syncRoomUi();
       });
@@ -171,8 +247,9 @@
       const playBtn = document.createElement('button');
       playBtn.type = 'button';
       playBtn.className = 'btn btn-sm theme-outline-btn';
-      playBtn.textContent = state.onlineSupportedNow ? 'Vao ban' : 'Moi nguoi choi';
-      playBtn.disabled = !roomId;
+      const roomFull = playerLimit > 0 && playerCount >= playerLimit;
+      playBtn.textContent = state.onlineSupportedNow ? (roomFull ? 'Phong day' : 'Vao ban') : 'Moi nguoi choi';
+      playBtn.disabled = !roomId || (roomFull && state.supportsSpectateNow);
       playBtn.addEventListener('click', () => {
         state.roomId = roomId;
         if (els.roomInput) els.roomInput.value = roomId;
@@ -209,22 +286,53 @@
       els.currentRoom.textContent = state.roomId || 'Chua chon';
     }
     const invite = buildInviteUrl();
+    const spectateInvite = buildSpectateInviteUrl();
+    const selectedRoom = selectedRoomRow();
+    const selectedRoomFull = isRoomFull(selectedRoom);
     if (els.inviteUrl) {
       els.inviteUrl.value = invite || '';
     }
+    if (els.spectateInviteWrap) {
+      els.spectateInviteWrap.hidden = !state.supportsSpectateNow;
+    }
+    if (els.spectateUrl) {
+      els.spectateUrl.value = spectateInvite || '';
+    }
     if (els.copyInviteBtn) {
       els.copyInviteBtn.disabled = !invite;
+    }
+    if (els.copySpectateBtn) {
+      els.copySpectateBtn.disabled = !spectateInvite || !state.supportsSpectateNow;
     }
     if (els.openInviteBtn) {
       els.openInviteBtn.href = invite || '#';
       els.openInviteBtn.classList.toggle('disabled', !invite);
       els.openInviteBtn.setAttribute('aria-disabled', invite ? 'false' : 'true');
     }
+    if (els.openSpectateBtn) {
+      els.openSpectateBtn.href = spectateInvite || '#';
+      els.openSpectateBtn.classList.toggle('disabled', !spectateInvite || !state.supportsSpectateNow);
+      els.openSpectateBtn.setAttribute('aria-disabled', (spectateInvite && state.supportsSpectateNow) ? 'false' : 'true');
+    }
     if (els.goPlayBtn) {
-      els.goPlayBtn.disabled = !(state.roomId && state.onlineSupportedNow && state.playUrlBase);
-      els.goPlayBtn.textContent = state.onlineSupportedNow
-        ? 'Vao ban choi'
-        : 'Gameplay online chua san sang';
+      const canPlay = Boolean(
+        state.roomId &&
+        state.onlineSupportedNow &&
+        state.playUrlBase &&
+        !(selectedRoomFull && state.supportsSpectateNow)
+      );
+      els.goPlayBtn.disabled = !canPlay;
+      if (!state.onlineSupportedNow) {
+        els.goPlayBtn.textContent = 'Gameplay online chua san sang';
+      } else if (selectedRoomFull && state.supportsSpectateNow) {
+        els.goPlayBtn.textContent = 'Phong day - hay vao xem';
+      } else {
+        els.goPlayBtn.textContent = 'Vao ban choi';
+      }
+    }
+    if (els.goSpectateBtn) {
+      els.goSpectateBtn.disabled = !(state.roomId && state.supportsSpectateNow && state.playUrlBase);
+      els.goSpectateBtn.hidden = !state.supportsSpectateNow;
     }
   }
 
@@ -234,6 +342,17 @@
     }
     const path = state.inviteUrlPathTemplate.replace('{roomId}', encodeURIComponent(state.roomId));
     return new URL(appPath(path), window.location.origin).toString();
+  }
+
+  function buildSpectateInviteUrl() {
+    if (!state.supportsSpectateNow || !state.roomId) {
+      return '';
+    }
+    const target = buildPlayUrl(state.roomId, true);
+    if (!target) {
+      return '';
+    }
+    return new URL(target, window.location.origin).toString();
   }
 
   async function createRoomViaApi() {
@@ -301,10 +420,49 @@
     return text || '';
   }
 
+  function cacheRoomRows(rooms) {
+    const index = Object.create(null);
+    for (const row of rooms || []) {
+      const roomId = normalizeRoomId(row?.roomId);
+      if (roomId) {
+        index[roomId] = row;
+      }
+    }
+    state.roomRowsById = index;
+  }
+
+  function selectedRoomRow() {
+    if (!state.roomId) {
+      return null;
+    }
+    return state.roomRowsById[state.roomId] || null;
+  }
+
+  function isRoomFull(room) {
+    if (!room) {
+      return false;
+    }
+    const playerCount = Number(room.playerCount || 0);
+    const playerLimit = Number(room.playerLimit || 0);
+    return playerLimit > 0 && playerCount >= playerLimit;
+  }
+
   function setStatus(text) {
     if (els.status) {
       els.status.textContent = text || '-';
     }
+  }
+
+  function setRoomListNote(prefix) {
+    if (!els.roomListNote) {
+      return;
+    }
+    els.roomListNote.textContent = String(prefix || 'Nguon du lieu: server') + ' | ' + formatNowTime();
+  }
+
+  function formatNowTime() {
+    const now = new Date();
+    return now.toLocaleTimeString('vi-VN', { hour12: false });
   }
 
   function normalizeRoomParamName(value) {

@@ -15,6 +15,7 @@ public class XiangqiOnlineRoomService {
     private static final int ROWS = 10;
     private static final int COLS = 9;
     private static final int PLAYER_LIMIT = 2;
+    private static final int MAX_SPECTATORS = 4;
     private static final String STATUS_WAITING = "WAITING";
     private static final String STATUS_PLAYING = "PLAYING";
     private static final String STATUS_GAME_OVER = "GAME_OVER";
@@ -43,6 +44,10 @@ public class XiangqiOnlineRoomService {
             return new JoinResult(true, existing.color, snapshotOf(room), null);
         }
 
+        if (room.spectators.contains(normalizedUserId) && room.players.size() < PLAYER_LIMIT) {
+            room.spectators.remove(normalizedUserId);
+        }
+
         if (room.players.size() >= PLAYER_LIMIT) {
             return new JoinResult(false, null, snapshotOf(room), "Room is full");
         }
@@ -68,6 +73,33 @@ public class XiangqiOnlineRoomService {
         }
 
         return new JoinResult(true, assignedColor, snapshotOf(room), null);
+    }
+
+    public synchronized JoinResult joinAsSpectator(String roomId, String userId) {
+        String normalizedRoomId = normalize(roomId);
+        String normalizedUserId = normalize(userId);
+        if (normalizedRoomId == null || normalizedUserId == null) {
+            return new JoinResult(false, null, null, "Invalid room or user");
+        }
+
+        RoomState room = rooms.get(normalizedRoomId);
+        if (room == null) {
+            return new JoinResult(false, null, null, "Room not found");
+        }
+
+        PlayerSeatState asPlayer = room.players.get(normalizedUserId);
+        if (asPlayer != null) {
+            return new JoinResult(true, asPlayer.color, snapshotOf(room), null);
+        }
+        if (room.spectators.contains(normalizedUserId)) {
+            return new JoinResult(true, "spectator", snapshotOf(room), null);
+        }
+        if (room.spectators.size() >= MAX_SPECTATORS) {
+            return new JoinResult(false, null, snapshotOf(room), "Spectator limit reached");
+        }
+
+        room.spectators.add(normalizedUserId);
+        return new JoinResult(true, "spectator", snapshotOf(room), null);
     }
 
     public synchronized ActionResult move(String roomId,
@@ -233,13 +265,19 @@ public class XiangqiOnlineRoomService {
         if (room == null || normalizedUserId == null) {
             return;
         }
-        room.players.remove(normalizedUserId);
-        if (room.players.isEmpty()) {
+        boolean removedPlayer = room.players.remove(normalizedUserId) != null;
+        boolean removedSpectator = room.spectators.remove(normalizedUserId);
+        if (!removedPlayer && !removedSpectator) {
+            return;
+        }
+        if (room.players.isEmpty() && room.spectators.isEmpty()) {
             rooms.remove(room.roomId);
             return;
         }
-        reassignColors(room);
-        resetBoardForCurrentPlayers(room, "Nguoi choi da roi phong - dang cho doi thu moi");
+        if (removedPlayer) {
+            reassignColors(room);
+            resetBoardForCurrentPlayers(room, "Nguoi choi da roi phong - dang cho doi thu moi");
+        }
     }
 
     public synchronized RoomSnapshot roomSnapshot(String roomId) {
@@ -249,15 +287,30 @@ public class XiangqiOnlineRoomService {
 
     public synchronized List<RoomListRow> availableRooms() {
         return rooms.values().stream()
-            .filter(room -> room.players.size() < PLAYER_LIMIT)
+            .filter(room -> !room.players.isEmpty() || !room.spectators.isEmpty())
             .sorted(Comparator.comparing(room -> room.roomId))
             .map(room -> new RoomListRow(
                 room.roomId,
                 room.players.size(),
                 PLAYER_LIMIT,
-                room.players.size() < PLAYER_LIMIT ? "Dang cho doi thu" : "Dang choi"
+                roomNote(room)
             ))
             .toList();
+    }
+
+    private String roomNote(RoomState room) {
+        String base;
+        if (room.players.isEmpty()) {
+            base = "Chua co nguoi choi";
+        } else if (room.players.size() < PLAYER_LIMIT) {
+            base = "Dang cho doi thu";
+        } else {
+            base = "Dang choi";
+        }
+        if (room.spectators.isEmpty()) {
+            return base;
+        }
+        return base + " | Xem: " + room.spectators.size();
     }
 
     private void resetBoardForCurrentPlayers(RoomState room, String statusMessage) {
@@ -317,6 +370,7 @@ public class XiangqiOnlineRoomService {
             room.roomId,
             room.players.size(),
             PLAYER_LIMIT,
+            room.spectators.size(),
             room.status,
             room.statusMessage,
             room.currentTurnUserId,
@@ -435,6 +489,7 @@ public class XiangqiOnlineRoomService {
     public record RoomSnapshot(String roomId,
                                int playerCount,
                                int playerLimit,
+                               int spectatorCount,
                                String status,
                                String statusMessage,
                                String currentTurnUserId,
@@ -461,6 +516,7 @@ public class XiangqiOnlineRoomService {
     private static final class RoomState {
         private final String roomId;
         private final LinkedHashMap<String, PlayerSeatState> players = new LinkedHashMap<>();
+        private final List<String> spectators = new ArrayList<>();
         private String[][] board;
         private String status = STATUS_WAITING;
         private String statusMessage = "Dang cho doi thu vao phong";

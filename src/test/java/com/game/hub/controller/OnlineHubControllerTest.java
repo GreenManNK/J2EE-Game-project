@@ -113,6 +113,7 @@ class OnlineHubControllerTest {
         assertEquals("online-hub/index", view);
         assertEquals(true, model.getAttribute("onlineSupportedNow"));
         assertEquals("/chess/online", model.getAttribute("playUrlBase"));
+        assertEquals("/chess/online?roomId={roomId}", model.getAttribute("inviteUrlPathTemplate"));
     }
 
     @Test
@@ -134,6 +135,7 @@ class OnlineHubControllerTest {
         assertEquals("online-hub/index", view);
         assertEquals(true, model.getAttribute("onlineSupportedNow"));
         assertEquals("/xiangqi/online", model.getAttribute("playUrlBase"));
+        assertEquals("/xiangqi/online?roomId={roomId}", model.getAttribute("inviteUrlPathTemplate"));
     }
 
     @Test
@@ -313,5 +315,61 @@ class OnlineHubControllerTest {
         assertEquals(true, result.get("serverCreated"));
         assertEquals("room", result.get("playRoomParam"));
         assertEquals("/games/cards/blackjack?room={roomId}", result.get("inviteUrlPathTemplate"));
+    }
+
+    @Test
+    void chessRoomsApiShouldIncludePlayingRoomForSpectate() {
+        ChessOnlineRoomService chessService = new ChessOnlineRoomService();
+        chessService.joinRoom("CHESS-WATCH", "whiteUser", "White", "");
+        chessService.joinRoom("CHESS-WATCH", "blackUser", "Black", "");
+
+        OnlineHubController controller = new OnlineHubController(
+            new GameCatalogService(),
+            mock(GameRoomService.class),
+            new TienLenRoomService(),
+            mock(BlackjackService.class),
+            chessService,
+            new XiangqiOnlineRoomService(),
+            mock(TypingService.class),
+            mock(QuizService.class)
+        );
+
+        Map<String, Object> result = controller.rooms("chess");
+        @SuppressWarnings("unchecked")
+        List<OnlineHubController.RoomRow> rooms = (List<OnlineHubController.RoomRow>) result.get("rooms");
+
+        assertEquals(1, rooms.size());
+        assertEquals("CHESS-WATCH", rooms.get(0).roomId());
+        assertEquals(2, rooms.get(0).playerCount());
+        assertEquals(2, rooms.get(0).playerLimit());
+        assertEquals(true, result.get("supportsSpectateNow"));
+    }
+
+    @Test
+    void xiangqiRoomsApiShouldIncludePlayingRoomForSpectate() {
+        XiangqiOnlineRoomService xiangqiService = new XiangqiOnlineRoomService();
+        xiangqiService.joinRoom("XQ-WATCH", "redUser", "Red", "");
+        xiangqiService.joinRoom("XQ-WATCH", "blackUser", "Black", "");
+
+        OnlineHubController controller = new OnlineHubController(
+            new GameCatalogService(),
+            mock(GameRoomService.class),
+            new TienLenRoomService(),
+            mock(BlackjackService.class),
+            new ChessOnlineRoomService(),
+            xiangqiService,
+            mock(TypingService.class),
+            mock(QuizService.class)
+        );
+
+        Map<String, Object> result = controller.rooms("xiangqi");
+        @SuppressWarnings("unchecked")
+        List<OnlineHubController.RoomRow> rooms = (List<OnlineHubController.RoomRow>) result.get("rooms");
+
+        assertEquals(1, rooms.size());
+        assertEquals("XQ-WATCH", rooms.get(0).roomId());
+        assertEquals(2, rooms.get(0).playerCount());
+        assertEquals(2, rooms.get(0).playerLimit());
+        assertEquals(true, result.get("supportsSpectateNow"));
     }
 }

@@ -11,7 +11,7 @@
       <span>Xiangqi / Online</span>
     </div>
     <h1 class="theme-text fw-bold mb-2">CO TUONG ONLINE (MVP)</h1>
-    <p class="theme-text mb-1">2 nguoi choi online trong 1 phong. Guest duoc phep vao choi.</p>
+    <p class="theme-text mb-1">2 nguoi choi online trong 1 phong. Guest duoc phep vao choi va xem.</p>
     <p class="text-muted mb-0">MVP hien tai dong bo luot va nuoc di qua server. Client kiem tra luat Co tuong va trang thai chieu/chieu bi.</p>
   </section>
 
@@ -21,11 +21,14 @@
         <div class="small">
           <div><strong>Phong:</strong> <span id="xiangqiOnlineRoomLabel" th:text="${defaultRoomId} ?: 'Chua chon'">Chua chon</span></div>
           <div><strong>Ban:</strong> <span id="xiangqiOnlineUserLabel" th:text="${sessionDisplayName}">Guest</span></div>
+          <div><strong>Che do:</strong> <span id="xiangqiOnlineModeLabel">Dang choi</span></div>
           <div><strong>Mau quan cua ban:</strong> <span id="xiangqiOnlineMyColor">Chua vao phong</span></div>
         </div>
         <div class="d-flex gap-2 flex-wrap">
           <button id="xiangqiOnlineResetBtn" type="button" class="btn btn-sm theme-outline-btn" disabled>Van moi</button>
           <button id="xiangqiOnlineSurrenderBtn" type="button" class="btn btn-sm btn-outline-warning" disabled>Dau hang</button>
+          <button id="xiangqiOnlineJoinPlayBtn" type="button" class="btn btn-sm theme-outline-btn d-none" disabled>Tham gia choi</button>
+          <button id="xiangqiOnlineSwitchSpectateBtn" type="button" class="btn btn-sm theme-outline-btn d-none" disabled>Vao che do xem</button>
           <button id="xiangqiOnlineLeaveBtn" type="button" class="btn btn-sm btn-outline-danger">Roi phong</button>
           <a class="btn btn-sm theme-outline-btn" th:href="@{/online-hub(game='xiangqi', roomId=${defaultRoomId})}">Ve Online Hub</a>
         </div>
@@ -47,7 +50,7 @@
           </div>
           <div class="small text-muted text-end">
             <div>Chon quan roi chon o dich de gui nuoc di</div>
-            <div>Phim tat: R Van moi, S Dau hang, L Roi phong</div>
+            <div>Phim tat: R Van moi, S Dau hang, L Roi phong, J Tham gia choi, V Vao xem</div>
           </div>
         </div>
 
@@ -69,6 +72,7 @@
           <div class="theme-text">Trang thai: <span id="xiangqiResultLabel">Dang choi</span></div>
           <div class="theme-text">Nuoc di: <span id="xiangqiMoveCount">0</span></div>
           <div class="theme-text">Luot hien tai: <span id="xiangqiCurrentColor">Do</span></div>
+          <div class="theme-text">Nguoi xem: <span id="xiangqiOnlineSpectatorCount">0</span></div>
           <div class="theme-text">Nuoc cua ban / Doi thu: <span id="xiangqiOnlineMyMoveCount">0</span>/<span id="xiangqiOnlineOpponentMoveCount">0</span></div>
           <div class="theme-text">An quan (Ban/Doi thu): <span id="xiangqiOnlineMyCaptureCount">0</span>/<span id="xiangqiOnlineOpponentCaptureCount">0</span></div>
         </div>
