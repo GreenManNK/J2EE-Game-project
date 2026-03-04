@@ -1,0 +1,972 @@
+/* Game identity + motion layer for mode pages */
+
+body.page-games,
+body.page-games-caro,
+body.page-games-chess,
+body.page-games-xiangqi,
+body.page-games-cards,
+body.page-games-blackjack,
+body.page-games-minesweeper,
+body.page-games-quiz,
+body.page-games-typing,
+body.page-chess-offline,
+body.page-chess-online,
+body.page-xiangqi-offline,
+body.page-xiangqi-online,
+body.page-tien-len,
+body.page-tien-len-bot,
+body.page-minesweeper {
+  --gi-a: #2563eb;
+  --gi-b: #22d3ee;
+  --gi-c: #f59e0b;
+  --gi-ink: #0f172a;
+}
+
+body.dark-mode.page-games,
+body.dark-mode.page-games-caro,
+body.dark-mode.page-games-chess,
+body.dark-mode.page-games-xiangqi,
+body.dark-mode.page-games-cards,
+body.dark-mode.page-games-blackjack,
+body.dark-mode.page-games-minesweeper,
+body.dark-mode.page-games-quiz,
+body.dark-mode.page-games-typing,
+body.dark-mode.page-chess-offline,
+body.dark-mode.page-chess-online,
+body.dark-mode.page-xiangqi-offline,
+body.dark-mode.page-xiangqi-online,
+body.dark-mode.page-tien-len,
+body.dark-mode.page-tien-len-bot,
+body.dark-mode.page-minesweeper {
+  --gi-ink: #e5edff;
+}
+
+body.page-games-caro {
+  --gi-a: #0ea5e9;
+  --gi-b: #14b8a6;
+  --gi-c: #f59e0b;
+}
+
+body.page-games-chess {
+  --gi-a: #1d4ed8;
+  --gi-b: #8b5cf6;
+  --gi-c: #f8fafc;
+}
+
+body.page-games-xiangqi {
+  --gi-a: #b91c1c;
+  --gi-b: #ea580c;
+  --gi-c: #fef3c7;
+}
+
+body.page-games-cards,
+body.page-games-blackjack {
+  --gi-a: #047857;
+  --gi-b: #dc2626;
+  --gi-c: #f59e0b;
+}
+
+body.page-games-minesweeper {
+  --gi-a: #1d4ed8;
+  --gi-b: #ef4444;
+  --gi-c: #22d3ee;
+}
+
+body.page-games-quiz {
+  --gi-a: #6d28d9;
+  --gi-b: #ec4899;
+  --gi-c: #38bdf8;
+}
+
+body.page-games-typing {
+  --gi-a: #0ea5e9;
+  --gi-b: #22c55e;
+  --gi-c: #e2e8f0;
+}
+
+body.page-chess-offline,
+body.page-chess-online {
+  --gi-a: #1d4ed8;
+  --gi-b: #8b5cf6;
+  --gi-c: #f8fafc;
+}
+
+body.page-xiangqi-offline,
+body.page-xiangqi-online {
+  --gi-a: #b91c1c;
+  --gi-b: #ea580c;
+  --gi-c: #fef3c7;
+}
+
+body.page-tien-len,
+body.page-tien-len-bot {
+  --gi-a: #047857;
+  --gi-b: #dc2626;
+  --gi-c: #f59e0b;
+}
+
+body.page-minesweeper {
+  --gi-a: #1d4ed8;
+  --gi-b: #ef4444;
+  --gi-c: #22d3ee;
+}
+
+body.page-games .cg-browser-page,
+body.page-games-caro .hub-portal-shell,
+body.page-games-chess .hub-portal-shell,
+body.page-games-xiangqi .hub-portal-shell,
+body.page-games-cards .hub-portal-shell,
+body.page-games-blackjack .hub-portal-shell,
+body.page-games-minesweeper .hub-portal-shell,
+body.page-games-quiz .hub-portal-shell,
+body.page-games-typing .hub-portal-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+body.page-games .cg-browser-page::before,
+body.page-games-caro .hub-portal-shell::before,
+body.page-games-chess .hub-portal-shell::before,
+body.page-games-xiangqi .hub-portal-shell::before,
+body.page-games-cards .hub-portal-shell::before,
+body.page-games-blackjack .hub-portal-shell::before,
+body.page-games-minesweeper .hub-portal-shell::before,
+body.page-games-quiz .hub-portal-shell::before,
+body.page-games-typing .hub-portal-shell::before {
+  content: "";
+  position: absolute;
+  inset: -20px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 8% 16%, color-mix(in srgb, var(--gi-a) 26%, transparent), transparent 50%),
+    radial-gradient(circle at 90% 8%, color-mix(in srgb, var(--gi-b) 22%, transparent), transparent 46%),
+    radial-gradient(circle at 52% 98%, color-mix(in srgb, var(--gi-c) 16%, transparent), transparent 56%);
+  filter: blur(0);
+  animation: gi-drift 12s ease-in-out infinite alternate;
+}
+
+body.page-games .cg-browser-page::after,
+body.page-games-caro .hub-portal-shell::after,
+body.page-games-chess .hub-portal-shell::after,
+body.page-games-xiangqi .hub-portal-shell::after,
+body.page-games-cards .hub-portal-shell::after,
+body.page-games-blackjack .hub-portal-shell::after,
+body.page-games-minesweeper .hub-portal-shell::after,
+body.page-games-quiz .hub-portal-shell::after,
+body.page-games-typing .hub-portal-shell::after {
+  content: "";
+  position: absolute;
+  inset: -16px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.28;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: radial-gradient(circle at center, black, transparent 82%);
+}
+
+body.page-games .cg-lane,
+body.page-games .cg-tile,
+body.page-games-caro .hub-portal-hero,
+body.page-games-caro .caro-hero,
+body.page-games-chess .hub-portal-hero,
+body.page-games-xiangqi .hub-portal-hero,
+body.page-games-cards .hub-portal-hero,
+body.page-games-blackjack .hub-portal-hero,
+body.page-games-minesweeper .hub-portal-hero,
+body.page-games-quiz .hub-portal-hero,
+body.page-games-typing .hub-portal-hero,
+body.page-games-caro .hub-portal-card,
+body.page-games-chess .hub-portal-card,
+body.page-games-xiangqi .hub-portal-card,
+body.page-games-cards .hub-portal-card,
+body.page-games-blackjack .hub-portal-card,
+body.page-games-minesweeper .hub-portal-card,
+body.page-games-quiz .hub-portal-card,
+body.page-games-typing .hub-portal-card {
+  animation: gi-rise 0.45s ease both;
+}
+
+body.page-games .cg-lane:nth-of-type(2),
+body.page-games .cg-tile:nth-child(2),
+body.page-games-caro .hub-portal-card:nth-of-type(2),
+body.page-games-chess .hub-portal-card:nth-of-type(2),
+body.page-games-xiangqi .hub-portal-card:nth-of-type(2),
+body.page-games-cards .hub-portal-card:nth-of-type(2),
+body.page-games-blackjack .hub-portal-card:nth-of-type(2),
+body.page-games-minesweeper .hub-portal-card:nth-of-type(2),
+body.page-games-quiz .hub-portal-card:nth-of-type(2),
+body.page-games-typing .hub-portal-card:nth-of-type(2) {
+  animation-delay: 0.06s;
+}
+
+body.page-games .cg-lane:nth-of-type(3),
+body.page-games .cg-tile:nth-child(3),
+body.page-games-caro .hub-portal-card:nth-of-type(3),
+body.page-games-chess .hub-portal-card:nth-of-type(3),
+body.page-games-xiangqi .hub-portal-card:nth-of-type(3),
+body.page-games-cards .hub-portal-card:nth-of-type(3),
+body.page-games-blackjack .hub-portal-card:nth-of-type(3),
+body.page-games-minesweeper .hub-portal-card:nth-of-type(3),
+body.page-games-quiz .hub-portal-card:nth-of-type(3),
+body.page-games-typing .hub-portal-card:nth-of-type(3) {
+  animation-delay: 0.11s;
+}
+
+body.page-games .cg-tile-thumb,
+body.page-games .cg-home-game-thumb {
+  position: relative;
+  overflow: hidden;
+}
+
+body.page-games .cg-tile-thumb::after,
+body.page-games .cg-home-game-thumb::after {
+  content: "";
+  position: absolute;
+  inset: -140% -30%;
+  transform: rotate(24deg);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.24) 45%,
+    transparent 100%
+  );
+  animation: gi-sheen 3.2s ease-in-out infinite;
+}
+
+body.page-games .cg-tile-thumb i,
+body.page-games .cg-home-game-thumb i {
+  transition: transform 0.2s ease;
+  animation: gi-bob 2.3s ease-in-out infinite;
+}
+
+body.page-games .cg-tile:hover .cg-tile-thumb i,
+body.page-games .cg-home-game-card:hover .cg-home-game-thumb i {
+  transform: scale(1.1) rotate(-5deg);
+}
+
+body.page-games .cg-tile-body p,
+body.page-games .cg-home-game-body p,
+body.page-games .cg-market-body p {
+  display: none;
+}
+
+body.page-games-caro .hub-portal-title,
+body.page-games-chess .hub-portal-title,
+body.page-games-xiangqi .hub-portal-title,
+body.page-games-cards .hub-portal-title,
+body.page-games-blackjack .hub-portal-title,
+body.page-games-minesweeper .hub-portal-title,
+body.page-games-quiz .hub-portal-title,
+body.page-games-typing .hub-portal-title {
+  text-wrap: balance;
+  color: color-mix(in srgb, var(--gi-ink) 95%, white 5%);
+}
+
+body.page-games-caro .hub-portal-subtitle,
+body.page-games-chess .hub-portal-subtitle,
+body.page-games-xiangqi .hub-portal-subtitle,
+body.page-games-cards .hub-portal-subtitle,
+body.page-games-blackjack .hub-portal-subtitle,
+body.page-games-minesweeper .hub-portal-subtitle,
+body.page-games-quiz .hub-portal-subtitle,
+body.page-games-typing .hub-portal-subtitle {
+  max-width: 44ch;
+  font-size: 0.9rem;
+}
+
+body.page-games-caro .hub-portal-hero,
+body.page-games-chess .hub-portal-hero,
+body.page-games-xiangqi .hub-portal-hero,
+body.page-games-cards .hub-portal-hero,
+body.page-games-blackjack .hub-portal-hero,
+body.page-games-minesweeper .hub-portal-hero,
+body.page-games-quiz .hub-portal-hero,
+body.page-games-typing .hub-portal-hero {
+  overflow: hidden;
+}
+
+body.page-games-caro .hub-portal-hero::before,
+body.page-games-chess .hub-portal-hero::before,
+body.page-games-xiangqi .hub-portal-hero::before,
+body.page-games-cards .hub-portal-hero::before,
+body.page-games-blackjack .hub-portal-hero::before,
+body.page-games-minesweeper .hub-portal-hero::before,
+body.page-games-quiz .hub-portal-hero::before,
+body.page-games-typing .hub-portal-hero::before {
+  content: "";
+  position: absolute;
+  inset: auto -20% -60% -20%;
+  height: 130px;
+  background:
+    radial-gradient(circle at 30% 50%, color-mix(in srgb, var(--gi-a) 20%, transparent), transparent 70%),
+    radial-gradient(circle at 70% 50%, color-mix(in srgb, var(--gi-b) 22%, transparent), transparent 72%);
+  filter: blur(10px);
+  animation: gi-wave 4.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+body.page-games-caro .hub-portal-chip,
+body.page-games-chess .hub-portal-chip,
+body.page-games-xiangqi .hub-portal-chip,
+body.page-games-cards .hub-portal-chip,
+body.page-games-blackjack .hub-portal-chip,
+body.page-games-minesweeper .hub-portal-chip,
+body.page-games-quiz .hub-portal-chip,
+body.page-games-typing .hub-portal-chip {
+  border-color: color-mix(in srgb, var(--gi-a) 28%, rgba(148, 163, 184, 0.3));
+}
+
+body.page-games-caro .hub-portal-chip i,
+body.page-games-chess .hub-portal-chip i,
+body.page-games-xiangqi .hub-portal-chip i,
+body.page-games-cards .hub-portal-chip i,
+body.page-games-blackjack .hub-portal-chip i,
+body.page-games-minesweeper .hub-portal-chip i,
+body.page-games-quiz .hub-portal-chip i,
+body.page-games-typing .hub-portal-chip i {
+  animation: gi-icon 1.7s ease-in-out infinite;
+}
+
+body.page-games-caro .hub-portal-action,
+body.page-games-chess .hub-portal-action,
+body.page-games-xiangqi .hub-portal-action,
+body.page-games-cards .hub-portal-action,
+body.page-games-blackjack .hub-portal-action,
+body.page-games-minesweeper .hub-portal-action,
+body.page-games-quiz .hub-portal-action,
+body.page-games-typing .hub-portal-action,
+body.page-games-caro .caro-cta {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+body.page-games-caro .hub-portal-action::after,
+body.page-games-chess .hub-portal-action::after,
+body.page-games-xiangqi .hub-portal-action::after,
+body.page-games-cards .hub-portal-action::after,
+body.page-games-blackjack .hub-portal-action::after,
+body.page-games-minesweeper .hub-portal-action::after,
+body.page-games-quiz .hub-portal-action::after,
+body.page-games-typing .hub-portal-action::after,
+body.page-games-caro .caro-cta::after {
+  content: "";
+  position: absolute;
+  inset: -120% -30%;
+  transform: rotate(16deg);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.24) 50%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+body.page-games-caro .hub-portal-action:hover::after,
+body.page-games-chess .hub-portal-action:hover::after,
+body.page-games-xiangqi .hub-portal-action:hover::after,
+body.page-games-cards .hub-portal-action:hover::after,
+body.page-games-blackjack .hub-portal-action:hover::after,
+body.page-games-minesweeper .hub-portal-action:hover::after,
+body.page-games-quiz .hub-portal-action:hover::after,
+body.page-games-typing .hub-portal-action:hover::after,
+body.page-games-caro .caro-cta:hover::after {
+  opacity: 1;
+}
+
+body.page-games-caro .hub-portal-preview-cell,
+body.page-games-chess .hub-portal-preview-cell,
+body.page-games-xiangqi .hub-portal-preview-cell,
+body.page-games-cards .hub-portal-preview-cell,
+body.page-games-blackjack .hub-portal-preview-cell,
+body.page-games-minesweeper .hub-portal-preview-cell,
+body.page-games-quiz .hub-portal-preview-cell,
+body.page-games-typing .hub-portal-preview-cell {
+  animation: gi-cell 2.4s ease-in-out infinite;
+}
+
+body.page-games-caro .hub-portal-preview-cell:nth-child(2),
+body.page-games-chess .hub-portal-preview-cell:nth-child(2),
+body.page-games-xiangqi .hub-portal-preview-cell:nth-child(2),
+body.page-games-cards .hub-portal-preview-cell:nth-child(2),
+body.page-games-blackjack .hub-portal-preview-cell:nth-child(2),
+body.page-games-minesweeper .hub-portal-preview-cell:nth-child(2),
+body.page-games-quiz .hub-portal-preview-cell:nth-child(2),
+body.page-games-typing .hub-portal-preview-cell:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+body.page-games-caro .hub-portal-preview-cell:nth-child(3),
+body.page-games-chess .hub-portal-preview-cell:nth-child(3),
+body.page-games-xiangqi .hub-portal-preview-cell:nth-child(3),
+body.page-games-cards .hub-portal-preview-cell:nth-child(3),
+body.page-games-blackjack .hub-portal-preview-cell:nth-child(3),
+body.page-games-minesweeper .hub-portal-preview-cell:nth-child(3),
+body.page-games-quiz .hub-portal-preview-cell:nth-child(3),
+body.page-games-typing .hub-portal-preview-cell:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+body.page-games-caro .hub-portal-preview-cell:nth-child(4),
+body.page-games-chess .hub-portal-preview-cell:nth-child(4),
+body.page-games-xiangqi .hub-portal-preview-cell:nth-child(4),
+body.page-games-cards .hub-portal-preview-cell:nth-child(4),
+body.page-games-blackjack .hub-portal-preview-cell:nth-child(4),
+body.page-games-minesweeper .hub-portal-preview-cell:nth-child(4),
+body.page-games-quiz .hub-portal-preview-cell:nth-child(4),
+body.page-games-typing .hub-portal-preview-cell:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+body.page-games-caro .hub-portal-highlight,
+body.page-games-chess .hub-portal-highlight,
+body.page-games-xiangqi .hub-portal-highlight,
+body.page-games-cards .hub-portal-highlight,
+body.page-games-blackjack .hub-portal-highlight,
+body.page-games-minesweeper .hub-portal-highlight,
+body.page-games-quiz .hub-portal-highlight,
+body.page-games-typing .hub-portal-highlight,
+body.page-games-caro .hub-portal-card,
+body.page-games-chess .hub-portal-card,
+body.page-games-xiangqi .hub-portal-card,
+body.page-games-cards .hub-portal-card,
+body.page-games-blackjack .hub-portal-card,
+body.page-games-minesweeper .hub-portal-card,
+body.page-games-quiz .hub-portal-card,
+body.page-games-typing .hub-portal-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+body.page-games-caro .hub-portal-highlight:hover,
+body.page-games-chess .hub-portal-highlight:hover,
+body.page-games-xiangqi .hub-portal-highlight:hover,
+body.page-games-cards .hub-portal-highlight:hover,
+body.page-games-blackjack .hub-portal-highlight:hover,
+body.page-games-minesweeper .hub-portal-highlight:hover,
+body.page-games-quiz .hub-portal-highlight:hover,
+body.page-games-typing .hub-portal-highlight:hover,
+body.page-games-caro .hub-portal-card:hover,
+body.page-games-chess .hub-portal-card:hover,
+body.page-games-xiangqi .hub-portal-card:hover,
+body.page-games-cards .hub-portal-card:hover,
+body.page-games-blackjack .hub-portal-card:hover,
+body.page-games-minesweeper .hub-portal-card:hover,
+body.page-games-quiz .hub-portal-card:hover,
+body.page-games-typing .hub-portal-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--gi-a) 28%, rgba(148, 163, 184, 0.3));
+}
+
+body.page-games-chess .hub-portal-preview {
+  background:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.03) 75%),
+    linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.03) 75%),
+    radial-gradient(circle at 82% 14%, rgba(129, 140, 248, 0.18), transparent 52%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(9, 14, 26, 0.92)) !important;
+  background-size: 26px 26px, 26px 26px, auto, auto;
+  background-position: 0 0, 13px 13px, center, center;
+}
+
+body.page-games-xiangqi .hub-portal-preview {
+  background:
+    radial-gradient(circle at 10% 10%, rgba(248, 113, 113, 0.22), transparent 46%),
+    radial-gradient(circle at 90% 90%, rgba(245, 158, 11, 0.2), transparent 42%),
+    linear-gradient(180deg, rgba(120, 53, 15, 0.18), rgba(68, 34, 9, 0.26)),
+    linear-gradient(180deg, #f5d6a8, #e5bf8c) !important;
+}
+
+body.page-games-cards .hub-portal-preview,
+body.page-games-blackjack .hub-portal-preview {
+  background:
+    radial-gradient(circle at 16% 12%, rgba(22, 163, 74, 0.28), transparent 44%),
+    radial-gradient(circle at 92% 84%, rgba(220, 38, 38, 0.24), transparent 42%),
+    linear-gradient(165deg, rgba(5, 46, 22, 0.95), rgba(2, 28, 15, 0.98)) !important;
+  border-color: rgba(74, 222, 128, 0.22) !important;
+}
+
+body.page-games-cards .hub-portal-preview-cell,
+body.page-games-blackjack .hub-portal-preview-cell {
+  font-weight: 800;
+  color: #dcfce7;
+  background: rgba(6, 45, 23, 0.8) !important;
+  border-color: rgba(74, 222, 128, 0.2) !important;
+}
+
+body.page-games-cards .hub-portal-preview-cell:nth-child(2n),
+body.page-games-blackjack .hub-portal-preview-cell:nth-child(2n) {
+  color: #fecaca;
+}
+
+body.page-games-minesweeper .hub-portal-preview {
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(10, 14, 26, 0.9)) !important;
+}
+
+body.page-games-minesweeper .hub-portal-preview-cell {
+  border-radius: 8px;
+  font-weight: 800;
+}
+
+body.page-games-minesweeper .hub-portal-preview-cell.is-accent-b {
+  animation: gi-alert 1.1s ease-in-out infinite;
+}
+
+body.page-games-quiz .hub-portal-hero,
+body.page-games-typing .hub-portal-hero,
+body.page-games-blackjack .hub-portal-hero {
+  box-shadow: 0 18px 58px rgba(31, 9, 63, 0.2) !important;
+}
+
+body.page-games-quiz .game-rules ul,
+body.page-games-typing .game-rules ul,
+body.page-games-blackjack .game-rules ul {
+  display: none;
+}
+
+body.page-games-quiz .game-rules[open] ul,
+body.page-games-typing .game-rules[open] ul,
+body.page-games-blackjack .game-rules[open] ul {
+  display: grid;
+}
+
+body.page-games-quiz .quiz-progress__fill {
+  background-size: 200% 100% !important;
+  animation: gi-lane 1.9s linear infinite;
+}
+
+body.page-games-quiz .quiz-option__body {
+  animation: gi-bob 2.5s ease-in-out infinite;
+}
+
+body.page-games-quiz .quiz-option:nth-child(2) .quiz-option__body {
+  animation-delay: 0.2s;
+}
+
+body.page-games-quiz .quiz-option:nth-child(3) .quiz-option__body {
+  animation-delay: 0.35s;
+}
+
+body.page-games-typing .typing-target-card {
+  background:
+    radial-gradient(circle at 10% 8%, rgba(14, 165, 233, 0.18), transparent 45%),
+    radial-gradient(circle at 88% 86%, rgba(34, 197, 94, 0.16), transparent 42%),
+    linear-gradient(180deg, rgba(8, 18, 34, 0.88), rgba(6, 13, 25, 0.92)) !important;
+  border-color: rgba(56, 189, 248, 0.24) !important;
+}
+
+body.page-games-typing .typing-target-text::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  margin-left: 3px;
+  background: rgba(125, 211, 252, 0.95);
+  vertical-align: -0.1em;
+  animation: gi-caret 1s steps(1, end) infinite;
+}
+
+body.page-games-typing .typing-player-bar > div {
+  background-size: 200% 100%;
+  animation: gi-lane 1.8s linear infinite;
+}
+
+body.page-games-caro .caro-board-preview::before {
+  content: "";
+  position: absolute;
+  inset: -48% -20%;
+  transform: rotate(15deg);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 100%
+  );
+  animation: gi-sheen 3.1s ease-in-out infinite;
+  pointer-events: none;
+}
+
+body.page-games-caro .stone {
+  animation: gi-bob 1.9s ease-in-out infinite;
+}
+
+body.page-games-caro .stone:nth-child(2n) {
+  animation-delay: 0.2s;
+}
+
+body.page-games-caro .stone:nth-child(3n) {
+  animation-delay: 0.35s;
+}
+
+body.page-games-caro .caro-article-card p,
+body.page-games-caro .caro-mini-card p {
+  display: none !important;
+}
+
+body.page-games-caro .caro-bullet-list,
+body.page-games-caro .caro-rank-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+
+body.page-games-caro .caro-bullet-list li,
+body.page-games-caro .caro-rank-list li {
+  border-radius: 10px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  background: rgba(10, 20, 38, 0.68);
+  color: #e2e8f0;
+  padding: 6px 9px;
+}
+
+body.page-games-chess .hub-portal-main .hub-portal-card p,
+body.page-games-xiangqi .hub-portal-main .hub-portal-card p,
+body.page-games-cards .hub-portal-main .hub-portal-card p,
+body.page-games-minesweeper .hub-portal-main .hub-portal-card p {
+  display: none;
+}
+
+body.page-games-chess .hub-portal-bullet-list,
+body.page-games-xiangqi .hub-portal-bullet-list,
+body.page-games-cards .hub-portal-bullet-list,
+body.page-games-minesweeper .hub-portal-bullet-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+body.page-games-chess .hub-portal-bullet-list li,
+body.page-games-xiangqi .hub-portal-bullet-list li,
+body.page-games-cards .hub-portal-bullet-list li,
+body.page-games-minesweeper .hub-portal-bullet-list li {
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--gi-a) 24%, rgba(148, 163, 184, 0.28));
+  background: color-mix(in srgb, var(--gi-a) 10%, rgba(15, 23, 42, 0.6));
+  padding: 8px 10px;
+  font-size: 0.82rem;
+}
+
+body.page-games-chess .hub-portal-check-list li,
+body.page-games-xiangqi .hub-portal-check-list li,
+body.page-games-cards .hub-portal-check-list li,
+body.page-games-minesweeper .hub-portal-check-list li {
+  border: 1px solid color-mix(in srgb, var(--gi-a) 20%, rgba(148, 163, 184, 0.28));
+  border-radius: 10px;
+  padding: 7px 9px;
+  background: color-mix(in srgb, var(--gi-a) 7%, rgba(15, 23, 42, 0.5));
+}
+
+body.page-games-chess .hub-portal-related-item small,
+body.page-games-xiangqi .hub-portal-related-item small,
+body.page-games-cards .hub-portal-related-item small,
+body.page-games-minesweeper .hub-portal-related-item small,
+body.page-games-caro .caro-related-item small {
+  display: none;
+}
+
+body.page-chess-offline .gx-page-hero p.text-muted,
+body.page-chess-online .gx-page-hero p.text-muted,
+body.page-xiangqi-offline .gx-page-hero p.text-muted,
+body.page-xiangqi-online .gx-page-hero p.text-muted,
+body.page-tien-len .gx-page-hero p.text-muted,
+body.page-tien-len-bot .gx-page-hero p.text-muted,
+body.page-minesweeper .gx-page-hero p.text-muted {
+  display: none;
+}
+
+body.page-chess-offline .gx-page-hero,
+body.page-chess-online .gx-page-hero,
+body.page-xiangqi-offline .gx-page-hero,
+body.page-xiangqi-online .gx-page-hero,
+body.page-tien-len .gx-page-hero,
+body.page-tien-len-bot .gx-page-hero,
+body.page-minesweeper .gx-page-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+body.page-chess-offline .gx-page-hero::after,
+body.page-chess-online .gx-page-hero::after,
+body.page-xiangqi-offline .gx-page-hero::after,
+body.page-xiangqi-online .gx-page-hero::after,
+body.page-tien-len .gx-page-hero::after,
+body.page-tien-len-bot .gx-page-hero::after,
+body.page-minesweeper .gx-page-hero::after {
+  content: "";
+  position: absolute;
+  inset: auto -30% -58% -30%;
+  height: 120px;
+  background:
+    radial-gradient(circle at 30% 40%, color-mix(in srgb, var(--gi-a) 22%, transparent), transparent 70%),
+    radial-gradient(circle at 70% 40%, color-mix(in srgb, var(--gi-b) 20%, transparent), transparent 72%);
+  filter: blur(10px);
+  animation: gi-wave 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+body.page-chess-offline .chess-board,
+body.page-chess-online .chess-board {
+  position: relative;
+  overflow: hidden;
+}
+
+body.page-chess-offline .chess-board::after,
+body.page-chess-online .chess-board::after {
+  content: "";
+  position: absolute;
+  inset: -150% -20%;
+  transform: rotate(16deg);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.22) 48%,
+    transparent 100%
+  );
+  animation: gi-sheen 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+body.page-chess-offline .chess-cell,
+body.page-chess-online .chess-cell,
+body.page-xiangqi-offline .xiangqi-cell,
+body.page-xiangqi-online .xiangqi-cell {
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+body.page-chess-offline .chess-piece,
+body.page-chess-online .chess-piece,
+body.page-xiangqi-offline .xiangqi-piece,
+body.page-xiangqi-online .xiangqi-piece {
+  transition: transform 0.14s ease;
+}
+
+body.page-chess-offline .chess-cell:hover .chess-piece,
+body.page-chess-online .chess-cell:hover .chess-piece,
+body.page-xiangqi-offline .xiangqi-cell:hover .xiangqi-piece,
+body.page-xiangqi-online .xiangqi-cell:hover .xiangqi-piece {
+  transform: scale(1.08);
+}
+
+body.page-chess-offline .chess-cell.last-move,
+body.page-chess-online .chess-cell.last-move,
+body.page-xiangqi-offline .xiangqi-cell.last-move,
+body.page-xiangqi-online .xiangqi-cell.last-move {
+  animation: gi-last-move 1s ease-in-out;
+}
+
+body.page-chess-online .chess-player-item,
+body.page-xiangqi-online .xiangqi-player-item {
+  transition: transform 0.14s ease, border-color 0.14s ease;
+}
+
+body.page-chess-online .chess-player-item:hover,
+body.page-xiangqi-online .xiangqi-player-item:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--gi-a) 34%, rgba(148, 163, 184, 0.34)) !important;
+}
+
+body.page-tien-len .tl-room-item,
+body.page-tien-len-bot .tl-room-item,
+body.page-tien-len .tienlen-player-slot,
+body.page-tien-len-bot .tienlen-bot-player-slot,
+body.page-tien-len .tl-table-center,
+body.page-tien-len-bot .tl-table-center {
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+body.page-tien-len .tl-room-item:hover,
+body.page-tien-len-bot .tl-room-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(2, 24, 15, 0.24);
+}
+
+body.page-tien-len .tl-table-chip,
+body.page-tien-len-bot .tl-table-chip {
+  animation: gi-icon 1.8s ease-in-out infinite;
+}
+
+body.page-minesweeper .ms-cell {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+body.page-minesweeper .ms-cell:not(.revealed):hover {
+  transform: translateY(-1px);
+}
+
+body.page-minesweeper .ms-cell.is-flagged,
+body.page-minesweeper .ms-cell.mine {
+  animation: gi-alert 1.2s ease-in-out infinite;
+}
+
+@keyframes gi-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes gi-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(0, -8px, 0) scale(1.01);
+  }
+}
+
+@keyframes gi-wave {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes gi-sheen {
+  0% {
+    transform: translateX(-110%) rotate(18deg);
+  }
+  45%,
+  100% {
+    transform: translateX(130%) rotate(18deg);
+  }
+}
+
+@keyframes gi-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes gi-icon {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.92;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+@keyframes gi-cell {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes gi-alert {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+}
+
+@keyframes gi-last-move {
+  0% {
+    filter: brightness(1.2);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+@keyframes gi-lane {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes gi-caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.page-games .cg-browser-page::before,
+  body.page-games-caro .hub-portal-shell::before,
+  body.page-games-chess .hub-portal-shell::before,
+  body.page-games-xiangqi .hub-portal-shell::before,
+  body.page-games-cards .hub-portal-shell::before,
+  body.page-games-blackjack .hub-portal-shell::before,
+  body.page-games-minesweeper .hub-portal-shell::before,
+  body.page-games-quiz .hub-portal-shell::before,
+  body.page-games-typing .hub-portal-shell::before,
+  body.page-chess-offline .gx-page-hero::after,
+  body.page-chess-online .gx-page-hero::after,
+  body.page-xiangqi-offline .gx-page-hero::after,
+  body.page-xiangqi-online .gx-page-hero::after,
+  body.page-tien-len .gx-page-hero::after,
+  body.page-tien-len-bot .gx-page-hero::after,
+  body.page-minesweeper .gx-page-hero::after,
+  body.page-games .cg-tile-thumb::after,
+  body.page-games .cg-home-game-thumb::after,
+  body.page-games .cg-tile-thumb i,
+  body.page-games .cg-home-game-thumb i,
+  body.page-chess-offline .chess-board::after,
+  body.page-chess-online .chess-board::after,
+  body.page-games-caro .hub-portal-chip i,
+  body.page-games-chess .hub-portal-chip i,
+  body.page-games-xiangqi .hub-portal-chip i,
+  body.page-games-cards .hub-portal-chip i,
+  body.page-games-blackjack .hub-portal-chip i,
+  body.page-games-minesweeper .hub-portal-chip i,
+  body.page-games-quiz .hub-portal-chip i,
+  body.page-games-typing .hub-portal-chip i,
+  body.page-games-caro .stone,
+  body.page-games-quiz .quiz-option__body,
+  body.page-games-typing .typing-player-bar > div,
+  body.page-tien-len .tl-table-chip,
+  body.page-tien-len-bot .tl-table-chip,
+  body.page-minesweeper .ms-cell.is-flagged,
+  body.page-minesweeper .ms-cell.mine {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 820px) {
+  body.page-games-chess .hub-portal-bullet-list,
+  body.page-games-xiangqi .hub-portal-bullet-list,
+  body.page-games-cards .hub-portal-bullet-list,
+  body.page-games-minesweeper .hub-portal-bullet-list {
+    grid-template-columns: 1fr;
+  }
+}

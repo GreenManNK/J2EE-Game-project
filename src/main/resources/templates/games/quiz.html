@@ -17,8 +17,7 @@
 
             <h1 class="hub-portal-title">Quiz Battle theo phong realtime</h1>
             <p class="hub-portal-subtitle">
-                Tra loi nhanh, dung va on dinh de leo bang xep hang. Trang nay da dong bo giao dien
-                phong choi voi cac game multiplayer khac trong web.
+                Chon room, tra loi nhanh, leo top diem.
             </p>
 
             <div class="hub-portal-chip-row">
@@ -28,8 +27,12 @@
                 <span class="hub-portal-chip"><i class="bi bi-bar-chart-fill"></i> Bang xep hang theo diem</span>
             </div>
 
+            <div class="quiz-energy-strip" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+
             <details class="game-rules">
-                <summary>Luat choi va cach tinh diem</summary>
+                <summary>Quick rules</summary>
                 <ul>
                     <li>Moi cau tra loi dung: +2 diem.</li>
                     <li>Moi cau sai hoac het gio: -1 diem (khong am).</li>
@@ -158,11 +161,32 @@
         max-width: 860px;
     }
 
+    .quiz-energy-strip {
+        margin: 0.6rem 0 0.25rem;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 0.35rem;
+    }
+
+    .quiz-energy-strip span {
+        height: 5px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(111, 208, 255, 0.9), rgba(255, 131, 214, 0.92));
+        box-shadow: 0 0 12px rgba(129, 216, 255, 0.35);
+        animation: quizPulse 1.4s ease-in-out infinite;
+    }
+
+    .quiz-energy-strip span:nth-child(2) { animation-delay: .1s; }
+    .quiz-energy-strip span:nth-child(3) { animation-delay: .2s; }
+    .quiz-energy-strip span:nth-child(4) { animation-delay: .3s; }
+    .quiz-energy-strip span:nth-child(5) { animation-delay: .4s; }
+    .quiz-energy-strip span:nth-child(6) { animation-delay: .5s; }
+
     .game-rules {
         margin: 0.55rem 0 0.8rem;
-        border: 1px solid rgba(255, 255, 255, 0.22);
+        border: 1px solid rgba(180, 126, 255, 0.35);
         border-radius: 10px;
-        background: rgba(255, 255, 255, 0.08);
+        background: linear-gradient(165deg, rgba(98, 42, 161, 0.3), rgba(52, 17, 113, 0.3));
         padding: 0.55rem 0.7rem;
     }
 
@@ -209,6 +233,7 @@
         align-items: center;
         gap: 0.55rem;
         font-size: 0.85rem;
+        animation: quizRise .28s ease both;
     }
 
     .quiz-room-actions {
@@ -241,6 +266,12 @@
         display: flex;
         flex-direction: column;
         gap: 0.2rem;
+        transition: transform .15s ease, border-color .15s ease;
+    }
+
+    .quiz-hud__item:hover {
+        transform: translateY(-1px);
+        border-color: rgba(139, 228, 255, 0.58);
     }
 
     .quiz-hud__item span {
@@ -305,6 +336,7 @@
         background: linear-gradient(90deg, rgba(132, 208, 255, 0.65), rgba(255, 141, 212, 0.65));
         opacity: 0.42;
         pointer-events: none;
+        animation: quizScan 2.8s linear infinite;
     }
 
     .quiz-question-card::before {
@@ -319,6 +351,7 @@
         bottom: 0;
         left: 50%;
         width: 1px;
+        animation-duration: 3.2s;
     }
 
     .quiz-question {
@@ -357,6 +390,7 @@
             inset 0 0 0 1px rgba(255, 255, 255, 0.05),
             0 8px 14px rgba(15, 5, 36, 0.28);
         transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+        animation: quizBreathe 1.8s ease-in-out infinite;
     }
 
     .quiz-option__key {
@@ -404,6 +438,10 @@
             0 10px 18px rgba(20, 8, 48, 0.34);
         transform: translateY(-1px);
     }
+
+    .quiz-option:nth-child(2) .quiz-option__body { animation-delay: .1s; }
+    .quiz-option:nth-child(3) .quiz-option__body { animation-delay: .2s; }
+    .quiz-option:nth-child(4) .quiz-option__body { animation-delay: .3s; }
 
     .quiz-option input:focus-visible + .quiz-option__body {
         outline: 2px solid rgba(137, 224, 255, 0.72);
@@ -464,6 +502,27 @@
         padding-left: 1.1rem;
         display: grid;
         gap: 0.35rem;
+    }
+
+    @keyframes quizPulse {
+        0%, 100% { transform: scaleY(1); opacity: .75; }
+        50% { transform: scaleY(1.55); opacity: 1; }
+    }
+
+    @keyframes quizRise {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes quizScan {
+        0% { opacity: .15; transform: translateX(-3px); }
+        50% { opacity: .45; transform: translateX(3px); }
+        100% { opacity: .15; transform: translateX(-3px); }
+    }
+
+    @keyframes quizBreathe {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-1px); }
     }
 
     @media (max-width: 640px) {

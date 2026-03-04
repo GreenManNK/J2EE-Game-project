@@ -56,6 +56,7 @@
   <link rel="stylesheet" th:href="@{/css/games-portal.css}">
   <link rel="stylesheet" th:href="@{/css/layout-refresh.css(v=20260303a)}">
   <link rel="stylesheet" th:href="@{/css/cg-market.css(v=20260303c)}">
+  <link rel="stylesheet" th:href="@{/css/game-identity.css(v=20260304a)}">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     [data-admin-only] { display: none; }
@@ -63,6 +64,7 @@
       --app-sidebar-width: 258px;
       --app-sidebar-compact-width: 58px;
       --app-shell-gap: 18px;
+      --app-back-button-left: 10px;
     }
     html, body { margin: 0; padding: 0; overflow-x: hidden; }
     #appShellLayer {
@@ -182,12 +184,19 @@
       overflow-y: auto;
       overflow-x: hidden;
     }
-    #backButton { position: fixed; bottom: 10px; left: 10px; z-index: 999; }
+    #backButton {
+      position: fixed;
+      bottom: 10px;
+      left: var(--app-back-button-left);
+      z-index: 999;
+      transition: left 0.22s ease;
+    }
 
     @media (min-width: 1200px) {
       body {
         --app-sidebar-width: 272px;
         --app-sidebar-compact-width: 58px;
+        --app-back-button-left: 18px;
       }
       body:not(.game-index) {
         padding-top: 72px;
@@ -196,9 +205,11 @@
       }
       body:not(.sidebar-desktop-hidden):not(.game-index) {
         padding-left: calc(var(--app-sidebar-compact-width) + 18px);
+        --app-back-button-left: calc(var(--app-sidebar-compact-width) + var(--app-shell-gap));
       }
       body.sidebar-desktop-hidden:not(.game-index) {
         padding-left: 18px;
+        --app-back-button-left: 18px;
       }
       #friendSidebar {
         width: var(--app-sidebar-compact-width);
@@ -290,6 +301,9 @@
     }
 
     @media (max-width: 1199.98px) {
+      body {
+        --app-back-button-left: 12px;
+      }
       body:not(.game-index) {
         padding-top: 70px;
         padding-left: 14px;
@@ -304,7 +318,6 @@
       }
       #backButton {
         bottom: 12px;
-        left: 12px;
       }
     }
 
