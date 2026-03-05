@@ -272,7 +272,7 @@ body:not(.sidebar-desktop).sidebar-open #appShellLayer .cg-topbar__menu-toggle {
 }
 
 #friendSidebar {
-  padding-top: 72px !important;
+  padding-top: calc(var(--app-topbar-offset, 72px) + 6px) !important;
 }
 
 .app-shell-menu-group {
@@ -653,24 +653,74 @@ body:not(.sidebar-desktop).sidebar-open #appShellLayer .cg-topbar__menu-toggle {
   gap: 8px;
 }
 
-.cg-game-btn {
-  border: 1px solid rgba(121, 166, 237, 0.36) !important;
-  background: rgba(9, 28, 58, 0.84) !important;
-  color: #e7f0ff !important;
-  border-radius: 12px !important;
+.cg-home-access-card {
+  border: 1px solid rgba(121, 166, 237, 0.36);
+  background: linear-gradient(165deg, rgba(10, 30, 62, 0.94), rgba(8, 23, 49, 0.9));
+  color: #e7f0ff;
+  border-radius: 12px;
   text-align: left;
   font-weight: 700;
   font-size: 0.84rem;
-  padding: 8px 9px !important;
-  display: inline-flex;
+  padding: 10px;
+  width: 100%;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 8px;
-  justify-content: flex-start;
+  gap: 10px;
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
 }
 
-.cg-game-btn:hover {
-  border-color: rgba(151, 198, 255, 0.62) !important;
-  background: rgba(13, 37, 73, 0.92) !important;
+.cg-home-access-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(143, 184, 244, 0.36);
+  background: rgba(16, 47, 92, 0.78);
+  color: #ecf5ff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  flex: none;
+}
+
+.cg-home-access-content {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.cg-home-access-content strong {
+  color: #f0f6ff;
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.cg-home-access-content small {
+  color: #a6bde0;
+  font-size: 0.71rem;
+  line-height: 1.28;
+}
+
+.cg-home-access-arrow {
+  color: #8fc7ff;
+  font-size: 1.08rem;
+  line-height: 1;
+}
+
+.cg-home-access-card:hover,
+.cg-home-access-card:focus-visible {
+  border-color: rgba(151, 198, 255, 0.62);
+  background: linear-gradient(165deg, rgba(13, 37, 73, 0.94), rgba(9, 29, 58, 0.92));
+  box-shadow: 0 10px 24px rgba(3, 12, 26, 0.34);
+  transform: translateY(-1px);
+}
+
+.cg-home-access-card:focus-visible {
+  outline: 2px solid rgba(151, 198, 255, 0.44);
+  outline-offset: 2px;
 }
 
 .cg-home-content {
@@ -1094,7 +1144,7 @@ body:not(.sidebar-desktop).sidebar-open #appShellLayer .cg-topbar__menu-toggle {
   }
 
   #friendSidebar {
-    padding-top: 70px !important;
+    padding-top: calc(var(--app-topbar-offset, 70px) + 6px) !important;
   }
 
   .cg-home,
@@ -1178,7 +1228,7 @@ body:not(.sidebar-desktop).sidebar-open #appShellLayer .cg-topbar__menu-toggle {
   }
 
   #friendSidebar {
-    padding-top: 68px !important;
+    padding-top: calc(var(--app-topbar-offset, 68px) + 6px) !important;
   }
 
   .cg-home-game-grid,

@@ -65,6 +65,7 @@
       --app-sidebar-compact-width: 58px;
       --app-shell-gap: 18px;
       --app-back-button-left: 10px;
+      --app-topbar-offset: 76px;
     }
     html, body { margin: 0; padding: 0; overflow-x: hidden; }
     #appShellLayer {
@@ -80,7 +81,7 @@
       pointer-events: auto;
     }
     body:not(.game-index) {
-      padding-top: 72px;
+      padding-top: var(--app-topbar-offset);
       padding-left: 18px;
       padding-right: 18px;
       transition: padding-left 0.22s ease;
@@ -112,7 +113,7 @@
       transform: translateX(-100%);
       transition: transform 0.28s ease-in-out;
       z-index: 1046;
-      padding: 78px 10px 10px 10px;
+      padding: calc(var(--app-topbar-offset) + 8px) 10px 10px 10px;
       border-right: 1px solid var(--border-color, #ccc);
       pointer-events: none;
     }
@@ -199,7 +200,7 @@
         --app-back-button-left: 18px;
       }
       body:not(.game-index) {
-        padding-top: 72px;
+        padding-top: var(--app-topbar-offset);
         padding-left: 18px;
         padding-right: 18px;
       }
@@ -215,7 +216,7 @@
         width: var(--app-sidebar-compact-width);
         transform: translateX(0);
         pointer-events: auto;
-        padding-top: 74px;
+        padding-top: calc(var(--app-topbar-offset) + 6px);
         transition: width 0.22s ease, box-shadow 0.22s ease;
       }
       body:not(.sidebar-desktop-hidden) #friendSidebar:hover,
@@ -305,7 +306,7 @@
         --app-back-button-left: 12px;
       }
       body:not(.game-index) {
-        padding-top: 70px;
+        padding-top: var(--app-topbar-offset);
         padding-left: 14px;
         padding-right: 14px;
       }
@@ -326,10 +327,10 @@
         --app-sidebar-width: min(84vw, 320px);
       }
       body:not(.game-index) {
-        padding-top: 68px;
+        padding-top: var(--app-topbar-offset);
       }
       #friendSidebar {
-        padding-top: 78px;
+        padding-top: calc(var(--app-topbar-offset) + 8px);
       }
       #friendListInlineContainer {
         min-height: 150px;
@@ -407,14 +408,6 @@
 
   <div id="friendSidebar" class="theme-text">
     <div class="app-shell-sidebar-scroll d-flex flex-column px-1">
-      <div class="app-shell-sidebar-brand">
-        <div class="app-shell-sidebar-brand__badge">
-          <i class="bi bi-controller"></i>
-          <span>Game Hub</span>
-        </div>
-        <div class="app-shell-sidebar-brand__title">Trung tâm điều khiển</div>
-        <div class="app-shell-sidebar-brand__meta">Chơi nhanh, quản lý bạn bè và theo dõi bảng xếp hạng.</div>
-      </div>
       <div class="app-shell-sidebar-menu">
         <div class="app-shell-menu-group">
           <div class="app-shell-menu-group__title">Dieu huong</div>
@@ -519,6 +512,7 @@
       const toggleBtn = document.getElementById("toggleSidebar");
       const sidebarScrim = document.getElementById("sidebarScrim");
       const icon = toggleBtn?.querySelector("i");
+      const topbar = document.getElementById("cgTopbar");
       const topSearchForm = document.getElementById("cgGlobalSearchForm");
       const topSearchInput = document.getElementById("cgGlobalSearchInput");
       const toAppPath = (window.CaroUrl && typeof window.CaroUrl.path === "function")
@@ -539,6 +533,17 @@
         }
         return current === target || current.startsWith(target + "/");
       };
+      const syncTopbarOffset = () => {
+        if (!topbar) {
+          return;
+        }
+        const topbarHeight = Math.ceil(topbar.getBoundingClientRect().height || 0);
+        const safeOffset = Math.max(64, topbarHeight + 12);
+        body.style.setProperty("--app-topbar-offset", safeOffset + "px");
+      };
+      syncTopbarOffset();
+      window.addEventListener("resize", syncTopbarOffset, { passive: true });
+      window.addEventListener("load", syncTopbarOffset);
 
       if (sidebar && toggleBtn) {
         const desktopQuery = window.matchMedia("(min-width: 1200px)");
@@ -566,6 +571,7 @@
         const shouldAutoCloseMobileSidebar = () => readBooleanPref(SIDEBAR_MOBILE_AUTO_CLOSE_KEY, true);
 
         const syncSidebarToggleUi = () => {
+          syncTopbarOffset();
           const isDesktop = desktopQuery.matches;
           body.classList.toggle("sidebar-desktop", isDesktop);
           if (isDesktop) {

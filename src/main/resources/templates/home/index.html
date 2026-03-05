@@ -20,16 +20,79 @@
         card game o giua, va feed cong dong tach rieng. Ban co the click vao game ngay tai day.
       </p>
 
-      <div class="cg-home-quick-nav" role="group" aria-label="Game quick picker">
-        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="caro" data-game-name="Caro"><i class="bi bi-grid-3x3-gap-fill"></i> Caro</button>
-        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="chess" data-game-name="Co vua"><i class="bi bi-activity"></i> Co vua</button>
-        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="xiangqi" data-game-name="Co tuong"><i class="bi bi-diagram-3-fill"></i> Co tuong</button>
-        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="cards" data-game-name="Danh bai"><i class="bi bi-suit-spade-fill"></i> Danh bai</button>
-        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="blackjack" data-game-name="Blackjack"><i class="bi bi-suit-club-fill"></i> Blackjack</button>
-        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="minesweeper" data-game-name="Minesweeper"><i class="bi bi-asterisk"></i> Minesweeper</button>
-        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="quiz" data-game-name="Quiz"><i class="bi bi-patch-question-fill"></i> Quiz</button>
-        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="typing" data-game-name="Typing"><i class="bi bi-keyboard-fill"></i> Typing</button>
-        <button type="button" class="btn cg-game-btn js-game-picker" data-game-code="puzzle" data-game-name="Puzzle"><i class="bi bi-puzzle-fill"></i> Puzzle</button>
+      <div class="cg-home-quick-nav" role="list" aria-label="Game quick picker">
+        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="caro" data-game-name="Caro">
+          <span class="cg-home-access-icon"><i class="bi bi-grid-3x3-gap-fill"></i></span>
+          <span class="cg-home-access-content">
+            <strong>Caro</strong>
+            <small>Online/Bot/Offline</small>
+          </span>
+          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
+        </button>
+        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="chess" data-game-name="Co vua">
+          <span class="cg-home-access-icon"><i class="bi bi-activity"></i></span>
+          <span class="cg-home-access-content">
+            <strong>Co vua</strong>
+            <small>Classic strategy</small>
+          </span>
+          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
+        </button>
+        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="xiangqi" data-game-name="Co tuong">
+          <span class="cg-home-access-icon"><i class="bi bi-diagram-3-fill"></i></span>
+          <span class="cg-home-access-content">
+            <strong>Co tuong</strong>
+            <small>Ban co 9x10</small>
+          </span>
+          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
+        </button>
+        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="cards" data-game-name="Danh bai">
+          <span class="cg-home-access-icon"><i class="bi bi-suit-spade-fill"></i></span>
+          <span class="cg-home-access-content">
+            <strong>Danh bai</strong>
+            <small>Tien len realtime</small>
+          </span>
+          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
+        </button>
+        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="blackjack" data-game-name="Blackjack">
+          <span class="cg-home-access-icon"><i class="bi bi-suit-club-fill"></i></span>
+          <span class="cg-home-access-content">
+            <strong>Blackjack</strong>
+            <small>Hit/Stand nhanh</small>
+          </span>
+          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
+        </button>
+        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="minesweeper" data-game-name="Minesweeper">
+          <span class="cg-home-access-icon"><i class="bi bi-asterisk"></i></span>
+          <span class="cg-home-access-content">
+            <strong>Minesweeper</strong>
+            <small>Do min nhieu cap</small>
+          </span>
+          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
+        </button>
+        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="quiz" data-game-name="Quiz">
+          <span class="cg-home-access-icon"><i class="bi bi-patch-question-fill"></i></span>
+          <span class="cg-home-access-content">
+            <strong>Quiz</strong>
+            <small>Hoi dap theo chu de</small>
+          </span>
+          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
+        </button>
+        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="typing" data-game-name="Typing">
+          <span class="cg-home-access-icon"><i class="bi bi-keyboard-fill"></i></span>
+          <span class="cg-home-access-content">
+            <strong>Typing</strong>
+            <small>Luyen toc do go</small>
+          </span>
+          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
+        </button>
+        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="puzzle" data-game-name="Puzzle">
+          <span class="cg-home-access-icon"><i class="bi bi-puzzle-fill"></i></span>
+          <span class="cg-home-access-content">
+            <strong>Puzzle</strong>
+            <small>Sudoku/Word/Jigsaw</small>
+          </span>
+          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
+        </button>
       </div>
     </div>
 
