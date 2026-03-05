@@ -1,4 +1,4 @@
-﻿/* CrazyGames-like global refresh layer (keep existing brand colors) */
+/* CrazyGames-like global refresh layer (keep existing brand colors) */
 
 :root {
   --cg-bg-1: #061329;
@@ -357,7 +357,7 @@ body:not(.sidebar-desktop).sidebar-open #appShellLayer .cg-topbar__menu-toggle {
 /* Shared market look for home + games */
 .cg-home,
 .cg-market-catalog {
-  width: min(1480px, calc(100vw - 18px));
+  width: min(1480px, 100%);
   margin: 0 auto;
   padding: 16px 0 92px;
   color: var(--cg-ink);
@@ -366,7 +366,7 @@ body:not(.sidebar-desktop).sidebar-open #appShellLayer .cg-topbar__menu-toggle {
 }
 
 .cg-browser-page {
-  width: min(1600px, calc(100vw - 20px));
+  width: min(1600px, 100%);
   margin: 0 auto;
   padding: 12px 0 92px;
   display: grid;
@@ -1133,7 +1133,7 @@ body:not(.sidebar-desktop).sidebar-open #appShellLayer .cg-topbar__menu-toggle {
 
 @media (max-width: 991.98px) {
   #appShellLayer .cg-topbar__inner {
-    width: min(100%, calc(100vw - 10px));
+    width: 100%;
     min-height: 52px;
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 8px;
@@ -1150,7 +1150,7 @@ body:not(.sidebar-desktop).sidebar-open #appShellLayer .cg-topbar__menu-toggle {
   .cg-home,
   .cg-market-catalog,
   .cg-browser-page {
-    width: min(100%, calc(100vw - 10px));
+    width: 100%;
   }
 
   .cg-browser-controls {
@@ -1253,3 +1253,4 @@ body:not(.sidebar-desktop).sidebar-open #appShellLayer .cg-topbar__menu-toggle {
     align-items: stretch;
   }
 }
+

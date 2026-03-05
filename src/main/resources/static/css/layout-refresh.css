@@ -348,7 +348,7 @@ body.dark-mode .btn-outline-success {
 .container.py-4,
 .container-fluid.py-4,
 main.container.py-4 {
-  max-width: min(1300px, calc(100vw - 28px));
+  max-width: min(1300px, 100%);
   margin-inline: auto;
   padding-top: 1.35rem !important;
   padding-bottom: 5.5rem !important;
@@ -356,7 +356,7 @@ main.container.py-4 {
 
 body:not(.game-index) .container.mt-5.text-center,
 body:not(.game-index) .container.text-center.mt-5 {
-  max-width: min(1180px, calc(100vw - 28px));
+  max-width: min(1180px, 100%);
 }
 
 body:not(.game-index) .theme-box > h1:first-child,
@@ -784,7 +784,7 @@ body.sidebar-open .sidebar-toggle-btn i {
 
 /* Home dashboard */
 .home-dashboard {
-  width: min(1320px, calc(100vw - 28px));
+  width: min(1320px, 100%);
   margin: 0 auto;
   min-height: calc(100vh - 40px);
   padding: 18px 0 96px;
@@ -1017,7 +1017,7 @@ body.sidebar-open .sidebar-toggle-btn i {
 /* Lobby and mode pages */
 .lobby-shell,
 .mode-page-shell {
-  width: min(1180px, calc(100vw - 28px));
+  width: min(1180px, 100%);
   margin: 0 auto;
   padding: 18px 0 96px;
 }
@@ -1108,7 +1108,7 @@ body.sidebar-open .sidebar-toggle-btn i {
 
 /* Data / utility page shells */
 .gx-page-shell {
-  width: min(1320px, calc(100vw - 28px));
+  width: min(1320px, 100%);
   margin: 0 auto;
   padding: 16px 0 96px;
   display: grid;
@@ -1116,11 +1116,11 @@ body.sidebar-open .sidebar-toggle-btn i {
 }
 
 .gx-page-shell--narrow {
-  width: min(1100px, calc(100vw - 28px));
+  width: min(1100px, 100%);
 }
 
 .gx-page-shell--compact {
-  width: min(960px, calc(100vw - 28px));
+  width: min(960px, 100%);
 }
 
 .gx-page-hero {
@@ -1308,7 +1308,7 @@ body.dark-mode .gx-page-badge {
 
 /* Auth shells */
 .auth-shell {
-  width: min(1100px, calc(100vw - 28px));
+  width: min(1100px, 100%);
   margin: 0 auto;
   padding: 14px 0 96px;
 }
@@ -1374,7 +1374,7 @@ body.dark-mode .gx-page-badge {
 
 /* Private chat */
 .private-chat-shell {
-  width: min(1120px, calc(100vw - 28px));
+  width: min(1120px, 100%);
   margin: 0 auto;
   padding: 14px 0 96px;
   display: grid;
@@ -1475,7 +1475,7 @@ body.dark-mode .gx-page-badge {
 
 /* Waiting / utility small pages */
 .waiting-page-shell {
-  width: min(980px, calc(100vw - 28px));
+  width: min(980px, 100%);
   margin: 0 auto;
   padding: 16px 0 96px;
   display: grid;
@@ -1507,7 +1507,7 @@ body.dark-mode .gx-page-badge {
 
 /* Caro local play pages */
 .board-page-shell {
-  width: min(1120px, calc(100vw - 28px));
+  width: min(1120px, 100%);
   margin: 0 auto;
   padding: 14px 0 96px;
   display: grid;
@@ -1567,7 +1567,7 @@ body.page-chess-offline main.container.py-4,
 body.page-chess-online main.container.py-4,
 body.page-xiangqi-offline main.container.py-4,
 body.page-xiangqi-online main.container.py-4 {
-  width: min(1260px, calc(100vw - 28px));
+  width: min(1260px, 100%);
   margin: 0 auto;
   padding-top: 14px !important;
   padding-bottom: 96px !important;
@@ -1645,7 +1645,7 @@ body.page-xiangqi-online .xiangqi-player-item {
 /* Tien Len pages */
 body.page-tien-len main.container.py-3.pb-5,
 body.page-tien-len-bot main.container.py-3.pb-5 {
-  width: min(1380px, calc(100vw - 24px));
+  width: min(1380px, 100%);
   margin: 0 auto;
   padding-top: 12px !important;
   padding-bottom: 98px !important;
@@ -1709,7 +1709,7 @@ body.dark-mode.page-tien-len-bot .tl-table-center {
 
 /* Minesweeper page */
 body.page-minesweeper main.container.py-4 {
-  width: min(1320px, calc(100vw - 24px));
+  width: min(1320px, 100%);
   margin: 0 auto;
   padding-top: 12px !important;
   padding-bottom: 96px !important;
@@ -1764,13 +1764,13 @@ body.page-minesweeper .ms-cell.revealed {
 
 /* Online game page */
 .game-online-shell {
-  width: min(1280px, calc(100vw - 24px));
+  width: min(1280px, 100%);
   margin: 0 auto;
   padding: 12px 0 92px !important;
 }
 
 #gameMain.game-online-shell {
-  width: min(1280px, calc(100vw - 24px)) !important;
+  width: min(1280px, 100%) !important;
 }
 
 .game-online-title {
@@ -2013,7 +2013,7 @@ body.dark-mode .hub-portal-action--accent {
   .private-chat-shell,
   .board-page-shell,
   .waiting-page-shell {
-    width: min(100%, calc(100vw - 18px));
+    width: 100%;
   }
 
   .home-dashboard__hero {
@@ -2165,6 +2165,7 @@ body.dark-mode .hub-portal-action--accent {
   body.page-tien-len main.container.py-3.pb-5,
   body.page-tien-len-bot main.container.py-3.pb-5,
   body.page-minesweeper main.container.py-4 {
-    width: min(100%, calc(100vw - 16px));
+    width: 100%;
   }
 }
+

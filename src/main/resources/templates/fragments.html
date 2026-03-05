@@ -54,8 +54,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <link rel="stylesheet" th:href="@{/css/site.css}">
   <link rel="stylesheet" th:href="@{/css/games-portal.css}">
-  <link rel="stylesheet" th:href="@{/css/layout-refresh.css(v=20260303a)}">
-  <link rel="stylesheet" th:href="@{/css/cg-market.css(v=20260303c)}">
+  <link rel="stylesheet" th:href="@{/css/layout-refresh.css(v=20260306a)}">
+  <link rel="stylesheet" th:href="@{/css/cg-market.css(v=20260306a)}">
   <link rel="stylesheet" th:href="@{/css/game-identity.css(v=20260304a)}">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
@@ -108,6 +108,7 @@
       left: 0;
       width: var(--app-sidebar-width);
       height: 100vh;
+      height: 100dvh;
       background-color: var(--bg, #fff);
       overflow: hidden;
       transform: translateX(-100%);
@@ -307,8 +308,8 @@
       }
       body:not(.game-index) {
         padding-top: var(--app-topbar-offset);
-        padding-left: 14px;
-        padding-right: 14px;
+        padding-left: 12px;
+        padding-right: 12px;
       }
       #friendListInlineContainer {
         min-height: 170px;
@@ -328,6 +329,8 @@
       }
       body:not(.game-index) {
         padding-top: var(--app-topbar-offset);
+        padding-left: 10px;
+        padding-right: 10px;
       }
       #friendSidebar {
         padding-top: calc(var(--app-topbar-offset) + 8px);
