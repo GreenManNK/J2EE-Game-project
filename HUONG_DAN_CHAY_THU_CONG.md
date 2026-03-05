@@ -185,6 +185,49 @@ Luu y:
 - Thu muc `.vscode/` dang bi ignore trong `.gitignore`, nen file nay chu yeu dung local.
 - Neu ban muon chia se task VS Code qua Git cho ca nhom, toi co the sua `.gitignore` de cho phep track `.vscode/tasks.json`.
 
+## Chay bang Visual Studio 2022 (Open Folder)
+
+Visual Studio 2022 khong co project system Java/Spring Boot native nhu IntelliJ,
+nhung van chay on dinh theo cach `Open Folder + Terminal`.
+
+### 1) Dieu kien
+
+- Da cai Java 17+ (khuyen nghi Temurin 17/21)
+- Windows co PowerShell
+- Mo duoc terminal trong Visual Studio 2022 (`View -> Terminal`)
+
+### 2) Mo project
+
+1. Trong Visual Studio 2022: `File -> Open -> Folder...`
+2. Chon thu muc root cua project (`Game`)
+3. Mo terminal trong Visual Studio 2022
+
+### 3) Chay / Kiem tra / Dung
+
+Da them san script danh rieng cho VS2022 (khong pause terminal):
+
+- `RUN_VS2022.cmd` (Start public mode mac dinh)
+- `STATUS_VS2022.cmd` (Xem trang thai app + tunnel)
+- `STOP_VS2022.cmd` (Dung app + tunnel)
+
+Lenh:
+
+```powershell
+.\RUN_VS2022.cmd
+.\STATUS_VS2022.cmd
+.\STOP_VS2022.cmd
+```
+
+Neu ban chi muon chay local (khong tunnel):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-run-local.ps1
+```
+
+Ghi chu:
+- Cac script VS2022 tren chi goi lai luong chay chuan cua project (`RUN/STATUS/STOP PUBLIC`),
+  nen hanh vi giong IntelliJ/VS Code tasks.
+
 ## Cach nhanh nhat (truy cap tu xa moi mang)
 
 Chay file:
