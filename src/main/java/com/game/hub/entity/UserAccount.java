@@ -33,6 +33,15 @@ public class UserAccount {
     private boolean isOnline = false;
     private LocalDateTime bannedUntil;
     private LocalDateTime lastSystemNotificationSeenAt = LocalDateTime.of(1970, 1, 1, 0, 0);
+    private String themeMode = "system";
+    private String language = "vi";
+    private boolean sidebarDesktopVisibleByDefault = false;
+    private boolean sidebarMobileAutoClose = true;
+    private boolean homeMusicEnabled = true;
+    private boolean toastNotificationsEnabled = true;
+    private boolean showOfflineFriendsInSidebar = true;
+    private boolean autoRefreshFriendList = true;
+    private int friendListRefreshMs = 5000;
 
     @PrePersist
     public void prePersist() {
@@ -71,4 +80,22 @@ public class UserAccount {
     public void setBannedUntil(LocalDateTime bannedUntil) { this.bannedUntil = bannedUntil; }
     public LocalDateTime getLastSystemNotificationSeenAt() { return lastSystemNotificationSeenAt; }
     public void setLastSystemNotificationSeenAt(LocalDateTime lastSystemNotificationSeenAt) { this.lastSystemNotificationSeenAt = lastSystemNotificationSeenAt; }
+    public String getThemeMode() { return themeMode; }
+    public void setThemeMode(String themeMode) { this.themeMode = themeMode; }
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
+    public boolean isSidebarDesktopVisibleByDefault() { return sidebarDesktopVisibleByDefault; }
+    public void setSidebarDesktopVisibleByDefault(boolean sidebarDesktopVisibleByDefault) { this.sidebarDesktopVisibleByDefault = sidebarDesktopVisibleByDefault; }
+    public boolean isSidebarMobileAutoClose() { return sidebarMobileAutoClose; }
+    public void setSidebarMobileAutoClose(boolean sidebarMobileAutoClose) { this.sidebarMobileAutoClose = sidebarMobileAutoClose; }
+    public boolean isHomeMusicEnabled() { return homeMusicEnabled; }
+    public void setHomeMusicEnabled(boolean homeMusicEnabled) { this.homeMusicEnabled = homeMusicEnabled; }
+    public boolean isToastNotificationsEnabled() { return toastNotificationsEnabled; }
+    public void setToastNotificationsEnabled(boolean toastNotificationsEnabled) { this.toastNotificationsEnabled = toastNotificationsEnabled; }
+    public boolean isShowOfflineFriendsInSidebar() { return showOfflineFriendsInSidebar; }
+    public void setShowOfflineFriendsInSidebar(boolean showOfflineFriendsInSidebar) { this.showOfflineFriendsInSidebar = showOfflineFriendsInSidebar; }
+    public boolean isAutoRefreshFriendList() { return autoRefreshFriendList; }
+    public void setAutoRefreshFriendList(boolean autoRefreshFriendList) { this.autoRefreshFriendList = autoRefreshFriendList; }
+    public int getFriendListRefreshMs() { return friendListRefreshMs; }
+    public void setFriendListRefreshMs(int friendListRefreshMs) { this.friendListRefreshMs = friendListRefreshMs; }
 }

@@ -141,4 +141,42 @@ class AccountServiceTest {
         assertFalse(result.success());
         assertEquals("New password and confirmation are required", result.error());
     }
+
+    @Test
+    void updatePreferencesShouldPersistToDatabase() {
+        UserAccount user = new UserAccount();
+        user.setEmail("prefs@test.com");
+        user.setUsername("prefs@test.com");
+        user.setDisplayName("Prefs User");
+        user.setPassword(passwordEncoder.encode("Pass@123"));
+        user.setEmailConfirmed(true);
+        userAccountRepository.save(user);
+
+        AccountService.ServiceResult result = accountService.updatePreferences(
+            user.getId(),
+            new AccountService.PreferencesRequest(
+                "dark",
+                "en",
+                true,
+                false,
+                false,
+                false,
+                false,
+                false,
+                30000
+            )
+        );
+
+        assertTrue(result.success());
+        UserAccount updated = userAccountRepository.findById(user.getId()).orElseThrow();
+        assertEquals("dark", updated.getThemeMode());
+        assertEquals("en", updated.getLanguage());
+        assertTrue(updated.isSidebarDesktopVisibleByDefault());
+        assertFalse(updated.isSidebarMobileAutoClose());
+        assertFalse(updated.isHomeMusicEnabled());
+        assertFalse(updated.isToastNotificationsEnabled());
+        assertFalse(updated.isShowOfflineFriendsInSidebar());
+        assertFalse(updated.isAutoRefreshFriendList());
+        assertEquals(30000, updated.getFriendListRefreshMs());
+    }
 }

@@ -1,17 +1,21 @@
 package com.game.hub.controller;
 
 import com.game.hub.service.AccountService;
+import com.game.hub.service.AvatarStorageService;
 import com.game.hub.service.ProfileStatsService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 import java.util.Optional;
@@ -20,10 +24,14 @@ import java.util.Optional;
 public class ProfileController {
     private final AccountService accountService;
     private final ProfileStatsService profileStatsService;
+    private final AvatarStorageService avatarStorageService;
 
-    public ProfileController(AccountService accountService, ProfileStatsService profileStatsService) {
+    public ProfileController(AccountService accountService,
+                             ProfileStatsService profileStatsService,
+                             AvatarStorageService avatarStorageService) {
         this.accountService = accountService;
         this.profileStatsService = profileStatsService;
+        this.avatarStorageService = avatarStorageService;
     }
 
     @GetMapping("/profile")
@@ -95,6 +103,31 @@ public class ProfileController {
             return Map.of("success", true, "user", userMap);
         }
         return Map.of("success", true);
+    }
+
+    @PostMapping(value = "/profile/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseBody
+    public Map<String, Object> uploadAvatar(@RequestParam("avatar") MultipartFile avatar,
+                                            HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest == null ? null : httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : toTrimmed(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null) {
+            return Map.of("success", false, "error", "Login required");
+        }
+
+        AvatarStorageService.StoreResult storeResult = avatarStorageService.store(avatar);
+        if (!storeResult.success()) {
+            return Map.of("success", false, "error", storeResult.error());
+        }
+
+        AccountService.ServiceResult updateResult = accountService.updateAvatar(sessionUserId, storeResult.avatarPath());
+        if (!updateResult.success()) {
+            return Map.of("success", false, "error", updateResult.error());
+        }
+        if (updateResult.data() instanceof Map<?, ?> userMap) {
+            return Map.of("success", true, "avatarPath", storeResult.avatarPath(), "user", userMap);
+        }
+        return Map.of("success", true, "avatarPath", storeResult.avatarPath());
     }
 
     private String toTrimmed(Object value) {

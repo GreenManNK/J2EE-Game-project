@@ -65,6 +65,9 @@ app:
       h2-file: ${APP_DATASOURCE_H2_FILE:.data/game-public}
       h2-username: ${APP_DATASOURCE_H2_USER:sa}
       h2-password: ${APP_DATASOURCE_H2_PASS:}
+  upload:
+    root: ${APP_UPLOAD_ROOT:uploads}
+    avatar-dir: ${APP_UPLOAD_AVATAR_DIR:${APP_UPLOAD_ROOT:uploads}/avatars}
   websocket:
     allowed-origin-patterns: ${WS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*,http://j2ee,https://*.trycloudflare.com,http://*.trycloudflare.com}
   tienlen:

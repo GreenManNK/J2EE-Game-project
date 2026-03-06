@@ -1,18 +1,25 @@
 package com.game.hub.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.nio.file.Paths;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
     private final RoleGuardInterceptor roleGuardInterceptor;
     private final PageAccessLogInterceptor pageAccessLogInterceptor;
+    private final String uploadRoot;
 
     public WebMvcConfig(RoleGuardInterceptor roleGuardInterceptor,
-                        PageAccessLogInterceptor pageAccessLogInterceptor) {
+                        PageAccessLogInterceptor pageAccessLogInterceptor,
+                        @Value("${app.upload.root:uploads}") String uploadRoot) {
         this.roleGuardInterceptor = roleGuardInterceptor;
         this.pageAccessLogInterceptor = pageAccessLogInterceptor;
+        this.uploadRoot = uploadRoot;
     }
 
     @Override
@@ -44,5 +51,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(roleGuardInterceptor)
             .addPathPatterns("/admin/**", "/manager/**", "/notification-admin/**");
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String configuredRoot = (uploadRoot == null || uploadRoot.isBlank()) ? "uploads" : uploadRoot.trim();
+        String fileUploadLocation = Paths.get(configuredRoot).toAbsolutePath().normalize().toUri().toString();
+        registry.addResourceHandler("/uploads/**")
+            .addResourceLocations(fileUploadLocation, "classpath:/static/uploads/");
     }
 }

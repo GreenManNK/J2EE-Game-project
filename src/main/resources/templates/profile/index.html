@@ -122,17 +122,31 @@
       <div class="gx-section-card__meta">Chi chu so huu profile moi thay doi duoc</div>
     </div>
     <form id="editProfileForm" class="row g-3">
-      <div class="col-md-4">
+      <div class="col-md-6">
         <label class="form-label" for="displayName">Display Name</label>
         <input id="displayName" class="form-control" th:value="${user.displayName}">
       </div>
-      <div class="col-md-4">
+      <div class="col-md-6">
         <label class="form-label" for="email">Email</label>
         <input id="email" class="form-control" type="email" th:value="${user.email}">
       </div>
-      <div class="col-md-4">
+      <div class="col-lg-4">
+        <label class="form-label d-block" for="avatarPreview">Avatar hien tai</label>
+        <img id="avatarPreview"
+             class="profile-avatar-preview"
+             th:src="@{${user.avatarPath != null and !#strings.isEmpty(user.avatarPath) ? user.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
+             alt="avatar-preview">
+      </div>
+      <div class="col-lg-5">
         <label class="form-label" for="avatarPath">Avatar Path</label>
         <input id="avatarPath" class="form-control" th:value="${user.avatarPath}">
+        <div class="form-text">Co the paste URL hoac upload anh o khung ben canh.</div>
+      </div>
+      <div class="col-lg-3">
+        <label class="form-label" for="avatarFile">Upload avatar</label>
+        <input id="avatarFile" class="form-control" type="file" accept=".jpg,.jpeg,.png,.gif,.webp,image/*">
+        <button id="uploadAvatarBtn" type="button" class="btn btn-outline-primary btn-sm mt-2 w-100">Tai anh</button>
+        <div class="form-text">Toi da 2MB (JPG/PNG/GIF/WEBP)</div>
       </div>
       <div class="col-12">
         <button type="submit" class="btn btn-primary">Luu thay doi</button>
@@ -175,6 +189,12 @@
     const out = document.getElementById('ownerOut');
     const editForm = document.getElementById('editProfileForm');
     const pwdForm = document.getElementById('changePasswordForm');
+    const avatarPathInput = document.getElementById('avatarPath');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const avatarFileInput = document.getElementById('avatarFile');
+    const uploadAvatarBtn = document.getElementById('uploadAvatarBtn');
+    const defaultAvatarPath = '/uploads/avatars/default-avatar.jpg';
+    let previewObjectUrl = null;
 
     function setStatus(message, ok) {
       if (ui.setStatus) {
@@ -199,13 +219,95 @@
       ui.toast?.(message, { type: 'danger' });
     }
 
+    function releasePreviewObjectUrl() {
+      if (previewObjectUrl) {
+        URL.revokeObjectURL(previewObjectUrl);
+        previewObjectUrl = null;
+      }
+    }
+
+    function setAvatarPreview(path) {
+      if (!avatarPreview) return;
+      releasePreviewObjectUrl();
+      const normalizedPath = String(path || '').trim() || defaultAvatarPath;
+      avatarPreview.src = appPath(normalizedPath);
+    }
+
+    function setAvatarPreviewFromFile(file) {
+      if (!avatarPreview || !file) return;
+      releasePreviewObjectUrl();
+      previewObjectUrl = URL.createObjectURL(file);
+      avatarPreview.src = previewObjectUrl;
+    }
+
+    setAvatarPreview(avatarPathInput?.value || defaultAvatarPath);
+
+    avatarPathInput?.addEventListener('input', () => {
+      setAvatarPreview(avatarPathInput.value);
+    });
+
+    avatarFileInput?.addEventListener('change', () => {
+      const file = avatarFileInput.files?.[0];
+      if (!file) {
+        setAvatarPreview(avatarPathInput?.value || defaultAvatarPath);
+        return;
+      }
+      setAvatarPreviewFromFile(file);
+    });
+
+    uploadAvatarBtn?.addEventListener('click', async () => {
+      const file = avatarFileInput?.files?.[0];
+      if (!file) {
+        setStatus('Vui long chon file anh', false);
+        return;
+      }
+      uploadAvatarBtn.disabled = true;
+      try {
+        const body = new FormData();
+        body.append('avatar', file);
+        const res = await fetch(appPath('/profile/avatar'), {
+          method: 'POST',
+          body
+        });
+        const data = await res.json().catch(() => ({}));
+        const ok = report(data, 'Upload avatar thanh cong');
+        if (!ok) {
+          setAvatarPreview(avatarPathInput?.value || defaultAvatarPath);
+          return;
+        }
+        const updatedPath = data.user?.avatarPath || data.avatarPath || defaultAvatarPath;
+        if (avatarPathInput) {
+          avatarPathInput.value = updatedPath;
+        }
+        if (avatarFileInput) {
+          avatarFileInput.value = '';
+        }
+        setAvatarPreview(updatedPath);
+        if (window.CaroUser) {
+          const current = window.CaroUser.get() || { userId };
+          window.CaroUser.set({
+            userId: userId,
+            displayName: current.displayName || 'Player',
+            email: current.email || '',
+            role: current.role || 'User',
+            avatarPath: updatedPath
+          });
+        }
+      } catch (err) {
+        reportError(err);
+        setAvatarPreview(avatarPathInput?.value || defaultAvatarPath);
+      } finally {
+        uploadAvatarBtn.disabled = false;
+      }
+    });
+
     editForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const payload = {
         userId,
         displayName: document.getElementById('displayName')?.value || '',
         email: document.getElementById('email')?.value || '',
-        avatarPath: document.getElementById('avatarPath')?.value || ''
+        avatarPath: avatarPathInput?.value || ''
       };
       try {
         const res = await fetch(appPath('/profile'), {
@@ -217,12 +319,17 @@
         const ok = report(data, 'Cap nhat ho so thanh cong');
         if (ok && window.CaroUser) {
           const current = window.CaroUser.get() || { userId: userId };
+          const resolvedAvatarPath = data.user?.avatarPath || payload.avatarPath || current.avatarPath || defaultAvatarPath;
+          if (avatarPathInput) {
+            avatarPathInput.value = resolvedAvatarPath;
+          }
+          setAvatarPreview(resolvedAvatarPath);
           window.CaroUser.set({
             userId: userId,
             displayName: data.user?.displayName || payload.displayName || current.displayName,
             email: data.user?.email || payload.email || current.email,
             role: current.role || 'User',
-            avatarPath: data.user?.avatarPath || payload.avatarPath || current.avatarPath
+            avatarPath: resolvedAvatarPath
           });
         }
       } catch (err) {
@@ -253,6 +360,8 @@
         reportError(err);
       }
     });
+
+    window.addEventListener('beforeunload', releasePreviewObjectUrl);
   })();
 </script>
 </body>

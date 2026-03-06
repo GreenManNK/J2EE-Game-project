@@ -181,6 +181,23 @@
       };
     };
 
+    const toServerPreferencesPayload = (source) => {
+      const data = source || {};
+      return {
+        themeMode: normalizeThemeMode(data.themeMode || data.theme || "system"),
+        language: data.language === "en" ? "en" : "vi",
+        sidebarDesktopVisibleByDefault: !!data.sidebarDesktopVisibleByDefault,
+        sidebarMobileAutoClose: data.sidebarMobileAutoClose !== false,
+        homeMusicEnabled: data.homeMusicEnabled !== false,
+        toastNotificationsEnabled: data.toastNotificationsEnabled !== false,
+        showOfflineFriendsInSidebar: data.showOfflineFriendsInSidebar !== false,
+        autoRefreshFriendList: data.autoRefreshFriendList !== false,
+        friendListRefreshMs: FRIEND_LIST_ALLOWED_REFRESH_VALUES.includes(Number(data.friendListRefreshMs))
+          ? Number(data.friendListRefreshMs)
+          : 5000
+      };
+    };
+
     const applyPreferencesPayload = (prefs, persistChanges) => {
       const data = prefs || {};
       const themeMode = normalizeThemeMode(data.themeMode || data.theme || getThemeMode());
@@ -312,30 +329,81 @@
 
     autoRefreshFriendList?.addEventListener("change", syncFriendRefreshSelectState);
 
-    const savePreferences = () => {
-      applyPreferencesPayload(buildPreferencesPayload(), true);
-      setStatus(preferencesStatus, "Da luu tuy chon. Reload trang de cap nhat sidebar/friend list ngay.", true);
+    const persistPreferencesToServer = async (payload) => {
+      const response = await fetch(appPath("/account/preferences"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(toServerPreferencesPayload(payload))
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.success) {
+        throw new Error(String(data?.error || "Khong the luu preferences vao database"));
+      }
+      return toServerPreferencesPayload(data.data || payload);
+    };
+
+    const loadPreferencesFromServer = async () => {
+      if (!isAuthenticated || !authUserId) {
+        return;
+      }
+      try {
+        const response = await fetch(appPath("/account/preferences"), { cache: "no-store" });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.success || !data.data) {
+          return;
+        }
+        applyPreferencesPayload(data.data, true);
+      } catch (_) {
+      }
+    };
+
+    const persistPreferences = async (payload, successMessage) => {
+      applyPreferencesPayload(payload, true);
+      if (isAuthenticated && authUserId) {
+        const stored = await persistPreferencesToServer(payload);
+        applyPreferencesPayload(stored, true);
+        setStatus(preferencesStatus, successMessage + " (da dong bo database).", true);
+      } else {
+        setStatus(preferencesStatus, successMessage, true);
+      }
       if (toastNotificationsEnabled && toastNotificationsEnabled.checked) {
         notify("Da luu cai dat", "success");
       }
     };
 
+    const savePreferences = async () => {
+      try {
+        await persistPreferences(
+          buildPreferencesPayload(),
+          "Da luu tuy chon. Reload trang de cap nhat sidebar/friend list ngay."
+        );
+      } catch (error) {
+        const message = String(error?.message || error || "Khong the luu cai dat");
+        setStatus(preferencesStatus, message, false);
+        notify(message, "danger");
+      }
+    };
+
     savePreferencesBtn?.addEventListener("click", savePreferences);
 
-    resetPreferencesBtn?.addEventListener("click", () => {
-      applyPreferencesPayload({
-        themeMode: "system",
-        language: "vi",
-        sidebarDesktopVisibleByDefault: false,
-        sidebarMobileAutoClose: true,
-        homeMusicEnabled: true,
-        toastNotificationsEnabled: true,
-        showOfflineFriendsInSidebar: true,
-        autoRefreshFriendList: true,
-        friendListRefreshMs: 5000
-      }, true);
-      setStatus(preferencesStatus, "Da dua tat ca tuy chon ve mac dinh.", true);
-      notify("Da reset cai dat", "success");
+    resetPreferencesBtn?.addEventListener("click", async () => {
+      try {
+        await persistPreferences({
+          themeMode: "system",
+          language: "vi",
+          sidebarDesktopVisibleByDefault: false,
+          sidebarMobileAutoClose: true,
+          homeMusicEnabled: true,
+          toastNotificationsEnabled: true,
+          showOfflineFriendsInSidebar: true,
+          autoRefreshFriendList: true,
+          friendListRefreshMs: 5000
+        }, "Da dua tat ca tuy chon ve mac dinh.");
+      } catch (error) {
+        const message = String(error?.message || error || "Khong the reset cai dat");
+        setStatus(preferencesStatus, message, false);
+        notify(message, "danger");
+      }
     });
 
     exportPreferencesBtn?.addEventListener("click", () => {
@@ -366,14 +434,15 @@
         return;
       }
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = async () => {
         try {
           const parsed = JSON.parse(String(reader.result || "{}"));
-          applyPreferencesPayload(parsed, true);
-          setStatus(preferencesStatus, "Da import cai dat thanh cong.", true);
-          notify("Da import cai dat", "success");
-        } catch (_) {
-          setStatus(preferencesStatus, "File cai dat khong hop le.", false);
+          await persistPreferences(parsed, "Da import cai dat thanh cong.");
+        } catch (error) {
+          const message = error instanceof SyntaxError
+            ? "File cai dat khong hop le."
+            : String(error?.message || error || "Khong the import cai dat");
+          setStatus(preferencesStatus, message, false);
         } finally {
           importPreferencesFileInput.value = "";
         }
@@ -384,6 +453,8 @@
       };
       reader.readAsText(file);
     });
+
+    loadPreferencesFromServer();
 
     accountForm?.addEventListener("submit", async (event) => {
       event.preventDefault();

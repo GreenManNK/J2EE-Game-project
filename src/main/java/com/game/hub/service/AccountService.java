@@ -16,12 +16,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class AccountService {
     private static final int VERIFICATION_CODE_TTL_MINUTES = 5;
     private static final long VERIFICATION_RESEND_COOLDOWN_SECONDS = 30;
+    private static final Set<String> ALLOWED_THEME_MODES = Set.of("system", "light", "dark");
+    private static final Set<String> ALLOWED_LANGUAGES = Set.of("vi", "en");
+    private static final Set<Integer> ALLOWED_FRIEND_REFRESH_MS = Set.of(5000, 10000, 15000, 20000, 30000, 60000);
 
     private final UserAccountRepository userAccountRepository;
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
@@ -290,6 +294,71 @@ public class AccountService {
         ));
     }
 
+    public ServiceResult updateAvatar(String userId, String avatarPath) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+        String normalizedAvatarPath = trimToNull(avatarPath);
+        if (normalizedAvatarPath == null) {
+            return ServiceResult.error("Avatar path is required");
+        }
+
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+
+        user.setAvatarPath(normalizedAvatarPath);
+        userAccountRepository.save(user);
+        return ServiceResult.ok(Map.of(
+            "userId", user.getId(),
+            "email", user.getEmail() == null ? "" : user.getEmail(),
+            "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
+            "role", user.getRole() == null ? "User" : user.getRole(),
+            "avatarPath", user.getAvatarPath() == null ? "/uploads/avatars/default-avatar.jpg" : user.getAvatarPath()
+        ));
+    }
+
+    public ServiceResult getPreferences(String userId) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+        return ServiceResult.ok(toPreferencesPayload(user));
+    }
+
+    public ServiceResult updatePreferences(String userId, PreferencesRequest request) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+        if (request == null) {
+            return ServiceResult.error("Invalid request");
+        }
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+
+        user.setThemeMode(normalizeThemeMode(request.themeMode()));
+        user.setLanguage(normalizeLanguage(request.language()));
+        user.setSidebarDesktopVisibleByDefault(valueOrDefault(request.sidebarDesktopVisibleByDefault(), user.isSidebarDesktopVisibleByDefault()));
+        user.setSidebarMobileAutoClose(valueOrDefault(request.sidebarMobileAutoClose(), user.isSidebarMobileAutoClose()));
+        user.setHomeMusicEnabled(valueOrDefault(request.homeMusicEnabled(), user.isHomeMusicEnabled()));
+        user.setToastNotificationsEnabled(valueOrDefault(request.toastNotificationsEnabled(), user.isToastNotificationsEnabled()));
+        user.setShowOfflineFriendsInSidebar(valueOrDefault(request.showOfflineFriendsInSidebar(), user.isShowOfflineFriendsInSidebar()));
+        user.setAutoRefreshFriendList(valueOrDefault(request.autoRefreshFriendList(), user.isAutoRefreshFriendList()));
+        user.setFriendListRefreshMs(normalizeFriendRefreshMs(request.friendListRefreshMs(), user.getFriendListRefreshMs()));
+        userAccountRepository.save(user);
+
+        return ServiceResult.ok(toPreferencesPayload(user));
+    }
+
     public ServiceResult sendResetCode(String email) {
         String normalizedEmail = normalizeEmail(email);
         if (normalizedEmail == null) return ServiceResult.error("Email is required");
@@ -470,6 +539,17 @@ public class AccountService {
     public record OAuth2LoginRequest(String provider, String providerUserId, String email, String displayName) {
     }
 
+    public record PreferencesRequest(String themeMode,
+                                     String language,
+                                     Boolean sidebarDesktopVisibleByDefault,
+                                     Boolean sidebarMobileAutoClose,
+                                     Boolean homeMusicEnabled,
+                                     Boolean toastNotificationsEnabled,
+                                     Boolean showOfflineFriendsInSidebar,
+                                     Boolean autoRefreshFriendList,
+                                     Integer friendListRefreshMs) {
+    }
+
     public record ServiceResult(boolean success, String error, Object data) {
         public static ServiceResult ok(Object data) {
             return new ServiceResult(true, null, data);
@@ -544,6 +624,53 @@ public class AccountService {
         if (value == null) return null;
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String normalizeThemeMode(String mode) {
+        String normalized = trimToNull(mode);
+        if (normalized == null) {
+            return "system";
+        }
+        String lowered = normalized.toLowerCase();
+        return ALLOWED_THEME_MODES.contains(lowered) ? lowered : "system";
+    }
+
+    private String normalizeLanguage(String language) {
+        String normalized = trimToNull(language);
+        if (normalized == null) {
+            return "vi";
+        }
+        String lowered = normalized.toLowerCase();
+        return ALLOWED_LANGUAGES.contains(lowered) ? lowered : "vi";
+    }
+
+    private boolean valueOrDefault(Boolean value, boolean fallback) {
+        return value == null ? fallback : value;
+    }
+
+    private int normalizeFriendRefreshMs(Integer requested, int fallback) {
+        int value = requested == null ? fallback : requested;
+        if (ALLOWED_FRIEND_REFRESH_MS.contains(value)) {
+            return value;
+        }
+        return 5000;
+    }
+
+    private Map<String, Object> toPreferencesPayload(UserAccount user) {
+        String themeMode = normalizeThemeMode(user.getThemeMode());
+        String language = normalizeLanguage(user.getLanguage());
+        int refreshMs = normalizeFriendRefreshMs(user.getFriendListRefreshMs(), 5000);
+        return Map.of(
+            "themeMode", themeMode,
+            "language", language,
+            "sidebarDesktopVisibleByDefault", user.isSidebarDesktopVisibleByDefault(),
+            "sidebarMobileAutoClose", user.isSidebarMobileAutoClose(),
+            "homeMusicEnabled", user.isHomeMusicEnabled(),
+            "toastNotificationsEnabled", user.isToastNotificationsEnabled(),
+            "showOfflineFriendsInSidebar", user.isShowOfflineFriendsInSidebar(),
+            "autoRefreshFriendList", user.isAutoRefreshFriendList(),
+            "friendListRefreshMs", refreshMs
+        );
     }
 
     private ServiceResult issueVerificationCode(String normalizedEmail, boolean keepPendingOnSendFailure) {

@@ -1473,6 +1473,16 @@ body.dark-mode .gx-page-badge {
   line-height: 1.25;
 }
 
+.profile-avatar-preview {
+  width: 112px;
+  height: 112px;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 1px solid var(--gx-border);
+  background: color-mix(in srgb, var(--gx-panel-soft) 96%, transparent);
+  box-shadow: var(--gx-shadow-soft);
+}
+
 /* Waiting / utility small pages */
 .waiting-page-shell {
   width: min(980px, 100%);

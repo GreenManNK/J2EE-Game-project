@@ -107,6 +107,44 @@ public class AccountController {
         ));
     }
 
+    @GetMapping("/preferences")
+    public Object getPreferences(HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        return toResponse(accountService.getPreferences(sessionUserId));
+    }
+
+    @PostMapping("/preferences")
+    public Object updatePreferences(@RequestBody(required = false) UpdatePreferencesRequest request,
+                                    HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        if (request == null) {
+            return Map.of("success", false, "error", "Invalid request");
+        }
+
+        return toResponse(accountService.updatePreferences(
+            sessionUserId,
+            new AccountService.PreferencesRequest(
+                request.themeMode(),
+                request.language(),
+                request.sidebarDesktopVisibleByDefault(),
+                request.sidebarMobileAutoClose(),
+                request.homeMusicEnabled(),
+                request.toastNotificationsEnabled(),
+                request.showOfflineFriendsInSidebar(),
+                request.autoRefreshFriendList(),
+                request.friendListRefreshMs()
+            )
+        ));
+    }
+
     @PostMapping("/activate-admin")
     public Object activateAdmin(@RequestBody(required = false) ActivateAdminRequest request,
                                 HttpServletRequest httpRequest) {
@@ -199,6 +237,17 @@ public class AccountController {
     }
 
     public record UpdateProfileRequest(String userId, String displayName, String email, String avatarPath) {
+    }
+
+    public record UpdatePreferencesRequest(String themeMode,
+                                           String language,
+                                           Boolean sidebarDesktopVisibleByDefault,
+                                           Boolean sidebarMobileAutoClose,
+                                           Boolean homeMusicEnabled,
+                                           Boolean toastNotificationsEnabled,
+                                           Boolean showOfflineFriendsInSidebar,
+                                           Boolean autoRefreshFriendList,
+                                           Integer friendListRefreshMs) {
     }
 
     public record ActivateAdminRequest(String userId, String activationCode) {
