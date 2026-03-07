@@ -111,10 +111,10 @@ macOS / Linux (bash):
 bash ./scripts/dev-run-docker.sh
 ```
 
-Lenh nhanh tai root project (Windows):
+Lenh nhanh bang entrypoints (Windows):
 
-- `RUN_DOCKER.cmd` (start)
-- `STOP_DOCKER.cmd` (stop)
+- `scripts\entrypoints\RUN_DOCKER.cmd` (start)
+- `scripts\entrypoints\STOP_DOCKER.cmd` (stop)
 
 Link sau khi start:
 
@@ -206,16 +206,16 @@ nhung van chay on dinh theo cach `Open Folder + Terminal`.
 
 Da them san script danh rieng cho VS2022 (khong pause terminal):
 
-- `RUN_VS2022.cmd` (Start public mode mac dinh)
-- `STATUS_VS2022.cmd` (Xem trang thai app + tunnel)
-- `STOP_VS2022.cmd` (Dung app + tunnel)
+- `scripts\entrypoints\RUN_VS2022.cmd` (Start public mode mac dinh)
+- `scripts\entrypoints\STATUS_VS2022.cmd` (Xem trang thai app + tunnel)
+- `scripts\entrypoints\STOP_VS2022.cmd` (Dung app + tunnel)
 
 Lenh:
 
 ```powershell
-.\RUN_VS2022.cmd
-.\STATUS_VS2022.cmd
-.\STOP_VS2022.cmd
+.\scripts\entrypoints\RUN_VS2022.cmd
+.\scripts\entrypoints\STATUS_VS2022.cmd
+.\scripts\entrypoints\STOP_VS2022.cmd
 ```
 
 Neu ban chi muon chay local (khong tunnel):
@@ -225,22 +225,22 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-run-local.ps1
 ```
 
 Ghi chu:
-- Cac script VS2022 tren chi goi lai luong chay chuan cua project (`RUN/STATUS/STOP PUBLIC`),
+- Cac script VS2022 tren chi goi lai luong chay chuan cua project (`scripts/entrypoints/*` -> `scripts/manual-*`),
   nen hanh vi giong IntelliJ/VS Code tasks.
 
 ## Cach nhanh nhat (truy cap tu xa moi mang)
 
 Chay file:
 
-- `RUN.cmd` (alias moi, mac dinh = PUBLIC, khuyen nghi de "bam Run" nhanh)
-- `RUN_PUBLIC.cmd` (khuyen nghi nhat, bam truc tiep tai root project)
-- `RUN_DOCKER.cmd` (neu muon chay nhanh theo Docker)
+- `scripts/entrypoints/RUN.cmd` (alias moi, mac dinh = PUBLIC, khuyen nghi de "bam Run" nhanh)
+- `scripts/entrypoints/RUN_PUBLIC.cmd`
+- `scripts/entrypoints/RUN_DOCKER.cmd` (neu muon chay nhanh theo Docker)
 - `scripts/manual-start.cmd` (mac dinh, khuyen nghi)
 - `scripts/manual-start-public.cmd`
 
 Neu dung PowerShell:
 
-- `.\RUN.ps1`
+- `.\scripts\entrypoints\RUN.ps1`
 
 Script se:
 - tu `AutoBuild` de lay code giao dien/chuc nang moi nhat
@@ -266,7 +266,7 @@ Luu y:
    - `.env.public.mysql.example` -> `.env.public.mysql.local`
 2. Dien thong tin MySQL vao `.env.public.mysql.local`
 3. Chay mot trong cac cach:
-   - `RUN_PUBLIC_MYSQL.cmd` (bam truc tiep tai root project)
+   - `scripts/entrypoints/RUN_PUBLIC_MYSQL.cmd`
    - `scripts/manual-start-public-mysql.cmd`
    - IntelliJ: `Start Public (MySQL Standard)`
    - VS Code Task: `Game: Start Public (MySQL Standard)`
@@ -282,7 +282,7 @@ Ghi chu:
    - `.env.public.postgres.example` -> `.env.public.postgres.local`
 3. Dien thong tin PostgreSQL vao `.env.public.postgres.local`
 4. Chay mot trong cac cach:
-   - `RUN_PUBLIC_POSTGRES.cmd` (bam truc tiep tai root project)
+   - `scripts/entrypoints/RUN_PUBLIC_POSTGRES.cmd`
    - `scripts/manual-start-public-postgres.cmd`
    - IntelliJ: `Start Public (PostgreSQL)`
    - VS Code Task: `Game: Start Public (PostgreSQL)`
@@ -296,8 +296,8 @@ Ghi chu:
 
 Chay file:
 
-- `STOP_PUBLIC.cmd` (bam truc tiep tai root project)
-- `STOP_DOCKER.cmd` (neu dang chay Docker mode)
+- `scripts/entrypoints/STOP_PUBLIC.cmd`
+- `scripts/entrypoints/STOP_DOCKER.cmd` (neu dang chay Docker mode)
 - `scripts/manual-stop-all.cmd`
 - `scripts/manual-stop-docker.cmd`
 
@@ -315,7 +315,7 @@ Link local:
 
 Chay file:
 
-- `STATUS_PUBLIC.cmd` (bam truc tiep tai root project)
+- `scripts/entrypoints/STATUS_PUBLIC.cmd`
 - `scripts/manual-status.cmd`
 
 Script se hien:
@@ -349,11 +349,11 @@ cmd /c scripts\manual-start-docker.cmd
 cmd /c scripts\manual-status.cmd
 cmd /c scripts\manual-stop-all.cmd
 cmd /c scripts\manual-stop-docker.cmd
-cmd /c RUN_PUBLIC.cmd
-cmd /c RUN_PUBLIC_MYSQL.cmd
-cmd /c RUN_PUBLIC_POSTGRES.cmd
-cmd /c RUN_DOCKER.cmd
-cmd /c STATUS_PUBLIC.cmd
-cmd /c STOP_PUBLIC.cmd
-cmd /c STOP_DOCKER.cmd
+cmd /c scripts\entrypoints\RUN_PUBLIC.cmd
+cmd /c scripts\entrypoints\RUN_PUBLIC_MYSQL.cmd
+cmd /c scripts\entrypoints\RUN_PUBLIC_POSTGRES.cmd
+cmd /c scripts\entrypoints\RUN_DOCKER.cmd
+cmd /c scripts\entrypoints\STATUS_PUBLIC.cmd
+cmd /c scripts\entrypoints\STOP_PUBLIC.cmd
+cmd /c scripts\entrypoints\STOP_DOCKER.cmd
 ```

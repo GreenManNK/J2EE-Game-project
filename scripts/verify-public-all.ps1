@@ -215,21 +215,21 @@ function Ensure-StatusValue($StatusMap, [string]$Key, [string]$Expected) {
     }
 }
 
-Write-Step "Kiem tra alias script (root -> manual)"
-Invoke-Check "RUN_PUBLIC.cmd goi manual-start-public.cmd" {
-    Assert-FileContains "RUN_PUBLIC.cmd" '(?i)manual-start-public\.cmd'
+Write-Step "Kiem tra alias script (entrypoints -> manual)"
+Invoke-Check "scripts/entrypoints/RUN_PUBLIC.cmd goi manual-start-public.cmd" {
+    Assert-FileContains "scripts/entrypoints/RUN_PUBLIC.cmd" '(?i)manual-start-public\.cmd'
 } | Out-Null
-Invoke-Check "RUN_PUBLIC_MYSQL.cmd goi manual-start-public-mysql.cmd" {
-    Assert-FileContains "RUN_PUBLIC_MYSQL.cmd" '(?i)manual-start-public-mysql\.cmd'
+Invoke-Check "scripts/entrypoints/RUN_PUBLIC_MYSQL.cmd goi manual-start-public-mysql.cmd" {
+    Assert-FileContains "scripts/entrypoints/RUN_PUBLIC_MYSQL.cmd" '(?i)manual-start-public-mysql\.cmd'
 } | Out-Null
-Invoke-Check "RUN_PUBLIC_POSTGRES.cmd goi manual-start-public-postgres.cmd" {
-    Assert-FileContains "RUN_PUBLIC_POSTGRES.cmd" '(?i)manual-start-public-postgres\.cmd'
+Invoke-Check "scripts/entrypoints/RUN_PUBLIC_POSTGRES.cmd goi manual-start-public-postgres.cmd" {
+    Assert-FileContains "scripts/entrypoints/RUN_PUBLIC_POSTGRES.cmd" '(?i)manual-start-public-postgres\.cmd'
 } | Out-Null
-Invoke-Check "STATUS_PUBLIC.cmd goi manual-status.cmd" {
-    Assert-FileContains "STATUS_PUBLIC.cmd" '(?i)manual-status\.cmd'
+Invoke-Check "scripts/entrypoints/STATUS_PUBLIC.cmd goi manual-status.cmd" {
+    Assert-FileContains "scripts/entrypoints/STATUS_PUBLIC.cmd" '(?i)manual-status\.cmd'
 } | Out-Null
-Invoke-Check "STOP_PUBLIC.cmd goi manual-stop-all.cmd" {
-    Assert-FileContains "STOP_PUBLIC.cmd" '(?i)manual-stop-all\.cmd'
+Invoke-Check "scripts/entrypoints/STOP_PUBLIC.cmd goi manual-stop-all.cmd" {
+    Assert-FileContains "scripts/entrypoints/STOP_PUBLIC.cmd" '(?i)manual-stop-all\.cmd'
 } | Out-Null
 
 Write-Step "Kiem tra nut bam IntelliJ (.run)"
@@ -327,8 +327,8 @@ if (-not $NoLive) {
                 Assert-True (-not [string]::IsNullOrWhiteSpace([string]$status["ACTIVE_PUBLIC_GAME_URL"])) "ACTIVE_PUBLIC_GAME_URL rong khi dang chay"
             } | Out-Null
 
-            Invoke-Check "Root status wrapper (STATUS_PUBLIC.cmd) chay thanh cong" {
-                $statusLines = Invoke-CmdScript "STATUS_PUBLIC.cmd" -CaptureOutput
+            Invoke-Check "Entrypoint status wrapper (scripts/entrypoints/STATUS_PUBLIC.cmd) chay thanh cong" {
+                $statusLines = Invoke-CmdScript "scripts/entrypoints/STATUS_PUBLIC.cmd" -CaptureOutput
                 $status = Parse-StatusOutput $statusLines
                 Ensure-StatusValue $status "APP_PROCESS_ALIVE" "1"
                 Assert-True ($status.ContainsKey("ACTIVE_TUNNEL_MODE")) "Status output thieu ACTIVE_TUNNEL_MODE"
@@ -337,14 +337,14 @@ if (-not $NoLive) {
             } | Out-Null
         }
 
-        Invoke-Check "Root stop wrapper (STOP_PUBLIC.cmd) dung app + tunnel" {
-            Invoke-CmdScript "STOP_PUBLIC.cmd" | Out-Null
+        Invoke-Check "Entrypoint stop wrapper (scripts/entrypoints/STOP_PUBLIC.cmd) dung app + tunnel" {
+            Invoke-CmdScript "scripts/entrypoints/STOP_PUBLIC.cmd" | Out-Null
             $script:stopped = $true
-            Assert-True (Wait-ProcessesStopped 25) "App/tunnel chua dung sau STOP_PUBLIC.cmd"
+            Assert-True (Wait-ProcessesStopped 25) "App/tunnel chua dung sau scripts/entrypoints/STOP_PUBLIC.cmd"
         } | Out-Null
 
-        Invoke-Check "Root status wrapper sau khi stop hien process=0" {
-            $statusLines = Invoke-CmdScript "STATUS_PUBLIC.cmd" -CaptureOutput
+        Invoke-Check "Entrypoint status wrapper sau khi stop hien process=0" {
+            $statusLines = Invoke-CmdScript "scripts/entrypoints/STATUS_PUBLIC.cmd" -CaptureOutput
             $status = Parse-StatusOutput $statusLines
             Ensure-StatusValue $status "APP_PROCESS_ALIVE" "0"
             Ensure-StatusValue $status "QUICK_TUNNEL_PROCESS_ALIVE" "0"
