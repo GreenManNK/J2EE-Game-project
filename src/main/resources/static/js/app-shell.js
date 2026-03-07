@@ -4,6 +4,7 @@
   const FRIEND_LIST_AUTO_REFRESH_KEY = 'caroFriendListAutoRefresh.v1';
   const FRIEND_LIST_SHOW_OFFLINE_KEY = 'caroFriendListShowOffline.v1';
   const PREFERENCES_CHANGED_EVENT = 'caro:preferences-changed';
+  const USER_CHANGE_EVENT = 'caro:user-changed';
   const FRIEND_LIST_ALLOWED_REFRESH_VALUES = [5000, 10000, 15000, 20000, 30000, 60000];
   let friendListPollTimerId = null;
   let friendListLoading = false;
@@ -77,7 +78,7 @@
 
     const current = window.CaroUser.get();
     if (!current || !current.userId) {
-      container.innerHTML = '<div class="small text-muted">' + escapeHtml(t('Chưa có bạn bè nào.')) + '</div>';
+      container.innerHTML = '<div class="small text-muted">' + escapeHtml(t('Chưa đăng nhập')) + '</div>';
       return;
     }
 
@@ -145,6 +146,12 @@
       friendListPollTimerId = null;
     }
 
+    const current = window.CaroUser?.get?.();
+    if (!current || !current.userId) {
+      void loadFriendList();
+      return;
+    }
+
     void loadFriendList();
 
     const autoRefresh = readBooleanPref(FRIEND_LIST_AUTO_REFRESH_KEY, true);
@@ -177,6 +184,10 @@
     };
 
     window.addEventListener(PREFERENCES_CHANGED_EVENT, () => {
+      refreshFromPreferences();
+    });
+    window.addEventListener(USER_CHANGE_EVENT, () => {
+      bindCurrentUserLinks();
       refreshFromPreferences();
     });
 

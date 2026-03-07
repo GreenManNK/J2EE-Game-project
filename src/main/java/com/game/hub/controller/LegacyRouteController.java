@@ -43,16 +43,16 @@ public class LegacyRouteController {
     @GetMapping("/Game/Index")
     public String gameIndex(@RequestParam(required = false) String roomId,
                             @RequestParam(required = false) String symbol) {
-        StringBuilder redirect = new StringBuilder("redirect:/game");
         if (roomId != null && !roomId.isBlank()) {
-            redirect.append("?roomId=").append(roomId);
+            StringBuilder redirect = new StringBuilder("redirect:/game/room/").append(roomId);
             if (symbol != null && !symbol.isBlank()) {
-                redirect.append("&symbol=").append(symbol);
+                redirect.append("?symbol=").append(symbol);
             }
+            return redirect.toString();
         } else if (symbol != null && !symbol.isBlank()) {
-            redirect.append("?symbol=").append(symbol);
+            return "redirect:/game?symbol=" + symbol;
         }
-        return redirect.toString();
+        return "redirect:/game";
     }
 
     @GetMapping("/Game/Offline")
@@ -71,11 +71,15 @@ public class LegacyRouteController {
     }
 
     @GetMapping("/Chess/Online")
-    public String chessOnline(@RequestParam(required = false) String roomId) {
+    public String chessOnline(@RequestParam(required = false) String roomId,
+                              @RequestParam(required = false) Boolean spectate) {
         if (roomId == null || roomId.isBlank()) {
             return "redirect:/chess/online";
         }
-        return "redirect:/chess/online?roomId=" + roomId;
+        if (Boolean.TRUE.equals(spectate)) {
+            return "redirect:/chess/online/room/" + roomId + "/spectate";
+        }
+        return "redirect:/chess/online/room/" + roomId;
     }
 
     @GetMapping("/Xiangqi/Offline")
@@ -89,15 +93,22 @@ public class LegacyRouteController {
     }
 
     @GetMapping("/Xiangqi/Online")
-    public String xiangqiOnline(@RequestParam(required = false) String roomId) {
+    public String xiangqiOnline(@RequestParam(required = false) String roomId,
+                                @RequestParam(required = false) Boolean spectate) {
         if (roomId == null || roomId.isBlank()) {
             return "redirect:/xiangqi/online";
         }
-        return "redirect:/xiangqi/online?roomId=" + roomId;
+        if (Boolean.TRUE.equals(spectate)) {
+            return "redirect:/xiangqi/online/room/" + roomId + "/spectate";
+        }
+        return "redirect:/xiangqi/online/room/" + roomId;
     }
 
     @GetMapping("/Cards/TienLen")
-    public String cardsTienLen() {
+    public String cardsTienLen(@RequestParam(required = false) String roomId) {
+        if (roomId != null && !roomId.isBlank()) {
+            return "redirect:/cards/tien-len/room/" + roomId;
+        }
         return "redirect:/cards/tien-len";
     }
 

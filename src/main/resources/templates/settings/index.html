@@ -66,6 +66,13 @@
                    th:disabled="${!isAuthenticated}"
                    placeholder="/uploads/avatars/default-avatar.jpg">
           </div>
+          <div class="col-12" th:if="${isAuthenticated}">
+            <label class="form-label d-block" for="settingsAvatarPreview">Anh profile hien tai</label>
+            <img id="settingsAvatarPreview"
+                 class="profile-avatar-preview"
+                 th:src="@{${settingsUser != null and settingsUser.avatarPath != null and !#strings.isEmpty(settingsUser.avatarPath) ? settingsUser.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
+                 alt="avatar-settings-preview">
+          </div>
           <div class="col-12 d-flex gap-2">
             <button type="submit" class="btn btn-primary" th:disabled="${!isAuthenticated}">
               <i class="bi bi-check2-circle me-1"></i> Luu tai khoan

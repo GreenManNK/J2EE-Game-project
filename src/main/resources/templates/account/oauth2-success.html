@@ -7,6 +7,7 @@
 </head>
 <body>
 <p>Dang xu ly dang nhap, vui long cho...</p>
+<script th:src="@{/js/site.js}"></script>
 <script th:inline="javascript">
   (function () {
     const user = {
@@ -19,12 +20,10 @@
 
     if (user.userId) {
       try {
-        localStorage.setItem("caro_current_user", JSON.stringify(user));
-        localStorage.setItem("userId", user.userId);
-        localStorage.setItem("displayName", user.displayName || "Player");
-        localStorage.setItem("email", user.email || "");
-        localStorage.setItem("role", user.role || "User");
-        localStorage.setItem("avatarPath", user.avatarPath || "/uploads/avatars/default-avatar.jpg");
+        if (window.CaroUser && typeof window.CaroUser.set === "function") {
+          window.CaroUser.set(user);
+        }
+        localStorage.setItem("caroGuestMigrationPending.v1", "1");
       } catch (_) {
       }
     }

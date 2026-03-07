@@ -1,14 +1,20 @@
-﻿const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/gamehub")
+const appPath = (window.CaroUrl && typeof window.CaroUrl.path === "function")
+    ? window.CaroUrl.path
+    : (value) => value;
+
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl(appPath("/gamehub"))
     .build();
+
 connection.start().then(() => {
     connection.invoke("RegisterPlayerInfo");
-}).catch(err => console.error("❌ Kết nối thất bại:", err));
+}).catch(err => console.error("SignalR connect failed:", err));
 
 connection.on("StartGame", function (roomId) {
-    window.location.href = `/Game/Index?roomId=${roomId}`;
+    const normalizedRoomId = String(roomId || "").trim();
+    window.location.href = appPath(`/game/room/${encodeURIComponent(normalizedRoomId)}`);
 });
 
 connection.on("ChallengeDeclined", function () {
-    window.location.href = "/Home/Index";
+    window.location.href = appPath("/");
 });

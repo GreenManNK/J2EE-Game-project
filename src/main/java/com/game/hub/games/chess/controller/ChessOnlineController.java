@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -35,6 +36,20 @@ public class ChessOnlineController {
         model.addAttribute("sessionAvatarPath", player.avatarPath());
         model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
         return "chess/online";
+    }
+
+    @GetMapping("/online/room/{roomId}")
+    public String onlineRoom(@PathVariable String roomId,
+                             HttpServletRequest request,
+                             Model model) {
+        return online(roomId, request, model);
+    }
+
+    @GetMapping("/online/room/{roomId}/spectate")
+    public String spectateRoom(@PathVariable String roomId,
+                               HttpServletRequest request,
+                               Model model) {
+        return online(roomId, request, model);
     }
 
     private SessionPlayer resolveSessionPlayer(HttpServletRequest request) {

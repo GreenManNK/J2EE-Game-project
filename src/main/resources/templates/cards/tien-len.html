@@ -30,9 +30,17 @@
           <button id="tlLeaveBtn" type="button" class="btn btn-outline-danger" disabled>Roi phong</button>
         </div>
 
-        <div class="mt-3 d-flex flex-wrap gap-3 small">
-          <div><strong>Ban:</strong> <span id="tlSelfName" th:text="${sessionDisplayName}">Guest</span></div>
-          <div><strong>User ID:</strong> <span id="tlSelfUserId" th:text="${sessionUserId}">guest</span></div>
+        <div class="mt-3 d-flex flex-wrap gap-3 small align-items-center">
+          <div class="tl-self-summary">
+            <img id="tlSelfAvatar"
+                 class="tl-self-summary__avatar"
+                 th:src="@{/uploads/avatars/default-avatar.jpg}"
+                 alt="Avatar nguoi choi">
+            <div class="tl-self-summary__body">
+              <div><strong>Ban:</strong> <span id="tlSelfName" th:text="${sessionDisplayName}">Guest</span></div>
+              <div id="tlSelfMeta" class="text-muted">Khach tam thoi</div>
+            </div>
+          </div>
           <div><strong>Phong hien tai:</strong> <span id="tlCurrentRoomLabel">Chua vao</span></div>
         </div>
 
@@ -144,6 +152,27 @@
     max-height: 250px;
     overflow-y: auto;
     padding-right: 2px;
+  }
+
+  .tl-self-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .tl-self-summary__avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 1px solid rgba(19, 79, 59, 0.18);
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 6px 16px rgba(5, 35, 26, 0.08);
+    flex-shrink: 0;
+  }
+
+  .tl-self-summary__body {
+    min-width: 0;
   }
 
   .tl-room-item {

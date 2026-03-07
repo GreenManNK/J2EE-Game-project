@@ -13,6 +13,8 @@
     supportsSpectateNow: Boolean(boot.supportsSpectateNow),
     playUrlBase: String(boot.playUrlBase || '').trim(),
     playRoomParam: String(boot.playRoomParam || '').trim(),
+    playUrlTemplate: String(boot.playUrlTemplate || '').trim(),
+    spectateUrlTemplate: String(boot.spectateUrlTemplate || '').trim(),
     spectateParamName: String(boot.spectateParamName || '').trim(),
     spectateParamValue: String(boot.spectateParamValue || '').trim(),
     inviteUrlPathTemplate: String(boot.inviteUrlPathTemplate || '').trim(),
@@ -71,7 +73,7 @@
       }
       setRoomQueryInUrl(nextRoomId);
       syncRoomUi();
-      if (state.onlineSupportedNow && state.playUrlBase) {
+      if (state.onlineSupportedNow && hasPlayTarget()) {
         const target = buildPlayUrl(nextRoomId, false);
         if (target) {
           setStatus('Dang vao phong ' + nextRoomId + ' ...');
@@ -101,7 +103,7 @@
     });
 
     els.goPlayBtn?.addEventListener('click', () => {
-      if (!state.roomId || !state.onlineSupportedNow || !state.playUrlBase) {
+      if (!state.roomId || !state.onlineSupportedNow || !hasPlayTarget()) {
         return;
       }
       if (isRoomFull(selectedRoomRow()) && state.supportsSpectateNow) {
@@ -115,7 +117,7 @@
     });
 
     els.goSpectateBtn?.addEventListener('click', () => {
-      if (!state.roomId || !state.supportsSpectateNow || !state.playUrlBase) {
+      if (!state.roomId || !state.supportsSpectateNow || !hasSpectateTarget()) {
         return;
       }
       const target = buildPlayUrl(state.roomId, true);
@@ -280,7 +282,7 @@
       spectateBtn.type = 'button';
       spectateBtn.className = 'btn btn-sm btn-info';
       spectateBtn.textContent = 'Xem';
-      spectateBtn.disabled = !roomId || !state.supportsSpectateNow || !state.playUrlBase;
+      spectateBtn.disabled = !roomId || !state.supportsSpectateNow || !hasSpectateTarget();
       if (!state.supportsSpectateNow) {
         spectateBtn.style.display = 'none';
       }
@@ -334,7 +336,7 @@
       const canPlay = Boolean(
         state.roomId &&
         state.onlineSupportedNow &&
-        state.playUrlBase &&
+        hasPlayTarget() &&
         !(selectedRoomFull && state.supportsSpectateNow)
       );
       els.goPlayBtn.disabled = !canPlay;
@@ -347,7 +349,7 @@
       }
     }
     if (els.goSpectateBtn) {
-      els.goSpectateBtn.disabled = !(state.roomId && state.supportsSpectateNow && state.playUrlBase);
+      els.goSpectateBtn.disabled = !(state.roomId && state.supportsSpectateNow && hasSpectateTarget());
       els.goSpectateBtn.hidden = !state.supportsSpectateNow;
     }
   }
@@ -380,6 +382,13 @@
         throw new Error('HTTP ' + res.status);
       }
       const data = await res.json();
+      if (data && typeof data === 'object') {
+        state.playUrlBase = String(data.playUrlBase || state.playUrlBase || '').trim();
+        state.playRoomParam = String(data.playRoomParam || state.playRoomParam || '').trim();
+        state.playUrlTemplate = String(data.playUrlTemplate || state.playUrlTemplate || '').trim();
+        state.spectateUrlTemplate = String(data.spectateUrlTemplate || state.spectateUrlTemplate || '').trim();
+        state.inviteUrlPathTemplate = String(data.inviteUrlPathTemplate || state.inviteUrlPathTemplate || '').trim();
+      }
       return {
         roomId: normalizeRoomId(data?.roomId),
         serverCreated: Boolean(data?.serverCreated)
@@ -390,11 +399,21 @@
   }
 
   function buildPlayUrl(roomId, spectateMode) {
-    if (!state.playUrlBase || !roomId) {
+    const normalizedRoomId = String(roomId || '').trim();
+    if (!normalizedRoomId) {
+      return '';
+    }
+    const template = spectateMode
+      ? String(state.spectateUrlTemplate || '').trim()
+      : String(state.playUrlTemplate || '').trim();
+    if (template) {
+      return applyRoomTemplate(template, normalizedRoomId);
+    }
+    if (!state.playUrlBase) {
       return '';
     }
     const url = new URL(appPath(state.playUrlBase), window.location.origin);
-    url.searchParams.set(normalizeRoomParamName(state.playRoomParam), String(roomId).trim());
+    url.searchParams.set(normalizeRoomParamName(state.playRoomParam), normalizedRoomId);
 
     if (spectateMode) {
       const name = normalizeSpectateParamName(state.spectateParamName);
@@ -402,6 +421,24 @@
         url.searchParams.set(name, normalizeSpectateParamValue(state.spectateParamValue));
       }
     }
+    return url.pathname + url.search;
+  }
+
+  function hasPlayTarget() {
+    return Boolean(state.playUrlTemplate || state.playUrlBase);
+  }
+
+  function hasSpectateTarget() {
+    return Boolean(state.spectateUrlTemplate || (state.supportsSpectateNow && state.playUrlBase));
+  }
+
+  function applyRoomTemplate(template, roomId) {
+    const path = String(template || '').trim();
+    if (!path) {
+      return '';
+    }
+    const resolvedPath = path.replace('{roomId}', encodeURIComponent(String(roomId || '').trim()));
+    const url = new URL(appPath(resolvedPath), window.location.origin);
     return url.pathname + url.search;
   }
 

@@ -11,6 +11,8 @@ import com.game.hub.repository.UserAccountRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -32,6 +34,8 @@ public class AccountService {
     private static final String GAME_CODE_CHESS_OFFLINE = "chess-offline";
     private static final String GAME_CODE_XIANGQI_OFFLINE = "xiangqi-offline";
     private static final String GAME_CODE_MINESWEEPER = "minesweeper";
+    private static final int PUZZLE_RECENT_LIMIT = 8;
+    private static final int GAMES_BROWSER_RECENT_LIMIT = 20;
 
     private final UserAccountRepository userAccountRepository;
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
@@ -343,6 +347,18 @@ public class AccountService {
         return ServiceResult.ok(toPreferencesPayload(user));
     }
 
+    public ServiceResult getSessionUserSummary(String userId) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+        return ServiceResult.ok(toLoginPayload(user));
+    }
+
     public ServiceResult updatePreferences(String userId, PreferencesRequest request) {
         String normalizedUserId = trimToNull(userId);
         if (normalizedUserId == null) {
@@ -432,6 +448,211 @@ public class AccountService {
             "gameCode", normalizedGameCode,
             "stats", normalizedToPersist
         ));
+    }
+
+    public ServiceResult getPuzzleCatalogState(String userId) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+
+        return ServiceResult.ok(toPuzzleCatalogStatePayload(user));
+    }
+
+    public ServiceResult updatePuzzleCatalogState(String userId, PuzzleCatalogStateRequest request) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+        if (request == null) {
+            return ServiceResult.error("Invalid request");
+        }
+
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+
+        boolean merge = request.merge() == null || request.merge();
+
+        List<String> existingFavorites = readStringList(user.getPuzzleCatalogFavoritesJson());
+        Map<String, Integer> existingRatings = normalizePuzzleCatalogRatings(readJsonMap(user.getPuzzleCatalogRatingsJson()));
+        List<String> existingRecentCodes = readStringList(user.getPuzzleCatalogRecentJson());
+
+        List<String> nextFavorites = existingFavorites;
+        if (request.favorites() != null) {
+            List<String> incomingFavorites = normalizePuzzleCatalogStringList(request.favorites(), 256);
+            nextFavorites = merge
+                ? mergePuzzleCatalogStringLists(incomingFavorites, existingFavorites, 256)
+                : incomingFavorites;
+        }
+
+        Map<String, Integer> nextRatings = existingRatings;
+        if (request.ratings() != null) {
+            Map<String, Integer> incomingRatings = normalizePuzzleCatalogRatings(request.ratings());
+            nextRatings = merge ? mergePuzzleCatalogRatings(existingRatings, incomingRatings) : incomingRatings;
+        }
+
+        List<String> nextRecentCodes = existingRecentCodes;
+        if (request.recentCodes() != null) {
+            List<String> incomingRecentCodes = normalizePuzzleCatalogStringList(request.recentCodes(), PUZZLE_RECENT_LIMIT);
+            nextRecentCodes = merge
+                ? mergePuzzleCatalogStringLists(incomingRecentCodes, existingRecentCodes, PUZZLE_RECENT_LIMIT)
+                : incomingRecentCodes;
+        }
+
+        String favoritesJson = writeJson(nextFavorites);
+        String ratingsJson = writeJson(nextRatings);
+        String recentJson = writeJson(nextRecentCodes);
+        if (favoritesJson == null || ratingsJson == null || recentJson == null) {
+            return ServiceResult.error("Cannot serialize puzzle catalog state");
+        }
+
+        user.setPuzzleCatalogFavoritesJson(favoritesJson);
+        user.setPuzzleCatalogRatingsJson(ratingsJson);
+        user.setPuzzleCatalogRecentJson(recentJson);
+        userAccountRepository.save(user);
+
+        return ServiceResult.ok(toPuzzleCatalogStatePayload(user));
+    }
+
+    public ServiceResult getGamesBrowserState(String userId) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+
+        return ServiceResult.ok(toGamesBrowserStatePayload(user));
+    }
+
+    public ServiceResult updateGamesBrowserState(String userId, GamesBrowserStateRequest request) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+        if (request == null) {
+            return ServiceResult.error("Invalid request");
+        }
+
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+
+        boolean merge = request.merge() == null || request.merge();
+
+        List<String> existingFavorites = normalizeGamesBrowserFavoriteCodes(readStringList(user.getGamesBrowserFavoritesJson()));
+        List<Map<String, Object>> existingRecentGames = readGamesBrowserRecentGames(user.getGamesBrowserRecentJson());
+
+        List<String> nextFavorites = existingFavorites;
+        if (request.favorites() != null) {
+            List<String> incomingFavorites = normalizeGamesBrowserFavoriteCodes(request.favorites());
+            nextFavorites = merge
+                ? mergePuzzleCatalogStringLists(incomingFavorites, existingFavorites, 256)
+                : incomingFavorites;
+        }
+
+        List<Map<String, Object>> nextRecentGames = existingRecentGames;
+        if (request.recentGames() != null) {
+            List<Map<String, Object>> incomingRecentGames = normalizeGamesBrowserRecentGames(request.recentGames());
+            nextRecentGames = merge
+                ? mergeGamesBrowserRecentGames(incomingRecentGames, existingRecentGames)
+                : incomingRecentGames;
+        }
+
+        String favoritesJson = writeJson(nextFavorites);
+        String recentGamesJson = writeJson(nextRecentGames);
+        if (favoritesJson == null || recentGamesJson == null) {
+            return ServiceResult.error("Cannot serialize games browser state");
+        }
+
+        user.setGamesBrowserFavoritesJson(favoritesJson);
+        user.setGamesBrowserRecentJson(recentGamesJson);
+        userAccountRepository.save(user);
+
+        return ServiceResult.ok(toGamesBrowserStatePayload(user));
+    }
+
+    @Transactional
+    public ServiceResult migrateGuestData(String userId, GuestMigrationRequest request) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+        if (request == null) {
+            return ServiceResult.error("Invalid request");
+        }
+
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        boolean migratedPreferences = false;
+        List<String> migratedGameStats = new java.util.ArrayList<>();
+
+        if (request.preferences() != null) {
+            ServiceResult preferencesResult = updatePreferences(normalizedUserId, request.preferences());
+            if (!preferencesResult.success()) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return preferencesResult;
+            }
+            migratedPreferences = true;
+            response.put("preferences", preferencesResult.data());
+        }
+
+        if (request.gameStats() != null && !request.gameStats().isEmpty()) {
+            for (Map.Entry<String, Object> entry : request.gameStats().entrySet()) {
+                ServiceResult statsResult = updateGameStats(normalizedUserId, entry.getKey(), entry.getValue(), true);
+                if (!statsResult.success()) {
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return statsResult;
+                }
+                Object data = statsResult.data();
+                if (data instanceof Map<?, ?> statsMap) {
+                    Object normalizedGameCode = statsMap.get("gameCode");
+                    if (normalizedGameCode != null) {
+                        migratedGameStats.add(String.valueOf(normalizedGameCode));
+                    }
+                }
+            }
+        }
+
+        if (request.puzzleCatalogState() != null) {
+            ServiceResult puzzleCatalogResult = updatePuzzleCatalogState(normalizedUserId, request.puzzleCatalogState());
+            if (!puzzleCatalogResult.success()) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return puzzleCatalogResult;
+            }
+            response.put("puzzleCatalogState", puzzleCatalogResult.data());
+        }
+
+        if (request.gamesBrowserState() != null) {
+            ServiceResult gamesBrowserResult = updateGamesBrowserState(normalizedUserId, request.gamesBrowserState());
+            if (!gamesBrowserResult.success()) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return gamesBrowserResult;
+            }
+            response.put("gamesBrowserState", gamesBrowserResult.data());
+        }
+
+        response.put("migratedPreferences", migratedPreferences);
+        response.put("migratedGameStats", migratedGameStats);
+        response.put("migratedGameStatsCount", migratedGameStats.size());
+        response.put("migratedPuzzleCatalogState", request.puzzleCatalogState() != null);
+        response.put("migratedGamesBrowserState", request.gamesBrowserState() != null);
+        return ServiceResult.ok(response);
     }
 
     public ServiceResult sendResetCode(String email) {
@@ -623,6 +844,23 @@ public class AccountService {
                                      Boolean showOfflineFriendsInSidebar,
                                      Boolean autoRefreshFriendList,
                                      Integer friendListRefreshMs) {
+    }
+
+    public record PuzzleCatalogStateRequest(List<String> favorites,
+                                            Map<String, Object> ratings,
+                                            List<String> recentCodes,
+                                            Boolean merge) {
+    }
+
+    public record GamesBrowserStateRequest(List<String> favorites,
+                                           List<Map<String, Object>> recentGames,
+                                           Boolean merge) {
+    }
+
+    public record GuestMigrationRequest(PreferencesRequest preferences,
+                                        Map<String, Object> gameStats,
+                                        PuzzleCatalogStateRequest puzzleCatalogState,
+                                        GamesBrowserStateRequest gamesBrowserState) {
     }
 
     public record ServiceResult(boolean success, String error, Object data) {
@@ -868,6 +1106,24 @@ public class AccountService {
         }
     }
 
+    private long toLong(Object value, long fallback) {
+        if (value == null) {
+            return fallback;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        String text = String.valueOf(value).trim();
+        if (text.isEmpty()) {
+            return fallback;
+        }
+        try {
+            return Long.parseLong(text);
+        } catch (NumberFormatException ex) {
+            return fallback;
+        }
+    }
+
     private Map<String, Object> readJsonMap(String json) {
         String raw = trimToNull(json);
         if (raw == null) {
@@ -888,6 +1144,210 @@ public class AccountService {
         } catch (Exception ex) {
             return null;
         }
+    }
+
+    private List<String> readStringList(String json) {
+        String raw = trimToNull(json);
+        if (raw == null) {
+            return List.of();
+        }
+        try {
+            List<String> parsed = objectMapper.readValue(raw, new TypeReference<List<String>>() {
+            });
+            return normalizePuzzleCatalogStringList(parsed, 256);
+        } catch (Exception ex) {
+            return List.of();
+        }
+    }
+
+    private List<String> normalizePuzzleCatalogStringList(Object rawValue, int limit) {
+        if (!(rawValue instanceof Iterable<?> iterable)) {
+            return List.of();
+        }
+        java.util.LinkedHashSet<String> ordered = new java.util.LinkedHashSet<>();
+        for (Object item : iterable) {
+            String normalized = trimToNull(item == null ? null : String.valueOf(item));
+            if (normalized == null) {
+                continue;
+            }
+            ordered.add(normalized);
+            if (ordered.size() >= limit) {
+                break;
+            }
+        }
+        return List.copyOf(ordered);
+    }
+
+    private List<String> mergePuzzleCatalogStringLists(List<String> primary, List<String> secondary, int limit) {
+        java.util.LinkedHashSet<String> merged = new java.util.LinkedHashSet<>();
+        for (String value : primary == null ? List.<String>of() : primary) {
+            String normalized = trimToNull(value);
+            if (normalized == null) {
+                continue;
+            }
+            merged.add(normalized);
+            if (merged.size() >= limit) {
+                return List.copyOf(merged);
+            }
+        }
+        for (String value : secondary == null ? List.<String>of() : secondary) {
+            String normalized = trimToNull(value);
+            if (normalized == null) {
+                continue;
+            }
+            merged.add(normalized);
+            if (merged.size() >= limit) {
+                break;
+            }
+        }
+        return List.copyOf(merged);
+    }
+
+    private Map<String, Integer> normalizePuzzleCatalogRatings(Object rawValue) {
+        Map<String, Integer> result = new java.util.LinkedHashMap<>();
+        if (!(rawValue instanceof Map<?, ?> source)) {
+            return result;
+        }
+        for (Map.Entry<?, ?> entry : source.entrySet()) {
+            String code = trimToNull(entry.getKey() == null ? null : String.valueOf(entry.getKey()));
+            if (code == null) {
+                continue;
+            }
+            int rating = toInt(entry.getValue(), 0);
+            if (rating >= 1 && rating <= 5) {
+                result.put(code, rating);
+            }
+        }
+        return result;
+    }
+
+    private Map<String, Integer> mergePuzzleCatalogRatings(Map<String, Integer> existing, Map<String, Integer> incoming) {
+        Map<String, Integer> merged = new java.util.LinkedHashMap<>();
+        if (existing != null) {
+            merged.putAll(existing);
+        }
+        if (incoming != null) {
+            merged.putAll(incoming);
+        }
+        return merged;
+    }
+
+    private Map<String, Object> toPuzzleCatalogStatePayload(UserAccount user) {
+        if (user == null) {
+            return Map.of(
+                "favorites", List.of(),
+                "ratings", Map.of(),
+                "recentCodes", List.of()
+            );
+        }
+        return Map.of(
+            "favorites", readStringList(user.getPuzzleCatalogFavoritesJson()),
+            "ratings", normalizePuzzleCatalogRatings(readJsonMap(user.getPuzzleCatalogRatingsJson())),
+            "recentCodes", normalizePuzzleCatalogStringList(readStringList(user.getPuzzleCatalogRecentJson()), PUZZLE_RECENT_LIMIT)
+        );
+    }
+
+    private List<String> normalizeGamesBrowserFavoriteCodes(Object rawValue) {
+        if (!(rawValue instanceof Iterable<?> iterable)) {
+            return List.of();
+        }
+        java.util.LinkedHashSet<String> ordered = new java.util.LinkedHashSet<>();
+        for (Object item : iterable) {
+            String normalized = normalizeGamesBrowserCode(item == null ? null : String.valueOf(item));
+            if (normalized == null) {
+                continue;
+            }
+            ordered.add(normalized);
+            if (ordered.size() >= 256) {
+                break;
+            }
+        }
+        return List.copyOf(ordered);
+    }
+
+    private String normalizeGamesBrowserCode(String value) {
+        String normalized = trimToNull(value);
+        return normalized == null ? null : normalized.toLowerCase();
+    }
+
+    private List<Map<String, Object>> readGamesBrowserRecentGames(String json) {
+        String raw = trimToNull(json);
+        if (raw == null) {
+            return List.of();
+        }
+        try {
+            List<Map<String, Object>> parsed = objectMapper.readValue(raw, new TypeReference<List<Map<String, Object>>>() {
+            });
+            return normalizeGamesBrowserRecentGames(parsed);
+        } catch (Exception ex) {
+            return List.of();
+        }
+    }
+
+    private List<Map<String, Object>> normalizeGamesBrowserRecentGames(Object rawValue) {
+        if (!(rawValue instanceof Iterable<?> iterable)) {
+            return List.of();
+        }
+        java.util.LinkedHashMap<String, Map<String, Object>> ordered = new java.util.LinkedHashMap<>();
+        for (Object item : iterable) {
+            if (!(item instanceof Map<?, ?> source)) {
+                continue;
+            }
+            String code = normalizeGamesBrowserCode(source.get("code") == null ? null : String.valueOf(source.get("code")));
+            if (code == null) {
+                continue;
+            }
+            String name = trimToNull(source.get("name") == null ? null : String.valueOf(source.get("name")));
+            long at = toLong(source.get("at"), System.currentTimeMillis());
+            Map<String, Object> payload = new java.util.LinkedHashMap<>();
+            payload.put("code", code);
+            payload.put("name", name == null ? code : name);
+            payload.put("at", Math.max(0L, at));
+            ordered.putIfAbsent(code, Map.copyOf(payload));
+            if (ordered.size() >= GAMES_BROWSER_RECENT_LIMIT) {
+                break;
+            }
+        }
+        return List.copyOf(ordered.values());
+    }
+
+    private List<Map<String, Object>> mergeGamesBrowserRecentGames(List<Map<String, Object>> primary,
+                                                                   List<Map<String, Object>> secondary) {
+        java.util.LinkedHashMap<String, Map<String, Object>> merged = new java.util.LinkedHashMap<>();
+        for (Map<String, Object> item : primary == null ? List.<Map<String, Object>>of() : primary) {
+            String code = normalizeGamesBrowserCode(item == null ? null : String.valueOf(item.get("code")));
+            if (code == null) {
+                continue;
+            }
+            merged.putIfAbsent(code, item);
+            if (merged.size() >= GAMES_BROWSER_RECENT_LIMIT) {
+                return List.copyOf(merged.values());
+            }
+        }
+        for (Map<String, Object> item : secondary == null ? List.<Map<String, Object>>of() : secondary) {
+            String code = normalizeGamesBrowserCode(item == null ? null : String.valueOf(item.get("code")));
+            if (code == null) {
+                continue;
+            }
+            merged.putIfAbsent(code, item);
+            if (merged.size() >= GAMES_BROWSER_RECENT_LIMIT) {
+                break;
+            }
+        }
+        return List.copyOf(merged.values());
+    }
+
+    private Map<String, Object> toGamesBrowserStatePayload(UserAccount user) {
+        if (user == null) {
+            return Map.of(
+                "favorites", List.of(),
+                "recentGames", List.of()
+            );
+        }
+        return Map.of(
+            "favorites", normalizeGamesBrowserFavoriteCodes(readStringList(user.getGamesBrowserFavoritesJson())),
+            "recentGames", readGamesBrowserRecentGames(user.getGamesBrowserRecentJson())
+        );
     }
 
     private String normalizeEmail(String email) {

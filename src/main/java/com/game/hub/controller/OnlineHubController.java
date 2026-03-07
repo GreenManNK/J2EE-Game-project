@@ -73,6 +73,8 @@ public class OnlineHubController {
         model.addAttribute("roomRows", listRooms(item.code()));
         model.addAttribute("playUrlBase", playUrlBase(item.code()));
         model.addAttribute("playRoomParam", playRoomParam(item.code()));
+        model.addAttribute("playUrlTemplate", playUrlTemplate(item.code()));
+        model.addAttribute("spectateUrlTemplate", spectateUrlTemplate(item.code()));
         model.addAttribute("spectateParamName", spectateParamName(item.code()));
         model.addAttribute("spectateParamValue", spectateParamValue(item.code()));
         model.addAttribute("inviteUrlPathTemplate", invitePathTemplate(item.code()));
@@ -120,6 +122,8 @@ public class OnlineHubController {
             "onlineSupportedNow", onlineGameplayImplemented(gameCode),
             "playUrlBase", playUrlBase(gameCode),
             "playRoomParam", playRoomParam(gameCode),
+            "playUrlTemplate", playUrlTemplate(gameCode),
+            "spectateUrlTemplate", spectateUrlTemplate(gameCode),
             "inviteUrlPathTemplate", invitePathTemplate(gameCode)
         );
     }
@@ -175,6 +179,47 @@ public class OnlineHubController {
         return "roomId";
     }
 
+    private String playUrlTemplate(String gameCode) {
+        if ("caro".equalsIgnoreCase(gameCode)) {
+            return "/game/room/{roomId}";
+        }
+        if ("cards".equalsIgnoreCase(gameCode)) {
+            return "/cards/tien-len/room/{roomId}";
+        }
+        if ("blackjack".equalsIgnoreCase(gameCode)) {
+            return "/games/cards/blackjack/room/{roomId}";
+        }
+        if ("chess".equalsIgnoreCase(gameCode)) {
+            return "/chess/online/room/{roomId}";
+        }
+        if ("xiangqi".equalsIgnoreCase(gameCode)) {
+            return "/xiangqi/online/room/{roomId}";
+        }
+        if ("typing".equalsIgnoreCase(gameCode)) {
+            return "/games/typing/room/{roomId}";
+        }
+        if ("quiz".equalsIgnoreCase(gameCode)) {
+            return "/games/quiz/room/{roomId}";
+        }
+        return "";
+    }
+
+    private String spectateUrlTemplate(String gameCode) {
+        if ("blackjack".equalsIgnoreCase(gameCode)) {
+            return "/games/cards/blackjack/room/{roomId}/spectate";
+        }
+        if ("chess".equalsIgnoreCase(gameCode)) {
+            return "/chess/online/room/{roomId}/spectate";
+        }
+        if ("xiangqi".equalsIgnoreCase(gameCode)) {
+            return "/xiangqi/online/room/{roomId}/spectate";
+        }
+        if ("quiz".equalsIgnoreCase(gameCode)) {
+            return "/games/quiz/room/{roomId}/spectate";
+        }
+        return "";
+    }
+
     private String spectateParamName(String gameCode) {
         if ("quiz".equalsIgnoreCase(gameCode) || "blackjack".equalsIgnoreCase(gameCode)) {
             return "mode";
@@ -196,9 +241,9 @@ public class OnlineHubController {
     }
 
     private String invitePathTemplate(String gameCode) {
-        String playUrlBase = playUrlBase(gameCode);
-        if (!playUrlBase.isBlank()) {
-            return playUrlBase + "?" + playRoomParam(gameCode) + "={roomId}";
+        String playUrlTemplate = playUrlTemplate(gameCode);
+        if (!playUrlTemplate.isBlank()) {
+            return playUrlTemplate;
         }
         return "/online-hub?game=" + gameCode + "&roomId={roomId}";
     }

@@ -10,6 +10,8 @@
   const FRIEND_LIST_REFRESH_MS_KEY = "caroFriendListRefreshMs.v1";
   const FRIEND_LIST_ALLOWED_REFRESH_VALUES = [5000, 10000, 15000, 20000, 30000, 60000];
   const PREFERENCES_CHANGED_EVENT = "caro:preferences-changed";
+  const USER_CHANGE_EVENT = "caro:user-changed";
+  const DEFAULT_AVATAR_PATH = "/uploads/avatars/default-avatar.jpg";
 
   function appPath(url) {
     if (window.CaroUrl && typeof window.CaroUrl.path === "function") {
@@ -147,6 +149,7 @@
     const displayNameInput = document.getElementById("settingsDisplayName");
     const emailInput = document.getElementById("settingsEmail");
     const avatarPathInput = document.getElementById("settingsAvatarPath");
+    const avatarPreview = document.getElementById("settingsAvatarPreview");
 
     const currentPasswordInput = document.getElementById("settingsCurrentPassword");
     const newPasswordInput = document.getElementById("settingsNewPassword");
@@ -171,6 +174,18 @@
     const activateAdminFromSettingsBtn = document.getElementById("activateAdminFromSettingsBtn");
 
     const i18n = window.CaroI18n;
+
+    const normalizeAvatarPath = (value) => {
+      const raw = String(value || "").trim();
+      return raw || DEFAULT_AVATAR_PATH;
+    };
+
+    const updateAvatarPreview = (value) => {
+      if (!avatarPreview) {
+        return;
+      }
+      avatarPreview.src = appPath(normalizeAvatarPath(value));
+    };
 
     const buildPreferencesPayload = () => {
       const refreshValue = Number.parseInt(String(friendListRefreshMsSelect?.value || "5000"), 10);
@@ -469,6 +484,17 @@
     });
 
     loadPreferencesFromServer();
+    updateAvatarPreview(avatarPathInput?.value || DEFAULT_AVATAR_PATH);
+    avatarPathInput?.addEventListener("input", () => {
+      updateAvatarPreview(avatarPathInput.value);
+    });
+    window.addEventListener(USER_CHANGE_EVENT, (event) => {
+      const user = event?.detail?.user;
+      if (user && user.avatarPath && avatarPathInput && document.activeElement !== avatarPathInput) {
+        avatarPathInput.value = user.avatarPath;
+      }
+      updateAvatarPreview(user?.avatarPath || avatarPathInput?.value || DEFAULT_AVATAR_PATH);
+    });
 
     accountForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -508,8 +534,9 @@
           displayName: updated.displayName || payload.displayName || current.displayName || "Player",
           email: updated.email || payload.email || current.email || "",
           role: updated.role || current.role || "User",
-          avatarPath: updated.avatarPath || payload.avatarPath || current.avatarPath || "/uploads/avatars/default-avatar.jpg"
+          avatarPath: updated.avatarPath || payload.avatarPath || current.avatarPath || DEFAULT_AVATAR_PATH
         });
+        updateAvatarPreview(updated.avatarPath || payload.avatarPath || current.avatarPath || DEFAULT_AVATAR_PATH);
       } catch (error) {
         const message = String(error?.message || error || "Cannot update profile");
         setStatus(accountStatus, message, false);

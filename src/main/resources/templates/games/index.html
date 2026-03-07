@@ -209,6 +209,10 @@
     const toAppPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
       ? window.CaroUrl.path
       : ((value) => value);
+    const ui = window.CaroUi || {};
+    const gamesBrowserApi = window.CaroGamesBrowserState || {};
+    const guestData = window.CaroGuestData || {};
+    const userStore = window.CaroUser || {};
 
     const searchInput = document.getElementById('gamesBrowserSearch');
     const sortSelect = document.getElementById('gamesBrowserSort');
@@ -223,6 +227,7 @@
     const emptyState = document.getElementById('gamesBrowserEmpty');
     const allTiles = Array.from(document.querySelectorAll('.cg-tile'));
     const favoriteButtons = Array.from(document.querySelectorAll('.js-favorite-toggle'));
+    let lastSaveErrorAt = 0;
 
     if (tracks.length === 0) {
       return;
@@ -252,19 +257,124 @@
       }
     };
 
-    const favoriteSet = new Set(
-      parseJsonArray(FAVORITES_KEY, [])
+    const getCurrentUser = () => {
+      if (!userStore || typeof userStore.get !== 'function') {
+        return null;
+      }
+      return userStore.get();
+    };
+    const isAccountMode = () => {
+      const current = getCurrentUser();
+      return !!(current && current.userId);
+    };
+    const normalizeRecentGames = (value) => {
+      if (!Array.isArray(value)) {
+        return [];
+      }
+      const list = [];
+      const seen = new Set();
+      value.forEach((item) => {
+        const code = normalizeCode(item && item.code);
+        if (!code || seen.has(code)) {
+          return;
+        }
+        seen.add(code);
+        list.push({
+          code: code,
+          name: normalizeName(item && item.name, code),
+          at: Number.isFinite(Number(item && item.at)) ? Number(item && item.at) : Date.now()
+        });
+      });
+      return list.slice(0, RECENT_MAX_ITEMS);
+    };
+    const readLocalGamesBrowserState = () => ({
+      favorites: parseJsonArray(FAVORITES_KEY, [])
         .map((item) => normalizeCode(item))
-        .filter(Boolean)
-    );
-    let recentGames = parseJsonArray(RECENT_KEY, [])
-      .map((item) => ({
-        code: normalizeCode(item && item.code),
-        name: normalizeName(item && item.name, item && item.code),
-        at: Number.isFinite(Number(item && item.at)) ? Number(item.at) : Date.now()
-      }))
-      .filter((item) => !!item.code)
-      .slice(0, RECENT_MAX_ITEMS);
+        .filter(Boolean),
+      recentGames: normalizeRecentGames(parseJsonArray(RECENT_KEY, []))
+    });
+    const favoriteSet = new Set();
+    let recentGames = [];
+
+    const applyGamesBrowserState = (state) => {
+      const safeState = state && typeof state === 'object' ? state : {};
+      favoriteSet.clear();
+      (Array.isArray(safeState.favorites) ? safeState.favorites : []).forEach((item) => {
+        const code = normalizeCode(item);
+        if (code) {
+          favoriteSet.add(code);
+        }
+      });
+      recentGames = normalizeRecentGames(safeState.recentGames);
+    };
+
+    const buildGamesBrowserStatePayload = () => ({
+      favorites: Array.from(favoriteSet),
+      recentGames: normalizeRecentGames(recentGames)
+    });
+
+    const reportSaveError = () => {
+      const now = Date.now();
+      if (now - lastSaveErrorAt < 3000) {
+        return;
+      }
+      lastSaveErrorAt = now;
+      ui.toast?.('Khong the luu danh sach game theo tai khoan', { type: 'danger' });
+    };
+
+    const persistGamesBrowserState = (options) => {
+      if (!isAccountMode()) {
+        const payload = buildGamesBrowserStatePayload();
+        writeJsonArray(FAVORITES_KEY, payload.favorites);
+        writeJsonArray(RECENT_KEY, payload.recentGames);
+        return Promise.resolve(true);
+      }
+      if (!gamesBrowserApi || typeof gamesBrowserApi.save !== 'function') {
+        reportSaveError();
+        return Promise.resolve(false);
+      }
+      const opts = options || {};
+      return Promise.resolve(
+        gamesBrowserApi.save(buildGamesBrowserStatePayload(), false, { keepalive: opts.keepalive === true })
+      ).then((ok) => {
+        if (!ok && opts.keepalive !== true) {
+          reportSaveError();
+        }
+        return !!ok;
+      }).catch(() => {
+        if (opts.keepalive !== true) {
+          reportSaveError();
+        }
+        return false;
+      });
+    };
+
+    const loadInitialGamesBrowserState = async () => {
+      if (!isAccountMode()) {
+        applyGamesBrowserState(readLocalGamesBrowserState());
+        return;
+      }
+
+      try {
+        if (typeof guestData.migrateToAccount === 'function') {
+          await guestData.migrateToAccount();
+        }
+      } catch (_) {
+      }
+
+      try {
+        if (typeof gamesBrowserApi.get === 'function') {
+          const remoteState = await gamesBrowserApi.get();
+          if (remoteState && typeof remoteState === 'object') {
+            applyGamesBrowserState(remoteState);
+            return;
+          }
+        }
+      } catch (_) {
+      }
+
+      applyGamesBrowserState({ favorites: [], recentGames: [] });
+    };
 
     const catalogByCode = new Map();
     allTiles.forEach((tile) => {
@@ -297,8 +407,6 @@
 
     const tileText = (tile) => (String(tile.dataset.name || '') + ' ' + String(tile.dataset.code || '') + ' ' + String(tile.textContent || '')).toLowerCase();
     const isFavorite = (code) => favoriteSet.has(normalizeCode(code));
-    const saveFavorites = () => writeJsonArray(FAVORITES_KEY, Array.from(favoriteSet));
-    const saveRecent = () => writeJsonArray(RECENT_KEY, recentGames);
     const favoriteMode = () => String(filterSelect?.value || 'all');
 
     const sortTiles = (tiles, mode) => {
@@ -388,7 +496,7 @@
         at: Date.now()
       });
       recentGames = recentGames.slice(0, RECENT_MAX_ITEMS);
-      saveRecent();
+      void persistGamesBrowserState({ keepalive: true });
       renderQuickState();
     };
 
@@ -442,7 +550,7 @@
 
     clearRecentBtn?.addEventListener('click', () => {
       recentGames = [];
-      saveRecent();
+      void persistGamesBrowserState();
       renderQuickState();
     });
 
@@ -457,7 +565,7 @@
         } else {
           favoriteSet.add(code);
         }
-        saveFavorites();
+        void persistGamesBrowserState();
         syncFavoriteButtons();
         renderQuickState();
         applyState();
@@ -484,9 +592,14 @@
       }, { passive: false });
     });
 
-    syncFavoriteButtons();
-    renderQuickState();
-    applyState();
+    const initializeGamesBrowser = async () => {
+      await loadInitialGamesBrowserState();
+      syncFavoriteButtons();
+      renderQuickState();
+      applyState();
+    };
+
+    void initializeGamesBrowser();
   });
 </script>
 </body>

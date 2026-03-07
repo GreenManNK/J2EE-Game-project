@@ -79,6 +79,7 @@
             role: data.data.role || 'User',
             avatarPath: data.data.avatarPath || '/uploads/avatars/default-avatar.jpg'
           });
+          window.CaroGuestData?.markPendingMigration?.();
           await window.CaroGuestData?.migrateToAccount?.();
           window.location.href = appPath('/');
         }

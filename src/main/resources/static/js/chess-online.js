@@ -19,13 +19,16 @@
     };
     const SESSION_RESYNC_KEY = "chessOnline.sessionResync.v1";
     const SESSION_RESYNC_COOLDOWN_MS = 20000;
+    const USER_CHANGE_EVENT = (window.CaroUser && window.CaroUser.eventName) || "caro:user-changed";
+    const DEFAULT_AVATAR_PATH = "/uploads/avatars/default-avatar.jpg";
+    const routeState = resolveRouteState();
 
     const state = {
-        roomId: String(boot.roomId || "").trim(),
+        roomId: String(boot.roomId || routeState.roomId || "").trim(),
         userId: String(boot.sessionUserId || "").trim(),
         displayName: String(boot.sessionDisplayName || "").trim(),
         avatarPath: String(boot.sessionAvatarPath || "").trim(),
-        spectate: new URLSearchParams(window.location.search).get('spectate') === 'true',
+        spectate: routeState.spectate,
         board: [],
         turn: "w",
         currentTurnUserId: "",
@@ -81,6 +84,8 @@
             leaveBtn: document.getElementById("chessOnlineLeaveBtn"),
             roomLabel: document.getElementById("chessOnlineRoomLabel"),
             userLabel: document.getElementById("chessOnlineUserLabel"),
+            userAvatar: document.getElementById("chessOnlineUserAvatar"),
+            userMeta: document.getElementById("chessOnlineUserMeta"),
             modeLabel: document.getElementById("chessOnlineModeLabel"),
             myColorLabel: document.getElementById("chessOnlineMyColor"),
             connectionStatus: document.getElementById("chessOnlineConnectionStatus"),
@@ -92,9 +97,9 @@
         if (els.roomLabel) {
             els.roomLabel.textContent = state.roomId || "Chua chon";
         }
-        if (els.userLabel) {
-            els.userLabel.textContent = state.displayName || state.userId || "Guest";
-        }
+        syncCurrentUserIdentity();
+        renderCurrentUserSummary();
+        window.addEventListener(USER_CHANGE_EVENT, handleCurrentUserChange);
         updateModeUi();
         initBoardUi();
         bindPageActions();
@@ -357,6 +362,7 @@
     }
 
     function renderAll() {
+        renderCurrentUserSummary();
         renderBoard();
         renderMoveLog();
         updateStatusText();
@@ -974,8 +980,8 @@
         state.myColor = me ? me.color : "";
         if (state.spectate && state.myColor) {
             state.spectate = false;
-            updateSpectateQueryInUrl(false);
         }
+        updateSpectateQueryInUrl(state.spectate);
         updateModeUi();
         state.currentTurnUserId = normalizeText(room.currentTurnUserId);
         state.turn = normalizeText(room.currentTurnColor) === "b" ? "b" : "w";
@@ -1070,9 +1076,22 @@
             }
             const colorText = player.color === "b" ? "Den" : "Trang";
             const meText = player.userId === state.userId ? " (Ban)" : "";
+            const displayName = player.userId === state.userId
+                ? (state.displayName || player.displayName || player.userId || "Guest")
+                : (player.displayName || player.userId || "Guest");
+            const avatarHtml = buildAvatarHtml(
+                player.userId === state.userId ? state.avatarPath : player.avatarPath,
+                displayName,
+                "online-player-item__avatar"
+            );
             row.innerHTML =
-                '<div class="fw-semibold">' + escapeHtml(player.displayName || player.userId || "Guest") + meText + '</div>' +
-                '<div class="text-muted">Quan: ' + colorText + ' | ID: ' + escapeHtml(player.userId || "-") + '</div>';
+                '<div class="online-player-item__head">' +
+                    avatarHtml +
+                    '<div class="online-player-item__identity">' +
+                        '<div class="fw-semibold online-player-item__name">' + escapeHtml(displayName) + meText + '</div>' +
+                        '<div class="text-muted online-player-item__meta">Quan: ' + colorText + ' | ' + escapeHtml(playerPresenceText(player)) + '</div>' +
+                    '</div>' +
+                '</div>';
             els.playersBox.appendChild(row);
         });
 
@@ -1249,6 +1268,97 @@
         return text || "";
     }
 
+    function normalizeAvatarPath(value) {
+        const raw = normalizeText(value);
+        if (!raw) {
+            return "";
+        }
+        if (/^(https?:)?\/\//i.test(raw) || /^data:/i.test(raw) || /^blob:/i.test(raw)) {
+            return raw;
+        }
+        if (raw.startsWith("/")) {
+            return appPath(raw);
+        }
+        return appPath("/" + raw.replace(/^\.?\//, ""));
+    }
+
+    function currentUserAvatarSrc(value) {
+        return normalizeAvatarPath(value) || appPath(DEFAULT_AVATAR_PATH);
+    }
+
+    function initialsOfName(name) {
+        const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 0) {
+            return "?";
+        }
+        if (parts.length === 1) {
+            return parts[0].slice(0, 2).toUpperCase();
+        }
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    function buildAvatarHtml(avatarPath, displayName, className) {
+        const avatarSrc = normalizeAvatarPath(avatarPath);
+        if (avatarSrc) {
+            return '<img class="' + className + '" src="' + escapeHtml(avatarSrc) + '" alt="">';
+        }
+        return '<div class="' + className + ' ' + className + '--fallback" aria-hidden="true">' + escapeHtml(initialsOfName(displayName)) + '</div>';
+    }
+
+    function isGuestUserId(value) {
+        return /^guest-/i.test(normalizeText(value));
+    }
+
+    function playerPresenceText(player) {
+        const userId = normalizeText(player && player.userId);
+        if (!userId) {
+            return "Nguoi choi";
+        }
+        if (player && player.bot) {
+            return "Bot";
+        }
+        if (userId === state.userId && !isGuestUserId(userId)) {
+            return "Tai khoan cua ban";
+        }
+        return isGuestUserId(userId) ? "Khach tam thoi" : "Tai khoan";
+    }
+
+    function syncCurrentUserIdentity(nextUser) {
+        const candidate = nextUser && normalizeText(nextUser.userId) === state.userId
+            ? nextUser
+            : (window.CaroUser && typeof window.CaroUser.get === "function" ? window.CaroUser.get() : null);
+        if (candidate && normalizeText(candidate.userId) === state.userId) {
+            state.displayName = normalizeText(candidate.displayName) || state.displayName || state.userId || "Guest";
+            state.avatarPath = normalizeText(candidate.avatarPath) || state.avatarPath || DEFAULT_AVATAR_PATH;
+            return;
+        }
+        state.displayName = normalizeText(state.displayName) || state.userId || "Guest";
+        state.avatarPath = normalizeText(state.avatarPath) || DEFAULT_AVATAR_PATH;
+    }
+
+    function renderCurrentUserSummary() {
+        if (els.userLabel) {
+            els.userLabel.textContent = state.displayName || state.userId || "Guest";
+        }
+        if (els.userMeta) {
+            els.userMeta.textContent = isGuestUserId(state.userId) ? "Khach tam thoi" : "Tai khoan dang nhap";
+        }
+        if (els.userAvatar) {
+            els.userAvatar.setAttribute("src", currentUserAvatarSrc(state.avatarPath));
+            els.userAvatar.setAttribute("alt", "Avatar " + (state.displayName || "nguoi choi"));
+        }
+    }
+
+    function handleCurrentUserChange(event) {
+        const nextUser = event && event.detail ? event.detail.user : null;
+        if (!nextUser || normalizeText(nextUser.userId) !== state.userId) {
+            return;
+        }
+        syncCurrentUserIdentity(nextUser);
+        renderCurrentUserSummary();
+        renderPlayers();
+    }
+
     function updateModeUi() {
         if (els.modeLabel) {
             els.modeLabel.textContent = state.spectate ? "Nguoi xem" : "Nguoi choi";
@@ -1269,19 +1379,26 @@
 
     function buildCurrentModeUrl(spectateMode) {
         try {
-            const url = new URL(window.location.href);
-            if (state.roomId) {
-                url.searchParams.set("roomId", state.roomId);
-            }
-            if (spectateMode) {
-                url.searchParams.set("spectate", "true");
-            } else {
-                url.searchParams.delete("spectate");
-            }
+            const normalizedRoomId = normalizeText(state.roomId);
+            const basePath = normalizedRoomId
+                ? "/chess/online/room/" + encodeURIComponent(normalizedRoomId) + (spectateMode ? "/spectate" : "")
+                : "/chess/online";
+            const url = new URL(appPath(basePath), window.location.origin);
             return url.pathname + url.search;
         } catch (_) {
             return "";
         }
+    }
+
+    function resolveRouteState() {
+        const pathname = String(window.location.pathname || "").replace(/\/+$/, "");
+        const roomMatch = pathname.match(/\/chess\/online\/room\/([^/]+?)(?:\/(spectate))?$/i);
+        const params = new URLSearchParams(window.location.search);
+        const roomId = roomMatch
+            ? decodeURIComponent(roomMatch[1] || "").trim()
+            : String(boot.roomId || params.get("roomId") || "").trim();
+        const spectate = Boolean((roomMatch && roomMatch[2]) || params.get("spectate") === "true");
+        return { roomId, spectate };
     }
 
     function isMyTurn() {

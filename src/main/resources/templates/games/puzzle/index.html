@@ -451,40 +451,140 @@
     const getCardThumb = (card) => String(card?.querySelector('.puz-thumb')?.getAttribute('src') || '');
     const textOfCard = (card) => (getCardName(card) + ' ' + String(card.dataset.tags || '') + ' ' + String(card.textContent || '')).toLowerCase();
 
-    let favorites = new Set((safeParse(window.localStorage.getItem(FAVORITE_STORAGE_KEY), []) || []).map((x) => String(x)));
-    let ratings = (() => {
-      const raw = safeParse(window.localStorage.getItem(RATING_STORAGE_KEY), {});
-      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
-      const mapped = {};
-      Object.entries(raw).forEach(([key, value]) => {
-        const score = Number(value);
-        if (Number.isFinite(score) && score >= 1 && score <= 5) {
-          mapped[String(key)] = Math.round(score);
+    const ui = window.CaroUi || {};
+    const puzzleCatalogApi = window.CaroPuzzleCatalog || {};
+    const guestData = window.CaroGuestData || {};
+    const userStore = window.CaroUser || {};
+    let lastSaveErrorAt = 0;
+    let favorites = new Set();
+    let ratings = {};
+    let recentCodes = [];
+
+    const normalizeStringList = (value, limit) => {
+      if (!Array.isArray(value)) return [];
+      const ordered = [];
+      const seen = new Set();
+      value.forEach((item) => {
+        const normalized = String(item || '').trim();
+        if (!normalized || seen.has(normalized)) {
+          return;
         }
+        seen.add(normalized);
+        ordered.push(normalized);
+      });
+      return Number.isFinite(limit) && limit > 0 ? ordered.slice(0, limit) : ordered;
+    };
+
+    const normalizeRatings = (value) => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+      const mapped = {};
+      Object.entries(value).forEach(([key, rawValue]) => {
+        const code = String(key || '').trim();
+        const score = Number(rawValue);
+        if (!code || !Number.isFinite(score) || score < 1 || score > 5) {
+          return;
+        }
+        mapped[code] = Math.round(score);
       });
       return mapped;
-    })();
-    let recentCodes = (safeParse(window.localStorage.getItem(RECENT_STORAGE_KEY), []) || []).map((x) => String(x)).filter((x) => x);
-
-    const saveFavorites = () => {
-      try {
-        window.localStorage.setItem(FAVORITE_STORAGE_KEY, JSON.stringify(Array.from(favorites)));
-      } catch (_) {
-      }
     };
 
-    const saveRatings = () => {
-      try {
-        window.localStorage.setItem(RATING_STORAGE_KEY, JSON.stringify(ratings));
-      } catch (_) {
+    const getCurrentUser = () => {
+      if (!userStore || typeof userStore.get !== 'function') {
+        return null;
       }
+      return userStore.get();
     };
 
-    const saveRecent = () => {
+    const isAccountMode = () => {
+      const current = getCurrentUser();
+      return !!(current && current.userId);
+    };
+
+    const readLocalState = () => ({
+      favorites: normalizeStringList(safeParse(window.localStorage.getItem(FAVORITE_STORAGE_KEY), []), 256),
+      ratings: normalizeRatings(safeParse(window.localStorage.getItem(RATING_STORAGE_KEY), {})),
+      recentCodes: normalizeStringList(safeParse(window.localStorage.getItem(RECENT_STORAGE_KEY), []), RECENT_LIMIT)
+    });
+
+    const applyCatalogState = (state) => {
+      const safeState = state && typeof state === 'object' ? state : {};
+      favorites = new Set(normalizeStringList(safeState.favorites, 256));
+      ratings = normalizeRatings(safeState.ratings);
+      recentCodes = normalizeStringList(safeState.recentCodes, RECENT_LIMIT);
+    };
+
+    const buildCatalogStatePayload = () => ({
+      favorites: Array.from(favorites),
+      ratings: Object.assign({}, ratings),
+      recentCodes: recentCodes.slice(0, RECENT_LIMIT)
+    });
+
+    const reportSaveError = () => {
+      const now = Date.now();
+      if (now - lastSaveErrorAt < 3000) {
+        return;
+      }
+      lastSaveErrorAt = now;
+      ui.toast?.('Khong the luu du lieu Puzzle vao tai khoan', { type: 'danger' });
+    };
+
+    const persistCatalogState = (options) => {
+      if (!isAccountMode()) {
+        try {
+          const payload = buildCatalogStatePayload();
+          window.localStorage.setItem(FAVORITE_STORAGE_KEY, JSON.stringify(payload.favorites));
+          window.localStorage.setItem(RATING_STORAGE_KEY, JSON.stringify(payload.ratings));
+          window.localStorage.setItem(RECENT_STORAGE_KEY, JSON.stringify(payload.recentCodes));
+        } catch (_) {
+        }
+        return Promise.resolve(true);
+      }
+      if (!puzzleCatalogApi || typeof puzzleCatalogApi.save !== 'function') {
+        reportSaveError();
+        return Promise.resolve(false);
+      }
+      const opts = options || {};
+      return Promise.resolve(
+        puzzleCatalogApi.save(buildCatalogStatePayload(), false, { keepalive: opts.keepalive === true })
+      ).then((ok) => {
+        if (!ok && opts.keepalive !== true) {
+          reportSaveError();
+        }
+        return !!ok;
+      }).catch(() => {
+        if (opts.keepalive !== true) {
+          reportSaveError();
+        }
+        return false;
+      });
+    };
+
+    const loadInitialCatalogState = async () => {
+      if (!isAccountMode()) {
+        applyCatalogState(readLocalState());
+        return;
+      }
+
       try {
-        window.localStorage.setItem(RECENT_STORAGE_KEY, JSON.stringify(recentCodes));
+        if (typeof guestData.migrateToAccount === 'function') {
+          await guestData.migrateToAccount();
+        }
       } catch (_) {
       }
+
+      try {
+        if (typeof puzzleCatalogApi.get === 'function') {
+          const remoteState = await puzzleCatalogApi.get();
+          if (remoteState && typeof remoteState === 'object') {
+            applyCatalogState(remoteState);
+            return;
+          }
+        }
+      } catch (_) {
+      }
+
+      applyCatalogState({ favorites: [], ratings: {}, recentCodes: [] });
     };
 
     const updateFavoriteButton = (card) => {
@@ -572,7 +672,7 @@
     const markRecent = (code) => {
       if (!code) return;
       recentCodes = [code, ...recentCodes.filter((x) => x !== code)].slice(0, RECENT_LIMIT);
-      saveRecent();
+      void persistCatalogState({ keepalive: true });
       renderRecent();
     };
 
@@ -653,11 +753,6 @@
       });
     });
 
-    cards.forEach((card) => {
-      updateFavoriteButton(card);
-      renderRate(card);
-    });
-
     grid.addEventListener('click', (event) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -675,7 +770,7 @@
         } else {
           favorites.add(code);
         }
-        saveFavorites();
+        void persistCatalogState();
         updateFavoriteButton(card);
         applyState();
         return;
@@ -692,7 +787,7 @@
         const code = getCardCode(card);
         if (!code) return;
         ratings[code] = value;
-        saveRatings();
+        void persistCatalogState();
         renderRate(card);
         renderRecent();
         return;
@@ -725,9 +820,18 @@
       applyState();
     });
 
-    renderFeatured();
-    renderRecent();
-    applyState();
+    const initializeCatalog = async () => {
+      await loadInitialCatalogState();
+      cards.forEach((card) => {
+        updateFavoriteButton(card);
+        renderRate(card);
+      });
+      renderFeatured();
+      renderRecent();
+      applyState();
+    };
+
+    void initializeCatalog();
   });
 </script>
 

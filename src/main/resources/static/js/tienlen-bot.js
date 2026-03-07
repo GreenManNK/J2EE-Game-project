@@ -1,5 +1,10 @@
 (function () {
   const boot = window.TienLenBotBoot || {};
+  const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+    ? window.CaroUrl.path
+    : (value) => value;
+  const USER_CHANGE_EVENT = (window.CaroUser && window.CaroUser.eventName) || 'caro:user-changed';
+  const DEFAULT_AVATAR_PATH = '/uploads/avatars/default-avatar.jpg';
 
   const SUITS = [
     { code: 'S', symbol: '\u2660', red: false, order: 0 },
@@ -45,13 +50,17 @@
 
   const me = {
     id: String(boot.sessionUserId || 'guest-local').trim() || 'guest-local',
-    name: String(boot.sessionDisplayName || 'Guest').trim() || 'Guest'
+    name: String(boot.sessionDisplayName || 'Guest').trim() || 'Guest',
+    avatarPath: String(boot.sessionAvatarPath || '').trim()
   };
 
   const els = {};
 
   document.addEventListener('DOMContentLoaded', () => {
     bindEls();
+    syncCurrentUserIdentity();
+    renderSelfSummary();
+    window.addEventListener(USER_CHANGE_EVENT, handleCurrentUserChange);
     bindActions();
     initPlayers();
     startNewGame();
@@ -62,7 +71,9 @@
   });
 
   function bindEls() {
+    els.selfAvatar = document.getElementById('tlBotSelfAvatar');
     els.selfName = document.getElementById('tlBotSelfName');
+    els.selfMeta = document.getElementById('tlBotSelfMeta');
     els.difficultyLabel = document.getElementById('tlBotDifficultyLabel');
     els.statusText = document.getElementById('tlBotStatusText');
     els.messageText = document.getElementById('tlBotMessageText');
@@ -103,14 +114,12 @@
 
   function initPlayers() {
     state.players = [
-      { id: me.id, name: me.name, isHuman: true, hand: [], seatIndex: 0, score: 0, lastRoundDelta: 0, lastRoundChopDelta: 0, lastRoundPenalty: 0, lastRoundCong: false, lastRoundTwos: 0, lastRoundSpecialPenalty: 0, roundPlayedCardCount: 0, roundSideBetDelta: 0 },
+      { id: me.id, name: me.name, avatarPath: me.avatarPath, isHuman: true, hand: [], seatIndex: 0, score: 0, lastRoundDelta: 0, lastRoundChopDelta: 0, lastRoundPenalty: 0, lastRoundCong: false, lastRoundTwos: 0, lastRoundSpecialPenalty: 0, roundPlayedCardCount: 0, roundSideBetDelta: 0 },
       { id: 'bot-1', name: 'Bot 1', isHuman: false, hand: [], seatIndex: 1, score: 0, lastRoundDelta: 0, lastRoundChopDelta: 0, lastRoundPenalty: 0, lastRoundCong: false, lastRoundTwos: 0, lastRoundSpecialPenalty: 0, roundPlayedCardCount: 0, roundSideBetDelta: 0 },
       { id: 'bot-2', name: 'Bot 2', isHuman: false, hand: [], seatIndex: 2, score: 0, lastRoundDelta: 0, lastRoundChopDelta: 0, lastRoundPenalty: 0, lastRoundCong: false, lastRoundTwos: 0, lastRoundSpecialPenalty: 0, roundPlayedCardCount: 0, roundSideBetDelta: 0 },
       { id: 'bot-3', name: 'Bot 3', isHuman: false, hand: [], seatIndex: 3, score: 0, lastRoundDelta: 0, lastRoundChopDelta: 0, lastRoundPenalty: 0, lastRoundCong: false, lastRoundTwos: 0, lastRoundSpecialPenalty: 0, roundPlayedCardCount: 0, roundSideBetDelta: 0 }
     ];
-    if (els.selfName) {
-      els.selfName.textContent = me.name;
-    }
+    renderSelfSummary();
     if (els.difficultyLabel) {
       els.difficultyLabel.textContent = state.difficulty === 'hard' ? 'Hard' : 'Easy';
     }
@@ -1143,6 +1152,7 @@
   }
 
   function renderAll() {
+    renderSelfSummary();
     renderPlayers();
     renderTrick();
     renderHand();
@@ -1206,10 +1216,10 @@
 
       slot.innerHTML =
         '<div class="tl-player-slot__head">' +
-          '<div class="tl-player-avatar" aria-hidden="true">' + escapeHtml(initialsOfName(p.name)) + '</div>' +
+          buildAvatarHtml(p.isHuman ? me.avatarPath : p.avatarPath, p.name, 'tl-player-avatar') +
           '<div class="tl-player-slot__identity">' +
             '<div class="tl-player-slot__name">' + escapeHtml((Number(p.seatIndex || 0) + 1) + '. ' + p.name) + '</div>' +
-            '<div class="tl-player-slot__uid">' + escapeHtml(p.id) + '</div>' +
+            '<div class="tl-player-slot__uid">' + escapeHtml(playerPresenceText(p)) + '</div>' +
           '</div>' +
         '</div>' +
         '<div class="tl-player-slot__meta">' +
@@ -1535,6 +1545,87 @@
     if (parts.length === 0) return '?';
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  function normalizeAvatarPath(value) {
+    const raw = String(value || '').trim();
+    if (!raw) {
+      return '';
+    }
+    if (/^(https?:)?\/\//i.test(raw) || /^data:/i.test(raw) || /^blob:/i.test(raw)) {
+      return raw;
+    }
+    if (raw.startsWith('/')) {
+      return appPath(raw);
+    }
+    return appPath('/' + raw.replace(/^\.?\//, ''));
+  }
+
+  function currentUserAvatarSrc(value) {
+    return normalizeAvatarPath(value) || appPath(DEFAULT_AVATAR_PATH);
+  }
+
+  function buildAvatarHtml(avatarPath, displayName, className) {
+    const avatarSrc = normalizeAvatarPath(avatarPath);
+    if (avatarSrc) {
+      return '<img class="' + className + '" src="' + escapeHtml(avatarSrc) + '" alt="">';
+    }
+    return '<div class="' + className + '" aria-hidden="true">' + escapeHtml(initialsOfName(displayName)) + '</div>';
+  }
+
+  function isGuestUserId(value) {
+    return /^guest-/i.test(String(value || '').trim());
+  }
+
+  function playerPresenceText(player) {
+    if (player && !player.isHuman) {
+      return 'Bot';
+    }
+    if (isGuestUserId(player && player.id)) {
+      return 'Khach tam thoi';
+    }
+    return 'Tai khoan';
+  }
+
+  function renderSelfSummary() {
+    if (els.selfName) {
+      els.selfName.textContent = me.name;
+    }
+    if (els.selfMeta) {
+      els.selfMeta.textContent = isGuestUserId(me.id) ? 'Khach tam thoi' : 'Tai khoan dang nhap';
+    }
+    if (els.selfAvatar) {
+      els.selfAvatar.setAttribute('src', currentUserAvatarSrc(me.avatarPath));
+      els.selfAvatar.setAttribute('alt', 'Avatar ' + String(me.name || 'nguoi choi'));
+    }
+  }
+
+  function syncCurrentUserIdentity(nextUser) {
+    const candidate = nextUser && String(nextUser.userId || '').trim() === me.id
+      ? nextUser
+      : (window.CaroUser && typeof window.CaroUser.get === 'function' ? window.CaroUser.get() : null);
+    if (candidate && String(candidate.userId || '').trim() === me.id) {
+      me.name = String(candidate.displayName || '').trim() || me.name || me.id || 'Guest';
+      me.avatarPath = String(candidate.avatarPath || '').trim() || me.avatarPath || DEFAULT_AVATAR_PATH;
+      return;
+    }
+    me.name = String(me.name || '').trim() || me.id || 'Guest';
+    me.avatarPath = String(me.avatarPath || '').trim() || DEFAULT_AVATAR_PATH;
+  }
+
+  function handleCurrentUserChange(event) {
+    const nextUser = event && event.detail ? event.detail.user : null;
+    if (!nextUser || String(nextUser.userId || '').trim() !== me.id) {
+      return;
+    }
+    syncCurrentUserIdentity(nextUser);
+    const human = state.players.find((player) => player && player.isHuman);
+    if (human) {
+      human.name = me.name;
+      human.avatarPath = me.avatarPath;
+    }
+    renderSelfSummary();
+    renderPlayers();
   }
 
   function cardVisual(card) {

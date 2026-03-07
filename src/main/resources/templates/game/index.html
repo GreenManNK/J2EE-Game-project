@@ -164,10 +164,20 @@
       return;
     }
 
-    if (!isGuestUser) {
-      localStorage.setItem('userId', userId);
-      localStorage.setItem('displayName', displayName);
-      localStorage.setItem('avatarPath', avatarPath);
+    if (!isGuestUser && window.CaroUser && typeof window.CaroUser.set === 'function') {
+      const currentUser = typeof window.CaroUser.get === 'function'
+        ? window.CaroUser.get()
+        : null;
+      const persistedUser = currentUser && currentUser.userId === userId
+        ? currentUser
+        : null;
+      window.CaroUser.set({
+        userId: userId,
+        displayName: displayName || (persistedUser ? persistedUser.displayName : '') || 'Player',
+        email: persistedUser ? (persistedUser.email || '') : '',
+        role: persistedUser ? (persistedUser.role || 'User') : 'User',
+        avatarPath: avatarPath || (persistedUser ? persistedUser.avatarPath : '') || '/uploads/avatars/default-avatar.jpg'
+      });
     }
     playerNameEl.textContent = displayName;
 

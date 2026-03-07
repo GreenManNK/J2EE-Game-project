@@ -17,10 +17,16 @@ window.connection = new signalR.HubConnectionBuilder()
     .build();
 
 const connection = window.connection;
+const defaultAvatarPath = "/uploads/avatars/default-avatar.jpg";
 
 let isMatching = false;
 let matchmakingInterval = null;
 let secondsElapsed = 0;
+
+function buildGameRoomUrl(roomId) {
+    const normalizedRoomId = String(roomId || "").trim();
+    return appPath(`/game/room/${encodeURIComponent(normalizedRoomId)}`);
+}
 
 connection.start().then(() => {
     console.log("Kết nối Lobby thành công!");
@@ -65,9 +71,14 @@ function toggleMatchmaking() {
 
     if (!isMatching) {
         // Bắt đầu tìm trận
-        const userId = localStorage.getItem("userId");
-        const displayName = localStorage.getItem("displayName");
-        const avatarPath = localStorage.getItem("avatarPath");
+        const currentUser = window.CaroUser && typeof window.CaroUser.get === "function"
+            ? window.CaroUser.get()
+            : null;
+        const userId = currentUser && currentUser.userId ? String(currentUser.userId).trim() : "";
+        const displayName = currentUser && currentUser.displayName ? String(currentUser.displayName).trim() : "";
+        const avatarPath = currentUser && currentUser.avatarPath
+            ? String(currentUser.avatarPath).trim()
+            : defaultAvatarPath;
 
         if (!userId) {
             notify("Không đủ thông tin người chơi. Hãy đăng nhập lại.");
@@ -119,14 +130,14 @@ connection.on("RoomCreated", function (roomId) {
 connection.on("JoinRoom", function (roomId) {
     console.log(`Tham gia phòng: ${roomId}`);
     clearInterval(matchmakingInterval);
-    window.location.href = appPath(`/game?roomId=${roomId}`);
+    window.location.href = buildGameRoomUrl(roomId);
 });
 
 // Trận đấu bắt đầu
 connection.on("GameStarted", function (data) {
     console.log("Trận đấu bắt đầu:", data);
     clearInterval(matchmakingInterval);
-    window.location.href = appPath(`/game?roomId=${data.roomId}`);
+    window.location.href = buildGameRoomUrl(data.roomId);
 });
 
 // Hủy tìm trận từ server
@@ -168,11 +179,11 @@ function createRoom() {
     // ✅ Gắn tiền tố sau khi đã kiểm tra
     roomId = `Normal_${roomId}`;
 
-    window.location.href = appPath(`/game?roomId=${roomId}`);
+    window.location.href = buildGameRoomUrl(roomId);
 }
 
 // Hàm tham gia phòng từ danh sách
 function joinRoom(roomId) {
-    window.location.href = appPath(`/game?roomId=${roomId}`);
+    window.location.href = buildGameRoomUrl(roomId);
 }
 

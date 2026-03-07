@@ -51,7 +51,8 @@ class OnlineHubControllerTest {
         assertEquals("room-a", model.getAttribute("selectedRoomId"));
         assertEquals(true, model.getAttribute("onlineSupportedNow"));
         assertEquals("/game", model.getAttribute("playUrlBase"));
-        assertEquals("/game?roomId={roomId}", model.getAttribute("inviteUrlPathTemplate"));
+        assertEquals("/game/room/{roomId}", model.getAttribute("playUrlTemplate"));
+        assertEquals("/game/room/{roomId}", model.getAttribute("inviteUrlPathTemplate"));
         assertNotNull(model.getAttribute("roomRows"));
     }
 
@@ -116,7 +117,9 @@ class OnlineHubControllerTest {
         assertEquals("online-hub/index", view);
         assertEquals(true, model.getAttribute("onlineSupportedNow"));
         assertEquals("/chess/online", model.getAttribute("playUrlBase"));
-        assertEquals("/chess/online?roomId={roomId}", model.getAttribute("inviteUrlPathTemplate"));
+        assertEquals("/chess/online/room/{roomId}", model.getAttribute("playUrlTemplate"));
+        assertEquals("/chess/online/room/{roomId}/spectate", model.getAttribute("spectateUrlTemplate"));
+        assertEquals("/chess/online/room/{roomId}", model.getAttribute("inviteUrlPathTemplate"));
     }
 
     @Test
@@ -138,7 +141,8 @@ class OnlineHubControllerTest {
         assertEquals("online-hub/index", view);
         assertEquals(true, model.getAttribute("onlineSupportedNow"));
         assertEquals("/cards/tien-len", model.getAttribute("playUrlBase"));
-        assertEquals("/cards/tien-len?roomId={roomId}", model.getAttribute("inviteUrlPathTemplate"));
+        assertEquals("/cards/tien-len/room/{roomId}", model.getAttribute("playUrlTemplate"));
+        assertEquals("/cards/tien-len/room/{roomId}", model.getAttribute("inviteUrlPathTemplate"));
     }
 
     @Test
@@ -160,7 +164,9 @@ class OnlineHubControllerTest {
         assertEquals("online-hub/index", view);
         assertEquals(true, model.getAttribute("onlineSupportedNow"));
         assertEquals("/xiangqi/online", model.getAttribute("playUrlBase"));
-        assertEquals("/xiangqi/online?roomId={roomId}", model.getAttribute("inviteUrlPathTemplate"));
+        assertEquals("/xiangqi/online/room/{roomId}", model.getAttribute("playUrlTemplate"));
+        assertEquals("/xiangqi/online/room/{roomId}/spectate", model.getAttribute("spectateUrlTemplate"));
+        assertEquals("/xiangqi/online/room/{roomId}", model.getAttribute("inviteUrlPathTemplate"));
     }
 
     @Test
@@ -183,7 +189,8 @@ class OnlineHubControllerTest {
         assertEquals(true, model.getAttribute("onlineSupportedNow"));
         assertEquals("/games/typing", model.getAttribute("playUrlBase"));
         assertEquals("room", model.getAttribute("playRoomParam"));
-        assertEquals("/games/typing?room={roomId}", model.getAttribute("inviteUrlPathTemplate"));
+        assertEquals("/games/typing/room/{roomId}", model.getAttribute("playUrlTemplate"));
+        assertEquals("/games/typing/room/{roomId}", model.getAttribute("inviteUrlPathTemplate"));
     }
 
     @Test
@@ -207,6 +214,8 @@ class OnlineHubControllerTest {
         assertEquals(true, model.getAttribute("supportsSpectateNow"));
         assertEquals("/games/quiz", model.getAttribute("playUrlBase"));
         assertEquals("room", model.getAttribute("playRoomParam"));
+        assertEquals("/games/quiz/room/{roomId}", model.getAttribute("playUrlTemplate"));
+        assertEquals("/games/quiz/room/{roomId}/spectate", model.getAttribute("spectateUrlTemplate"));
         assertEquals("mode", model.getAttribute("spectateParamName"));
         assertEquals("spectate", model.getAttribute("spectateParamValue"));
     }
@@ -237,6 +246,7 @@ class OnlineHubControllerTest {
         assertEquals("TYPING-ROOM-001", result.get("roomId"));
         assertEquals(true, result.get("serverCreated"));
         assertEquals("room", result.get("playRoomParam"));
+        assertEquals("/games/typing/room/{roomId}", result.get("playUrlTemplate"));
     }
 
     @Test
@@ -257,7 +267,8 @@ class OnlineHubControllerTest {
         assertEquals("cards", result.get("game"));
         assertEquals(false, result.get("serverCreated"));
         assertEquals("roomId", result.get("playRoomParam"));
-        assertEquals("/cards/tien-len?roomId={roomId}", result.get("inviteUrlPathTemplate"));
+        assertEquals("/cards/tien-len/room/{roomId}", result.get("playUrlTemplate"));
+        assertEquals("/cards/tien-len/room/{roomId}", result.get("inviteUrlPathTemplate"));
         assertTrue(String.valueOf(result.get("roomId")).startsWith("TL-"));
     }
 
@@ -287,7 +298,9 @@ class OnlineHubControllerTest {
         assertEquals("QUIZ-ROOM-001", result.get("roomId"));
         assertEquals(true, result.get("serverCreated"));
         assertEquals("room", result.get("playRoomParam"));
-        assertEquals("/games/quiz?room={roomId}", result.get("inviteUrlPathTemplate"));
+        assertEquals("/games/quiz/room/{roomId}", result.get("playUrlTemplate"));
+        assertEquals("/games/quiz/room/{roomId}/spectate", result.get("spectateUrlTemplate"));
+        assertEquals("/games/quiz/room/{roomId}", result.get("inviteUrlPathTemplate"));
     }
 
     @Test
@@ -330,6 +343,8 @@ class OnlineHubControllerTest {
         assertEquals(true, model.getAttribute("onlineSupportedNow"));
         assertEquals(true, model.getAttribute("supportsSpectateNow"));
         assertEquals("/games/cards/blackjack", model.getAttribute("playUrlBase"));
+        assertEquals("/games/cards/blackjack/room/{roomId}", model.getAttribute("playUrlTemplate"));
+        assertEquals("/games/cards/blackjack/room/{roomId}/spectate", model.getAttribute("spectateUrlTemplate"));
         assertEquals("room", model.getAttribute("playRoomParam"));
         assertEquals("mode", model.getAttribute("spectateParamName"));
         assertEquals("spectate", model.getAttribute("spectateParamValue"));
@@ -361,7 +376,9 @@ class OnlineHubControllerTest {
         assertEquals("BJ-ROOM-001", result.get("roomId"));
         assertEquals(true, result.get("serverCreated"));
         assertEquals("room", result.get("playRoomParam"));
-        assertEquals("/games/cards/blackjack?room={roomId}", result.get("inviteUrlPathTemplate"));
+        assertEquals("/games/cards/blackjack/room/{roomId}", result.get("playUrlTemplate"));
+        assertEquals("/games/cards/blackjack/room/{roomId}/spectate", result.get("spectateUrlTemplate"));
+        assertEquals("/games/cards/blackjack/room/{roomId}", result.get("inviteUrlPathTemplate"));
     }
 
     @Test

@@ -1,0 +1,169 @@
+{
+  "info": {
+    "name": "Game Account Sync API",
+    "_postman_id": "6fd96dc5-2f66-4af1-8601-1b1578af2f7f",
+    "description": "Postman collection for syncing player accounts and account-related data into the Game database.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/Game"
+    },
+    {
+      "key": "syncApiKey",
+      "value": "replace-with-secret"
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "email",
+      "value": "player-sync@example.com"
+    }
+  ],
+  "item": [
+    {
+      "name": "Upsert Account Snapshot",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{syncApiKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"displayName\": \"Player Sync\",\n  \"password\": \"Pass@123\",\n  \"emailConfirmed\": true,\n  \"role\": \"User\",\n  \"score\": 120,\n  \"highestScore\": 220,\n  \"preferences\": {\n    \"themeMode\": \"dark\",\n    \"language\": \"vi\",\n    \"sidebarDesktopVisibleByDefault\": true,\n    \"sidebarMobileAutoClose\": true,\n    \"homeMusicEnabled\": false,\n    \"toastNotificationsEnabled\": true,\n    \"showOfflineFriendsInSidebar\": true,\n    \"autoRefreshFriendList\": true,\n    \"friendListRefreshMs\": 10000\n  },\n  \"gameStats\": {\n    \"chess-offline\": {\n      \"whiteWins\": 5,\n      \"blackWins\": 3,\n      \"draws\": 1\n    },\n    \"xiangqi-offline\": {\n      \"redWins\": 2,\n      \"blackWins\": 1,\n      \"draws\": 0\n    },\n    \"minesweeper\": {\n      \"totalGames\": 12,\n      \"wins\": 8,\n      \"losses\": 4,\n      \"bestTimes\": {\n        \"easy\": 42,\n        \"medium\": 80\n      }\n    }\n  },\n  \"gamesBrowserState\": {\n    \"favorites\": [\"caro\", \"chess\"],\n    \"recentGames\": [\n      {\n        \"code\": \"chess\",\n        \"name\": \"Chess\",\n        \"at\": 1762291200000\n      },\n      {\n        \"code\": \"caro\",\n        \"name\": \"Caro\",\n        \"at\": 1762291000000\n      }\n    ]\n  },\n  \"puzzleCatalogState\": {\n    \"favorites\": [\"sudoku\", \"jigsaw\"],\n    \"ratings\": {\n      \"sudoku\": 5,\n      \"jigsaw\": 4\n    },\n    \"recentCodes\": [\"jigsaw\", \"sudoku\"]\n  },\n  \"achievements\": [\n    {\n      \"achievementName\": \"Bac\",\n      \"achievedAt\": \"2026-03-08T09:00:00\"\n    }\n  ],\n  \"gameHistory\": [],\n  \"friendships\": [],\n  \"replaceRelatedData\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/account-sync/accounts",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "account-sync",
+            "accounts"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Account Snapshot By UserId",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{syncApiKey}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/account-sync/accounts/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "account-sync",
+            "accounts",
+            "{{userId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Account Snapshot By Email",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{syncApiKey}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/account-sync/accounts/by-email?email={{email}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "account-sync",
+            "accounts",
+            "by-email"
+          ],
+          "query": [
+            {
+              "key": "email",
+              "value": "{{email}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Bulk Upsert Accounts",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{syncApiKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"continueOnError\": false,\n  \"accounts\": [\n    {\n      \"userId\": \"bulk-a\",\n      \"email\": \"bulk-a@example.com\",\n      \"displayName\": \"Bulk A\",\n      \"password\": \"Pass@123\",\n      \"gamesBrowserState\": {\n        \"favorites\": [\"caro\"],\n        \"recentGames\": [\n          {\n            \"code\": \"caro\",\n            \"name\": \"Caro\",\n            \"at\": 1762290000000\n          }\n        ]\n      },\n      \"puzzleCatalogState\": {\n        \"favorites\": [\"word\"],\n        \"ratings\": {\n          \"word\": 4\n        },\n        \"recentCodes\": [\"word\"]\n      },\n      \"replaceRelatedData\": true\n    },\n    {\n      \"userId\": \"bulk-b\",\n      \"email\": \"bulk-b@example.com\",\n      \"displayName\": \"Bulk B\",\n      \"password\": \"Pass@123\",\n      \"friendships\": [\n        {\n          \"requesterId\": \"bulk-b\",\n          \"addresseeId\": \"bulk-a\",\n          \"accepted\": true\n        }\n      ],\n      \"replaceRelatedData\": true\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/account-sync/accounts/bulk",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "account-sync",
+            "accounts",
+            "bulk"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Export All Account Snapshots",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{syncApiKey}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/account-sync/accounts/export",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "account-sync",
+            "accounts",
+            "export"
+          ]
+        }
+      }
+    }
+  ]
+}

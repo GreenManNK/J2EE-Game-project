@@ -217,4 +217,112 @@ class AccountServiceTest {
         assertEquals(4, ((Number) stats.get("blackWins")).intValue());
         assertEquals(3, ((Number) stats.get("draws")).intValue());
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void updatePuzzleCatalogStateShouldSupportMergeAndReplaceModes() {
+        UserAccount user = new UserAccount();
+        user.setEmail("puzzle-state@test.com");
+        user.setUsername("puzzle-state@test.com");
+        user.setDisplayName("Puzzle State");
+        user.setPassword(passwordEncoder.encode("Pass@123"));
+        user.setEmailConfirmed(true);
+        userAccountRepository.save(user);
+
+        AccountService.ServiceResult firstUpdate = accountService.updatePuzzleCatalogState(
+            user.getId(),
+            new AccountService.PuzzleCatalogStateRequest(
+                java.util.List.of("sudoku", "word"),
+                Map.of("sudoku", 5),
+                java.util.List.of("word"),
+                false
+            )
+        );
+        AccountService.ServiceResult mergeUpdate = accountService.updatePuzzleCatalogState(
+            user.getId(),
+            new AccountService.PuzzleCatalogStateRequest(
+                java.util.List.of("jigsaw"),
+                Map.of("word", 4),
+                java.util.List.of("jigsaw"),
+                true
+            )
+        );
+        AccountService.ServiceResult replaceUpdate = accountService.updatePuzzleCatalogState(
+            user.getId(),
+            new AccountService.PuzzleCatalogStateRequest(
+                java.util.List.of("word"),
+                Map.of("word", 2),
+                java.util.List.of("word"),
+                false
+            )
+        );
+
+        assertTrue(firstUpdate.success());
+        assertTrue(mergeUpdate.success());
+        assertTrue(replaceUpdate.success());
+
+        AccountService.ServiceResult readResult = accountService.getPuzzleCatalogState(user.getId());
+        assertTrue(readResult.success());
+
+        Map<String, Object> payload = (Map<String, Object>) readResult.data();
+        assertEquals(java.util.List.of("word"), payload.get("favorites"));
+        assertEquals(java.util.List.of("word"), payload.get("recentCodes"));
+        assertEquals(Map.of("word", 2), payload.get("ratings"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void updateGamesBrowserStateShouldSupportMergeAndReplaceModes() {
+        UserAccount user = new UserAccount();
+        user.setEmail("games-browser-state@test.com");
+        user.setUsername("games-browser-state@test.com");
+        user.setDisplayName("Games Browser State");
+        user.setPassword(passwordEncoder.encode("Pass@123"));
+        user.setEmailConfirmed(true);
+        userAccountRepository.save(user);
+
+        AccountService.ServiceResult firstUpdate = accountService.updateGamesBrowserState(
+            user.getId(),
+            new AccountService.GamesBrowserStateRequest(
+                java.util.List.of("caro", "chess"),
+                java.util.List.of(
+                    Map.of("code", "chess", "name", "Chess", "at", 1762291200000L)
+                ),
+                false
+            )
+        );
+        AccountService.ServiceResult mergeUpdate = accountService.updateGamesBrowserState(
+            user.getId(),
+            new AccountService.GamesBrowserStateRequest(
+                java.util.List.of("xiangqi"),
+                java.util.List.of(
+                    Map.of("code", "xiangqi", "name", "Xiangqi", "at", 1762291300000L)
+                ),
+                true
+            )
+        );
+        AccountService.ServiceResult replaceUpdate = accountService.updateGamesBrowserState(
+            user.getId(),
+            new AccountService.GamesBrowserStateRequest(
+                java.util.List.of("caro"),
+                java.util.List.of(
+                    Map.of("code", "caro", "name", "Caro", "at", 1762291400000L)
+                ),
+                false
+            )
+        );
+
+        assertTrue(firstUpdate.success());
+        assertTrue(mergeUpdate.success());
+        assertTrue(replaceUpdate.success());
+
+        AccountService.ServiceResult readResult = accountService.getGamesBrowserState(user.getId());
+        assertTrue(readResult.success());
+
+        Map<String, Object> payload = (Map<String, Object>) readResult.data();
+        assertEquals(java.util.List.of("caro"), payload.get("favorites"));
+        java.util.List<Map<String, Object>> recentGames = (java.util.List<Map<String, Object>>) payload.get("recentGames");
+        assertEquals(1, recentGames.size());
+        assertEquals("caro", recentGames.get(0).get("code"));
+    }
 }

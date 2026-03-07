@@ -308,23 +308,50 @@
   }
 
   const USER_KEY = 'caro_current_user';
+  const USER_CHANGE_EVENT = 'caro:user-changed';
+  const DEFAULT_AVATAR_PATH = '/uploads/avatars/default-avatar.jpg';
   const TOAST_ENABLED_KEY = 'caroToastEnabled.v1';
+
+  function emitCurrentUserChange(user, source) {
+    const detail = {
+      user: user && user.userId ? user : null,
+      source: String(source || 'unknown')
+    };
+    try {
+      window.dispatchEvent(new CustomEvent(USER_CHANGE_EVENT, { detail: detail }));
+    } catch (_) {
+    }
+    try {
+      document.dispatchEvent(new CustomEvent(USER_CHANGE_EVENT, { detail: detail }));
+    } catch (_) {
+    }
+  }
+
+  function normalizeCurrentUser(user) {
+    return {
+      userId: String(user?.userId || '').trim(),
+      displayName: String(user?.displayName || 'Nguoi choi').trim() || 'Nguoi choi',
+      email: String(user?.email || '').trim(),
+      role: String(user?.role || 'User').trim() || 'User',
+      avatarPath: String(user?.avatarPath || DEFAULT_AVATAR_PATH).trim() || DEFAULT_AVATAR_PATH
+    };
+  }
 
   function getCurrentUser() {
     const stored = parseJsonSafe(localStorage.getItem(USER_KEY));
     if (stored && stored.userId) {
-      return stored;
+      return normalizeCurrentUser(stored);
     }
 
     const legacyUserId = localStorage.getItem('userId');
     if (legacyUserId) {
-      const fromLegacy = {
+      const fromLegacy = normalizeCurrentUser({
         userId: legacyUserId,
-        displayName: localStorage.getItem('displayName') || 'Người chơi',
+        displayName: localStorage.getItem('displayName') || 'Nguoi choi',
         email: localStorage.getItem('email') || '',
         role: localStorage.getItem('role') || 'User',
-        avatarPath: localStorage.getItem('avatarPath') || '/uploads/avatars/default-avatar.jpg'
-      };
+        avatarPath: localStorage.getItem('avatarPath') || DEFAULT_AVATAR_PATH
+      });
       setCurrentUser(fromLegacy);
       return fromLegacy;
     }
@@ -337,13 +364,7 @@
       return;
     }
 
-    const normalized = {
-      userId: user.userId,
-      displayName: user.displayName || 'Người chơi',
-      email: user.email || '',
-      role: user.role || 'User',
-      avatarPath: user.avatarPath || '/uploads/avatars/default-avatar.jpg'
-    };
+    const normalized = normalizeCurrentUser(user);
 
     localStorage.setItem(USER_KEY, JSON.stringify(normalized));
     localStorage.setItem('userId', normalized.userId);
@@ -351,6 +372,7 @@
     localStorage.setItem('email', normalized.email);
     localStorage.setItem('role', normalized.role);
     localStorage.setItem('avatarPath', normalized.avatarPath);
+    emitCurrentUserChange(normalized, 'set');
   }
 
   function clearCurrentUser() {
@@ -360,12 +382,14 @@
     localStorage.removeItem('email');
     localStorage.removeItem('role');
     localStorage.removeItem('avatarPath');
+    emitCurrentUserChange(null, 'clear');
   }
 
   window.CaroUser = {
     get: getCurrentUser,
     set: setCurrentUser,
-    clear: clearCurrentUser
+    clear: clearCurrentUser,
+    eventName: USER_CHANGE_EVENT
   };
 
   async function fetchAccountGameStats(gameCode) {
@@ -423,6 +447,20 @@
     save: saveAccountGameStats
   };
 
+  const MUSIC_KEY = 'music';
+  const SIDEBAR_DESKTOP_HIDDEN_KEY = 'caroSidebarDesktopHidden.v2';
+  const SIDEBAR_MOBILE_AUTO_CLOSE_KEY = 'caroSidebarMobileAutoClose.v1';
+  const FRIEND_LIST_SHOW_OFFLINE_KEY = 'caroFriendListShowOffline.v1';
+  const FRIEND_LIST_AUTO_REFRESH_KEY = 'caroFriendListAutoRefresh.v1';
+  const FRIEND_LIST_REFRESH_KEY = 'caroFriendListRefreshMs.v1';
+  const FRIEND_LIST_ALLOWED_REFRESH_VALUES = [5000, 10000, 15000, 20000, 30000, 60000];
+  const LANGUAGE_KEY = 'caro_ui_lang';
+  const GUEST_MIGRATION_PENDING_KEY = 'caroGuestMigrationPending.v1';
+  const GAMES_BROWSER_FAVORITES_KEY = 'caroFavoriteGames.v1';
+  const GAMES_BROWSER_RECENT_KEY = 'caroRecentlyPlayedGames.v1';
+  const PUZZLE_FAVORITE_STORAGE_KEY = 'puzzleCatalogFavorites.v1';
+  const PUZZLE_RATING_STORAGE_KEY = 'puzzleCatalogRatings.v1';
+  const PUZZLE_RECENT_STORAGE_KEY = 'puzzleCatalogRecent.v1';
   const GUEST_DATA_KEYS = [
     { gameCode: 'chess-offline', storageKey: 'caroChessOfflineStats.v1' },
     { gameCode: 'xiangqi-offline', storageKey: 'caroXiangqiOfflineStats.v1' },
@@ -430,41 +468,379 @@
   ];
   let guestDataMigrateInFlight = null;
 
+  function readBooleanStorage(key, fallbackValue) {
+    try {
+      const raw = window.localStorage.getItem(key);
+      if (raw == null) {
+        return fallbackValue;
+      }
+      return raw === '1' || raw === 'true';
+    } catch (_) {
+      return fallbackValue;
+    }
+  }
+
+  function normalizeLanguageValue(language) {
+    return String(language || '').trim().toLowerCase() === 'en' ? 'en' : 'vi';
+  }
+
+  function readFriendListRefreshMs() {
+    try {
+      const raw = Number.parseInt(String(window.localStorage.getItem(FRIEND_LIST_REFRESH_KEY) || '5000'), 10);
+      if (Number.isFinite(raw) && FRIEND_LIST_ALLOWED_REFRESH_VALUES.includes(raw)) {
+        return raw;
+      }
+    } catch (_) {
+    }
+    return 5000;
+  }
+
+  function hasPendingGuestMigration() {
+    try {
+      return window.localStorage.getItem(GUEST_MIGRATION_PENDING_KEY) === '1';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function markGuestMigrationPending() {
+    try {
+      window.localStorage.setItem(GUEST_MIGRATION_PENDING_KEY, '1');
+    } catch (_) {
+    }
+  }
+
+  function clearGuestMigrationPending() {
+    try {
+      window.localStorage.removeItem(GUEST_MIGRATION_PENDING_KEY);
+    } catch (_) {
+    }
+  }
+
+  function collectGuestPreferencesPayload() {
+    if (!hasPendingGuestMigration()) {
+      return null;
+    }
+
+    const themeMode = (window.CaroTheme && typeof window.CaroTheme.getMode === 'function')
+      ? normalizeThemeMode(window.CaroTheme.getMode())
+      : normalizeThemeMode(window.localStorage.getItem(THEME_MODE_KEY));
+    const language = (window.CaroI18n && typeof window.CaroI18n.getLanguage === 'function')
+      ? normalizeLanguageValue(window.CaroI18n.getLanguage())
+      : normalizeLanguageValue(window.localStorage.getItem(LANGUAGE_KEY));
+
+    return {
+      themeMode: themeMode,
+      language: language,
+      sidebarDesktopVisibleByDefault: !readBooleanStorage(SIDEBAR_DESKTOP_HIDDEN_KEY, true),
+      sidebarMobileAutoClose: readBooleanStorage(SIDEBAR_MOBILE_AUTO_CLOSE_KEY, true),
+      homeMusicEnabled: String(window.localStorage.getItem(MUSIC_KEY) || 'on').trim().toLowerCase() !== 'off',
+      toastNotificationsEnabled: readBooleanStorage(TOAST_ENABLED_KEY, true),
+      showOfflineFriendsInSidebar: readBooleanStorage(FRIEND_LIST_SHOW_OFFLINE_KEY, true),
+      autoRefreshFriendList: readBooleanStorage(FRIEND_LIST_AUTO_REFRESH_KEY, true),
+      friendListRefreshMs: readFriendListRefreshMs()
+    };
+  }
+
+  function collectGuestGameStatsPayload() {
+    const payload = {};
+    for (const item of GUEST_DATA_KEYS) {
+      const raw = window.localStorage.getItem(item.storageKey);
+      if (!raw) {
+        continue;
+      }
+      let parsed = null;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (_) {
+        parsed = null;
+      }
+      if (!parsed || typeof parsed !== 'object') {
+        continue;
+      }
+      payload[item.gameCode] = parsed;
+    }
+    return payload;
+  }
+
+  function hasGuestStatsData() {
+    return Object.keys(collectGuestGameStatsPayload()).length > 0;
+  }
+
+  function normalizeGamesBrowserCode(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+    return normalized || '';
+  }
+
+  function normalizeGamesBrowserName(value, fallbackCode) {
+    const normalized = String(value || '').trim();
+    if (normalized) {
+      return normalized;
+    }
+    const fallback = normalizeGamesBrowserCode(fallbackCode);
+    return fallback || 'Game';
+  }
+
+  function collectGuestGamesBrowserStatePayload() {
+    const favorites = parseJsonSafe(window.localStorage.getItem(GAMES_BROWSER_FAVORITES_KEY));
+    const recentGames = parseJsonSafe(window.localStorage.getItem(GAMES_BROWSER_RECENT_KEY));
+
+    const normalizedFavorites = Array.isArray(favorites)
+      ? Array.from(new Set(favorites.map((item) => normalizeGamesBrowserCode(item)).filter(Boolean))).slice(0, 256)
+      : [];
+    const normalizedRecentGames = Array.isArray(recentGames)
+      ? recentGames
+        .map((item) => {
+          const code = normalizeGamesBrowserCode(item && item.code);
+          if (!code) {
+            return null;
+          }
+          return {
+            code: code,
+            name: normalizeGamesBrowserName(item && item.name, code),
+            at: Number.isFinite(Number(item && item.at)) ? Number(item.at) : Date.now()
+          };
+        })
+        .filter((item) => Boolean(item))
+        .slice(0, 20)
+      : [];
+
+    if (normalizedFavorites.length === 0 && normalizedRecentGames.length === 0) {
+      return null;
+    }
+
+    return {
+      favorites: normalizedFavorites,
+      recentGames: normalizedRecentGames,
+      merge: true
+    };
+  }
+
+  function clearGuestGamesBrowserState() {
+    try {
+      window.localStorage.removeItem(GAMES_BROWSER_FAVORITES_KEY);
+      window.localStorage.removeItem(GAMES_BROWSER_RECENT_KEY);
+    } catch (_) {
+    }
+  }
+
+  function hasGuestGamesBrowserState() {
+    return !!collectGuestGamesBrowserStatePayload();
+  }
+
+  async function fetchGamesBrowserState() {
+    const current = getCurrentUser();
+    if (!current || !current.userId) {
+      return null;
+    }
+    try {
+      const res = await fetch(toAppPath('/account/games-browser-state'), { cache: 'no-store' });
+      const data = await res.json().catch(() => ({}));
+      if (!data || data.success !== true || !data.data || typeof data.data !== 'object') {
+        return null;
+      }
+      return data.data;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function saveGamesBrowserState(state, merge, options) {
+    const current = getCurrentUser();
+    if (!current || !current.userId || !state || typeof state !== 'object') {
+      return false;
+    }
+    const opts = options || {};
+    try {
+      const res = await fetch(toAppPath('/account/games-browser-state'), {
+        method: 'POST',
+        keepalive: opts.keepalive === true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          favorites: Array.isArray(state.favorites) ? state.favorites : [],
+          recentGames: Array.isArray(state.recentGames) ? state.recentGames : [],
+          merge: merge !== false
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      return !!(data && data.success === true);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  window.CaroGamesBrowserState = {
+    get: fetchGamesBrowserState,
+    save: saveGamesBrowserState,
+    guestKeys: {
+      favorites: GAMES_BROWSER_FAVORITES_KEY,
+      recentGames: GAMES_BROWSER_RECENT_KEY
+    }
+  };
+
+  function collectGuestPuzzleCatalogStatePayload() {
+    const favorites = parseJsonSafe(window.localStorage.getItem(PUZZLE_FAVORITE_STORAGE_KEY));
+    const ratings = parseJsonSafe(window.localStorage.getItem(PUZZLE_RATING_STORAGE_KEY));
+    const recentCodes = parseJsonSafe(window.localStorage.getItem(PUZZLE_RECENT_STORAGE_KEY));
+
+    const hasFavorites = Array.isArray(favorites) && favorites.length > 0;
+    const hasRatings = ratings && typeof ratings === 'object' && !Array.isArray(ratings) && Object.keys(ratings).length > 0;
+    const hasRecentCodes = Array.isArray(recentCodes) && recentCodes.length > 0;
+
+    if (!hasFavorites && !hasRatings && !hasRecentCodes) {
+      return null;
+    }
+
+    return {
+      favorites: hasFavorites ? favorites : [],
+      ratings: hasRatings ? ratings : {},
+      recentCodes: hasRecentCodes ? recentCodes : [],
+      merge: true
+    };
+  }
+
+  function clearGuestPuzzleCatalogState() {
+    try {
+      window.localStorage.removeItem(PUZZLE_FAVORITE_STORAGE_KEY);
+      window.localStorage.removeItem(PUZZLE_RATING_STORAGE_KEY);
+      window.localStorage.removeItem(PUZZLE_RECENT_STORAGE_KEY);
+    } catch (_) {
+    }
+  }
+
+  function hasGuestPuzzleCatalogState() {
+    return !!collectGuestPuzzleCatalogStatePayload();
+  }
+
+  async function fetchPuzzleCatalogState() {
+    const current = getCurrentUser();
+    if (!current || !current.userId) {
+      return null;
+    }
+    try {
+      const res = await fetch(toAppPath('/account/puzzle-catalog-state'), { cache: 'no-store' });
+      const data = await res.json().catch(() => ({}));
+      if (!data || data.success !== true || !data.data || typeof data.data !== 'object') {
+        return null;
+      }
+      return data.data;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function savePuzzleCatalogState(state, merge, options) {
+    const current = getCurrentUser();
+    if (!current || !current.userId || !state || typeof state !== 'object') {
+      return false;
+    }
+    const opts = options || {};
+    try {
+      const res = await fetch(toAppPath('/account/puzzle-catalog-state'), {
+        method: 'POST',
+        keepalive: opts.keepalive === true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          favorites: Array.isArray(state.favorites) ? state.favorites : [],
+          ratings: state.ratings && typeof state.ratings === 'object' ? state.ratings : {},
+          recentCodes: Array.isArray(state.recentCodes) ? state.recentCodes : [],
+          merge: merge !== false
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      return !!(data && data.success === true);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  window.CaroPuzzleCatalog = {
+    get: fetchPuzzleCatalogState,
+    save: savePuzzleCatalogState,
+    guestKeys: {
+      favorites: PUZZLE_FAVORITE_STORAGE_KEY,
+      ratings: PUZZLE_RATING_STORAGE_KEY,
+      recentCodes: PUZZLE_RECENT_STORAGE_KEY
+    }
+  };
+
   async function migrateGuestDataToAccount() {
     if (guestDataMigrateInFlight) {
       return guestDataMigrateInFlight;
     }
     const current = getCurrentUser();
     if (!current || !current.userId) {
-      return { migratedCount: 0 };
+      return { migratedCount: 0, migratedPreferences: false };
     }
 
     guestDataMigrateInFlight = (async () => {
-      let migratedCount = 0;
-      for (const item of GUEST_DATA_KEYS) {
-        const raw = window.localStorage.getItem(item.storageKey);
-        if (!raw) {
-          continue;
+      const preferences = collectGuestPreferencesPayload();
+      const gameStats = collectGuestGameStatsPayload();
+      const gamesBrowserState = collectGuestGamesBrowserStatePayload();
+      const puzzleCatalogState = collectGuestPuzzleCatalogStatePayload();
+      if (!preferences && Object.keys(gameStats).length === 0 && !gamesBrowserState && !puzzleCatalogState) {
+        clearGuestMigrationPending();
+        return { migratedCount: 0, migratedPreferences: false };
+      }
+
+      try {
+        const res = await fetch(toAppPath('/account/migrate-guest-data'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            preferences: preferences,
+            gameStats: gameStats,
+            gamesBrowserState: gamesBrowserState,
+            puzzleCatalogState: puzzleCatalogState
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!data || data.success !== true || !data.data) {
+          return {
+            migratedCount: 0,
+            migratedPreferences: false,
+            error: String(data?.error || 'Cannot migrate guest data')
+          };
         }
-        let parsed = null;
-        try {
-          parsed = JSON.parse(raw);
-        } catch (_) {
-          parsed = null;
-        }
-        if (!parsed || typeof parsed !== 'object') {
-          continue;
-        }
-        const saved = await saveAccountGameStats(item.gameCode, parsed, true);
-        if (saved) {
-          migratedCount += 1;
+
+        const migratedGameStats = Array.isArray(data.data.migratedGameStats) ? data.data.migratedGameStats : [];
+        for (const item of GUEST_DATA_KEYS) {
+          if (!migratedGameStats.includes(item.gameCode)) {
+            continue;
+          }
           try {
             window.localStorage.removeItem(item.storageKey);
           } catch (_) {
           }
         }
+
+        if (data.data.migratedGamesBrowserState) {
+          clearGuestGamesBrowserState();
+        }
+
+        if (data.data.migratedPuzzleCatalogState) {
+          clearGuestPuzzleCatalogState();
+        }
+
+        if (data.data.migratedPreferences) {
+          clearGuestMigrationPending();
+        }
+
+        return {
+          migratedCount: Number(data.data.migratedGameStatsCount || migratedGameStats.length || 0),
+          migratedPreferences: !!data.data.migratedPreferences,
+          migratedGamesBrowserState: !!data.data.migratedGamesBrowserState,
+          migratedPuzzleCatalogState: !!data.data.migratedPuzzleCatalogState
+        };
+      } catch (_) {
+        return {
+          migratedCount: 0,
+          migratedPreferences: false,
+          migratedGamesBrowserState: false,
+          migratedPuzzleCatalogState: false,
+          error: 'Cannot migrate guest data'
+        };
       }
-      return { migratedCount: migratedCount };
     })();
 
     try {
@@ -475,7 +851,13 @@
   }
 
   window.CaroGuestData = {
-    migrateToAccount: migrateGuestDataToAccount
+    migrateToAccount: migrateGuestDataToAccount,
+    markPendingMigration: markGuestMigrationPending,
+    clearPendingMigration: clearGuestMigrationPending,
+    hasPendingMigration: hasPendingGuestMigration,
+    hasGuestStats: hasGuestStatsData,
+    hasGuestGamesBrowserState: hasGuestGamesBrowserState,
+    hasGuestPuzzleCatalogState: hasGuestPuzzleCatalogState
   };
 
   function ensureToastContainer() {
@@ -630,28 +1012,43 @@
     normalizeRootRelativeUrls();
 
     const badges = document.querySelectorAll('[data-current-user-badge]');
+    const userNames = document.querySelectorAll('[data-current-user-name]');
+    const userMetas = document.querySelectorAll('[data-current-user-meta]');
+    const userAvatars = document.querySelectorAll('[data-current-user-avatar]');
     const logoutBtn = document.getElementById('logoutBtn');
     const authOnly = document.querySelectorAll('[data-auth-only]');
     const guestOnly = document.querySelectorAll('[data-guest-only]');
     const roleOnly = document.querySelectorAll('[data-role-allowed]');
 
     const applyAuthState = (user) => {
+      const safeUser = user && user.userId ? normalizeCurrentUser(user) : null;
       badges.forEach((el) => {
-        if (user) {
-          el.textContent = user.displayName + ' (' + user.userId + ')';
+        if (safeUser) {
+          el.textContent = safeUser.displayName + ' (' + safeUser.userId + ')';
         } else {
-          el.textContent = 'Chưa đăng nhập';
+          el.textContent = 'Chua dang nhap';
         }
+      });
+      userNames.forEach((el) => {
+        el.textContent = safeUser ? safeUser.displayName : 'Nguoi choi';
+      });
+      userMetas.forEach((el) => {
+        el.textContent = safeUser ? (safeUser.email || safeUser.userId) : 'Dang nhap de xem du lieu tai khoan';
+      });
+      userAvatars.forEach((el) => {
+        const avatarPath = safeUser ? safeUser.avatarPath : DEFAULT_AVATAR_PATH;
+        el.setAttribute('src', toAppPath(avatarPath));
+        el.setAttribute('alt', safeUser ? ('Avatar ' + safeUser.displayName) : 'Avatar');
       });
 
       authOnly.forEach((el) => {
-        el.style.display = user ? '' : 'none';
+        el.style.display = safeUser ? '' : 'none';
       });
       guestOnly.forEach((el) => {
-        el.style.display = user ? 'none' : '';
+        el.style.display = safeUser ? 'none' : '';
       });
       roleOnly.forEach((el) => {
-        if (!user || !user.role) {
+        if (!safeUser || !safeUser.role) {
           el.style.display = 'none';
           return;
         }
@@ -662,31 +1059,61 @@
         if (allowed.length === 0) {
           return;
         }
-        el.style.display = allowed.includes(String(user.role).trim().toLowerCase()) ? '' : 'none';
+        el.style.display = allowed.includes(String(safeUser.role).trim().toLowerCase()) ? '' : 'none';
       });
     };
 
     let user = getCurrentUser();
     applyAuthState(user);
+    window.addEventListener(USER_CHANGE_EVENT, (event) => {
+      user = event?.detail?.user && event.detail.user.userId ? normalizeCurrentUser(event.detail.user) : null;
+      applyAuthState(user);
+    });
 
-    if (user && user.userId) {
-      fetch(toAppPath('/account/preferences'), { cache: 'no-store' })
-        .then((res) => res.json().catch(() => ({})))
-        .then((data) => {
-          if (!data || data.success !== true) {
+    const shouldMigrateGuestData = () => !!window.CaroGuestData
+      && (
+        window.CaroGuestData.hasPendingMigration?.()
+        || window.CaroGuestData.hasGuestStats?.()
+        || window.CaroGuestData.hasGuestGamesBrowserState?.()
+        || window.CaroGuestData.hasGuestPuzzleCatalogState?.()
+      );
+
+    fetch(toAppPath('/account/session-user'), { cache: 'no-store' })
+      .then((res) => res.json().catch(() => ({})))
+      .then((data) => {
+        const sessionUser = data && data.success === true && data.data && data.data.userId
+          ? normalizeCurrentUser(data.data)
+          : null;
+
+        if (!sessionUser) {
+          if (user && user.userId) {
             clearCurrentUser();
             user = null;
             applyAuthState(null);
-            return;
           }
-          window.CaroGuestData?.migrateToAccount?.();
-        })
-        .catch(() => {
-          clearCurrentUser();
-          user = null;
-          applyAuthState(null);
-        });
-    }
+          return;
+        }
+
+        const hasChanged = !user
+          || user.userId !== sessionUser.userId
+          || user.displayName !== sessionUser.displayName
+          || user.email !== sessionUser.email
+          || user.role !== sessionUser.role
+          || user.avatarPath !== sessionUser.avatarPath;
+
+        if (hasChanged) {
+          setCurrentUser(sessionUser);
+        } else {
+          user = sessionUser;
+          applyAuthState(sessionUser);
+        }
+
+        if (shouldMigrateGuestData()) {
+          window.CaroGuestData.migrateToAccount?.();
+        }
+      })
+      .catch(() => {
+      });
 
     if (window.axios && window.axios.defaults && window.axios.defaults.headers) {
       const csrf = getCsrfMeta();

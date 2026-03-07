@@ -5,6 +5,7 @@ import com.game.hub.games.cards.blackjack.service.BlackjackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -22,6 +23,16 @@ public class BlackjackController {
     @GetMapping
     public String blackjackPage() {
         return "games/cards/blackjack";
+    }
+
+    @GetMapping("/room/{roomId}")
+    public String blackjackRoomPage(@PathVariable String roomId) {
+        return blackjackPage();
+    }
+
+    @GetMapping("/room/{roomId}/spectate")
+    public String blackjackSpectatePage(@PathVariable String roomId) {
+        return blackjackPage();
     }
 
     @GetMapping("/rooms")

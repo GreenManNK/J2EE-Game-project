@@ -51,6 +51,21 @@ public class UserAccount {
     @JsonIgnore
     @Column(length = 8000)
     private String minesweeperStatsJson;
+    @JsonIgnore
+    @Column(length = 4000)
+    private String puzzleCatalogFavoritesJson;
+    @JsonIgnore
+    @Column(length = 4000)
+    private String puzzleCatalogRatingsJson;
+    @JsonIgnore
+    @Column(length = 4000)
+    private String puzzleCatalogRecentJson;
+    @JsonIgnore
+    @Column(length = 4000)
+    private String gamesBrowserFavoritesJson;
+    @JsonIgnore
+    @Column(length = 8000)
+    private String gamesBrowserRecentJson;
 
     @PrePersist
     public void prePersist() {
@@ -113,4 +128,14 @@ public class UserAccount {
     public void setXiangqiOfflineStatsJson(String xiangqiOfflineStatsJson) { this.xiangqiOfflineStatsJson = xiangqiOfflineStatsJson; }
     public String getMinesweeperStatsJson() { return minesweeperStatsJson; }
     public void setMinesweeperStatsJson(String minesweeperStatsJson) { this.minesweeperStatsJson = minesweeperStatsJson; }
+    public String getPuzzleCatalogFavoritesJson() { return puzzleCatalogFavoritesJson; }
+    public void setPuzzleCatalogFavoritesJson(String puzzleCatalogFavoritesJson) { this.puzzleCatalogFavoritesJson = puzzleCatalogFavoritesJson; }
+    public String getPuzzleCatalogRatingsJson() { return puzzleCatalogRatingsJson; }
+    public void setPuzzleCatalogRatingsJson(String puzzleCatalogRatingsJson) { this.puzzleCatalogRatingsJson = puzzleCatalogRatingsJson; }
+    public String getPuzzleCatalogRecentJson() { return puzzleCatalogRecentJson; }
+    public void setPuzzleCatalogRecentJson(String puzzleCatalogRecentJson) { this.puzzleCatalogRecentJson = puzzleCatalogRecentJson; }
+    public String getGamesBrowserFavoritesJson() { return gamesBrowserFavoritesJson; }
+    public void setGamesBrowserFavoritesJson(String gamesBrowserFavoritesJson) { this.gamesBrowserFavoritesJson = gamesBrowserFavoritesJson; }
+    public String getGamesBrowserRecentJson() { return gamesBrowserRecentJson; }
+    public void setGamesBrowserRecentJson(String gamesBrowserRecentJson) { this.gamesBrowserRecentJson = gamesBrowserRecentJson; }
 }

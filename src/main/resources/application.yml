@@ -33,6 +33,8 @@ huggingface:
   model: ""
 
 app:
+  api:
+    sync-key: ${APP_SYNC_API_KEY:}
   email:
     mode: ${APP_EMAIL_MODE:auto}
     from: ${APP_EMAIL_FROM:noreply@example.local}

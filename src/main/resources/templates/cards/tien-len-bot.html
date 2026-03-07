@@ -19,7 +19,16 @@
     <section class="card shadow-sm theme-box">
       <div class="card-body d-flex flex-wrap gap-2 justify-content-between align-items-center">
         <div>
-          <div class="small"><strong>Ban:</strong> <span id="tlBotSelfName" th:text="${sessionDisplayName}">Guest</span></div>
+          <div class="tl-self-summary">
+            <img id="tlBotSelfAvatar"
+                 class="tl-self-summary__avatar"
+                 th:src="@{/uploads/avatars/default-avatar.jpg}"
+                 alt="Avatar nguoi choi">
+            <div class="tl-self-summary__body">
+              <div class="small"><strong>Ban:</strong> <span id="tlBotSelfName" th:text="${sessionDisplayName}">Guest</span></div>
+              <div id="tlBotSelfMeta" class="text-muted small">Khach tam thoi</div>
+            </div>
+          </div>
           <div class="small"><strong>Che do:</strong> <span id="tlBotDifficultyLabel">-</span></div>
           <div class="small"><strong>Trang thai:</strong> <span id="tlBotStatusText">Dang khoi tao van...</span></div>
           <div class="small"><strong>Thong bao:</strong> <span id="tlBotMessageText">-</span></div>
@@ -114,6 +123,28 @@
     display: grid;
     grid-template-columns: 1.4fr 1fr;
     gap: 14px;
+  }
+
+  .tl-self-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .tl-self-summary__avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 1px solid rgba(19, 79, 59, 0.18);
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 6px 16px rgba(5, 35, 26, 0.08);
+    flex-shrink: 0;
+  }
+
+  .tl-self-summary__body {
+    min-width: 0;
   }
 
   .tienlen-bot-main-grid {
@@ -992,6 +1023,7 @@
   window.TienLenBotBoot = {
     sessionUserId: /*[[${sessionUserId}]]*/ '',
     sessionDisplayName: /*[[${sessionDisplayName}]]*/ '',
+    sessionAvatarPath: /*[[${sessionAvatarPath}]]*/ '',
     botDifficulty: /*[[${botDifficulty}]]*/ 'easy',
     botDelayMs: 650
   };

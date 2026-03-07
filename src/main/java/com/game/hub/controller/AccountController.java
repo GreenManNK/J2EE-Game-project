@@ -129,6 +129,16 @@ public class AccountController {
         return toResponse(accountService.getPreferences(sessionUserId));
     }
 
+    @GetMapping("/session-user")
+    public Object getSessionUser(HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        return toResponse(accountService.getSessionUserSummary(sessionUserId));
+    }
+
     @PostMapping("/preferences")
     public Object updatePreferences(@RequestBody(required = false) UpdatePreferencesRequest request,
                                     HttpServletRequest httpRequest) {
@@ -184,6 +194,111 @@ public class AccountController {
             request.gameCode(),
             request.stats(),
             request.merge() == null || request.merge()
+        ));
+    }
+
+    @GetMapping("/puzzle-catalog-state")
+    public Object getPuzzleCatalogState(HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        return toResponse(accountService.getPuzzleCatalogState(sessionUserId));
+    }
+
+    @PostMapping("/puzzle-catalog-state")
+    public Object updatePuzzleCatalogState(@RequestBody(required = false) PuzzleCatalogStateRequest request,
+                                           HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        if (request == null) {
+            return Map.of("success", false, "error", "Invalid request");
+        }
+        return toResponse(accountService.updatePuzzleCatalogState(
+            sessionUserId,
+            new AccountService.PuzzleCatalogStateRequest(
+                request.favorites(),
+                request.ratings(),
+                request.recentCodes(),
+                request.merge()
+            )
+        ));
+    }
+
+    @GetMapping("/games-browser-state")
+    public Object getGamesBrowserState(HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        return toResponse(accountService.getGamesBrowserState(sessionUserId));
+    }
+
+    @PostMapping("/games-browser-state")
+    public Object updateGamesBrowserState(@RequestBody(required = false) GamesBrowserStateRequest request,
+                                          HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        if (request == null) {
+            return Map.of("success", false, "error", "Invalid request");
+        }
+        return toResponse(accountService.updateGamesBrowserState(
+            sessionUserId,
+            new AccountService.GamesBrowserStateRequest(
+                request.favorites(),
+                request.recentGames(),
+                request.merge()
+            )
+        ));
+    }
+
+    @PostMapping("/migrate-guest-data")
+    public Object migrateGuestData(@RequestBody(required = false) GuestMigrationRequest request,
+                                   HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        if (request == null) {
+            return Map.of("success", false, "error", "Invalid request");
+        }
+
+        return toResponse(accountService.migrateGuestData(
+            sessionUserId,
+            new AccountService.GuestMigrationRequest(
+                request.preferences() == null ? null : new AccountService.PreferencesRequest(
+                    request.preferences().themeMode(),
+                    request.preferences().language(),
+                    request.preferences().sidebarDesktopVisibleByDefault(),
+                    request.preferences().sidebarMobileAutoClose(),
+                    request.preferences().homeMusicEnabled(),
+                    request.preferences().toastNotificationsEnabled(),
+                    request.preferences().showOfflineFriendsInSidebar(),
+                    request.preferences().autoRefreshFriendList(),
+                    request.preferences().friendListRefreshMs()
+                ),
+                request.gameStats(),
+                request.puzzleCatalogState() == null ? null : new AccountService.PuzzleCatalogStateRequest(
+                    request.puzzleCatalogState().favorites(),
+                    request.puzzleCatalogState().ratings(),
+                    request.puzzleCatalogState().recentCodes(),
+                    request.puzzleCatalogState().merge()
+                ),
+                request.gamesBrowserState() == null ? null : new AccountService.GamesBrowserStateRequest(
+                    request.gamesBrowserState().favorites(),
+                    request.gamesBrowserState().recentGames(),
+                    request.gamesBrowserState().merge()
+                )
+            )
         ));
     }
 
@@ -305,5 +420,22 @@ public class AccountController {
     }
 
     public record UpdateGameStatsRequest(String gameCode, Object stats, Boolean merge) {
+    }
+
+    public record PuzzleCatalogStateRequest(java.util.List<String> favorites,
+                                            Map<String, Object> ratings,
+                                            java.util.List<String> recentCodes,
+                                            Boolean merge) {
+    }
+
+    public record GamesBrowserStateRequest(java.util.List<String> favorites,
+                                           java.util.List<Map<String, Object>> recentGames,
+                                           Boolean merge) {
+    }
+
+    public record GuestMigrationRequest(UpdatePreferencesRequest preferences,
+                                        Map<String, Object> gameStats,
+                                        PuzzleCatalogStateRequest puzzleCatalogState,
+                                        GamesBrowserStateRequest gamesBrowserState) {
     }
 }

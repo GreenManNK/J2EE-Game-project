@@ -610,6 +610,7 @@
 
             roomIdDisplay.textContent = roomId || '-';
             roomIdInput.value = roomId || '';
+            replaceRoomUrl(roomId);
             raceStatusEl.textContent = room.gameState || 'WAITING';
 
             const text = room.textToType || '';
@@ -774,6 +775,7 @@
         winnerDisplay.hidden = true;
         roomSelection.hidden = false;
         gameContainer.hidden = true;
+        replaceRoomUrl('');
         setConnectionStatus('Da quay lai lobby.', 'success');
         setStatus('', '');
         fetchRoomList(true);
@@ -838,10 +840,24 @@
         }, 8000);
     }
 
+    function buildRoomPagePath(roomIdValue) {
+        const normalizedRoomId = String(roomIdValue || '').trim();
+        if (!normalizedRoomId) {
+            return appPath('/games/typing');
+        }
+        return appPath('/games/typing/room/' + encodeURIComponent(normalizedRoomId));
+    }
+
+    function replaceRoomUrl(roomIdValue) {
+        try {
+            const target = new URL(buildRoomPagePath(roomIdValue), window.location.origin);
+            window.history.replaceState({}, '', target.pathname + target.search + target.hash);
+        } catch (_) {
+        }
+    }
+
     function buildInviteUrl(roomIdValue) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('room', roomIdValue);
-        return url.toString();
+        return new URL(buildRoomPagePath(roomIdValue), window.location.origin).toString();
     }
 
     async function copyToClipboard(text) {
@@ -862,8 +878,11 @@
     }
 
     function applyAutoJoinFromUrl() {
+        const pathname = String(window.location.pathname || '').replace(/\/+$/, '');
+        const roomMatch = pathname.match(/\/games\/typing\/room\/([^/]+)$/i);
+        const roomFromPath = roomMatch ? decodeURIComponent(roomMatch[1] || '').trim() : '';
         const params = new URLSearchParams(window.location.search);
-        const room = (params.get('room') || '').trim();
+        const room = roomFromPath || (params.get('room') || '').trim();
         if (!room) {
             return;
         }

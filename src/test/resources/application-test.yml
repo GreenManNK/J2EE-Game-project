@@ -12,6 +12,8 @@ spring:
     cache: false
 
 app:
+  api:
+    sync-key: test-sync-key
   runtime:
     canonical-url:
       enforce: false
