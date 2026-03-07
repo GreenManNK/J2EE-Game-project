@@ -21,6 +21,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -49,6 +50,8 @@ class OnlineHubControllerTest {
         assertEquals("caro", model.getAttribute("selectedGameCode"));
         assertEquals("room-a", model.getAttribute("selectedRoomId"));
         assertEquals(true, model.getAttribute("onlineSupportedNow"));
+        assertEquals("/game", model.getAttribute("playUrlBase"));
+        assertEquals("/game?roomId={roomId}", model.getAttribute("inviteUrlPathTemplate"));
         assertNotNull(model.getAttribute("roomRows"));
     }
 
@@ -114,6 +117,28 @@ class OnlineHubControllerTest {
         assertEquals(true, model.getAttribute("onlineSupportedNow"));
         assertEquals("/chess/online", model.getAttribute("playUrlBase"));
         assertEquals("/chess/online?roomId={roomId}", model.getAttribute("inviteUrlPathTemplate"));
+    }
+
+    @Test
+    void cardsShouldUseDirectTienLenInviteUrl() {
+        OnlineHubController controller = new OnlineHubController(
+            new GameCatalogService(),
+            mock(GameRoomService.class),
+            new TienLenRoomService(),
+            mock(BlackjackService.class),
+            new ChessOnlineRoomService(),
+            new XiangqiOnlineRoomService(),
+            mock(TypingService.class),
+            mock(QuizService.class)
+        );
+        ConcurrentModel model = new ConcurrentModel();
+
+        String view = controller.index("cards", "TL-1", model);
+
+        assertEquals("online-hub/index", view);
+        assertEquals(true, model.getAttribute("onlineSupportedNow"));
+        assertEquals("/cards/tien-len", model.getAttribute("playUrlBase"));
+        assertEquals("/cards/tien-len?roomId={roomId}", model.getAttribute("inviteUrlPathTemplate"));
     }
 
     @Test
@@ -212,6 +237,28 @@ class OnlineHubControllerTest {
         assertEquals("TYPING-ROOM-001", result.get("roomId"));
         assertEquals(true, result.get("serverCreated"));
         assertEquals("room", result.get("playRoomParam"));
+    }
+
+    @Test
+    void createRoomApiShouldUseDirectInviteForCards() {
+        OnlineHubController controller = new OnlineHubController(
+            new GameCatalogService(),
+            mock(GameRoomService.class),
+            new TienLenRoomService(),
+            mock(BlackjackService.class),
+            new ChessOnlineRoomService(),
+            new XiangqiOnlineRoomService(),
+            mock(TypingService.class),
+            mock(QuizService.class)
+        );
+
+        Map<String, Object> result = controller.createRoom("cards");
+
+        assertEquals("cards", result.get("game"));
+        assertEquals(false, result.get("serverCreated"));
+        assertEquals("roomId", result.get("playRoomParam"));
+        assertEquals("/cards/tien-len?roomId={roomId}", result.get("inviteUrlPathTemplate"));
+        assertTrue(String.valueOf(result.get("roomId")).startsWith("TL-"));
     }
 
     @Test

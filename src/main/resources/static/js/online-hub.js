@@ -56,16 +56,32 @@
   function bindActions() {
     els.createBtn?.addEventListener('click', async () => {
       const created = await createRoomViaApi();
-      const nextRoomId = created || generateRoomId();
+      let nextRoomId = normalizeRoomId(created?.roomId);
+      if (!nextRoomId && supportsClientGeneratedRoom(state.gameCode)) {
+        nextRoomId = generateRoomId();
+      }
+      if (!nextRoomId) {
+        setStatus('Khong tao duoc phong. Hay thu lai.');
+        syncRoomUi();
+        return;
+      }
       state.roomId = nextRoomId;
       if (els.roomInput) {
         els.roomInput.value = nextRoomId;
       }
-      setStatus(created
-        ? ('Da tao phong moi: ' + nextRoomId)
-        : ('Da tao ma phong moi: ' + nextRoomId));
       setRoomQueryInUrl(nextRoomId);
       syncRoomUi();
+      if (state.onlineSupportedNow && state.playUrlBase) {
+        const target = buildPlayUrl(nextRoomId, false);
+        if (target) {
+          setStatus('Dang vao phong ' + nextRoomId + ' ...');
+          window.location.href = target;
+          return;
+        }
+      }
+      setStatus(created?.serverCreated
+        ? ('Da tao phong moi: ' + nextRoomId)
+        : ('Da tao ma phong moi: ' + nextRoomId));
     });
 
     els.joinBtn?.addEventListener('click', () => {
@@ -364,10 +380,12 @@
         throw new Error('HTTP ' + res.status);
       }
       const data = await res.json();
-      const roomId = normalizeRoomId(data?.roomId);
-      return roomId || '';
+      return {
+        roomId: normalizeRoomId(data?.roomId),
+        serverCreated: Boolean(data?.serverCreated)
+      };
     } catch (_) {
-      return '';
+      return null;
     }
   }
 
@@ -413,6 +431,14 @@
     const prefix = prefixes[state.gameCode] || 'ROOM';
     const token = Math.random().toString(36).slice(2, 8).toUpperCase();
     return prefix + '-' + token;
+  }
+
+  function supportsClientGeneratedRoom(gameCode) {
+    const normalized = String(gameCode || '').trim().toLowerCase();
+    return normalized === 'caro'
+      || normalized === 'cards'
+      || normalized === 'chess'
+      || normalized === 'xiangqi';
   }
 
   function normalizeRoomId(value) {

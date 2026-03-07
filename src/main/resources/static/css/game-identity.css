@@ -604,13 +604,11 @@ body.page-games-caro .stone:nth-child(3n) {
   animation-delay: 0.35s;
 }
 
-body.page-games-caro .caro-article-card p,
-body.page-games-caro .caro-mini-card p {
+body.page-games-caro .caro-article-card p {
   display: none !important;
 }
 
-body.page-games-caro .caro-bullet-list,
-body.page-games-caro .caro-rank-list {
+body.page-games-caro .caro-bullet-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -618,8 +616,7 @@ body.page-games-caro .caro-rank-list {
   gap: 7px;
 }
 
-body.page-games-caro .caro-bullet-list li,
-body.page-games-caro .caro-rank-list li {
+body.page-games-caro .caro-bullet-list li {
   border-radius: 10px;
   border: 1px solid rgba(56, 189, 248, 0.2);
   background: rgba(10, 20, 38, 0.68);

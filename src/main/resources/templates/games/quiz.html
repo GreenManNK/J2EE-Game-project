@@ -5,7 +5,7 @@
 <div th:replace="~{fragments :: appShell('games-quiz')}"></div>
 
 <main class="hub-portal-shell hub-portal-theme-quiz">
-    <section class="hub-portal-hero">
+    <section class="hub-portal-hero hub-portal-hero--single">
         <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
         <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
 
@@ -91,45 +91,9 @@
             </div>
         </div>
 
-        <aside class="hub-portal-hero__side">
-            <section class="hub-portal-panel">
-                <div class="hub-portal-panel__head">
-                    <div>
-                        <div class="hub-portal-panel__label">Luot choi</div>
-                        <div class="hub-portal-panel__title">Flow moi van quiz</div>
-                    </div>
-                    <span class="hub-portal-pill">Realtime</span>
-                </div>
-                <ol class="hub-portal-inline-list mb-0">
-                    <li><span>Tao/JOIN room</span><strong>Lobby</strong></li>
-                    <li><span>Chu phong bat dau</span><strong>Bat dau</strong></li>
-                    <li><span>Tra loi + chot ket qua</span><strong>Per question</strong></li>
-                    <li><span>Tong ket diem</span><strong>Bang ket qua</strong></li>
-                </ol>
-            </section>
-
-            <div class="hub-portal-mini-grid">
-                <section class="hub-portal-mini-card">
-                    <div class="hub-portal-mini-card__title">Meo thao tac nhanh</div>
-                    <ul class="hub-portal-bullet-list mb-0">
-                        <li>Nhap 1-4 de chon dap an trac nghiem.</li>
-                        <li>Enter de gui dap an ngay.</li>
-                        <li>Nguoi xem khong gui dap an.</li>
-                    </ul>
-                </section>
-                <section class="hub-portal-mini-card">
-                    <div class="hub-portal-mini-card__title">Dieu huong</div>
-                    <div class="hub-portal-inline-actions">
-                        <a th:href="@{/games}" class="hub-portal-inline-btn">Thu vien</a>
-                        <a th:href="@{/games/typing}" class="hub-portal-inline-btn">Typing</a>
-                        <a th:href="@{/games/cards/blackjack}" class="hub-portal-inline-btn">Blackjack</a>
-                    </div>
-                </section>
-            </div>
-        </aside>
     </section>
 
-    <section class="hub-portal-layout">
+    <section class="hub-portal-layout hub-portal-layout--single">
         <div class="hub-portal-main">
             <section class="hub-portal-card">
                 <div class="hub-portal-card__head">
@@ -139,17 +103,6 @@
                 <ol id="high-scores-list" class="hub-portal-bullet-list"></ol>
             </section>
         </div>
-        <aside class="hub-portal-side">
-            <section class="hub-portal-card">
-                <h3>Noi dung da cap nhat</h3>
-                <ul class="hub-portal-check-list">
-                    <li><i class="bi bi-check-circle-fill"></i> Co room list, join va spectate</li>
-                    <li><i class="bi bi-check-circle-fill"></i> Auto-join qua link moi phong</li>
-                    <li><i class="bi bi-check-circle-fill"></i> Thang diem +2/-1 va floor 0</li>
-                    <li><i class="bi bi-check-circle-fill"></i> Typed answer da chuan hoa dau vao</li>
-                </ul>
-            </section>
-        </aside>
     </section>
 </main>
 

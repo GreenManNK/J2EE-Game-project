@@ -118,28 +118,6 @@
         </div>
       </div>
 
-      <div class="caro-mini-grid">
-        <section class="caro-mini-card">
-          <div class="caro-mini-card__title">Bang xep hang (mock UI)</div>
-          <ol class="caro-rank-list">
-            <li><span>Nguyen_A</span><strong>1320</strong></li>
-            <li><span>Linh_X</span><strong>1275</strong></li>
-            <li><span>Guest-88</span><strong>1210</strong></li>
-          </ol>
-          <p class="mb-0">UI tham khao kieu cong game; du lieu rank thuc te co the bo sung sau.</p>
-        </section>
-
-        <section class="caro-mini-card">
-          <div class="caro-mini-card__title">Cong dong / mo phong</div>
-          <p class="mb-2">
-            Co the choi voi ban be bang link public (Quick Tunnel) khi chay theo che do Public.
-          </p>
-          <div class="d-flex flex-wrap gap-2">
-            <a th:href="@{/}" class="btn btn-sm caro-btn-inline">Trang chu</a>
-            <a th:href="@{/games}" class="btn btn-sm caro-btn-inline">Thu vien game</a>
-          </div>
-        </section>
-      </div>
     </aside>
   </section>
 
@@ -259,17 +237,6 @@
             </div>
           </a>
         </div>
-      </section>
-
-      <section class="caro-sidebar-card">
-        <h3>Tinh nang hien co</h3>
-        <ul class="caro-check-list">
-          <li><i class="bi bi-check-circle-fill"></i> Chat trong van Caro online</li>
-          <li><i class="bi bi-check-circle-fill"></i> Dau hang / roi phong</li>
-          <li><i class="bi bi-check-circle-fill"></i> Highlight nuoc danh cuoi va duong thang</li>
-          <li><i class="bi bi-check-circle-fill"></i> Guest online khong can dang nhap</li>
-          <li><i class="bi bi-check-circle-fill"></i> Tuong thich mobile co ban</li>
-        </ul>
       </section>
 
       <section class="caro-sidebar-card">
@@ -488,8 +455,7 @@
     align-content: start;
   }
 
-  .caro-preview-card,
-  .caro-mini-card {
+  .caro-preview-card {
     border-radius: 18px;
     background: rgba(255,255,255,0.86);
     border: 1px solid rgba(15, 23, 42, 0.08);
@@ -600,49 +566,6 @@
   .caro-preview-meta__item strong {
     font-size: 0.8rem;
     color: #0f172a;
-  }
-
-  .caro-mini-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .caro-mini-card {
-    padding: 12px 13px;
-    color: var(--caro-muted);
-    font-size: 0.86rem;
-    line-height: 1.45;
-  }
-  .caro-mini-card__title {
-    color: #0f172a;
-    font-weight: 800;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
-  }
-  .caro-rank-list {
-    margin: 0 0 8px 0;
-    padding-left: 1.1rem;
-    color: #0f172a;
-  }
-  .caro-rank-list li {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    font-size: 0.84rem;
-    margin-bottom: 4px;
-  }
-  .caro-rank-list strong {
-    color: var(--caro-primary-deep);
-  }
-  .caro-btn-inline {
-    border-radius: 999px;
-    border: 1px solid rgba(11,111,216,.18);
-    color: var(--caro-primary-deep);
-    background: rgba(11,111,216,.05);
-  }
-  .caro-btn-inline:hover {
-    color: var(--caro-primary-deep);
-    background: rgba(11,111,216,.10);
   }
 
   .caro-highlights {
@@ -910,8 +833,6 @@
 
   body.dark-mode .caro-title,
   body.dark-mode .caro-preview-card__title,
-  body.dark-mode .caro-mini-card__title,
-  body.dark-mode .caro-rank-list,
   body.dark-mode .caro-surface-card h2,
   body.dark-mode .caro-article-card__head h2,
   body.dark-mode .caro-sidebar-card h3,
@@ -923,7 +844,6 @@
 
   body.dark-mode .caro-chip,
   body.dark-mode .caro-preview-card,
-  body.dark-mode .caro-mini-card,
   body.dark-mode .caro-surface-card,
   body.dark-mode .caro-article-card,
   body.dark-mode .caro-sidebar-card,
@@ -949,17 +869,10 @@
 
   body.dark-mode .caro-eyebrow,
   body.dark-mode .caro-preview-card__pill,
-  body.dark-mode .caro-section-tag,
-  body.dark-mode .caro-btn-inline {
+  body.dark-mode .caro-section-tag {
     color: #bfe0ff;
     background: rgba(59, 130, 246, 0.12);
     border-color: rgba(96, 165, 250, 0.22);
-  }
-
-  body.dark-mode .caro-btn-inline:hover {
-    color: #d7ebff;
-    background: rgba(59, 130, 246, 0.18);
-    border-color: rgba(96, 165, 250, 0.28);
   }
 
   body.dark-mode .caro-cta {
@@ -1016,9 +929,6 @@
     .caro-hero__side {
       grid-template-columns: 1.2fr .8fr;
       grid-template-rows: auto;
-    }
-    .caro-mini-grid {
-      align-content: start;
     }
     .caro-content-grid {
       grid-template-columns: 1fr;

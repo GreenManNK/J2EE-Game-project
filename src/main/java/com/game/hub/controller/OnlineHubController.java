@@ -196,26 +196,9 @@ public class OnlineHubController {
     }
 
     private String invitePathTemplate(String gameCode) {
-        if ("caro".equalsIgnoreCase(gameCode)) {
-            return "/online-hub?game=caro&roomId={roomId}";
-        }
-        if ("cards".equalsIgnoreCase(gameCode)) {
-            return "/online-hub?game=cards&roomId={roomId}";
-        }
-        if ("blackjack".equalsIgnoreCase(gameCode)) {
-            return "/games/cards/blackjack?room={roomId}";
-        }
-        if ("chess".equalsIgnoreCase(gameCode)) {
-            return "/chess/online?roomId={roomId}";
-        }
-        if ("xiangqi".equalsIgnoreCase(gameCode)) {
-            return "/xiangqi/online?roomId={roomId}";
-        }
-        if ("typing".equalsIgnoreCase(gameCode)) {
-            return "/games/typing?room={roomId}";
-        }
-        if ("quiz".equalsIgnoreCase(gameCode)) {
-            return "/games/quiz?room={roomId}";
+        String playUrlBase = playUrlBase(gameCode);
+        if (!playUrlBase.isBlank()) {
+            return playUrlBase + "?" + playRoomParam(gameCode) + "={roomId}";
         }
         return "/online-hub?game=" + gameCode + "&roomId={roomId}";
     }

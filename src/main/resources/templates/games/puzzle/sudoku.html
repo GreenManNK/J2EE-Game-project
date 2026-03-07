@@ -5,7 +5,7 @@
 <div th:replace="~{fragments :: appShell('games-puzzle-sudoku')}"></div>
 
 <main class="hub-portal-shell hub-portal-theme-puzzle">
-    <section class="hub-portal-hero">
+    <section class="hub-portal-hero hub-portal-hero--single">
         <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
         <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
 
@@ -39,39 +39,6 @@
             <p id="sudoku-status" class="sudoku-note"></p>
         </div>
 
-        <aside class="hub-portal-hero__side">
-            <section class="hub-portal-panel">
-                <div class="hub-portal-panel__head">
-                    <div>
-                        <div class="hub-portal-panel__label">Luat co ban</div>
-                        <div class="hub-portal-panel__title">Khong trung lap gia tri</div>
-                    </div>
-                    <span class="hub-portal-pill">9x9</span>
-                </div>
-                <ul class="hub-portal-bullet-list mb-0">
-                    <li>Moi hang phai co du cac so 1 den 9.</li>
-                    <li>Moi cot phai co du cac so 1 den 9.</li>
-                    <li>Moi o 3x3 phai co du cac so 1 den 9.</li>
-                </ul>
-            </section>
-            <div class="hub-portal-mini-grid">
-                <section class="hub-portal-mini-card">
-                    <div class="hub-portal-mini-card__title">Meo nhanh</div>
-                    <ul class="hub-portal-bullet-list mb-0">
-                        <li>Dien cac o bat buoc truoc de mo khoa van.</li>
-                        <li>Neu bi roi, bam Kiem tra tien do de debug.</li>
-                    </ul>
-                </section>
-                <section class="hub-portal-mini-card">
-                    <div class="hub-portal-mini-card__title">Dieu huong</div>
-                    <div class="hub-portal-inline-actions">
-                        <a th:href="@{/games/puzzle}" class="hub-portal-inline-btn">Puzzle hub</a>
-                        <a th:href="@{/games/puzzle/word}" class="hub-portal-inline-btn">Word</a>
-                        <a th:href="@{/games/puzzle/sliding}" class="hub-portal-inline-btn">Sliding</a>
-                    </div>
-                </section>
-            </div>
-        </aside>
     </section>
 </main>
 

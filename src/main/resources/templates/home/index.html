@@ -5,7 +5,7 @@
 <div th:replace="~{fragments :: appShell('home')}"></div>
 
 <main role="main" id="homeMain" class="cg-home">
-  <section class="theme-box cg-home-hero">
+  <section class="theme-box cg-home-hero cg-home-hero--single">
     <div class="cg-home-hero-main">
       <div class="cg-chip-row">
         <span class="cg-chip is-live"><i class="bi bi-controller"></i> HOME / GAME HUB</span>
@@ -96,27 +96,9 @@
       </div>
     </div>
 
-    <aside class="cg-home-hero-side">
-      <article class="cg-home-side-card">
-        <h2>Quick mode</h2>
-        <p>Chon game -> vao trang chi tiet -> bat dau tran online, bot hoac offline.</p>
-      </article>
-      <article class="cg-home-side-card">
-        <h2>Tin hieu he thong</h2>
-        <ul>
-          <li>Sidebar ban be update online/offline theo chu ky.</li>
-          <li>Tat ca game moi da vao cung bo mau giao dien.</li>
-          <li>Lich su + bang xep hang lien ket tren menu trai.</li>
-        </ul>
-      </article>
-      <article class="cg-home-side-card">
-        <h2>Meo su dung</h2>
-        <p>Dang nhap de dong bo tien do, bai viet, comment va ho so giua cac trang game.</p>
-      </article>
-    </aside>
   </section>
 
-  <section class="cg-home-content">
+  <section class="cg-home-content cg-home-content--single">
     <section class="cg-home-main">
       <section class="theme-box">
         <div class="cg-section-head">
@@ -269,26 +251,6 @@
       </section>
     </section>
 
-    <aside class="cg-home-right">
-      <section class="theme-box cg-home-side-card">
-        <h2>Tinh nang da dong bo</h2>
-        <ul>
-          <li>Sidebar rieng, co trang thai ban be online/offline.</li>
-          <li>Theme dark/light dung chung toan he thong.</li>
-          <li>Danh sach game, detail game, va category dong bo bo cuc.</li>
-        </ul>
-      </section>
-
-      <section class="theme-box cg-home-side-card">
-        <h2>Dieu huong nhanh</h2>
-        <div class="d-flex flex-wrap gap-2">
-          <a th:href="@{/games}" class="hub-portal-inline-btn">Thu vien game</a>
-          <a th:href="@{/leaderboard}" class="hub-portal-inline-btn">Bang xep hang</a>
-          <a th:href="@{/history}" class="hub-portal-inline-btn" data-require-user-id="true">Lich su dau</a>
-          <a th:href="@{/online-hub(game='caro')}" class="hub-portal-inline-btn">Online hub</a>
-        </div>
-      </section>
-    </aside>
   </section>
 </main>
 

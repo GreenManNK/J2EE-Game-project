@@ -5,7 +5,7 @@
 <div th:replace="~{fragments :: appShell('games-typing')}"></div>
 
 <main class="hub-portal-shell hub-portal-theme-typing">
-    <section class="hub-portal-hero">
+    <section class="hub-portal-hero hub-portal-hero--single">
         <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
         <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
 
@@ -85,42 +85,6 @@
             </div>
         </div>
 
-        <aside class="hub-portal-hero__side">
-            <section class="hub-portal-panel">
-                <div class="hub-portal-panel__head">
-                    <div>
-                        <div class="hub-portal-panel__label">Flow tran dau</div>
-                        <div class="hub-portal-panel__title">Tu lobby den ket qua</div>
-                    </div>
-                    <span class="hub-portal-pill">Realtime</span>
-                </div>
-                <ol class="hub-portal-inline-list mb-0">
-                    <li><span>Tao/JOIN room</span><strong>Lobby</strong></li>
-                    <li><span>Cho du nguoi choi</span><strong>Cho bat dau</strong></li>
-                    <li><span>Go van ban chinh xac</span><strong>Dang dua</strong></li>
-                    <li><span>Thong bao nguoi thang + rematch</span><strong>Ket thuc</strong></li>
-                </ol>
-            </section>
-
-            <div class="hub-portal-mini-grid">
-                <section class="hub-portal-mini-card">
-                    <div class="hub-portal-mini-card__title">Luat tinh thang</div>
-                    <ul class="hub-portal-bullet-list mb-0">
-                        <li>Chi can du toc do la chua du, phai go dung.</li>
-                        <li>Nguoi ve dich truoc duoc uu tien thang.</li>
-                        <li>Neu go sai, van tiep tuc sua den khi dung.</li>
-                    </ul>
-                </section>
-                <section class="hub-portal-mini-card">
-                    <div class="hub-portal-mini-card__title">Dieu huong</div>
-                    <div class="hub-portal-inline-actions">
-                        <a th:href="@{/games}" class="hub-portal-inline-btn">Thu vien</a>
-                        <a th:href="@{/games/quiz}" class="hub-portal-inline-btn">Quiz</a>
-                        <a th:href="@{/games/cards/blackjack}" class="hub-portal-inline-btn">Blackjack</a>
-                    </div>
-                </section>
-            </div>
-        </aside>
     </section>
 </main>
 

@@ -5,7 +5,7 @@
 <div th:replace="~{fragments :: appShell('games-puzzle-word')}"></div>
 
 <main class="hub-portal-shell hub-portal-theme-puzzle">
-    <section class="hub-portal-hero">
+    <section class="hub-portal-hero hub-portal-hero--single">
         <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
         <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
 
@@ -44,39 +44,6 @@
             <p id="word-status" class="word-note"></p>
         </div>
 
-        <aside class="hub-portal-hero__side">
-            <section class="hub-portal-panel">
-                <div class="hub-portal-panel__head">
-                    <div>
-                        <div class="hub-portal-panel__label">Cach choi</div>
-                        <div class="hub-portal-panel__title">2 click de tim 1 tu</div>
-                    </div>
-                    <span class="hub-portal-pill">Straight line</span>
-                </div>
-                <ol class="hub-portal-inline-list mb-0">
-                    <li><span>Click chu cai dau</span><strong>Start</strong></li>
-                    <li><span>Click chu cai cuoi</span><strong>End</strong></li>
-                    <li><span>He thong kiem tra tu trong list</span><strong>Match</strong></li>
-                </ol>
-            </section>
-            <div class="hub-portal-mini-grid">
-                <section class="hub-portal-mini-card">
-                    <div class="hub-portal-mini-card__title">Luu y</div>
-                    <ul class="hub-portal-bullet-list mb-0">
-                        <li>Duong chon phai thang hang hoac cheo.</li>
-                        <li>Tu dao nguoc van duoc chap nhan.</li>
-                    </ul>
-                </section>
-                <section class="hub-portal-mini-card">
-                    <div class="hub-portal-mini-card__title">Dieu huong</div>
-                    <div class="hub-portal-inline-actions">
-                        <a th:href="@{/games/puzzle}" class="hub-portal-inline-btn">Puzzle hub</a>
-                        <a th:href="@{/games/puzzle/sudoku}" class="hub-portal-inline-btn">Sudoku</a>
-                        <a th:href="@{/games/puzzle/jigsaw}" class="hub-portal-inline-btn">Jigsaw</a>
-                    </div>
-                </section>
-            </div>
-        </aside>
     </section>
 </main>
 
