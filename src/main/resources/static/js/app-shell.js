@@ -3,9 +3,11 @@
   const FRIEND_LIST_REFRESH_KEY = 'caroFriendListRefreshMs.v1';
   const FRIEND_LIST_AUTO_REFRESH_KEY = 'caroFriendListAutoRefresh.v1';
   const FRIEND_LIST_SHOW_OFFLINE_KEY = 'caroFriendListShowOffline.v1';
+  const PREFERENCES_CHANGED_EVENT = 'caro:preferences-changed';
   const FRIEND_LIST_ALLOWED_REFRESH_VALUES = [5000, 10000, 15000, 20000, 30000, 60000];
   let friendListPollTimerId = null;
   let friendListLoading = false;
+  let friendListLifecycleBound = false;
 
   const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
     ? window.CaroUrl.path
@@ -143,16 +145,40 @@
       }, readFriendListRefreshMs());
     }
 
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
+    if (!friendListLifecycleBound) {
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          void loadFriendList();
+        }
+      });
+      window.addEventListener('focus', () => {
         void loadFriendList();
+      });
+      window.addEventListener('online', () => {
+        void loadFriendList();
+      });
+      friendListLifecycleBound = true;
+    }
+  }
+
+  function bindPreferencesSync() {
+    const refreshFromPreferences = () => {
+      startFriendListPolling();
+      void loadFriendList();
+    };
+
+    window.addEventListener(PREFERENCES_CHANGED_EVENT, () => {
+      refreshFromPreferences();
+    });
+
+    window.addEventListener('storage', (event) => {
+      const key = String(event?.key || '');
+      if (!key) {
+        return;
       }
-    });
-    window.addEventListener('focus', () => {
-      void loadFriendList();
-    });
-    window.addEventListener('online', () => {
-      void loadFriendList();
+      if (key === FRIEND_LIST_REFRESH_KEY || key === FRIEND_LIST_AUTO_REFRESH_KEY || key === FRIEND_LIST_SHOW_OFFLINE_KEY) {
+        refreshFromPreferences();
+      }
     });
   }
 
@@ -199,6 +225,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     bindCurrentUserLinks();
     bindFriendSearch();
+    bindPreferencesSync();
     startFriendListPolling();
   });
 })();

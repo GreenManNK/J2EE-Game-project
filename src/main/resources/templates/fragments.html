@@ -54,8 +54,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <link rel="stylesheet" th:href="@{/css/site.css}">
   <link rel="stylesheet" th:href="@{/css/games-portal.css}">
-  <link rel="stylesheet" th:href="@{/css/layout-refresh.css(v=20260306a)}">
-  <link rel="stylesheet" th:href="@{/css/cg-market.css(v=20260306a)}">
+  <link rel="stylesheet" th:href="@{/css/layout-refresh.css(v=20260307a)}">
+  <link rel="stylesheet" th:href="@{/css/cg-market.css(v=20260307b)}">
   <link rel="stylesheet" th:href="@{/css/game-identity.css(v=20260304a)}">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
@@ -552,6 +552,7 @@
         const desktopQuery = window.matchMedia("(min-width: 1200px)");
         const SIDEBAR_DESKTOP_HIDDEN_KEY = "caroSidebarDesktopHidden.v2";
         const SIDEBAR_MOBILE_AUTO_CLOSE_KEY = "caroSidebarMobileAutoClose.v1";
+        const PREFERENCES_CHANGED_EVENT = "caro:preferences-changed";
         const readBooleanPref = (key, defaultValue) => {
           try {
             const raw = window.localStorage.getItem(key);
@@ -636,6 +637,36 @@
         } else if (typeof desktopQuery.addListener === "function") {
           desktopQuery.addListener(onDesktopChange);
         }
+
+        const applySidebarPreferences = (detail) => {
+          const prefs = detail && typeof detail === "object" ? detail : {};
+          if (typeof prefs.sidebarDesktopVisibleByDefault === "boolean") {
+            desktopSidebarHidden = !prefs.sidebarDesktopVisibleByDefault;
+            writeBooleanPref(SIDEBAR_DESKTOP_HIDDEN_KEY, desktopSidebarHidden);
+          }
+          if (typeof prefs.sidebarMobileAutoClose === "boolean") {
+            writeBooleanPref(SIDEBAR_MOBILE_AUTO_CLOSE_KEY, prefs.sidebarMobileAutoClose);
+          }
+          syncSidebarToggleUi();
+        };
+
+        window.addEventListener(PREFERENCES_CHANGED_EVENT, (event) => {
+          applySidebarPreferences(event?.detail);
+        });
+
+        window.addEventListener("storage", (event) => {
+          if (!event || !event.key) {
+            return;
+          }
+          if (event.key === SIDEBAR_DESKTOP_HIDDEN_KEY) {
+            desktopSidebarHidden = readBooleanPref(SIDEBAR_DESKTOP_HIDDEN_KEY, true);
+            syncSidebarToggleUi();
+            return;
+          }
+          if (event.key === SIDEBAR_MOBILE_AUTO_CLOSE_KEY) {
+            syncSidebarToggleUi();
+          }
+        });
 
         sidebar.querySelectorAll(".app-shell-sidebar-menu a.btn[href]").forEach((link) => {
           try {

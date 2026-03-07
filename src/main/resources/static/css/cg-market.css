@@ -847,6 +847,215 @@ body:not(.sidebar-desktop).sidebar-open #appShellLayer .cg-topbar__menu-toggle {
   gap: 12px;
 }
 
+/* Light mode sync for home + market surfaces */
+body:not(.dark-mode) .cg-home .theme-box,
+body:not(.dark-mode) .cg-market-catalog .theme-box,
+body:not(.dark-mode) .cg-home .hub-portal-panel,
+body:not(.dark-mode) .cg-market-catalog .hub-portal-panel {
+  background: linear-gradient(180deg, rgba(248, 252, 255, 0.98), rgba(236, 245, 255, 0.96)) !important;
+  border-color: rgba(80, 133, 197, 0.28) !important;
+  box-shadow: 0 14px 30px rgba(27, 79, 141, 0.14);
+}
+
+body:not(.dark-mode) .cg-title {
+  color: #11365f;
+}
+
+body:not(.dark-mode) .cg-subtitle {
+  color: #4d6f96;
+}
+
+body:not(.dark-mode) .cg-chip {
+  border-color: rgba(90, 148, 218, 0.4);
+  background: rgba(233, 244, 255, 0.94);
+  color: #184f85;
+}
+
+body:not(.dark-mode) .cg-chip.is-live {
+  border-color: rgba(27, 146, 96, 0.46);
+  background: rgba(207, 244, 227, 0.92);
+  color: #0f6f48;
+}
+
+body:not(.dark-mode) .cg-control {
+  border-color: rgba(93, 151, 221, 0.36);
+  background: rgba(238, 247, 255, 0.94);
+  color: #153f70;
+}
+
+body:not(.dark-mode) .cg-control input,
+body:not(.dark-mode) .cg-control select {
+  color: #153f70;
+}
+
+body:not(.dark-mode) .cg-control input::placeholder {
+  color: #6688ae;
+}
+
+body:not(.dark-mode) .cg-home-side-card {
+  border-color: rgba(97, 153, 221, 0.32);
+  background: rgba(236, 247, 255, 0.94);
+}
+
+body:not(.dark-mode) .cg-home-side-card h2,
+body:not(.dark-mode) .cg-section-head h2 {
+  color: #11375f;
+}
+
+body:not(.dark-mode) .cg-home-side-card p,
+body:not(.dark-mode) .cg-home-side-card li,
+body:not(.dark-mode) .cg-section-head small {
+  color: #4f7198;
+}
+
+body:not(.dark-mode) .cg-home-access-card {
+  border-color: rgba(92, 150, 220, 0.38);
+  background: linear-gradient(165deg, rgba(245, 251, 255, 0.98), rgba(229, 242, 255, 0.95));
+  color: #164271;
+}
+
+body:not(.dark-mode) .cg-home-access-card:hover,
+body:not(.dark-mode) .cg-home-access-card:focus-visible {
+  border-color: rgba(58, 129, 210, 0.56);
+  background: linear-gradient(165deg, rgba(238, 247, 255, 0.99), rgba(220, 236, 254, 0.97));
+  box-shadow: 0 10px 22px rgba(24, 84, 156, 0.15);
+}
+
+body:not(.dark-mode) .cg-home-access-card:focus-visible {
+  outline-color: rgba(56, 125, 206, 0.44);
+}
+
+body:not(.dark-mode) .cg-home-access-icon {
+  border-color: rgba(97, 156, 224, 0.38);
+  background: rgba(220, 237, 255, 0.92);
+  color: #1f5f9e;
+}
+
+body:not(.dark-mode) .cg-home-access-content strong,
+body:not(.dark-mode) .cg-home-game-body h3 {
+  color: #10355d;
+}
+
+body:not(.dark-mode) .cg-home-access-content small,
+body:not(.dark-mode) .cg-home-game-body p,
+body:not(.dark-mode) .cg-home-game-foot small {
+  color: #54759b;
+}
+
+body:not(.dark-mode) .cg-home-access-arrow {
+  color: #2f72bd;
+}
+
+body:not(.dark-mode) .cg-home-game-card {
+  border-color: rgba(96, 153, 220, 0.32);
+  background: rgba(242, 249, 255, 0.96);
+}
+
+body:not(.dark-mode) .cg-home-game-badge {
+  border-color: rgba(104, 159, 225, 0.35);
+  background: rgba(233, 244, 255, 0.94);
+  color: #113f6f;
+}
+
+body:not(.dark-mode) .cg-lane {
+  border-color: rgba(90, 147, 216, 0.28);
+  background: rgba(241, 249, 255, 0.95);
+  box-shadow: 0 12px 24px rgba(28, 78, 138, 0.12);
+}
+
+body:not(.dark-mode) .cg-lane-head h2,
+body:not(.dark-mode) .cg-tile-body h3,
+body:not(.dark-mode) .cg-market-feature-item strong,
+body:not(.dark-mode) .cg-market-body h2,
+body:not(.dark-mode) .cg-market-lane-item strong,
+body:not(.dark-mode) .cg-market-meta-row strong {
+  color: #113960;
+}
+
+body:not(.dark-mode) .cg-lane-more {
+  color: #2f73be;
+}
+
+body:not(.dark-mode) .cg-lane-more:hover {
+  color: #1f5d9a;
+}
+
+body:not(.dark-mode) .cg-tile,
+body:not(.dark-mode) .cg-market-feature-item,
+body:not(.dark-mode) .cg-market-card,
+body:not(.dark-mode) .cg-market-lane-item,
+body:not(.dark-mode) .cg-market-loadmore {
+  border-color: rgba(98, 153, 220, 0.3);
+  background: rgba(242, 249, 255, 0.96);
+}
+
+body:not(.dark-mode) .cg-tile:hover {
+  border-color: rgba(64, 132, 210, 0.5);
+  box-shadow: 0 12px 24px rgba(24, 84, 156, 0.16);
+}
+
+body:not(.dark-mode) .cg-tile-badge,
+body:not(.dark-mode) .cg-market-live-pill {
+  border-color: rgba(102, 158, 224, 0.34);
+  background: rgba(230, 242, 255, 0.94);
+  color: #154679;
+}
+
+body:not(.dark-mode) .cg-market-live-pill.is-live {
+  border-color: rgba(23, 142, 93, 0.46);
+  background: rgba(205, 243, 225, 0.92);
+  color: #0f6f47;
+}
+
+body:not(.dark-mode) .cg-tile-body p,
+body:not(.dark-mode) .cg-market-feature-item small,
+body:not(.dark-mode) .cg-market-body p,
+body:not(.dark-mode) .cg-market-lane-item small,
+body:not(.dark-mode) .cg-market-meta-row span,
+body:not(.dark-mode) .cg-market-loadmore small {
+  color: #54759b;
+}
+
+body:not(.dark-mode) .cg-market-filter-btn {
+  border-color: rgba(96, 154, 222, 0.36);
+  background: rgba(237, 247, 255, 0.94);
+  color: #164271;
+}
+
+body:not(.dark-mode) .cg-market-filter-btn.is-active {
+  border-color: rgba(58, 129, 210, 0.56);
+  background: rgba(221, 238, 255, 0.98);
+  color: #10375f;
+}
+
+body:not(.dark-mode) .cg-market-meta {
+  border-top-color: rgba(95, 151, 218, 0.26);
+}
+
+body:not(.dark-mode) .cg-market-badges span {
+  border-color: rgba(95, 153, 220, 0.34);
+  background: rgba(233, 244, 255, 0.94);
+  color: #1a5188;
+}
+
+body:not(.dark-mode) .cg-market-actions .hub-portal-inline-btn {
+  border-color: rgba(93, 152, 220, 0.36);
+  background: rgba(233, 244, 255, 0.94);
+  color: #164271;
+}
+
+body:not(.dark-mode) .cg-market-actions .hub-portal-inline-btn.primary {
+  border-color: rgba(32, 149, 102, 0.46);
+  background: rgba(206, 243, 225, 0.92);
+  color: #0d6a44;
+}
+
+body:not(.dark-mode) .cg-market-empty {
+  border-color: rgba(95, 152, 220, 0.34);
+  background: rgba(233, 245, 255, 0.92);
+  color: #53759a;
+}
+
 /* Catalog page */
 .cg-market-topbar {
   display: grid;

@@ -9,6 +9,7 @@
   const FRIEND_LIST_AUTO_REFRESH_KEY = "caroFriendListAutoRefresh.v1";
   const FRIEND_LIST_REFRESH_MS_KEY = "caroFriendListRefreshMs.v1";
   const FRIEND_LIST_ALLOWED_REFRESH_VALUES = [5000, 10000, 15000, 20000, 30000, 60000];
+  const PREFERENCES_CHANGED_EVENT = "caro:preferences-changed";
 
   function appPath(url) {
     if (window.CaroUrl && typeof window.CaroUrl.path === "function") {
@@ -112,6 +113,18 @@
   function notify(message, type) {
     if (window.CaroUi && typeof window.CaroUi.toast === "function") {
       window.CaroUi.toast(message, { type: type || "info" });
+    }
+  }
+
+  function emitPreferencesChanged(preferences) {
+    const detail = preferences && typeof preferences === "object" ? preferences : {};
+    try {
+      window.dispatchEvent(new CustomEvent(PREFERENCES_CHANGED_EVENT, { detail }));
+    } catch (_) {
+    }
+    try {
+      document.dispatchEvent(new CustomEvent(PREFERENCES_CHANGED_EVENT, { detail }));
+    } catch (_) {
     }
   }
 
@@ -255,6 +268,7 @@
       writeBooleanPref(FRIEND_LIST_SHOW_OFFLINE_KEY, normalized.showOfflineFriendsInSidebar);
       writeBooleanPref(FRIEND_LIST_AUTO_REFRESH_KEY, normalized.autoRefreshFriendList);
       writeStorage(FRIEND_LIST_REFRESH_MS_KEY, String(normalized.friendListRefreshMs));
+      emitPreferencesChanged(normalized);
     };
 
     const syncFriendRefreshSelectState = () => {
@@ -375,7 +389,7 @@
       try {
         await persistPreferences(
           buildPreferencesPayload(),
-          "Da luu tuy chon. Reload trang de cap nhat sidebar/friend list ngay."
+          "Da luu tuy chon. Sidebar va noi dung da duoc dong bo ngay."
         );
       } catch (error) {
         const message = String(error?.message || error || "Khong the luu cai dat");
