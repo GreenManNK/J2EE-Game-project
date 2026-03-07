@@ -158,8 +158,10 @@ class FriendshipControllerTest {
         SystemNotificationRepository systemNotificationRepository = mock(SystemNotificationRepository.class);
         ProfileStatsService profileStatsService = mock(ProfileStatsService.class);
         HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
 
-        when(request.getSession(false)).thenReturn(null);
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("AUTH_USER_ID")).thenReturn("u1");
 
         UserAccount current = user("u1", "Current User", "u1@example.com", "/uploads/avatars/u1.jpg", 10, true);
         UserAccount friend = user("u2", "Friend User", "u2@example.com", "/uploads/avatars/u2.jpg", 120, false);
