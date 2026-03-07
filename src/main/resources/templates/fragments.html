@@ -368,7 +368,7 @@
   <header id="cgTopbar" class="cg-topbar">
     <div class="cg-topbar__inner">
       <div class="cg-topbar__left">
-        <button id="toggleSidebar" class="cg-topbar__menu-toggle" type="button" aria-label="Tat mo sidebar" aria-expanded="false" title="Tat mo sidebar">
+        <button id="toggleSidebar" class="cg-topbar__menu-toggle" type="button" aria-label="Bật/tắt sidebar" aria-expanded="false" title="Bật/tắt sidebar">
           <i class="bi bi-list"></i>
         </button>
         <a class="cg-topbar__brand" th:href="@{/}">
@@ -379,87 +379,87 @@
 
       <form id="cgGlobalSearchForm" class="cg-topbar__search" role="search">
         <i class="bi bi-search"></i>
-        <input id="cgGlobalSearchInput" type="search" placeholder="Tim game, mode, category...">
+        <input id="cgGlobalSearchInput" type="search" placeholder="Tìm game, chế độ, danh mục...">
       </form>
 
       <div class="cg-topbar__actions">
-        <button id="toggleThemeTopbar" class="cg-topbar__icon-btn" type="button" aria-label="Chuyen giao dien" title="Chuyen giao dien"><i class="bi bi-circle-half"></i></button>
-        <a class="cg-topbar__icon-btn" th:href="@{/friendship/notifications}" data-require-user-id="true" aria-label="Thong bao"><i class="bi bi-bell"></i></a>
-        <a class="cg-topbar__icon-btn" th:href="@{/games}" aria-label="Yeu thich"><i class="bi bi-heart"></i></a>
-        <a class="cg-topbar__icon-btn" th:href="@{/settings}" aria-label="Cai dat"><i class="bi bi-gear"></i></a>
-        <a class="cg-topbar__icon-btn" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true" aria-label="Tai khoan"><i class="bi bi-person"></i></a>
-        <a class="cg-topbar__login-btn" th:href="@{/account/login-page}" data-guest-only="true">Dang nhap</a>
-        <small class="cg-topbar__user-badge" data-current-user-badge="true" data-auth-only="true">Nguoi choi</small>
+        <button id="toggleThemeTopbar" class="cg-topbar__icon-btn" type="button" aria-label="Chuyển giao diện" title="Chuyển giao diện"><i class="bi bi-circle-half"></i></button>
+        <a class="cg-topbar__icon-btn" th:href="@{/friendship/notifications}" data-require-user-id="true" aria-label="Thông báo"><i class="bi bi-bell"></i></a>
+        <a class="cg-topbar__icon-btn" th:href="@{/games}" aria-label="Yêu thích"><i class="bi bi-heart"></i></a>
+        <a class="cg-topbar__icon-btn" th:href="@{/settings}" aria-label="Cài đặt"><i class="bi bi-gear"></i></a>
+        <a class="cg-topbar__icon-btn" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true" aria-label="Tài khoản"><i class="bi bi-person"></i></a>
+        <a class="cg-topbar__login-btn" th:href="@{/account/login-page}" data-guest-only="true">Đăng nhập</a>
+        <small class="cg-topbar__user-badge" data-current-user-badge="true" data-auth-only="true">Người chơi</small>
       </div>
     </div>
   </header>
 
-  <nav id="cgTopRail" class="cg-top-rail" aria-label="Category rail">
-    <a th:href="@{/}" class="cg-top-rail__item"><i class="bi bi-house-fill"></i> Home</a>
-    <a th:href="@{/games}" class="cg-top-rail__item"><i class="bi bi-grid-3x3-gap-fill"></i> Library</a>
+  <nav id="cgTopRail" class="cg-top-rail" aria-label="Danh mục nhanh">
+    <a th:href="@{/}" class="cg-top-rail__item"><i class="bi bi-house-fill"></i> Trang chủ</a>
+    <a th:href="@{/games}" class="cg-top-rail__item"><i class="bi bi-grid-3x3-gap-fill"></i> Thư viện</a>
     <a th:href="@{/games/caro}" class="cg-top-rail__item"><i class="bi bi-grid-3x3"></i> Caro</a>
     <a th:href="@{/games/chess}" class="cg-top-rail__item"><i class="bi bi-activity"></i> Chess</a>
     <a th:href="@{/games/xiangqi}" class="cg-top-rail__item"><i class="bi bi-diagram-3-fill"></i> Xiangqi</a>
-    <a th:href="@{/games/cards}" class="cg-top-rail__item"><i class="bi bi-suit-spade-fill"></i> Cards</a>
+    <a th:href="@{/games/cards}" class="cg-top-rail__item"><i class="bi bi-suit-spade-fill"></i> Bài lá</a>
     <a th:href="@{/games/blackjack}" class="cg-top-rail__item"><i class="bi bi-suit-club-fill"></i> Blackjack</a>
-    <a th:href="@{/games/minesweeper}" class="cg-top-rail__item"><i class="bi bi-asterisk"></i> Minesweeper</a>
+    <a th:href="@{/games/minesweeper}" class="cg-top-rail__item"><i class="bi bi-asterisk"></i> Dò mìn</a>
     <a th:href="@{/games/quiz}" class="cg-top-rail__item"><i class="bi bi-patch-question-fill"></i> Quiz</a>
-    <a th:href="@{/games/typing}" class="cg-top-rail__item"><i class="bi bi-keyboard-fill"></i> Typing</a>
-    <a th:href="@{/games/puzzle}" class="cg-top-rail__item"><i class="bi bi-puzzle-fill"></i> Puzzle</a>
-    <a th:href="@{/online-hub(game='caro')}" class="cg-top-rail__item"><i class="bi bi-wifi"></i> Online hub</a>
+    <a th:href="@{/games/typing}" class="cg-top-rail__item"><i class="bi bi-keyboard-fill"></i> Gõ chữ</a>
+    <a th:href="@{/games/puzzle}" class="cg-top-rail__item"><i class="bi bi-puzzle-fill"></i> Giải đố</a>
+    <a th:href="@{/online-hub(game='caro')}" class="cg-top-rail__item"><i class="bi bi-wifi"></i> Phòng online</a>
   </nav>
 
   <div id="friendSidebar" class="theme-text">
     <div class="app-shell-sidebar-scroll d-flex flex-column px-1">
       <div class="app-shell-sidebar-menu">
         <div class="app-shell-menu-group">
-          <div class="app-shell-menu-group__title">Dieu huong</div>
-          <a class="btn theme-outline-btn w-100 text-start fw-bold theme-text" th:href="@{/}"><i class="bi bi-house-fill me-2"></i> Trang chu</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-clock-history me-2"></i> Gan day</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-stars me-2"></i> Moi</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-fire me-2"></i> Xu huong</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-arrow-repeat me-2"></i> Cap nhat</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-grid-3x3-gap-fill me-2"></i> Originals</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/online-hub(game='caro')}"><i class="bi bi-people-fill me-2"></i> Multiplayer</a>
+          <div class="app-shell-menu-group__title">Điều hướng</div>
+          <a class="btn theme-outline-btn w-100 text-start fw-bold theme-text" th:href="@{/}"><i class="bi bi-house-fill me-2"></i> Trang chủ</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-clock-history me-2"></i> Gần đây</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-stars me-2"></i> Mới</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-fire me-2"></i> Xu hướng</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-arrow-repeat me-2"></i> Cập nhật</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-grid-3x3-gap-fill me-2"></i> Nguyên bản</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/online-hub(game='caro')}"><i class="bi bi-people-fill me-2"></i> Nhiều người</a>
         </div>
 
         <div class="app-shell-menu-group">
-          <div class="app-shell-menu-group__title">Danh muc</div>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/cards}"><i class="bi bi-suit-spade-fill me-2"></i> Danh bai</a>
+          <div class="app-shell-menu-group__title">Danh mục</div>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/cards}"><i class="bi bi-suit-spade-fill me-2"></i> Đánh bài</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/blackjack}"><i class="bi bi-suit-club-fill me-2"></i> Blackjack</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/chess}"><i class="bi bi-activity me-2"></i> Co vua</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/minesweeper}"><i class="bi bi-asterisk me-2"></i> Do min</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/chess}"><i class="bi bi-activity me-2"></i> Cờ vua</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/minesweeper}"><i class="bi bi-asterisk me-2"></i> Dò mìn</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/quiz}"><i class="bi bi-patch-question-fill me-2"></i> Quiz</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/typing}"><i class="bi bi-keyboard-fill me-2"></i> Typing</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/puzzle}"><i class="bi bi-puzzle-fill me-2"></i> Puzzle</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/caro}"><i class="bi bi-controller me-2"></i> Caro</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/xiangqi}"><i class="bi bi-diagram-3-fill me-2"></i> Co tuong</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/xiangqi}"><i class="bi bi-diagram-3-fill me-2"></i> Cờ tướng</a>
         </div>
 
         <div class="app-shell-menu-group">
-          <div class="app-shell-menu-group__title">Tai khoan</div>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/settings}"><i class="bi bi-gear-fill me-2"></i> Cai dat</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/leaderboard}"><i class="bi bi-bar-chart-fill me-2"></i> Bang xep hang</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/history}" data-require-user-id="true" data-user-param="userId"><i class="bi bi-clock-history me-2"></i> Lich su dau</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship}" data-require-user-id="true"><i class="bi bi-people-fill me-2"></i> Ban be</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship/notifications}" data-require-user-id="true"><i class="bi bi-bell-fill me-2"></i> Thong bao</a>
-          <a id="myProfileLink" class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true"><i class="bi bi-person-circle me-2"></i> Ho so cua toi</a>
+          <div class="app-shell-menu-group__title">Tài khoản</div>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/settings}"><i class="bi bi-gear-fill me-2"></i> Cài đặt</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/leaderboard}"><i class="bi bi-bar-chart-fill me-2"></i> Bảng xếp hạng</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/history}" data-require-user-id="true" data-user-param="userId"><i class="bi bi-clock-history me-2"></i> Lịch sử đấu</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship}" data-require-user-id="true"><i class="bi bi-people-fill me-2"></i> Bạn bè</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/friendship/notifications}" data-require-user-id="true"><i class="bi bi-bell-fill me-2"></i> Thông báo</a>
+          <a id="myProfileLink" class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true"><i class="bi bi-person-circle me-2"></i> Hồ sơ của tôi</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/chat-bot}"><i class="bi bi-robot me-2"></i> Chat Bot</a>
           <button id="activateAdminBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true">
-            <i class="bi bi-key-fill me-2"></i> Kich hoat Admin
+            <i class="bi bi-key-fill me-2"></i> Kích hoạt Admin
           </button>
           <a class="btn theme-outline-btn w-100 text-start theme-text"
              th:href="@{/manager/users}"
              data-auth-only="true"
-             data-role-allowed="Manager,Admin"><i class="bi bi-people me-2"></i> Manager Users</a>
+             data-role-allowed="Manager,Admin"><i class="bi bi-people me-2"></i> Quản lý người dùng</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text"
              th:href="@{/admin}"
              data-auth-only="true"
              data-admin-only="true"
-             data-role-allowed="Admin"><i class="bi bi-shield-lock me-2"></i> Admin Center</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/login-page}" data-guest-only="true"><i class="bi bi-box-arrow-in-right me-2"></i> Dang nhap</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/register-page}" data-guest-only="true"><i class="bi bi-person-plus-fill me-2"></i> Dang ky</a>
-          <button id="logoutBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true"><i class="bi bi-box-arrow-right me-2"></i> Dang xuat</button>
+             data-role-allowed="Admin"><i class="bi bi-shield-lock me-2"></i> Trung tâm Admin</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/login-page}" data-guest-only="true"><i class="bi bi-box-arrow-in-right me-2"></i> Đăng nhập</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/register-page}" data-guest-only="true"><i class="bi bi-person-plus-fill me-2"></i> Đăng ký</a>
+          <button id="logoutBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true"><i class="bi bi-box-arrow-right me-2"></i> Đăng xuất</button>
         </div>
         <form id="friendSearchForm" class="d-flex w-100">
           <input id="friendSearchInput" class="form-control me-2" placeholder="Tìm bạn...">
@@ -491,12 +491,12 @@
 </div>
 
 <div th:fragment="nav" class="d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
-  <a class="btn btn-sm btn-outline-secondary" th:href="@{/}">Home</a>
-  <a class="btn btn-sm btn-outline-secondary" th:href="@{/games}">Games</a>
-  <a class="btn btn-sm btn-outline-secondary" th:href="@{/lobby}">Lobby</a>
+  <a class="btn btn-sm btn-outline-secondary" th:href="@{/}">Trang chủ</a>
+  <a class="btn btn-sm btn-outline-secondary" th:href="@{/games}">Trò chơi</a>
+  <a class="btn btn-sm btn-outline-secondary" th:href="@{/lobby}">Phòng chờ</a>
   <a class="btn btn-sm btn-outline-secondary" th:href="@{/game}">Game</a>
-  <a class="btn btn-sm btn-outline-secondary" th:href="@{/leaderboard}">Leaderboard</a>
-  <a class="btn btn-sm btn-outline-secondary" th:href="@{/account/login-page}">Login</a>
+  <a class="btn btn-sm btn-outline-secondary" th:href="@{/leaderboard}">Bảng xếp hạng</a>
+  <a class="btn btn-sm btn-outline-secondary" th:href="@{/account/login-page}">Đăng nhập</a>
 </div>
 
 <th:block th:fragment="appScripts(pageKey)">
@@ -547,6 +547,10 @@
       syncTopbarOffset();
       window.addEventListener("resize", syncTopbarOffset, { passive: true });
       window.addEventListener("load", syncTopbarOffset);
+      if (window.ResizeObserver && topbar) {
+        const topbarResizeObserver = new ResizeObserver(syncTopbarOffset);
+        topbarResizeObserver.observe(topbar);
+      }
 
       if (sidebar && toggleBtn) {
         const desktopQuery = window.matchMedia("(min-width: 1200px)");
@@ -587,8 +591,8 @@
               icon.className = expandedDesktop ? "bi bi-layout-sidebar-inset" : "bi bi-layout-sidebar";
             }
             toggleBtn.setAttribute("aria-expanded", String(expandedDesktop));
-            toggleBtn.setAttribute("aria-label", expandedDesktop ? "An sidebar" : "Hien sidebar");
-            toggleBtn.setAttribute("title", expandedDesktop ? "An sidebar" : "Hien sidebar");
+            toggleBtn.setAttribute("aria-label", expandedDesktop ? "Ẩn sidebar" : "Hiện sidebar");
+            toggleBtn.setAttribute("title", expandedDesktop ? "Ẩn sidebar" : "Hiện sidebar");
             return;
           }
 
@@ -600,8 +604,8 @@
           }
           sidebarScrim?.setAttribute("aria-hidden", String(!isMobileOpen));
           toggleBtn.setAttribute("aria-expanded", String(isMobileOpen));
-          toggleBtn.setAttribute("aria-label", isMobileOpen ? "Dong sidebar" : "Mo sidebar");
-          toggleBtn.setAttribute("title", isMobileOpen ? "Dong sidebar" : "Mo sidebar");
+          toggleBtn.setAttribute("aria-label", isMobileOpen ? "Đóng sidebar" : "Mở sidebar");
+          toggleBtn.setAttribute("title", isMobileOpen ? "Đóng sidebar" : "Mở sidebar");
         };
         syncSidebarToggleUi();
 
@@ -731,6 +735,13 @@
       const i18n = window.CaroI18n;
       const toggleLanguageBtn = document.getElementById("toggle-language");
       const languageLabel = document.getElementById("currentLanguageLabel");
+      const tx = (text) => {
+        try {
+          return i18n?.t?.(text) || text;
+        } catch (_) {
+          return text;
+        }
+      };
       const syncLanguageUi = () => {
         const lang = i18n?.getLanguage?.() || "vi";
         if (languageLabel) {
@@ -739,6 +750,7 @@
         if (toggleLanguageBtn) {
           toggleLanguageBtn.setAttribute("title", lang === "vi" ? "Chuyển sang tiếng Anh" : "Switch to Vietnamese");
         }
+        window.requestAnimationFrame(syncTopbarOffset);
       };
       try {
         i18n?.init?.();
@@ -777,13 +789,17 @@
         const iconClass = mode === "system"
           ? "bi-circle-half"
           : (effectiveTheme === "dark" ? "bi-moon-stars-fill" : "bi-sun-fill");
+        const darkLabel = tx("Tối");
+        const lightLabel = tx("Sáng");
+        const autoLabel = tx("Tự động");
+        const themeLabel = tx("Giao diện");
         const sidebarLabel = mode === "system"
-          ? "Giao dien: Tu dong (" + (effectiveTheme === "dark" ? "Toi" : "Sang") + ")"
-          : (effectiveTheme === "dark" ? "Giao dien: Toi" : "Giao dien: Sang");
+          ? (themeLabel + ": " + autoLabel + " (" + (effectiveTheme === "dark" ? darkLabel : lightLabel) + ")")
+          : (themeLabel + ": " + (effectiveTheme === "dark" ? darkLabel : lightLabel));
         const nextModeLabel = nextMode === "system"
-          ? "Tu dong"
-          : (nextMode === "dark" ? "Toi" : "Sang");
-        const topbarTitle = "Bam de chuyen sang: " + nextModeLabel;
+          ? autoLabel
+          : (nextMode === "dark" ? darkLabel : lightLabel);
+        const topbarTitle = tx("Bấm để chuyển sang") + ": " + nextModeLabel;
 
         if (toggleThemeBtn) {
           toggleThemeBtn.innerHTML = '<i class="bi ' + iconClass + ' me-2"></i>' + sidebarLabel;
@@ -797,7 +813,7 @@
             icon.className = "bi " + iconClass;
           }
           toggleThemeTopbarBtn.setAttribute("title", topbarTitle);
-          toggleThemeTopbarBtn.setAttribute("aria-label", "Chuyen giao dien (" + sidebarLabel + ", tiep theo: " + nextModeLabel + ")");
+          toggleThemeTopbarBtn.setAttribute("aria-label", tx("Chuyển giao diện") + " (" + sidebarLabel + ", " + tx("tiếp theo") + ": " + nextModeLabel + ")");
           toggleThemeTopbarBtn.setAttribute("data-theme-mode", mode);
         }
       };
@@ -812,21 +828,25 @@
       toggleThemeBtn?.addEventListener("click", toggleTheme);
       toggleThemeTopbarBtn?.addEventListener("click", toggleTheme);
       themeApi?.onChange?.(syncThemeUi);
+      i18n?.onChange?.(() => {
+        syncThemeUi();
+        window.requestAnimationFrame(syncTopbarOffset);
+      });
       syncThemeUi();
 
       activateAdminBtn?.addEventListener("click", async () => {
         const current = window.CaroUser?.get?.();
         if (!current || !current.userId) {
-          window.CaroUi?.toast?.("Login required", { type: "warning" });
+          window.CaroUi?.toast?.(tx("Bạn cần đăng nhập"), { type: "warning" });
           return;
         }
-        const enteredCode = window.prompt("Nhap ma kich hoat Admin:");
+        const enteredCode = window.prompt(tx("Nhập mã kích hoạt Admin:"));
         if (enteredCode === null) {
           return;
         }
         const activationCode = String(enteredCode || "").trim();
         if (!activationCode) {
-          window.CaroUi?.toast?.("Activation code is required", { type: "warning" });
+          window.CaroUi?.toast?.(tx("Mã kích hoạt là bắt buộc"), { type: "warning" });
           return;
         }
 
@@ -840,8 +860,8 @@
           const payload = await response.json();
           const success = !!(payload && payload.success);
           const message = success
-            ? String(payload?.data?.message || "Admin role activated")
-            : String(payload?.error || "Cannot activate admin role");
+            ? String(payload?.data?.message || tx("Đã kích hoạt vai trò Admin"))
+            : String(payload?.error || tx("Không thể kích hoạt vai trò Admin"));
 
           window.CaroUi?.toast?.(message, { type: success ? "success" : "danger" });
           if (!success) {
@@ -851,7 +871,7 @@
           if (window.CaroUser && typeof window.CaroUser.set === "function") {
             window.CaroUser.set({
               userId: current.userId,
-              displayName: payload?.data?.displayName || current.displayName || "Player",
+              displayName: payload?.data?.displayName || current.displayName || tx("Người chơi"),
               email: payload?.data?.email || current.email || "",
               role: "Admin",
               avatarPath: payload?.data?.avatarPath || current.avatarPath || "/uploads/avatars/default-avatar.jpg"
@@ -859,7 +879,7 @@
           }
           window.setTimeout(() => window.location.reload(), 200);
         } catch (error) {
-          const message = String(error?.message || error || "Cannot activate admin role");
+          const message = String(error?.message || error || tx("Không thể kích hoạt vai trò Admin"));
           window.CaroUi?.toast?.(message, { type: "danger" });
         } finally {
           activateAdminBtn.disabled = false;

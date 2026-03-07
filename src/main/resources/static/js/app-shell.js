@@ -12,6 +12,15 @@
   const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
     ? window.CaroUrl.path
     : function (value) { return value; };
+  const t = (text) => {
+    try {
+      return (window.CaroI18n && typeof window.CaroI18n.t === 'function')
+        ? window.CaroI18n.t(text)
+        : text;
+    } catch (_) {
+      return text;
+    }
+  };
 
   function escapeHtml(value) {
     return String(value ?? '')
@@ -68,7 +77,7 @@
 
     const current = window.CaroUser.get();
     if (!current || !current.userId) {
-      container.innerHTML = '<div class="small text-muted">Chưa có bạn bè nào.</div>';
+      container.innerHTML = '<div class="small text-muted">' + escapeHtml(t('Chưa có bạn bè nào.')) + '</div>';
       return;
     }
 
@@ -82,7 +91,7 @@
       }
       const friends = await res.json();
       if (!Array.isArray(friends) || friends.length === 0) {
-        container.innerHTML = '<div class="small text-muted">Chưa có bạn bè nào.</div>';
+        container.innerHTML = '<div class="small text-muted">' + escapeHtml(t('Chưa có bạn bè nào.')) + '</div>';
         return;
       }
 
@@ -101,8 +110,8 @@
 
       if (visibleFriends.length === 0) {
         container.innerHTML = showOfflineFriends
-          ? '<div class="small text-muted">Chưa có bạn bè nào.</div>'
-          : '<div class="small text-muted">Hiện chưa có bạn nào đang online.</div>';
+          ? '<div class="small text-muted">' + escapeHtml(t('Chưa có bạn bè nào.')) + '</div>'
+          : '<div class="small text-muted">' + escapeHtml(t('Hiện chưa có bạn nào đang online.')) + '</div>';
         return;
       }
 
@@ -111,12 +120,12 @@
         const avatar = appPath(f.avatarPath || '/uploads/avatars/default-avatar.jpg');
         const detailHref = appPath('/friendship/user-detail/' + encodeURIComponent(f.id)) + '?currentUserId=' + encodeURIComponent(current.userId);
         const online = !!f.online;
-        const stateLabel = online ? 'Online' : 'Offline';
+        const stateLabel = online ? t('Trực tuyến') : t('Ngoại tuyến');
         const stateClass = online ? 'app-shell-friend-state--online' : 'app-shell-friend-state--offline';
 
         return '' +
           '<a class="app-shell-friend-item text-decoration-none theme-text border rounded" href="' + escapeHtml(detailHref) + '">' +
-            '<img src="' + escapeHtml(avatar) + '" alt="avatar" class="app-shell-friend-avatar">' +
+            '<img src="' + escapeHtml(avatar) + '" alt="' + escapeHtml(t('Ảnh đại diện')) + '" class="app-shell-friend-avatar">' +
             '<span class="app-shell-friend-name">' + escapeHtml(name) + '</span>' +
             '<span class="app-shell-friend-state ' + stateClass + '">' + stateLabel + '</span>' +
           '</a>';
@@ -124,7 +133,7 @@
 
       container.innerHTML = items;
     } catch (_) {
-      container.innerHTML = '<div class="small text-danger">Không tải được danh sách bạn bè.</div>';
+      container.innerHTML = '<div class="small text-danger">' + escapeHtml(t('Không tải được danh sách bạn bè.')) + '</div>';
     } finally {
       friendListLoading = false;
     }

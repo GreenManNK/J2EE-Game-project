@@ -1,7 +1,7 @@
 (function () {
   const STORAGE_KEY = "caro_ui_lang";
   const SUPPORTED_LANGS = ["vi", "en"];
-  const TEXT_ATTRS = ["placeholder", "title", "aria-label", "data-bs-original-title"];
+  const TEXT_ATTRS = ["placeholder", "title", "aria-label", "alt", "data-bs-original-title"];
   const BUTTON_INPUT_TYPES = new Set(["button", "submit", "reset"]);
 
   let currentLang = "vi";
@@ -56,11 +56,55 @@
     { vi: "Đang khởi tạo...", en: "Initializing...", aliases: ["Dang khoi tao..."] },
     { vi: "Đang vào phòng...", en: "Joining room...", aliases: ["Dang vao phong..."] },
     { vi: "Chưa có", en: "No data yet", aliases: ["Chua co"] },
-    { vi: "Không có", en: "No", aliases: ["Khong co"] },
+    { vi: "Không có", en: "None", aliases: ["Khong co"] },
     { vi: "Không thể", en: "Cannot", aliases: ["Khong the"] },
     { vi: "Không xác định được", en: "Unable to determine", aliases: ["Khong xac dinh duoc"] },
     { vi: "Không kết nối được máy chủ", en: "Cannot connect to server", aliases: ["Khong ket noi duoc may chu"] },
-    { vi: "Vui lòng", en: "Please", aliases: ["Vui long"] }
+    { vi: "Vui lòng", en: "Please", aliases: ["Vui long"] },
+    { vi: "Điều hướng", en: "Navigation", aliases: ["Dieu huong"] },
+    { vi: "Danh mục", en: "Category", aliases: ["Danh muc"] },
+    { vi: "Thư viện", en: "Library", aliases: ["Thu vien"] },
+    { vi: "Trò chơi", en: "Games", aliases: ["Tro choi"] },
+    { vi: "Gần đây", en: "Recent", aliases: ["Gan day"] },
+    { vi: "Mới", en: "New", aliases: ["Moi"] },
+    { vi: "Xu hướng", en: "Trending", aliases: ["Xu huong"] },
+    { vi: "Cập nhật", en: "Updates", aliases: ["Cap nhat"] },
+    { vi: "Nguyên bản", en: "Originals", aliases: ["Nguyen ban"] },
+    { vi: "Nhiều người", en: "Multiplayer", aliases: ["Nhieu nguoi"] },
+    { vi: "Đánh bài", en: "Card games", aliases: ["Danh bai"] },
+    { vi: "Dò mìn", en: "Minesweeper", aliases: ["Do min"] },
+    { vi: "Gõ chữ", en: "Typing", aliases: ["Go chu"] },
+    { vi: "Giải đố", en: "Puzzle", aliases: ["Giai do"] },
+    { vi: "Phòng online", en: "Online hub", aliases: ["Phong online", "Phong truc tuyen"] },
+    { vi: "Tài khoản", en: "Account", aliases: ["Tai khoan"] },
+    { vi: "Cài đặt", en: "Settings", aliases: ["Cai dat"] },
+    { vi: "Yêu thích", en: "Favorites", aliases: ["Yeu thich"] },
+    { vi: "Kích hoạt Admin", en: "Activate Admin", aliases: ["Kich hoat Admin"] },
+    { vi: "Quản lý người dùng", en: "Manager Users", aliases: ["Quan ly nguoi dung"] },
+    { vi: "Trung tâm Admin", en: "Admin Center", aliases: ["Trung tam Admin"] },
+    { vi: "Ẩn sidebar", en: "Hide sidebar", aliases: ["An sidebar"] },
+    { vi: "Hiện sidebar", en: "Show sidebar", aliases: ["Hien sidebar"] },
+    { vi: "Đóng sidebar", en: "Close sidebar", aliases: ["Dong sidebar"] },
+    { vi: "Mở sidebar", en: "Open sidebar", aliases: ["Mo sidebar"] },
+    { vi: "Bật/tắt sidebar", en: "Toggle sidebar", aliases: ["Bat/tat sidebar"] },
+    { vi: "Ảnh đại diện", en: "Avatar", aliases: ["Anh dai dien"] },
+    { vi: "Trực tuyến", en: "Online", aliases: ["Truc tuyen"] },
+    { vi: "Ngoại tuyến", en: "Offline", aliases: ["Ngoai tuyen"] },
+    { vi: "Bạn cần đăng nhập", en: "Login required", aliases: ["Ban can dang nhap"] },
+    { vi: "Mã kích hoạt là bắt buộc", en: "Activation code is required", aliases: ["Ma kich hoat la bat buoc"] },
+    { vi: "Đã kích hoạt vai trò Admin", en: "Admin role activated", aliases: ["Da kich hoat vai tro Admin"] },
+    { vi: "Không thể kích hoạt vai trò Admin", en: "Cannot activate admin role", aliases: ["Khong the kich hoat vai tro Admin"] },
+    { vi: "Chưa có bạn bè nào.", en: "No friends yet.", aliases: ["Chua co ban be nao."] },
+    { vi: "Hiện chưa có bạn nào đang online.", en: "No friends are currently online.", aliases: ["Hien chua co ban nao dang online."] },
+    { vi: "Không tải được danh sách bạn bè.", en: "Unable to load friends list.", aliases: ["Khong tai duoc danh sach ban be."] },
+    { vi: "Giao diện", en: "Theme", aliases: ["Giao dien"] },
+    { vi: "Tự động", en: "System", aliases: ["Tu dong"] },
+    { vi: "Sáng", en: "Light", aliases: ["Sang"] },
+    { vi: "Tối", en: "Dark", aliases: ["Toi"] },
+    { vi: "Bấm để chuyển sang", en: "Click to switch to", aliases: ["Bam de chuyen sang"] },
+    { vi: "Chuyển giao diện", en: "Switch theme", aliases: ["Chuyen giao dien"] },
+    { vi: "tiếp theo", en: "next", aliases: ["tiep theo"] },
+    { vi: "Nhập mã kích hoạt Admin:", en: "Enter admin activation code:", aliases: ["Nhap ma kich hoat Admin:"] }
   ];
 
   const VI_FIXES = [
@@ -147,7 +191,47 @@
     ["Nhap cau hoi", "Nhập câu hỏi"],
     ["Nhap user id de loc", "Nhập user ID để lọc"],
     ["Co vua", "Cờ vua"],
-    ["Co tuong", "Cờ tướng"]
+    ["Co tuong", "Cờ tướng"],
+    ["Dieu huong", "Điều hướng"],
+    ["Danh muc", "Danh mục"],
+    ["Gan day", "Gần đây"],
+    ["Moi", "Mới"],
+    ["Xu huong", "Xu hướng"],
+    ["Cap nhat", "Cập nhật"],
+    ["Nguyen ban", "Nguyên bản"],
+    ["Nhieu nguoi", "Nhiều người"],
+    ["Danh bai", "Đánh bài"],
+    ["Do min", "Dò mìn"],
+    ["Go chu", "Gõ chữ"],
+    ["Giai do", "Giải đố"],
+    ["Phong online", "Phòng online"],
+    ["Kich hoat Admin", "Kích hoạt Admin"],
+    ["Quan ly nguoi dung", "Quản lý người dùng"],
+    ["Trung tam Admin", "Trung tâm Admin"],
+    ["An sidebar", "Ẩn sidebar"],
+    ["Hien sidebar", "Hiện sidebar"],
+    ["Dong sidebar", "Đóng sidebar"],
+    ["Mo sidebar", "Mở sidebar"],
+    ["Bat/tat sidebar", "Bật/tắt sidebar"],
+    ["Giao dien", "Giao diện"],
+    ["Tu dong", "Tự động"],
+    ["Sang", "Sáng"],
+    ["Toi", "Tối"],
+    ["Bam de chuyen sang", "Bấm để chuyển sang"],
+    ["tiep theo", "tiếp theo"],
+    ["Che do", "Chế độ"],
+    ["Trang chu", "Trang chủ"],
+    ["Nguoi xem", "Người xem"],
+    ["Doi thu", "Đối thủ"],
+    ["An quan", "Ăn quân"],
+    ["Tham gia choi", "Tham gia chơi"],
+    ["Vao che do xem", "Vào chế độ xem"],
+    ["Ve Online Hub", "Về Online Hub"],
+    ["Quay lai", "Quay lại"],
+    ["Ban co the", "Bạn có thể"],
+    ["tu cach khach", "tư cách khách"],
+    ["khong can dang nhap", "không cần đăng nhập"],
+    ["Phong cho", "Phòng chờ"]
   ];
 
   function toAscii(value) {
@@ -162,6 +246,18 @@
     return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
+  function buildSearchPattern(text) {
+    const value = String(text || "").trim();
+    if (!value) {
+      return "";
+    }
+    const escaped = escapeRegExp(value);
+    if (/^[A-Za-z0-9]+$/.test(value)) {
+      return "\\b" + escaped + "\\b";
+    }
+    return escaped;
+  }
+
   function buildPairReplacements() {
     const all = [];
     PHRASE_PAIRS.forEach((pair) => {
@@ -171,7 +267,7 @@
         const text = String(source || "").trim();
         if (!text) return;
         all.push({
-          regex: new RegExp(escapeRegExp(text), "gi"),
+          regex: new RegExp(buildSearchPattern(text), "gi"),
           vi: pair.vi,
           en: pair.en
         });

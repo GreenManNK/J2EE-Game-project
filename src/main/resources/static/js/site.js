@@ -320,7 +320,7 @@
     if (legacyUserId) {
       const fromLegacy = {
         userId: legacyUserId,
-        displayName: localStorage.getItem('displayName') || 'Player',
+        displayName: localStorage.getItem('displayName') || 'Người chơi',
         email: localStorage.getItem('email') || '',
         role: localStorage.getItem('role') || 'User',
         avatarPath: localStorage.getItem('avatarPath') || '/uploads/avatars/default-avatar.jpg'
@@ -339,7 +339,7 @@
 
     const normalized = {
       userId: user.userId,
-      displayName: user.displayName || 'Player',
+      displayName: user.displayName || 'Người chơi',
       email: user.email || '',
       role: user.role || 'User',
       avatarPath: user.avatarPath || '/uploads/avatars/default-avatar.jpg'
@@ -556,7 +556,7 @@
 
     const title = document.createElement('strong');
     title.className = 'me-auto';
-    title.textContent = opts.title || (variant === 'danger' ? 'Loi' : 'Thong bao');
+    title.textContent = opts.title || (variant === 'danger' ? 'Lỗi' : 'Thông báo');
     body.appendChild(title);
 
     const closeBtn = document.createElement('button');
@@ -565,7 +565,7 @@
       variant === 'danger' || variant === 'success' ? ' btn-close-white' : ''
     );
     closeBtn.setAttribute('data-bs-dismiss', 'toast');
-    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.setAttribute('aria-label', 'Đóng');
     body.appendChild(closeBtn);
     toastEl.appendChild(body);
 
@@ -589,8 +589,8 @@
   function reportApiResult(data, options) {
     const opts = options || {};
     const success = !!(data && data.success);
-    const successMessage = opts.successMessage || data?.message || 'Thao tac thanh cong';
-    const errorMessage = opts.errorMessage || data?.error || data?.message || 'Thao tac that bai';
+    const successMessage = opts.successMessage || data?.message || 'Thao tác thành công';
+    const errorMessage = opts.errorMessage || data?.error || data?.message || 'Thao tác thất bại';
     const message = success ? successMessage : errorMessage;
     showToast(message, {
       type: success ? (opts.successType || 'success') : (opts.errorType || 'danger'),
@@ -640,7 +640,7 @@
         if (user) {
           el.textContent = user.displayName + ' (' + user.userId + ')';
         } else {
-          el.textContent = 'Chua dang nhap';
+          el.textContent = 'Chưa đăng nhập';
         }
       });
 
