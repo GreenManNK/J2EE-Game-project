@@ -5,6 +5,7 @@ target/
 .kotlin
 
 ### IntelliJ IDEA ###
+.idea/AndroidProjectSystem.xml
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
@@ -53,6 +54,7 @@ app-*.log
 public-game-url.txt
 .data/
 .data-docker/
+_imported_caro_20260222_1/
 csrf-cookies.txt
 register-payload.json
 elevated-hosts-result.txt

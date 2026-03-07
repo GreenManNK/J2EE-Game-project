@@ -1,7 +1,7 @@
 ﻿# Caro C# -> Java Migration Report
 
 ## Source analyzed
-- Original project: `C:\Users\GreenManNK\IdeaProjects\Game\_imported_caro_20260222_1`
+- Original project: archived C# snapshot (removed from repo tree after migration cleanup)
 - Platform: ASP.NET Core MVC + Identity + EF Core + SignalR
 
 ## Java target implemented
