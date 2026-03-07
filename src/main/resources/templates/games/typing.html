@@ -363,6 +363,44 @@
         color: #bbf7d0;
     }
 
+    body:not(.dark-mode) .typing-room-item,
+    body:not(.dark-mode) .typing-hud__item,
+    body:not(.dark-mode) .typing-player-row {
+        border-color: rgba(92, 149, 216, 0.3);
+        background: rgba(244, 250, 255, 0.94);
+    }
+
+    body:not(.dark-mode) .typing-target-card {
+        border-color: rgba(92, 149, 216, 0.28);
+        background: rgba(238, 247, 255, 0.92);
+    }
+
+    body:not(.dark-mode) .typing-target-text .typed-pending {
+        color: #2c4f7b;
+    }
+
+    body:not(.dark-mode) .typing-player-bar {
+        background: rgba(97, 147, 205, 0.22);
+    }
+
+    body:not(.dark-mode) .typing-winner {
+        border-color: rgba(16, 185, 129, 0.38);
+        background: rgba(16, 185, 129, 0.14);
+        color: #12633f;
+    }
+
+    body:not(.dark-mode) .typing-note {
+        color: #4f6d90;
+    }
+
+    body:not(.dark-mode) .typing-note.error {
+        color: #b42318;
+    }
+
+    body:not(.dark-mode) .typing-note.success {
+        color: #157347;
+    }
+
     @keyframes typingPulse {
         0%, 100% { transform: scaleY(1); opacity: .72; }
         50% { transform: scaleY(1.45); opacity: 1; }
@@ -424,6 +462,11 @@
     let raceStartedAt;
     let progressSendThrottle;
     let roomListTimer;
+    let reconnectTimer;
+    let reconnectAttempts = 0;
+    let manualDisconnect = false;
+    const MAX_RECONNECT_ATTEMPTS = 5;
+    const RECONNECT_BASE_DELAY_MS = 1200;
 
     function buildWsUrl(path) {
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -447,17 +490,69 @@
         }
     }
 
-    function openSocket(actionPayload) {
-        if (socket && socket.readyState <= 1) {
+    function clearReconnectTimer() {
+        if (!reconnectTimer) {
+            return;
+        }
+        window.clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+    }
+
+    function buildReconnectPayload() {
+        const normalizedRoomId = String(roomId || '').trim();
+        if (!normalizedRoomId) {
+            return null;
+        }
+        return {
+            action: 'join',
+            roomId: normalizedRoomId
+        };
+    }
+
+    function scheduleReconnect() {
+        if (manualDisconnect || !gameContainer || gameContainer.hidden) {
+            return;
+        }
+        const payload = buildReconnectPayload();
+        if (!payload) {
+            return;
+        }
+        if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+            setConnectionStatus('Mat ket noi. Khong the tu ket noi lai, hay vao lai phong.', 'error');
+            return;
+        }
+        reconnectAttempts += 1;
+        const delayMs = Math.min(RECONNECT_BASE_DELAY_MS * reconnectAttempts, 6000);
+        setConnectionStatus(`Mat ket noi. Dang thu lai (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`, 'error');
+        clearReconnectTimer();
+        reconnectTimer = window.setTimeout(() => {
+            openSocket(payload, { reconnecting: true });
+        }, delayMs);
+    }
+
+    function openSocket(actionPayload, options) {
+        if (!actionPayload || typeof actionPayload !== 'object') {
+            return;
+        }
+        const reconnecting = Boolean(options && options.reconnecting);
+        clearReconnectTimer();
+        manualDisconnect = false;
+        if (actionPayload.roomId) {
+            roomId = String(actionPayload.roomId || '').trim();
+        }
+        if (socket && socket.readyState < 3) {
+            socket.__manualClose = true;
             socket.close();
         }
-        setConnectionStatus('Dang ket noi...', '');
-        socket = new WebSocket(buildWsUrl('/game/typing'));
-        socket.onopen = () => {
+        setConnectionStatus(reconnecting ? 'Dang ket noi lai...' : 'Dang ket noi...', '');
+        const ws = new WebSocket(buildWsUrl('/game/typing'));
+        socket = ws;
+        ws.onopen = () => {
+            reconnectAttempts = 0;
             setConnectionStatus('Da ket noi.', 'success');
-            socket.send(JSON.stringify(actionPayload));
+            ws.send(JSON.stringify(actionPayload));
         };
-        setupSocket();
+        setupSocket(ws);
     }
 
     function safeSend(payload) {
@@ -534,11 +629,11 @@
         }, 70);
     });
 
-    function setupSocket() {
+    function setupSocket(activeSocket) {
         roomSelection.hidden = true;
         gameContainer.hidden = false;
 
-        socket.onmessage = (event) => {
+        activeSocket.onmessage = (event) => {
             const room = JSON.parse(event.data);
             if (room.error) {
                 setStatus(room.error, 'error');
@@ -587,13 +682,20 @@
             }
         };
 
-        socket.onclose = () => {
-            setConnectionStatus('Da ngat ket noi.', 'error');
+        activeSocket.onclose = () => {
+            if (activeSocket.__manualClose) {
+                return;
+            }
+            setConnectionStatus('Da ngat ket noi, dang thu ket noi lai...', 'error');
             typingInput.disabled = true;
+            scheduleReconnect();
         };
 
-        socket.onerror = () => {
-            setConnectionStatus('Loi WebSocket.', 'error');
+        activeSocket.onerror = () => {
+            if (activeSocket.__manualClose) {
+                return;
+            }
+            setConnectionStatus('Loi WebSocket, dang thu ket noi lai...', 'error');
         };
     }
 
@@ -690,7 +792,11 @@
     }
 
     function leaveRoom() {
-        if (socket && socket.readyState <= 1) {
+        manualDisconnect = true;
+        clearReconnectTimer();
+        reconnectAttempts = 0;
+        if (socket && socket.readyState < 3) {
+            socket.__manualClose = true;
             socket.close();
         }
         socket = null;
