@@ -52,17 +52,7 @@ public class HistoryController {
                        Model model) {
         String effectiveUserId = effectiveUserId(userId, request);
         if (effectiveUserId == null || effectiveUserId.isBlank()) {
-            model.addAttribute("userId", "");
-            model.addAttribute("gameCode", safe(gameCode));
-            model.addAttribute("result", safe(result));
-            model.addAttribute("fromDate", safe(fromDate));
-            model.addAttribute("toDate", safe(toDate));
-            model.addAttribute("page", 0);
-            model.addAttribute("size", Math.max(1, Math.min(size, 100)));
-            model.addAttribute("totalPages", 1);
-            model.addAttribute("totalItems", 0);
-            model.addAttribute("histories", List.of());
-            return "history/index";
+            return "redirect:/account/login-page";
         }
 
         List<GameHistoryView> filtered = applyFilters(buildHistories(effectiveUserId), gameCode, result, fromDate, toDate);
@@ -220,7 +210,7 @@ public class HistoryController {
     private String effectiveUserId(String requestedUserId, HttpServletRequest request) {
         String sessionUserId = sessionUserId(request);
         if (sessionUserId == null) {
-            return "";
+            return null;
         }
         String normalizedRequested = trimToNull(requestedUserId);
         if (normalizedRequested == null) {

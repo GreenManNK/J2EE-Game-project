@@ -2,6 +2,7 @@
     const boot = window.ChessBoot || {};
     const BOARD_SIZE = 8;
     const CHESS_STATS_KEY = "caroChessOfflineStats.v1";
+    const GAME_STATS_CODE = "chess-offline";
     const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
     const PIECE_ICONS = {
         wK: "♔", wQ: "♕", wR: "♖", wB: "♗", wN: "♘", wP: "♙",
@@ -48,7 +49,7 @@
 
     let els = {};
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
         els = {
             board: document.getElementById("chessBoard"),
             turnStatus: document.getElementById("chessTurnStatus"),
@@ -64,7 +65,7 @@
             boardCells: []
         };
 
-        state.stats = readStats();
+        state.stats = await readStats();
         initBoardUi();
         els.undoBtn?.addEventListener("click", undoLastMove);
         els.resetBtn?.addEventListener("click", resetGame);
@@ -89,24 +90,98 @@
         maybeQueueBotMove();
     }
 
-    function readStats() {
+    function normalizeStats(raw) {
+        const source = raw && typeof raw === "object" ? raw : {};
+        return {
+            whiteWins: Math.max(0, Number.parseInt(String(source.whiteWins || 0), 10) || 0),
+            blackWins: Math.max(0, Number.parseInt(String(source.blackWins || 0), 10) || 0),
+            draws: Math.max(0, Number.parseInt(String(source.draws || 0), 10) || 0)
+        };
+    }
+
+    function hasAnyStats(stats) {
+        const safe = normalizeStats(stats);
+        return safe.whiteWins > 0 || safe.blackWins > 0 || safe.draws > 0;
+    }
+
+    function mergeStats(primary, secondary) {
+        const first = normalizeStats(primary);
+        const second = normalizeStats(secondary);
+        return {
+            whiteWins: Math.max(first.whiteWins, second.whiteWins),
+            blackWins: Math.max(first.blackWins, second.blackWins),
+            draws: Math.max(first.draws, second.draws)
+        };
+    }
+
+    function currentSessionUserId() {
+        const current = window.CaroUser?.get?.();
+        const userId = current && current.userId ? String(current.userId).trim() : "";
+        return userId || null;
+    }
+
+    function readStatsFromStorage() {
         try {
             const raw = JSON.parse(window.localStorage.getItem(CHESS_STATS_KEY) || "{}");
-            return {
-                whiteWins: Math.max(0, Number.parseInt(String(raw.whiteWins || 0), 10) || 0),
-                blackWins: Math.max(0, Number.parseInt(String(raw.blackWins || 0), 10) || 0),
-                draws: Math.max(0, Number.parseInt(String(raw.draws || 0), 10) || 0)
-            };
+            return normalizeStats(raw);
         } catch (_) {
-            return { whiteWins: 0, blackWins: 0, draws: 0 };
+            return normalizeStats({});
+        }
+    }
+
+    function writeStatsToStorage(stats) {
+        try {
+            window.localStorage.setItem(CHESS_STATS_KEY, JSON.stringify(normalizeStats(stats)));
+        } catch (_) {
+        }
+    }
+
+    async function readStats() {
+        const localStats = readStatsFromStorage();
+        const userId = currentSessionUserId();
+        const accountStats = window.CaroAccountStats;
+        if (!userId || !accountStats || typeof accountStats.get !== "function") {
+            return localStats;
+        }
+
+        try {
+            const remoteRaw = await accountStats.get(GAME_STATS_CODE);
+            const remoteStats = normalizeStats(remoteRaw);
+            const merged = mergeStats(remoteStats, localStats);
+            if (hasAnyStats(localStats) && typeof accountStats.save === "function") {
+                const saved = await accountStats.save(GAME_STATS_CODE, merged, true);
+                if (saved) {
+                    window.localStorage.removeItem(CHESS_STATS_KEY);
+                }
+            }
+            return merged;
+        } catch (_) {
+            return localStats;
         }
     }
 
     function writeStats() {
-        try {
-            window.localStorage.setItem(CHESS_STATS_KEY, JSON.stringify(state.stats));
-        } catch (_) {
+        const normalized = normalizeStats(state.stats);
+        state.stats = normalized;
+
+        const userId = currentSessionUserId();
+        const accountStats = window.CaroAccountStats;
+        if (userId && accountStats && typeof accountStats.save === "function") {
+            accountStats.save(GAME_STATS_CODE, normalized, true)
+                .then((saved) => {
+                    if (saved) {
+                        window.localStorage.removeItem(CHESS_STATS_KEY);
+                        return;
+                    }
+                    writeStatsToStorage(normalized);
+                })
+                .catch(() => {
+                    writeStatsToStorage(normalized);
+                });
+            return;
         }
+
+        writeStatsToStorage(normalized);
     }
 
     function updateStatsUi() {

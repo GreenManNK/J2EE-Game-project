@@ -16,6 +16,7 @@
   const LONG_PRESS_MS = 420;
   const LONG_PRESS_MOVE_CANCEL_PX = 12;
   const STATS_STORAGE_KEY = 'caroMinesweeperStats.v1';
+  const GAME_STATS_CODE = 'minesweeper';
   const MAX_HINTS_PER_GAME = 3;
 
   const state = {
@@ -270,11 +271,95 @@
     }
   }
 
-  function writeStatsToStorage() {
+  function writeStatsToStorage(stats) {
     try {
-      window.localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(normalizeStats(state.stats)));
+      window.localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(normalizeStats(stats)));
     } catch (_) {
     }
+  }
+
+  function hasAnyStats(stats) {
+    const safe = normalizeStats(stats);
+    if (safe.totalGames > 0 || safe.wins > 0 || safe.losses > 0) {
+      return true;
+    }
+    return Object.keys(safe.bestTimes || {}).length > 0;
+  }
+
+  function mergeStats(primary, secondary) {
+    const first = normalizeStats(primary);
+    const second = normalizeStats(secondary);
+    const mergedBestTimes = Object.assign({}, first.bestTimes || {});
+    Object.keys(second.bestTimes || {}).forEach((key) => {
+      const sec = parseInteger(second.bestTimes[key], -1);
+      const prev = parseInteger(mergedBestTimes[key], -1);
+      if (sec >= 0 && (prev < 0 || sec < prev)) {
+        mergedBestTimes[key] = sec;
+      }
+    });
+    const wins = Math.max(first.wins, second.wins);
+    const losses = Math.max(first.losses, second.losses);
+    const totalGames = Math.max(first.totalGames, second.totalGames, wins + losses);
+    return {
+      totalGames,
+      wins,
+      losses,
+      bestTimes: mergedBestTimes
+    };
+  }
+
+  function currentSessionUserId() {
+    const current = window.CaroUser?.get?.();
+    const userId = current && current.userId ? String(current.userId).trim() : '';
+    return userId || null;
+  }
+
+  async function readStats() {
+    const localStats = readStatsFromStorage();
+    const userId = currentSessionUserId();
+    const accountStats = window.CaroAccountStats;
+    if (!userId || !accountStats || typeof accountStats.get !== 'function') {
+      return localStats;
+    }
+
+    try {
+      const remoteRaw = await accountStats.get(GAME_STATS_CODE);
+      const remoteStats = normalizeStats(remoteRaw);
+      const merged = mergeStats(remoteStats, localStats);
+      if (hasAnyStats(localStats) && typeof accountStats.save === 'function') {
+        const saved = await accountStats.save(GAME_STATS_CODE, merged, true);
+        if (saved) {
+          window.localStorage.removeItem(STATS_STORAGE_KEY);
+        }
+      }
+      return merged;
+    } catch (_) {
+      return localStats;
+    }
+  }
+
+  function writeStats() {
+    const normalized = normalizeStats(state.stats);
+    state.stats = normalized;
+
+    const userId = currentSessionUserId();
+    const accountStats = window.CaroAccountStats;
+    if (userId && accountStats && typeof accountStats.save === 'function') {
+      accountStats.save(GAME_STATS_CODE, normalized, true)
+        .then((saved) => {
+          if (saved) {
+            window.localStorage.removeItem(STATS_STORAGE_KEY);
+            return;
+          }
+          writeStatsToStorage(normalized);
+        })
+        .catch(() => {
+          writeStatsToStorage(normalized);
+        });
+      return;
+    }
+
+    writeStatsToStorage(normalized);
   }
 
   function statsConfigKey(config) {
@@ -330,7 +415,7 @@
     } else {
       state.stats.losses = Math.max(0, parseInteger(state.stats.losses, 0)) + 1;
     }
-    writeStatsToStorage();
+    writeStats();
     updateStatsUi();
   }
 
@@ -1274,8 +1359,8 @@
     document.addEventListener('keydown', handleGlobalHotkeys);
   }
 
-  function boot() {
-    state.stats = readStatsFromStorage();
+  async function boot() {
+    state.stats = await readStats();
     bindEvents();
     clearLongPressGesture();
     state.flagMode = false;

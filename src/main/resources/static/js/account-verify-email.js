@@ -71,6 +71,17 @@
       }
       if (data.success) {
         localStorage.removeItem('pendingVerifyEmail');
+        if (window.CaroUser && data.data && data.data.userId) {
+          window.CaroUser.set({
+            userId: data.data.userId,
+            displayName: data.data.displayName || data.data.email || 'Player',
+            email: data.data.email || '',
+            role: data.data.role || 'User',
+            avatarPath: data.data.avatarPath || '/uploads/avatars/default-avatar.jpg'
+          });
+          await window.CaroGuestData?.migrateToAccount?.();
+          window.location.href = appPath('/');
+        }
       }
     } catch (err) {
       const message = String(err?.message || 'Lỗi mạng');

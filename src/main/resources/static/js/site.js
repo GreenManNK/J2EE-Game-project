@@ -368,6 +368,116 @@
     clear: clearCurrentUser
   };
 
+  async function fetchAccountGameStats(gameCode) {
+    const current = getCurrentUser();
+    if (!current || !current.userId) {
+      return null;
+    }
+    const normalizedGameCode = String(gameCode || '').trim();
+    if (!normalizedGameCode) {
+      return null;
+    }
+    try {
+      const res = await fetch(
+        toAppPath('/account/game-stats?gameCode=' + encodeURIComponent(normalizedGameCode)),
+        { cache: 'no-store' }
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!data || data.success !== true || !data.data || typeof data.data.stats !== 'object') {
+        return null;
+      }
+      return data.data.stats;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function saveAccountGameStats(gameCode, stats, merge) {
+    const current = getCurrentUser();
+    if (!current || !current.userId) {
+      return false;
+    }
+    const normalizedGameCode = String(gameCode || '').trim();
+    if (!normalizedGameCode || !stats || typeof stats !== 'object') {
+      return false;
+    }
+    try {
+      const res = await fetch(toAppPath('/account/game-stats'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameCode: normalizedGameCode,
+          stats: stats,
+          merge: merge !== false
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      return !!(data && data.success === true);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  window.CaroAccountStats = {
+    get: fetchAccountGameStats,
+    save: saveAccountGameStats
+  };
+
+  const GUEST_DATA_KEYS = [
+    { gameCode: 'chess-offline', storageKey: 'caroChessOfflineStats.v1' },
+    { gameCode: 'xiangqi-offline', storageKey: 'caroXiangqiOfflineStats.v1' },
+    { gameCode: 'minesweeper', storageKey: 'caroMinesweeperStats.v1' }
+  ];
+  let guestDataMigrateInFlight = null;
+
+  async function migrateGuestDataToAccount() {
+    if (guestDataMigrateInFlight) {
+      return guestDataMigrateInFlight;
+    }
+    const current = getCurrentUser();
+    if (!current || !current.userId) {
+      return { migratedCount: 0 };
+    }
+
+    guestDataMigrateInFlight = (async () => {
+      let migratedCount = 0;
+      for (const item of GUEST_DATA_KEYS) {
+        const raw = window.localStorage.getItem(item.storageKey);
+        if (!raw) {
+          continue;
+        }
+        let parsed = null;
+        try {
+          parsed = JSON.parse(raw);
+        } catch (_) {
+          parsed = null;
+        }
+        if (!parsed || typeof parsed !== 'object') {
+          continue;
+        }
+        const saved = await saveAccountGameStats(item.gameCode, parsed, true);
+        if (saved) {
+          migratedCount += 1;
+          try {
+            window.localStorage.removeItem(item.storageKey);
+          } catch (_) {
+          }
+        }
+      }
+      return { migratedCount: migratedCount };
+    })();
+
+    try {
+      return await guestDataMigrateInFlight;
+    } finally {
+      guestDataMigrateInFlight = null;
+    }
+  }
+
+  window.CaroGuestData = {
+    migrateToAccount: migrateGuestDataToAccount
+  };
+
   function ensureToastContainer() {
     let container = document.getElementById('caroToastContainer');
     if (container) {
@@ -519,41 +629,64 @@
   document.addEventListener('DOMContentLoaded', () => {
     normalizeRootRelativeUrls();
 
-    const user = getCurrentUser();
     const badges = document.querySelectorAll('[data-current-user-badge]');
     const logoutBtn = document.getElementById('logoutBtn');
     const authOnly = document.querySelectorAll('[data-auth-only]');
     const guestOnly = document.querySelectorAll('[data-guest-only]');
     const roleOnly = document.querySelectorAll('[data-role-allowed]');
 
-    badges.forEach((el) => {
-      if (user) {
-        el.textContent = user.displayName + ' (' + user.userId + ')';
-      } else {
-        el.textContent = 'Chua dang nhap';
-      }
-    });
+    const applyAuthState = (user) => {
+      badges.forEach((el) => {
+        if (user) {
+          el.textContent = user.displayName + ' (' + user.userId + ')';
+        } else {
+          el.textContent = 'Chua dang nhap';
+        }
+      });
 
-    authOnly.forEach((el) => {
-      el.style.display = user ? '' : 'none';
-    });
-    guestOnly.forEach((el) => {
-      el.style.display = user ? 'none' : '';
-    });
-    roleOnly.forEach((el) => {
-      if (!user || !user.role) {
-        el.style.display = 'none';
-        return;
-      }
-      const allowed = String(el.getAttribute('data-role-allowed') || '')
-        .split(',')
-        .map((v) => v.trim().toLowerCase())
-        .filter(Boolean);
-      if (allowed.length === 0) {
-        return;
-      }
-      el.style.display = allowed.includes(String(user.role).trim().toLowerCase()) ? '' : 'none';
-    });
+      authOnly.forEach((el) => {
+        el.style.display = user ? '' : 'none';
+      });
+      guestOnly.forEach((el) => {
+        el.style.display = user ? 'none' : '';
+      });
+      roleOnly.forEach((el) => {
+        if (!user || !user.role) {
+          el.style.display = 'none';
+          return;
+        }
+        const allowed = String(el.getAttribute('data-role-allowed') || '')
+          .split(',')
+          .map((v) => v.trim().toLowerCase())
+          .filter(Boolean);
+        if (allowed.length === 0) {
+          return;
+        }
+        el.style.display = allowed.includes(String(user.role).trim().toLowerCase()) ? '' : 'none';
+      });
+    };
+
+    let user = getCurrentUser();
+    applyAuthState(user);
+
+    if (user && user.userId) {
+      fetch(toAppPath('/account/preferences'), { cache: 'no-store' })
+        .then((res) => res.json().catch(() => ({})))
+        .then((data) => {
+          if (!data || data.success !== true) {
+            clearCurrentUser();
+            user = null;
+            applyAuthState(null);
+            return;
+          }
+          window.CaroGuestData?.migrateToAccount?.();
+        })
+        .catch(() => {
+          clearCurrentUser();
+          user = null;
+          applyAuthState(null);
+        });
+    }
 
     if (window.axios && window.axios.defaults && window.axios.defaults.headers) {
       const csrf = getCsrfMeta();

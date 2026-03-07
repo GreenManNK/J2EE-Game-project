@@ -36,4 +36,20 @@ class ProfileControllerTest {
         assertEquals("profile/index", viewName);
         verify(profileStatsService).buildProfileStats("test-user", "test-user");
     }
+
+    @Test
+    void pageShouldRedirectToLoginWhenNotAuthenticated() {
+        AccountService accountService = mock(AccountService.class);
+        ProfileStatsService profileStatsService = mock(ProfileStatsService.class);
+        AvatarStorageService avatarStorageService = mock(AvatarStorageService.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        when(request.getSession(false)).thenReturn(null);
+
+        ProfileController controller = new ProfileController(accountService, profileStatsService, avatarStorageService);
+        ConcurrentModel model = new ConcurrentModel();
+        String viewName = controller.page("any-user", model, request);
+
+        assertEquals("redirect:/account/login-page", viewName);
+    }
 }

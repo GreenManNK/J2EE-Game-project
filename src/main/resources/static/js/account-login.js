@@ -44,6 +44,7 @@
           role: data.data.role || 'User',
           avatarPath: data.data.avatarPath || '/uploads/avatars/default-avatar.jpg'
         });
+        await window.CaroGuestData?.migrateToAccount?.();
         window.location.href = appPath('/');
       }
     } catch (err) {

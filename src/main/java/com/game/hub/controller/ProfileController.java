@@ -47,7 +47,11 @@ public class ProfileController {
 
     @GetMapping("/profile/{userId}")
     public String page(@PathVariable String userId, Model model, HttpServletRequest request) {
-        return renderProfile(userId, model, request);
+        String targetUserId = resolveTargetUserId(userId, request);
+        if (targetUserId == null || targetUserId.isBlank()) {
+            return "redirect:/account/login-page";
+        }
+        return renderProfile(targetUserId, model, request);
     }
 
     @GetMapping("/api/profile")
@@ -66,11 +70,14 @@ public class ProfileController {
     @GetMapping("/api/profile/{userId}")
     @ResponseBody
     public Map<String, Object> indexApi(@PathVariable String userId, HttpServletRequest request) {
+        String targetUserId = resolveTargetUserId(userId, request);
+        if (targetUserId == null || targetUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
         String viewerId = Optional.ofNullable(request.getSession(false))
             .map(s -> (String) s.getAttribute("AUTH_USER_ID"))
             .orElse("");
-
-        return profileStatsService.buildProfileStats(userId, viewerId);
+        return profileStatsService.buildProfileStats(targetUserId, viewerId);
     }
 
     @PatchMapping("/profile")
@@ -159,7 +166,7 @@ public class ProfileController {
             return sessionUserId;
         }
         if (sessionUserId == null) {
-            return normalizedRequested;
+            return null;
         }
         if (sessionUserId.equals(normalizedRequested)) {
             return normalizedRequested;

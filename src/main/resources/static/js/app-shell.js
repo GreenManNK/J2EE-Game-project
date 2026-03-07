@@ -66,13 +66,13 @@
 
     const current = window.CaroUser.get();
     if (!current || !current.userId) {
-      container.innerHTML = '<div class="small text-muted">Đăng nhập để xem danh sách bạn bè.</div>';
+      container.innerHTML = '<div class="small text-muted">Chưa có bạn bè nào.</div>';
       return;
     }
 
     friendListLoading = true;
     try {
-      const res = await fetch('/friendship/friend-list?currentUserId=' + encodeURIComponent(current.userId), {
+      const res = await fetch(appPath('/friendship/friend-list?currentUserId=' + encodeURIComponent(current.userId)), {
         cache: 'no-store'
       });
       if (!res.ok) {

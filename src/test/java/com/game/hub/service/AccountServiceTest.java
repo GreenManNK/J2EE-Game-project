@@ -179,4 +179,42 @@ class AccountServiceTest {
         assertFalse(updated.isAutoRefreshFriendList());
         assertEquals(30000, updated.getFriendListRefreshMs());
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void updateGameStatsShouldMergeGuestProgressIntoDatabase() {
+        UserAccount user = new UserAccount();
+        user.setEmail("stats-merge@test.com");
+        user.setUsername("stats-merge@test.com");
+        user.setDisplayName("Stats Merge");
+        user.setPassword(passwordEncoder.encode("Pass@123"));
+        user.setEmailConfirmed(true);
+        userAccountRepository.save(user);
+
+        AccountService.ServiceResult firstUpdate = accountService.updateGameStats(
+            user.getId(),
+            "chess-offline",
+            Map.of("whiteWins", 2, "blackWins", 1, "draws", 0),
+            true
+        );
+        AccountService.ServiceResult secondUpdate = accountService.updateGameStats(
+            user.getId(),
+            "chess-offline",
+            Map.of("whiteWins", 1, "blackWins", 4, "draws", 3),
+            true
+        );
+
+        assertTrue(firstUpdate.success());
+        assertTrue(secondUpdate.success());
+
+        AccountService.ServiceResult readResult = accountService.getGameStats(user.getId(), "chess-offline");
+        assertTrue(readResult.success());
+        assertNotNull(readResult.data());
+
+        Map<String, Object> payload = (Map<String, Object>) readResult.data();
+        Map<String, Object> stats = (Map<String, Object>) payload.get("stats");
+        assertEquals(2, ((Number) stats.get("whiteWins")).intValue());
+        assertEquals(4, ((Number) stats.get("blackWins")).intValue());
+        assertEquals(3, ((Number) stats.get("draws")).intValue());
+    }
 }

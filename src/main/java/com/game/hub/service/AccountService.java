@@ -1,5 +1,7 @@
 package com.game.hub.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.game.hub.entity.EmailVerificationToken;
 import com.game.hub.entity.PasswordResetToken;
 import com.game.hub.entity.UserAccount;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,12 +29,16 @@ public class AccountService {
     private static final Set<String> ALLOWED_THEME_MODES = Set.of("system", "light", "dark");
     private static final Set<String> ALLOWED_LANGUAGES = Set.of("vi", "en");
     private static final Set<Integer> ALLOWED_FRIEND_REFRESH_MS = Set.of(5000, 10000, 15000, 20000, 30000, 60000);
+    private static final String GAME_CODE_CHESS_OFFLINE = "chess-offline";
+    private static final String GAME_CODE_XIANGQI_OFFLINE = "xiangqi-offline";
+    private static final String GAME_CODE_MINESWEEPER = "minesweeper";
 
     private final UserAccountRepository userAccountRepository;
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final ObjectMapper objectMapper;
     private final String defaultAdminEmail;
     private final String adminActivationCode;
     private final Random random = new Random();
@@ -41,6 +48,7 @@ public class AccountService {
                           PasswordResetTokenRepository passwordResetTokenRepository,
                           PasswordEncoder passwordEncoder,
                           EmailService emailService,
+                          ObjectMapper objectMapper,
                           @Value("${app.admin.default-email:luckhaikiet@gmail.com}") String defaultAdminEmail,
                           @Value("${app.admin.activation-code:j2ee20262027}") String adminActivationCode) {
         this.userAccountRepository = userAccountRepository;
@@ -48,6 +56,7 @@ public class AccountService {
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.objectMapper = objectMapper;
         this.defaultAdminEmail = normalizeEmail(defaultAdminEmail);
         this.adminActivationCode = trimToNull(adminActivationCode);
     }
@@ -146,7 +155,9 @@ public class AccountService {
 
         PendingRegisterStore.remove(normalizedEmail);
         emailVerificationTokenRepository.deleteAll(emailVerificationTokenRepository.findByEmail(normalizedEmail));
-        return ServiceResult.ok(Map.of("userId", user.getId(), "message", "Account created"));
+        Map<String, Object> payload = new HashMap<>(toLoginPayload(user));
+        payload.put("message", "Account created");
+        return ServiceResult.ok(payload);
     }
 
     public ServiceResult login(String email, String password) {
@@ -359,6 +370,70 @@ public class AccountService {
         return ServiceResult.ok(toPreferencesPayload(user));
     }
 
+    public ServiceResult getGameStats(String userId, String gameCode) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+        String normalizedGameCode = normalizeGameCode(gameCode);
+        if (normalizedGameCode == null) {
+            return ServiceResult.error("Unsupported gameCode");
+        }
+
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+
+        Map<String, Object> stats = normalizeStatsByGameCode(
+            normalizedGameCode,
+            readRawStatsForGameCode(user, normalizedGameCode)
+        );
+        return ServiceResult.ok(Map.of(
+            "gameCode", normalizedGameCode,
+            "stats", stats
+        ));
+    }
+
+    public ServiceResult updateGameStats(String userId, String gameCode, Object statsPayload, boolean mergeExisting) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+        String normalizedGameCode = normalizeGameCode(gameCode);
+        if (normalizedGameCode == null) {
+            return ServiceResult.error("Unsupported gameCode");
+        }
+
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+        if (!(statsPayload instanceof Map<?, ?>)) {
+            return ServiceResult.error("Stats payload is required");
+        }
+
+        Map<String, Object> incoming = normalizeStatsByGameCode(normalizedGameCode, statsPayload);
+        Map<String, Object> normalizedToPersist = incoming;
+        if (mergeExisting) {
+            Map<String, Object> existing = normalizeStatsByGameCode(
+                normalizedGameCode,
+                readRawStatsForGameCode(user, normalizedGameCode)
+            );
+            normalizedToPersist = mergeStatsByGameCode(normalizedGameCode, existing, incoming);
+        }
+
+        ServiceResult writeResult = writeStatsForGameCode(user, normalizedGameCode, normalizedToPersist);
+        if (!writeResult.success()) {
+            return writeResult;
+        }
+
+        return ServiceResult.ok(Map.of(
+            "gameCode", normalizedGameCode,
+            "stats", normalizedToPersist
+        ));
+    }
+
     public ServiceResult sendResetCode(String email) {
         String normalizedEmail = normalizeEmail(email);
         if (normalizedEmail == null) return ServiceResult.error("Email is required");
@@ -557,6 +632,261 @@ public class AccountService {
 
         public static ServiceResult error(String error) {
             return new ServiceResult(false, error, null);
+        }
+    }
+
+    private String normalizeGameCode(String gameCode) {
+        String normalized = trimToNull(gameCode);
+        if (normalized == null) {
+            return null;
+        }
+        String lowered = normalized.toLowerCase();
+        if ("chess-offline".equals(lowered) || "chess_offline".equals(lowered)
+            || "chessoffline".equals(lowered) || "chess".equals(lowered)) {
+            return GAME_CODE_CHESS_OFFLINE;
+        }
+        if ("xiangqi-offline".equals(lowered) || "xiangqi_offline".equals(lowered)
+            || "xiangqioffline".equals(lowered) || "xiangqi".equals(lowered)) {
+            return GAME_CODE_XIANGQI_OFFLINE;
+        }
+        if ("minesweeper".equals(lowered)) {
+            return GAME_CODE_MINESWEEPER;
+        }
+        return null;
+    }
+
+    private Map<String, Object> readRawStatsForGameCode(UserAccount user, String gameCode) {
+        if (user == null || gameCode == null) {
+            return Map.of();
+        }
+        String rawJson;
+        if (GAME_CODE_CHESS_OFFLINE.equals(gameCode)) {
+            rawJson = user.getChessOfflineStatsJson();
+        } else if (GAME_CODE_XIANGQI_OFFLINE.equals(gameCode)) {
+            rawJson = user.getXiangqiOfflineStatsJson();
+        } else if (GAME_CODE_MINESWEEPER.equals(gameCode)) {
+            rawJson = user.getMinesweeperStatsJson();
+        } else {
+            return Map.of();
+        }
+        return readJsonMap(rawJson);
+    }
+
+    private ServiceResult writeStatsForGameCode(UserAccount user, String gameCode, Map<String, Object> normalizedStats) {
+        if (user == null || gameCode == null) {
+            return ServiceResult.error("Invalid user or gameCode");
+        }
+        String json = writeJson(normalizedStats);
+        if (json == null) {
+            return ServiceResult.error("Cannot serialize stats");
+        }
+
+        if (GAME_CODE_CHESS_OFFLINE.equals(gameCode)) {
+            user.setChessOfflineStatsJson(json);
+        } else if (GAME_CODE_XIANGQI_OFFLINE.equals(gameCode)) {
+            user.setXiangqiOfflineStatsJson(json);
+        } else if (GAME_CODE_MINESWEEPER.equals(gameCode)) {
+            user.setMinesweeperStatsJson(json);
+        } else {
+            return ServiceResult.error("Unsupported gameCode");
+        }
+        userAccountRepository.save(user);
+        return ServiceResult.ok(Map.of());
+    }
+
+    private Map<String, Object> normalizeStatsByGameCode(String gameCode, Object rawStats) {
+        Map<String, Object> source = asStringObjectMap(rawStats);
+        if (GAME_CODE_CHESS_OFFLINE.equals(gameCode)) {
+            return normalizeChessStats(source);
+        }
+        if (GAME_CODE_XIANGQI_OFFLINE.equals(gameCode)) {
+            return normalizeXiangqiStats(source);
+        }
+        if (GAME_CODE_MINESWEEPER.equals(gameCode)) {
+            return normalizeMinesweeperStats(source);
+        }
+        return Map.of();
+    }
+
+    private Map<String, Object> mergeStatsByGameCode(String gameCode,
+                                                     Map<String, Object> existing,
+                                                     Map<String, Object> incoming) {
+        if (GAME_CODE_CHESS_OFFLINE.equals(gameCode)) {
+            return mergeChessStats(existing, incoming);
+        }
+        if (GAME_CODE_XIANGQI_OFFLINE.equals(gameCode)) {
+            return mergeXiangqiStats(existing, incoming);
+        }
+        if (GAME_CODE_MINESWEEPER.equals(gameCode)) {
+            return mergeMinesweeperStats(existing, incoming);
+        }
+        return Map.of();
+    }
+
+    private Map<String, Object> normalizeChessStats(Map<String, Object> source) {
+        int whiteWins = Math.max(0, toInt(source.get("whiteWins"), 0));
+        int blackWins = Math.max(0, toInt(source.get("blackWins"), 0));
+        int draws = Math.max(0, toInt(source.get("draws"), 0));
+        return Map.of(
+            "whiteWins", whiteWins,
+            "blackWins", blackWins,
+            "draws", draws
+        );
+    }
+
+    private Map<String, Object> normalizeXiangqiStats(Map<String, Object> source) {
+        int redWins = Math.max(0, toInt(source.get("redWins"), 0));
+        int blackWins = Math.max(0, toInt(source.get("blackWins"), 0));
+        int draws = Math.max(0, toInt(source.get("draws"), 0));
+        return Map.of(
+            "redWins", redWins,
+            "blackWins", blackWins,
+            "draws", draws
+        );
+    }
+
+    private Map<String, Object> normalizeMinesweeperStats(Map<String, Object> source) {
+        int totalGames = Math.max(0, toInt(source.get("totalGames"), 0));
+        int wins = Math.max(0, toInt(source.get("wins"), 0));
+        int losses = Math.max(0, toInt(source.get("losses"), Math.max(0, totalGames - wins)));
+        totalGames = Math.max(totalGames, wins + losses);
+
+        Map<String, Integer> bestTimes = normalizeBestTimesMap(source.get("bestTimes"));
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalGames", totalGames);
+        result.put("wins", wins);
+        result.put("losses", losses);
+        result.put("bestTimes", bestTimes);
+        return result;
+    }
+
+    private Map<String, Object> mergeChessStats(Map<String, Object> existing, Map<String, Object> incoming) {
+        Map<String, Object> safeExisting = normalizeChessStats(asStringObjectMap(existing));
+        Map<String, Object> safeIncoming = normalizeChessStats(asStringObjectMap(incoming));
+        int whiteWins = Math.max(toInt(safeExisting.get("whiteWins"), 0), toInt(safeIncoming.get("whiteWins"), 0));
+        int blackWins = Math.max(toInt(safeExisting.get("blackWins"), 0), toInt(safeIncoming.get("blackWins"), 0));
+        int draws = Math.max(toInt(safeExisting.get("draws"), 0), toInt(safeIncoming.get("draws"), 0));
+        return Map.of(
+            "whiteWins", whiteWins,
+            "blackWins", blackWins,
+            "draws", draws
+        );
+    }
+
+    private Map<String, Object> mergeXiangqiStats(Map<String, Object> existing, Map<String, Object> incoming) {
+        Map<String, Object> safeExisting = normalizeXiangqiStats(asStringObjectMap(existing));
+        Map<String, Object> safeIncoming = normalizeXiangqiStats(asStringObjectMap(incoming));
+        int redWins = Math.max(toInt(safeExisting.get("redWins"), 0), toInt(safeIncoming.get("redWins"), 0));
+        int blackWins = Math.max(toInt(safeExisting.get("blackWins"), 0), toInt(safeIncoming.get("blackWins"), 0));
+        int draws = Math.max(toInt(safeExisting.get("draws"), 0), toInt(safeIncoming.get("draws"), 0));
+        return Map.of(
+            "redWins", redWins,
+            "blackWins", blackWins,
+            "draws", draws
+        );
+    }
+
+    private Map<String, Object> mergeMinesweeperStats(Map<String, Object> existing, Map<String, Object> incoming) {
+        Map<String, Object> safeExisting = normalizeMinesweeperStats(asStringObjectMap(existing));
+        Map<String, Object> safeIncoming = normalizeMinesweeperStats(asStringObjectMap(incoming));
+
+        int wins = Math.max(toInt(safeExisting.get("wins"), 0), toInt(safeIncoming.get("wins"), 0));
+        int losses = Math.max(toInt(safeExisting.get("losses"), 0), toInt(safeIncoming.get("losses"), 0));
+        int totalGames = Math.max(toInt(safeExisting.get("totalGames"), 0), toInt(safeIncoming.get("totalGames"), 0));
+        totalGames = Math.max(totalGames, wins + losses);
+
+        Map<String, Integer> mergedBestTimes = normalizeBestTimesMap(safeExisting.get("bestTimes"));
+        Map<String, Integer> incomingBestTimes = normalizeBestTimesMap(safeIncoming.get("bestTimes"));
+        for (Map.Entry<String, Integer> entry : incomingBestTimes.entrySet()) {
+            String key = entry.getKey();
+            Integer sec = entry.getValue();
+            Integer prev = mergedBestTimes.get(key);
+            if (prev == null || sec < prev) {
+                mergedBestTimes.put(key, sec);
+            }
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalGames", totalGames);
+        result.put("wins", wins);
+        result.put("losses", losses);
+        result.put("bestTimes", mergedBestTimes);
+        return result;
+    }
+
+    private Map<String, Integer> normalizeBestTimesMap(Object raw) {
+        Map<String, Integer> result = new HashMap<>();
+        if (!(raw instanceof Map<?, ?> source)) {
+            return result;
+        }
+        for (Map.Entry<?, ?> entry : source.entrySet()) {
+            if (entry.getKey() == null) {
+                continue;
+            }
+            String key = String.valueOf(entry.getKey()).trim();
+            if (key.isEmpty()) {
+                continue;
+            }
+            int sec = toInt(entry.getValue(), -1);
+            if (sec >= 0) {
+                result.put(key, sec);
+            }
+        }
+        return result;
+    }
+
+    private Map<String, Object> asStringObjectMap(Object raw) {
+        Map<String, Object> result = new HashMap<>();
+        if (!(raw instanceof Map<?, ?> source)) {
+            return result;
+        }
+        for (Map.Entry<?, ?> entry : source.entrySet()) {
+            if (entry.getKey() == null) {
+                continue;
+            }
+            result.put(String.valueOf(entry.getKey()), entry.getValue());
+        }
+        return result;
+    }
+
+    private int toInt(Object value, int fallback) {
+        if (value == null) {
+            return fallback;
+        }
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        String text = String.valueOf(value).trim();
+        if (text.isEmpty()) {
+            return fallback;
+        }
+        try {
+            return Integer.parseInt(text);
+        } catch (NumberFormatException ex) {
+            return fallback;
+        }
+    }
+
+    private Map<String, Object> readJsonMap(String json) {
+        String raw = trimToNull(json);
+        if (raw == null) {
+            return Map.of();
+        }
+        try {
+            Map<String, Object> parsed = objectMapper.readValue(raw, new TypeReference<Map<String, Object>>() {
+            });
+            return parsed == null ? Map.of() : parsed;
+        } catch (Exception ex) {
+            return Map.of();
+        }
+    }
+
+    private String writeJson(Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (Exception ex) {
+            return null;
         }
     }
 

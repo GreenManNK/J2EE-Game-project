@@ -42,6 +42,15 @@ public class UserAccount {
     private boolean showOfflineFriendsInSidebar = true;
     private boolean autoRefreshFriendList = true;
     private int friendListRefreshMs = 5000;
+    @JsonIgnore
+    @Column(length = 4000)
+    private String chessOfflineStatsJson;
+    @JsonIgnore
+    @Column(length = 4000)
+    private String xiangqiOfflineStatsJson;
+    @JsonIgnore
+    @Column(length = 8000)
+    private String minesweeperStatsJson;
 
     @PrePersist
     public void prePersist() {
@@ -98,4 +107,10 @@ public class UserAccount {
     public void setAutoRefreshFriendList(boolean autoRefreshFriendList) { this.autoRefreshFriendList = autoRefreshFriendList; }
     public int getFriendListRefreshMs() { return friendListRefreshMs; }
     public void setFriendListRefreshMs(int friendListRefreshMs) { this.friendListRefreshMs = friendListRefreshMs; }
+    public String getChessOfflineStatsJson() { return chessOfflineStatsJson; }
+    public void setChessOfflineStatsJson(String chessOfflineStatsJson) { this.chessOfflineStatsJson = chessOfflineStatsJson; }
+    public String getXiangqiOfflineStatsJson() { return xiangqiOfflineStatsJson; }
+    public void setXiangqiOfflineStatsJson(String xiangqiOfflineStatsJson) { this.xiangqiOfflineStatsJson = xiangqiOfflineStatsJson; }
+    public String getMinesweeperStatsJson() { return minesweeperStatsJson; }
+    public void setMinesweeperStatsJson(String minesweeperStatsJson) { this.minesweeperStatsJson = minesweeperStatsJson; }
 }

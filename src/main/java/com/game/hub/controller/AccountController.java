@@ -30,8 +30,20 @@ public class AccountController {
     }
 
     @PostMapping("/verify-email")
-    public Object verifyEmail(@RequestBody VerifyEmailRequest request) {
-        return toResponse(accountService.verifyEmail(request.email(), request.code()));
+    public Object verifyEmail(@RequestBody VerifyEmailRequest request, HttpServletRequest httpRequest) {
+        AccountService.ServiceResult result = accountService.verifyEmail(request.email(), request.code());
+        if (result.success() && result.data() instanceof Map<?, ?> data) {
+            HttpSession session = httpRequest.getSession(true);
+            Object userId = data.get("userId");
+            Object role = data.get("role");
+            if (userId instanceof String uid && !uid.isBlank()) {
+                session.setAttribute("AUTH_USER_ID", uid);
+            }
+            if (role instanceof String r && !r.isBlank()) {
+                session.setAttribute("AUTH_ROLE", r);
+            }
+        }
+        return toResponse(result);
     }
 
     @PostMapping("/resend-verification-code")
@@ -142,6 +154,36 @@ public class AccountController {
                 request.autoRefreshFriendList(),
                 request.friendListRefreshMs()
             )
+        ));
+    }
+
+    @GetMapping("/game-stats")
+    public Object getGameStats(@RequestParam(required = false) String gameCode,
+                               HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        return toResponse(accountService.getGameStats(sessionUserId, gameCode));
+    }
+
+    @PostMapping("/game-stats")
+    public Object updateGameStats(@RequestBody(required = false) UpdateGameStatsRequest request,
+                                  HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        if (request == null) {
+            return Map.of("success", false, "error", "Invalid request");
+        }
+        return toResponse(accountService.updateGameStats(
+            sessionUserId,
+            request.gameCode(),
+            request.stats(),
+            request.merge() == null || request.merge()
         ));
     }
 
@@ -260,5 +302,8 @@ public class AccountController {
     }
 
     public record ResetPasswordRequest(String userId, String email, String code, String newPassword, String confirmPassword) {
+    }
+
+    public record UpdateGameStatsRequest(String gameCode, Object stats, Boolean merge) {
     }
 }
