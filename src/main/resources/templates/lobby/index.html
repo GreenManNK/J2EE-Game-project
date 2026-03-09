@@ -12,16 +12,17 @@
     </div>
     <h1 class="lobby-title theme-text mt-2">Sanh phong Caro</h1>
     <p class="lobby-subtitle theme-text">
-      Tao phong hoac tham gia phong san co ngay ca khi chua dang nhap.
+      Nhap ma phong va nhan Enter la vao ngay ca khi chua dang nhap.
       He thong se tao ten khach tu dong de ban vao tran nhanh hon.
     </p>
 
     <div class="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-4 lobby-room-input">
       <div class="input-group">
-        <input type="text" class="form-control" id="roomIdInput" placeholder="Nhap ma phong...">
-        <button class="btn btn-success" id="createRoomBtn">Tao phong</button>
+        <input type="text" class="form-control" id="roomIdInput" placeholder="Nhap hoac dan ma phong de vao ngay...">
+        <button class="btn btn-success" id="createRoomBtn">Vao ngay</button>
       </div>
     </div>
+    <p class="text-muted small mt-2 mb-0">Dan ma phong vao o tren de vao thang phong choi.</p>
   </section>
 
   <section class="card mx-auto theme-box cyberpunk-card lobby-room-list-card">
@@ -33,7 +34,7 @@
       <li class="list-group-item" th:if="${#lists.isEmpty(availableRooms)}">Hien tai khong co phong nao.</li>
       <li class="list-group-item d-flex justify-content-between align-items-center" th:each="room : ${availableRooms}">
         <span th:text="${room}">room-id</span>
-        <a class="btn btn-sm btn-primary" th:href="@{/game/room/{roomId}(roomId=${room})}">Tham gia</a>
+        <a class="btn btn-sm btn-primary" th:href="@{/game/room/{roomId}(roomId=${room})}">Vao ngay</a>
       </li>
     </ul>
   </section>
@@ -86,6 +87,14 @@
         event.preventDefault();
         btn?.click();
       }
+    });
+
+    input?.addEventListener('paste', () => {
+      window.setTimeout(() => {
+        if ((input?.value || '').trim()) {
+          btn?.click();
+        }
+      }, 0);
     });
 
     function renderRooms(rooms) {

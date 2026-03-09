@@ -50,14 +50,15 @@
                 <div class="typing-lobby-head">
                     <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">
                         <span class="hub-portal-action__icon"><i class="bi bi-plus-circle-fill"></i></span>
-                        <span class="hub-portal-action__text">Tao phong</span>
+                        <span class="hub-portal-action__text">Tao phong va vao ngay</span>
                     </button>
                     <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
                 </div>
                 <div class="hub-portal-action typing-join-row">
-                    <input type="text" id="room-id-input" placeholder="Nhap ma phong" class="form-control">
-                    <button id="join-room-btn" class="hub-portal-action__icon" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
+                    <input type="text" id="room-id-input" placeholder="Nhap hoac dan ma phong de vao ngay" class="form-control">
+                    <button id="join-room-btn" class="hub-portal-action__icon" title="Vao ngay"><i class="bi bi-arrow-right"></i></button>
                 </div>
+                <p class="typing-note mb-0">Nhan Enter hoac dan ma phong de vao tran ngay.</p>
                 <div id="typing-room-list" class="typing-room-list"></div>
                 <p id="typing-connection-status" class="typing-note">Chua ket noi.</p>
             </div>
@@ -556,7 +557,7 @@
         openSocket({ action: 'create' });
     });
 
-    joinRoomBtn.addEventListener('click', () => {
+    function joinRoomByInput() {
         roomId = roomIdInput.value.trim();
         if (!roomId) {
             setConnectionStatus('Can nhap ma phong.', 'error');
@@ -564,6 +565,28 @@
         }
         myPlayerId = null;
         openSocket({ action: 'join', roomId });
+    }
+
+    joinRoomBtn.addEventListener('click', () => {
+        joinRoomByInput();
+    });
+
+    roomIdInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            joinRoomByInput();
+        }
+    });
+
+    roomIdInput.addEventListener('paste', () => {
+        window.setTimeout(() => {
+            if (roomSelection.hidden) {
+                return;
+            }
+            if (roomIdInput.value.trim()) {
+                joinRoomByInput();
+            }
+        }, 0);
     });
 
     refreshRoomListBtn.addEventListener('click', () => {
@@ -835,7 +858,7 @@
                     <strong>${escapeHtml(room.id)}</strong><br>
                     <span>${escapeHtml(formatGameStateLabel(room.gameState))} | Nguoi choi: ${room.playerCount || 0}</span>
                 </div>
-                <button class="hub-portal-action__icon" data-join="${escapeHtml(room.id)}" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
+                <button class="hub-portal-action__icon" data-join="${escapeHtml(room.id)}" title="Vao ngay"><i class="bi bi-arrow-right"></i></button>
             `;
             roomListEl.appendChild(row);
         });

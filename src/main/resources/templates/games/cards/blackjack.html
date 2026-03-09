@@ -44,14 +44,15 @@
 
             <div id="room-selection" class="blackjack-room-panel">
                 <div class="blackjack-lobby-head">
-                    <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">Tao phong</button>
+                    <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">Tao phong va vao ngay</button>
                     <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
                 </div>
                 <div class="hub-portal-action blackjack-join-row">
-                    <input type="text" id="room-id-input" placeholder="Nhap ma phong">
-                    <button id="join-room-btn" class="hub-portal-action__icon" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
+                    <input type="text" id="room-id-input" placeholder="Nhap hoac dan ma phong de vao ngay">
+                    <button id="join-room-btn" class="hub-portal-action__icon" title="Vao ngay"><i class="bi bi-arrow-right"></i></button>
                     <button id="spectate-room-btn" class="hub-portal-action__icon" title="Xem tran"><i class="bi bi-eye"></i></button>
                 </div>
+                <p class="blackjack-note mb-0">Nhan Enter hoac dan ma phong de vao tran ngay.</p>
                 <div id="blackjack-room-list" class="blackjack-room-list"></div>
                 <p id="blackjack-connection-status" class="blackjack-note">Chua ket noi.</p>
             </div>
@@ -530,7 +531,7 @@
         openSocket({ action: 'create' });
     });
 
-    joinRoomBtn.addEventListener('click', () => {
+    function joinRoomByInput() {
         const roomIdToJoin = roomIdInput.value.trim();
         if (!roomIdToJoin) {
             setConnectionStatus('Can nhap ma phong.', 'error');
@@ -540,6 +541,10 @@
         isSpectator = false;
         myPlayerId = null;
         openSocket({ action: 'join', roomId });
+    }
+
+    joinRoomBtn.addEventListener('click', () => {
+        joinRoomByInput();
     });
 
     spectateRoomBtn.addEventListener('click', () => {
@@ -552,6 +557,24 @@
         isSpectator = true;
         myPlayerId = null;
         openSocket({ action: 'spectate', roomId });
+    });
+
+    roomIdInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            joinRoomByInput();
+        }
+    });
+
+    roomIdInput.addEventListener('paste', () => {
+        window.setTimeout(() => {
+            if (roomSelection.hidden) {
+                return;
+            }
+            if (roomIdInput.value.trim()) {
+                joinRoomByInput();
+            }
+        }, 0);
     });
 
     refreshRoomListBtn.addEventListener('click', () => {
@@ -882,7 +905,7 @@
                     <span>${escapeHtml(formatGameStateLabel(room.gameState))} | Nguoi choi: ${room.playerCount || 0} | Nguoi xem: ${room.spectatorCount || 0}</span>
                 </div>
                 <div class="blackjack-room-item-actions">
-                    <button class="hub-portal-action__icon" data-join="${escapeHtml(room.id)}" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
+                    <button class="hub-portal-action__icon" data-join="${escapeHtml(room.id)}" title="Vao ngay"><i class="bi bi-arrow-right"></i></button>
                     <button class="hub-portal-action__icon" data-spectate="${escapeHtml(room.id)}" title="Xem tran"><i class="bi bi-eye"></i></button>
                 </div>
             `;

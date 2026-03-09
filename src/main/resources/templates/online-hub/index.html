@@ -33,21 +33,21 @@
     <div class="col-12 col-lg-7">
       <div class="card shadow-sm theme-box h-100 gx-section-card">
         <div class="card-body">
-          <h2 class="h5 theme-text mb-3">1. Tao phong / Tham gia phong</h2>
+          <h2 class="h5 theme-text mb-3">1. Tao phong / Vao ngay</h2>
 
           <div class="row g-2 align-items-end">
             <div class="col-12 col-md-7">
               <label for="onlineHubRoomIdInput" class="form-label theme-text mb-1">Ma phong</label>
-              <input id="onlineHubRoomIdInput" class="form-control" type="text" placeholder="Nhap ma phong..." th:value="${selectedRoomId}">
+              <input id="onlineHubRoomIdInput" class="form-control" type="text" placeholder="Nhap hoac dan ma phong de vao ngay..." th:value="${selectedRoomId}">
+              <div class="form-text">Nhan Enter hoac dan ma phong de vao thang ban choi.</div>
             </div>
             <div class="col-12 col-md-5 d-grid">
-              <button id="onlineHubCreateBtn" class="btn theme-outline-btn" type="button">Tao phong moi</button>
+              <button id="onlineHubCreateBtn" class="btn theme-outline-btn" type="button">Tao phong va vao ngay</button>
             </div>
           </div>
 
           <div class="d-flex flex-wrap gap-2 mt-2">
-            <button id="onlineHubJoinBtn" class="btn theme-outline-btn" type="button">Tham gia phong</button>
-            <button id="onlineHubGoPlayBtn" class="btn theme-outline-btn" type="button" disabled>Vao ban choi</button>
+            <button id="onlineHubJoinBtn" class="btn theme-outline-btn" type="button">Vao ngay</button>
             <button id="onlineHubGoSpectateBtn" class="btn theme-outline-btn" type="button" disabled>Vao che do xem</button>
             <button id="onlineHubRefreshBtn" class="btn theme-outline-btn" type="button">Lam moi danh sach phong</button>
           </div>

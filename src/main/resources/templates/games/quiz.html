@@ -48,14 +48,15 @@
 
             <div id="room-selection" class="quiz-room-panel">
                 <div class="quiz-lobby-head">
-                    <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">Tao phong</button>
+                    <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">Tao phong va vao ngay</button>
                     <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
                 </div>
                 <div class="hub-portal-action quiz-join-row">
-                    <input type="text" id="room-id-input" placeholder="Nhap ma phong" maxlength="64">
-                    <button id="join-room-btn" class="hub-portal-action__icon" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
+                    <input type="text" id="room-id-input" placeholder="Nhap hoac dan ma phong de vao ngay" maxlength="64">
+                    <button id="join-room-btn" class="hub-portal-action__icon" title="Vao ngay"><i class="bi bi-arrow-right"></i></button>
                     <button id="spectate-room-btn" class="hub-portal-action__icon" title="Xem tran"><i class="bi bi-eye"></i></button>
                 </div>
+                <p class="quiz-status-note mb-0">Nhan Enter hoac dan ma phong de vao tran ngay.</p>
                 <div id="quiz-room-list" class="quiz-room-list"></div>
                 <p id="connection-status" class="quiz-status-note">Chua ket noi.</p>
             </div>
@@ -713,7 +714,7 @@
         openSocket({ action: 'create' });
     });
 
-    joinRoomBtn.addEventListener('click', () => {
+    function joinRoomByInput() {
         const roomId = roomIdInput.value.trim();
         if (!roomId) {
             setStatus('Can nhap ma phong.', 'error');
@@ -721,6 +722,10 @@
         }
         isSpectator = false;
         openSocket({ action: 'join', roomId });
+    }
+
+    joinRoomBtn.addEventListener('click', () => {
+        joinRoomByInput();
     });
 
     spectateRoomBtn.addEventListener('click', () => {
@@ -731,6 +736,24 @@
         }
         isSpectator = true;
         openSocket({ action: 'spectate', roomId });
+    });
+
+    roomIdInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            joinRoomByInput();
+        }
+    });
+
+    roomIdInput.addEventListener('paste', () => {
+        window.setTimeout(() => {
+            if (roomSelection.hidden) {
+                return;
+            }
+            if (roomIdInput.value.trim()) {
+                joinRoomByInput();
+            }
+        }, 0);
     });
 
     refreshRoomListBtn.addEventListener('click', () => {
@@ -1114,7 +1137,7 @@
                     <span>${escapeHtml(formatGameStateLabel(room.gameState))} | Nguoi choi: ${room.playerCount || 0} | Nguoi xem: ${room.spectatorCount || 0}</span>
                 </div>
                 <div class="quiz-room-actions">
-                    <button class="hub-portal-action__icon" data-join="${escapeHtml(room.id)}" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
+                    <button class="hub-portal-action__icon" data-join="${escapeHtml(room.id)}" title="Vao ngay"><i class="bi bi-arrow-right"></i></button>
                     <button class="hub-portal-action__icon" data-spectate="${escapeHtml(room.id)}" title="Xem tran"><i class="bi bi-eye"></i></button>
                 </div>
             `;

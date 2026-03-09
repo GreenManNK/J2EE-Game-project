@@ -90,6 +90,13 @@
         joinRoomByInput();
       }
     });
+    els.roomInput?.addEventListener('paste', () => {
+      window.setTimeout(() => {
+        if (String(els.roomInput?.value || '').trim()) {
+          joinRoomByInput();
+        }
+      }, 0);
+    });
   }
 
   function initClient() {
@@ -359,7 +366,7 @@
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'btn btn-sm theme-outline-btn tl-room-item__btn';
-      btn.textContent = 'Vao';
+      btn.textContent = 'Vao ngay';
       btn.addEventListener('click', () => {
         if (els.roomInput) {
           els.roomInput.value = room.roomId || '';

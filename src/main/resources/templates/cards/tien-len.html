@@ -21,16 +21,17 @@
         <div class="d-flex flex-wrap gap-2 align-items-end">
           <div class="flex-grow-1 tl-room-input-min">
             <label for="tlRoomIdInput" class="form-label theme-text mb-1">Ma phong</label>
-            <input id="tlRoomIdInput" type="text" class="form-control" placeholder="VD: room-123"
+            <input id="tlRoomIdInput" type="text" class="form-control" placeholder="Nhap hoac dan ma phong de vao ngay"
                    th:value="${defaultRoomId}">
           </div>
-          <button id="tlJoinBtn" type="button" class="btn theme-outline-btn">Vao phong</button>
+          <button id="tlJoinBtn" type="button" class="btn theme-outline-btn">Vao ngay</button>
           <button id="tlStartBtn" type="button" class="btn theme-outline-btn" disabled>Bat dau (du 4 nguoi)</button>
           <button id="tlSurrenderBtn" type="button" class="btn btn-outline-warning" disabled>Dau hang</button>
           <button id="tlLeaveBtn" type="button" class="btn btn-outline-danger" disabled>Roi phong</button>
           <a th:href="@{/online-hub(game='cards')}" class="btn theme-outline-btn">Mo sanh phong</a>
           <a th:href="@{/games/cards}" class="btn theme-outline-btn">Ve trang che do</a>
         </div>
+        <div class="small text-muted mt-2">Nhan Enter hoac dan ma phong de vao tran ngay.</div>
 
         <div class="mt-3 d-flex flex-wrap gap-3 small align-items-center">
           <div class="tl-self-summary">

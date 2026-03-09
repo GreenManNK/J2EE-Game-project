@@ -73,13 +73,8 @@
       }
       setRoomQueryInUrl(nextRoomId);
       syncRoomUi();
-      if (state.onlineSupportedNow && hasPlayTarget()) {
-        const target = buildPlayUrl(nextRoomId, false);
-        if (target) {
-          setStatus('Dang vao phong ' + nextRoomId + ' ...');
-          window.location.href = target;
-          return;
-        }
+      if (enterRoom(nextRoomId)) {
+        return;
       }
       setStatus(created?.serverCreated
         ? ('Da tao phong moi: ' + nextRoomId)
@@ -88,6 +83,9 @@
 
     els.joinBtn?.addEventListener('click', () => {
       const roomId = normalizeRoomId(els.roomInput?.value);
+      if (enterRoom(roomId)) {
+        return;
+      }
       if (!roomId) {
         setStatus('Vui long nhap ma phong');
         return;
@@ -96,24 +94,14 @@
       if (isRoomFull(selectedRoomRow()) && state.supportsSpectateNow) {
         setStatus('Phong da day. Bam "Vao che do xem" de theo doi tran dau.');
       } else {
-        setStatus('Da chon phong ' + roomId);
+        setStatus('Da dien ma phong ' + roomId);
       }
       setRoomQueryInUrl(roomId);
       syncRoomUi();
     });
 
     els.goPlayBtn?.addEventListener('click', () => {
-      if (!state.roomId || !state.onlineSupportedNow || !hasPlayTarget()) {
-        return;
-      }
-      if (isRoomFull(selectedRoomRow()) && state.supportsSpectateNow) {
-        setStatus('Phong da day. Hay vao che do xem.');
-        return;
-      }
-      const target = buildPlayUrl(state.roomId, false);
-      if (target) {
-        window.location.href = target;
-      }
+      enterRoom(state.roomId);
     });
 
     els.goSpectateBtn?.addEventListener('click', () => {
@@ -166,6 +154,13 @@
         e.preventDefault();
         els.joinBtn?.click();
       }
+    });
+    els.roomInput?.addEventListener('paste', () => {
+      window.setTimeout(() => {
+        if (normalizeRoomId(els.roomInput?.value)) {
+          els.joinBtn?.click();
+        }
+      }, 0);
     });
   }
 
@@ -249,14 +244,14 @@
       const chooseBtn = document.createElement('button');
       chooseBtn.type = 'button';
       chooseBtn.className = 'btn btn-sm theme-outline-btn';
-      chooseBtn.textContent = 'Chon phong';
+      chooseBtn.textContent = 'Dien ma';
       chooseBtn.addEventListener('click', () => {
         state.roomId = roomId;
         if (els.roomInput) els.roomInput.value = roomId;
         if (roomFull && state.supportsSpectateNow) {
           setStatus('Phong da day. Bam "Vao che do xem" de theo doi tran dau.');
         } else {
-          setStatus('Da chon phong ' + roomId);
+          setStatus('Da dien ma phong ' + roomId);
         }
         setRoomQueryInUrl(roomId);
         syncRoomUi();
@@ -266,16 +261,10 @@
       playBtn.type = 'button';
       playBtn.className = 'btn btn-sm theme-outline-btn';
       const roomFull = playerLimit > 0 && playerCount >= playerLimit;
-      playBtn.textContent = state.onlineSupportedNow ? (roomFull ? 'Phong day' : 'Vao ban') : 'Moi nguoi choi';
+      playBtn.textContent = state.onlineSupportedNow ? (roomFull ? 'Phong day' : 'Vao ngay') : 'Moi nguoi choi';
       playBtn.disabled = !roomId || (roomFull && state.supportsSpectateNow);
       playBtn.addEventListener('click', () => {
-        state.roomId = roomId;
-        if (els.roomInput) els.roomInput.value = roomId;
-        setRoomQueryInUrl(roomId);
-        syncRoomUi();
-        if (state.onlineSupportedNow && state.playUrlBase) {
-          els.goPlayBtn?.click();
-        }
+        enterRoom(roomId);
       });
 
       const spectateBtn = document.createElement('button');
@@ -345,7 +334,7 @@
       } else if (selectedRoomFull && state.supportsSpectateNow) {
         els.goPlayBtn.textContent = 'Phong day - hay vao xem';
       } else {
-        els.goPlayBtn.textContent = 'Vao ban choi';
+        els.goPlayBtn.textContent = 'Vao ngay';
       }
     }
     if (els.goSpectateBtn) {
@@ -396,6 +385,33 @@
     } catch (_) {
       return null;
     }
+  }
+
+  function enterRoom(roomId) {
+    const normalizedRoomId = normalizeRoomId(roomId);
+    if (!normalizedRoomId) {
+      return false;
+    }
+    state.roomId = normalizedRoomId;
+    if (els.roomInput) {
+      els.roomInput.value = normalizedRoomId;
+    }
+    setRoomQueryInUrl(normalizedRoomId);
+    syncRoomUi();
+    if (!state.onlineSupportedNow || !hasPlayTarget()) {
+      return false;
+    }
+    if (isRoomFull(selectedRoomRow()) && state.supportsSpectateNow) {
+      setStatus('Phong da day. Hay vao che do xem.');
+      return false;
+    }
+    const target = buildPlayUrl(normalizedRoomId, false);
+    if (!target) {
+      return false;
+    }
+    setStatus('Dang vao phong ' + normalizedRoomId + ' ...');
+    window.location.href = target;
+    return true;
   }
 
   function buildPlayUrl(roomId, spectateMode) {
