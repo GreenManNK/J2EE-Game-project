@@ -22,10 +22,14 @@ public class RawWebSocketConfig implements WebSocketConfigurer {
     @Autowired
     private TypingSocket typingSocket;
 
+    @Autowired
+    private WebSocketAllowedOriginResolver allowedOriginResolver;
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(quizSocket, "/game/quiz").setAllowedOrigins("*");
-        registry.addHandler(blackjackSocket, "/game/blackjack").setAllowedOrigins("*");
-        registry.addHandler(typingSocket, "/game/typing").setAllowedOrigins("*");
+        String[] origins = allowedOriginResolver.resolve();
+        registry.addHandler(quizSocket, "/game/quiz").setAllowedOriginPatterns(origins);
+        registry.addHandler(blackjackSocket, "/game/blackjack").setAllowedOriginPatterns(origins);
+        registry.addHandler(typingSocket, "/game/typing").setAllowedOriginPatterns(origins);
     }
 }

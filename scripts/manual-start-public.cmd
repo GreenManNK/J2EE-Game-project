@@ -2,10 +2,35 @@
 setlocal
 pushd "%~dp0\.."
 
+set "PS_EXTRA_ARGS=-AutoBuild"
+set "SHOULD_PAUSE=1"
+
+:parse_args
+if "%~1"=="" goto args_done
+if /I "%~1"=="--named" (
+  set "PS_EXTRA_ARGS=%PS_EXTRA_ARGS% -TunnelMode named"
+  shift
+  goto parse_args
+)
+if /I "%~1"=="--vpn" (
+  set "PS_EXTRA_ARGS=%PS_EXTRA_ARGS% -TunnelMode named"
+  shift
+  goto parse_args
+)
+if /I "%~1"=="--no-pause" (
+  set "SHOULD_PAUSE=0"
+  shift
+  goto parse_args
+)
+shift
+goto parse_args
+
+:args_done
+
 echo [1/1] Dang chay app + public tunnel auto (uu tien named tunnel, fallback quick)...
 echo Mac dinh se AutoBuild de luon lay giao dien/chuc nang moi nhat.
 echo Vui long doi script in ra dong PUBLIC_GAME_URL=...
-powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\start-remote-public-session.ps1" -AutoBuild
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\start-remote-public-session.ps1" %PS_EXTRA_ARGS%
 set "RC=%ERRORLEVEL%"
 
 echo.
@@ -54,5 +79,5 @@ if not "%RC%"=="0" (
 )
 
 popd
-if /I not "%~1"=="--no-pause" pause
+if "%SHOULD_PAUSE%"=="1" pause
 exit /b %RC%

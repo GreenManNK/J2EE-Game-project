@@ -22,12 +22,14 @@ Muc tieu: cho phep nguoi choi o mang khac / du lieu di dong truy cap on dinh, kh
 - Dien:
   - `CLOUDFLARE_TUNNEL_TOKEN`
   - `PUBLIC_BASE_URL` (vi du `https://game.example.com`)
-  - `WS_ALLOWED_ORIGINS` (trung domain public)
   - thong tin MySQL (`LARAGON_DB_*`)
 
 Luu y:
 - Khong dung profile `test` cho production vi du lieu H2 se mat khi restart
 - Profile `prod` da tat rang buoc canonical URL noi bo `J2EE`
+- App se tu dong them origin public tu `PUBLIC_BASE_URL`/`PUBLIC_GAME_URL` vao whitelist WebSocket.
+- `WS_ALLOWED_ORIGINS` chi can khi muon override danh sach mac dinh.
+- `APP_WEBSOCKET_EXTRA_ORIGINS` dung khi can bo sung them origin dac biet.
 
 ## 2) Build JAR production
 
@@ -76,6 +78,32 @@ powershell -ExecutionPolicy Bypass -File .\scripts\stop-cloudflare-named-tunnel.
 
 - `https://game.example.com/Game`
 
+## 5.2) Khi mot hay nhieu may dang bat VPN
+
+De 3 tinh huong sau cung hoat dong:
+
+1. May chu khong bat VPN, may nguoi choi bat VPN
+2. May chu bat VPN, may nguoi choi khong bat VPN
+3. Tat ca may deu bat VPN
+
+can dung chung mot `PUBLIC_GAME_URL`/domain public, khong dung:
+
+- `http://J2EE/Game`
+- IP LAN noi bo
+- link local `127.0.0.1`
+
+Ly do:
+
+- VPN thuong doi route/DNS cua tung may
+- LAN host/IP co the mat khi hai may khong cung mang
+- tunnel/domain public giu cho moi may mot duong truy cap giong nhau ra Internet
+
+Khuyen nghi van hanh:
+
+- uu tien `Cloudflare Named Tunnel` + `PUBLIC_BASE_URL` co dinh
+- neu VPN chan `*.trycloudflare.com`, tranh quick tunnel; dung named tunnel hoac provider fallback/domain rieng
+- neu can them origin dac biet cho WebSocket, dat `APP_WEBSOCKET_EXTRA_ORIGINS`
+
 ## 5.1) Chay nhanh bang script tong (uu tien named tunnel)
 
 Khi da dien `CLOUDFLARE_TUNNEL_TOKEN` + `PUBLIC_BASE_URL` trong `.env.public.local`, chi can:
@@ -87,6 +115,20 @@ cmd /c scripts\manual-start-public.cmd --no-pause
 Script se:
 - uu tien chay named tunnel (domain co dinh)
 - neu chua du cau hinh thi moi fallback quick tunnel
+
+Neu muon ep dung mode phu hop cho VPN/public on dinh, dung script hien co voi co `--named`:
+
+```cmd
+cmd /c scripts\manual-start-public.cmd --named --no-pause
+```
+
+hoac wrapper:
+
+```cmd
+cmd /c scripts\entrypoints\RUN_PUBLIC.cmd --named --no-pause
+```
+
+Mode nay chi chap nhan `named tunnel`, khong fallback quick tunnel.
 
 ## 6) Van hanh 24/7 (khuyen nghi)
 
