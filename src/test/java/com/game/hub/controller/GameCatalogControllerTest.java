@@ -1,9 +1,18 @@
 package com.game.hub.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.game.hub.service.ExternalGameModuleConfig;
+import com.game.hub.service.ExternalGameModuleService;
 import com.game.hub.service.GameCatalogService;
 import org.junit.jupiter.api.Test;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.net.http.HttpClient;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -47,5 +56,47 @@ class GameCatalogControllerTest {
         assertEquals("games/quiz", controller.detail("quiz", new ConcurrentModel()));
         assertEquals("games/typing", controller.detail("typing", new ConcurrentModel()));
         assertEquals("games/puzzle/index", controller.detail("puzzle", new ConcurrentModel()));
+    }
+
+    @Test
+    void detailShouldRenderExternalTemplateForImportedModule() throws Exception {
+        Path registryFile = Files.createTempFile("external-module-controller", ".json");
+        ExternalGameModuleService externalService = new ExternalGameModuleService(
+            new ObjectMapper(),
+            registryFile,
+            Duration.ofSeconds(5),
+            Duration.ofSeconds(5),
+            HttpClient.newHttpClient()
+        );
+        externalService.upsertModules(List.of(
+            new ExternalGameModuleConfig(
+                "go-racer",
+                "Go Racer",
+                "Go Racer",
+                "Game module viet bang Go.",
+                "bi-controller",
+                true,
+                true,
+                false,
+                true,
+                "Mo Go Racer",
+                "https://go.example.com/play",
+                List.of("Gateway API co san"),
+                "external-module",
+                "go",
+                "redirect",
+                "",
+                "https://go.example.com/api",
+                "https://go.example.com/manifest.json",
+                false
+            )
+        ), false);
+        GameCatalogController controller = new GameCatalogController(new GameCatalogService(externalService));
+
+        ConcurrentModel model = new ConcurrentModel();
+        String view = controller.detail("go-racer", model);
+
+        assertEquals("games/external-detail", view);
+        assertNotNull(model.getAttribute("game"));
     }
 }

@@ -83,8 +83,13 @@
           <p th:text="${g.description}">Mo ta game</p>
           <div class="cg-tile-actions">
             <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
-            <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
+            <a th:if="${g.hasPrimaryAction() and !g.primaryActionIsExternal()}"
                th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary">Choi</a>
+            <a th:if="${g.hasPrimaryAction() and g.primaryActionIsExternal()}"
+               th:href="${g.primaryActionUrl}"
+               target="_blank"
+               rel="noopener"
                class="hub-portal-inline-btn primary">Choi</a>
             <button type="button"
                     class="hub-portal-inline-btn js-favorite-toggle"
@@ -116,8 +121,13 @@
           <p th:text="${g.description}">Mo ta game</p>
           <div class="cg-tile-actions">
             <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
-            <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
+            <a th:if="${g.hasPrimaryAction() and !g.primaryActionIsExternal()}"
                th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary">Choi</a>
+            <a th:if="${g.hasPrimaryAction() and g.primaryActionIsExternal()}"
+               th:href="${g.primaryActionUrl}"
+               target="_blank"
+               rel="noopener"
                class="hub-portal-inline-btn primary">Choi</a>
             <button type="button"
                     class="hub-portal-inline-btn js-favorite-toggle"
@@ -149,8 +159,13 @@
           <p th:text="${g.description}">Mo ta game</p>
           <div class="cg-tile-actions">
             <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
-            <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
+            <a th:if="${g.hasPrimaryAction() and !g.primaryActionIsExternal()}"
                th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary">Choi</a>
+            <a th:if="${g.hasPrimaryAction() and g.primaryActionIsExternal()}"
+               th:href="${g.primaryActionUrl}"
+               target="_blank"
+               rel="noopener"
                class="hub-portal-inline-btn primary">Choi</a>
             <button type="button"
                     class="hub-portal-inline-btn js-favorite-toggle"
@@ -182,8 +197,13 @@
           <p th:text="${g.description}">Mo ta game</p>
           <div class="cg-tile-actions">
             <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
-            <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
+            <a th:if="${g.hasPrimaryAction() and !g.primaryActionIsExternal()}"
                th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary">Choi</a>
+            <a th:if="${g.hasPrimaryAction() and g.primaryActionIsExternal()}"
+               th:href="${g.primaryActionUrl}"
+               target="_blank"
+               rel="noopener"
                class="hub-portal-inline-btn primary">Choi</a>
             <button type="button"
                     class="hub-portal-inline-btn js-favorite-toggle"

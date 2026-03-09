@@ -352,7 +352,14 @@ public class OnlineHubController {
     private GameCatalogItem resolveGameItem(String game) {
         String normalizedGame = game == null ? "" : game.trim();
         String requestedGame = normalizedGame.isEmpty() ? DEFAULT_GAME_CODE : normalizedGame;
-        return gameCatalogService.findByCode(requestedGame)
+        GameCatalogItem item = gameCatalogService.findByCode(requestedGame)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
+        if (item.isExternalSource()) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "External game module uses its own module page or external API gateway"
+            );
+        }
+        return item;
     }
 }

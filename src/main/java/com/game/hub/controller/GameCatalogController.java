@@ -40,6 +40,9 @@ public class GameCatalogController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
         model.addAttribute("game", game);
         model.addAttribute("allGames", gameCatalogService.findAll());
+        if (game.usesExternalDetailView()) {
+            return "games/external-detail";
+        }
         return switch (game.code()) {
             case "caro" -> "games/caro";
             case "chess" -> "games/chess";

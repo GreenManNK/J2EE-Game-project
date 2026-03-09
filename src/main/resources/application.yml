@@ -72,6 +72,10 @@ app:
     avatar-dir: ${APP_UPLOAD_AVATAR_DIR:${APP_UPLOAD_ROOT:uploads}/avatars}
   websocket:
     allowed-origin-patterns: ${WS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*,http://j2ee,https://*.trycloudflare.com,http://*.trycloudflare.com,https://*.runlocal.eu,http://*.runlocal.eu,https://*.loca.lt,http://*.loca.lt,https://*.localtunnel.me,http://*.localtunnel.me}
+  game-modules:
+    external-registry-path: ${APP_EXTERNAL_GAME_MODULES_FILE:config/external-game-modules.json}
+    import-timeout-seconds: ${APP_EXTERNAL_GAME_MODULES_IMPORT_TIMEOUT:10}
+    proxy-timeout-seconds: ${APP_EXTERNAL_GAME_MODULES_PROXY_TIMEOUT:20}
   tienlen:
     automation:
       auto-fill-wait-ms: ${TIENLEN_AUTO_FILL_WAIT_MS:20000}

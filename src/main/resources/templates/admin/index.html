@@ -17,6 +17,7 @@
       </div>
       <div class="gx-inline-actions">
         <span class="gx-page-badge"><i class="bi bi-people-fill"></i><span id="adminCenterUserCount">0 tai khoan</span></span>
+        <span class="gx-page-badge"><i class="bi bi-boxes"></i><span id="adminCenterModuleCount">0 module</span></span>
         <span class="gx-page-badge"><i class="bi bi-bell-fill"></i><span id="adminCenterNoticeCount">0 thong bao</span></span>
         <span class="gx-page-badge"><i class="bi bi-activity"></i><span id="adminCenterLogCount">0 log</span></span>
       </div>
@@ -114,6 +115,214 @@
         </thead>
         <tbody id="adminUsersTableBody">
         <tr><td colspan="7" class="text-center text-muted">Dang tai...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="theme-box rounded p-3 mb-3 gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Quan ly module game ngoai</h2>
+      <div class="gx-section-card__meta">Chi Admin moi duoc them, sua, xoa module va API gateway.</div>
+    </div>
+
+    <div class="row g-2 align-items-end">
+      <div class="col-lg-8">
+        <label class="form-label" for="adminGameModuleManifestUrl">Manifest URL</label>
+        <input id="adminGameModuleManifestUrl"
+               class="form-control"
+               placeholder="https://games.example.com/module/manifest.json">
+      </div>
+      <div class="col-lg-2 d-grid">
+        <button id="adminGameModuleImportUrlBtn" type="button" class="btn btn-primary">Nhap tu URL</button>
+      </div>
+      <div class="col-lg-2 d-grid">
+        <button id="adminGameModulePreviewUrlBtn" type="button" class="btn theme-outline-btn">Xem truoc URL</button>
+      </div>
+      <div class="col-12">
+        <div id="adminGameModulesStatus" class="small mb-0 theme-text" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="row g-2 align-items-end mt-2">
+      <div class="col-lg-4">
+        <div class="form-check">
+          <input id="adminGameModuleReplaceAll" class="form-check-input" type="checkbox">
+          <label class="form-check-label" for="adminGameModuleReplaceAll">Thay toan bo registry khi nhap preview</label>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <label class="form-label" for="adminGameModulePreviewOverridePolicy">Xu ly module trung code</label>
+        <select id="adminGameModulePreviewOverridePolicy" class="form-select">
+          <option value="keep" selected>Giu theo module / manifest</option>
+          <option value="force-on">Bat override cho tat ca</option>
+          <option value="force-off">Tat override cho tat ca</option>
+        </select>
+      </div>
+      <div class="col-lg-4">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <div class="small text-muted">Ap dung cho `Nhap tu URL` va `Nhap toan bo preview`.</div>
+          <a class="btn btn-sm theme-outline-btn" th:href="@{/admin/game-modules/api/export}">Tai backup registry</a>
+        </div>
+      </div>
+    </div>
+
+    <form id="adminGameModuleForm" class="row g-2 align-items-end mt-2">
+      <div class="col-md-2">
+        <label class="form-label" for="adminGameModuleCode">Code</label>
+        <input id="adminGameModuleCode" class="form-control" placeholder="python-blast" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="adminGameModuleDisplayName">Ten hien thi</label>
+        <input id="adminGameModuleDisplayName" class="form-control" placeholder="Python Blast" required>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="adminGameModuleShortLabel">Nhan ngan</label>
+        <input id="adminGameModuleShortLabel" class="form-control" placeholder="Py Blast">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="adminGameModuleRuntime">Runtime</label>
+        <input id="adminGameModuleRuntime" class="form-control" placeholder="python">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="adminGameModuleIconClass">Icon class</label>
+        <input id="adminGameModuleIconClass" class="form-control" placeholder="bi-controller">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label" for="adminGameModuleSourceType">Loai nguon</label>
+        <select id="adminGameModuleSourceType" class="form-select">
+          <option value="external-module" selected>External module</option>
+          <option value="external-api">External API</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="adminGameModuleDetailMode">Kieu detail</label>
+        <select id="adminGameModuleDetailMode" class="form-select">
+          <option value="redirect" selected>Redirect</option>
+          <option value="embed">Embed iframe</option>
+          <option value="api">API gateway</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="adminGameModulePrimaryActionLabel">Nhan nut chinh</label>
+        <input id="adminGameModulePrimaryActionLabel" class="form-control" placeholder="Mo module">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="adminGameModuleManifestUrlField">Manifest goc</label>
+        <input id="adminGameModuleManifestUrlField"
+               class="form-control"
+               placeholder="https://games.example.com/module/manifest.json">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label" for="adminGameModulePrimaryActionUrl">Primary action URL</label>
+        <input id="adminGameModulePrimaryActionUrl"
+               class="form-control"
+               placeholder="https://games.example.com/module">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="adminGameModuleEmbedUrl">Embed URL</label>
+        <input id="adminGameModuleEmbedUrl"
+               class="form-control"
+               placeholder="https://games.example.com/module/embed">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="adminGameModuleApiBaseUrl">API base URL</label>
+        <input id="adminGameModuleApiBaseUrl"
+               class="form-control"
+               placeholder="https://api.example.com/module">
+      </div>
+
+      <div class="col-12">
+        <label class="form-label" for="adminGameModuleDescription">Mo ta</label>
+        <textarea id="adminGameModuleDescription"
+                  class="form-control"
+                  rows="2"
+                  placeholder="Mo ta module game ngoai hoac API game ngoai"></textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="adminGameModuleRoadmap">Roadmap / ghi chu (moi dong mot muc)</label>
+        <textarea id="adminGameModuleRoadmap"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Frontend nhung qua iframe&#10;API goi qua gateway cung domain"></textarea>
+      </div>
+
+      <div class="col-12 d-flex flex-wrap gap-3">
+        <div class="form-check">
+          <input id="adminGameModuleAvailableNow" class="form-check-input" type="checkbox" checked>
+          <label class="form-check-label" for="adminGameModuleAvailableNow">San sang ngay</label>
+        </div>
+        <div class="form-check">
+          <input id="adminGameModuleSupportsOnline" class="form-check-input" type="checkbox">
+          <label class="form-check-label" for="adminGameModuleSupportsOnline">Co online</label>
+        </div>
+        <div class="form-check">
+          <input id="adminGameModuleSupportsOffline" class="form-check-input" type="checkbox">
+          <label class="form-check-label" for="adminGameModuleSupportsOffline">Co cung may</label>
+        </div>
+        <div class="form-check">
+          <input id="adminGameModuleSupportsGuest" class="form-check-input" type="checkbox" checked>
+          <label class="form-check-label" for="adminGameModuleSupportsGuest">Khach duoc choi</label>
+        </div>
+        <div class="form-check">
+          <input id="adminGameModuleOverrideExisting" class="form-check-input" type="checkbox">
+          <label class="form-check-label" for="adminGameModuleOverrideExisting">Ghi de game native trung code</label>
+        </div>
+      </div>
+
+      <div class="col-12 d-flex flex-wrap gap-2">
+        <button type="submit" class="btn btn-primary">Luu module</button>
+        <button id="adminGameModulePreviewBtn" type="button" class="btn theme-outline-btn">Kiem tra form</button>
+        <button id="adminGameModuleResetBtn" type="button" class="btn theme-outline-btn">Lam moi form</button>
+      </div>
+    </form>
+
+    <div class="theme-box rounded p-3 mt-3">
+      <div class="gx-section-card__head">
+        <h3 class="gx-section-card__title theme-text mb-0">Preview manifest / module</h3>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <div id="adminGameModulePreviewMeta" class="gx-section-card__meta">Chua co du lieu preview.</div>
+          <button id="adminGameModuleImportPreviewBtn" type="button" class="btn btn-sm btn-primary">Nhap toan bo preview</button>
+          <button id="adminGameModuleClearPreviewBtn" type="button" class="btn btn-sm theme-outline-btn">Xoa preview</button>
+        </div>
+      </div>
+      <div id="adminGameModulePreviewSummary" class="small text-muted mt-2">Chua co ke hoach import.</div>
+      <div class="table-responsive mt-2">
+        <table class="table table-bordered table-hover align-middle mb-0">
+          <thead>
+          <tr class="theme-table-header">
+            <th>Code</th>
+            <th>Ten</th>
+            <th>Nguon</th>
+            <th>Action</th>
+            <th>Trang thai</th>
+            <th>Tac dong</th>
+            <th>Nap form</th>
+          </tr>
+          </thead>
+          <tbody id="adminGameModulePreviewTableBody">
+          <tr><td colspan="7" class="text-center text-muted">Chua co du lieu preview.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-responsive mt-3">
+      <table class="table table-bordered table-hover align-middle mb-0">
+        <thead>
+        <tr class="theme-table-header">
+          <th>Code</th>
+          <th>Ten</th>
+          <th>Nguon / Runtime</th>
+          <th>Action / API</th>
+          <th>Trang thai</th>
+          <th>Thao tac</th>
+        </tr>
+        </thead>
+        <tbody id="adminGameModulesTableBody">
+        <tr><td colspan="6" class="text-center text-muted">Dang tai...</td></tr>
         </tbody>
       </table>
     </div>

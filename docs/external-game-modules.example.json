@@ -1,0 +1,51 @@
+{
+  "modules": [
+    {
+      "code": "python-blast",
+      "displayName": "Python Blast",
+      "shortLabel": "Py Blast",
+      "description": "Game module viet bang Python.",
+      "iconClass": "bi-rocket-takeoff-fill",
+      "availableNow": true,
+      "supportsOnline": true,
+      "supportsOffline": false,
+      "supportsGuest": true,
+      "primaryActionLabel": "Mo module Python",
+      "primaryActionUrl": "https://games.example.com/python-blast",
+      "roadmapItems": [
+        "Frontend nhung qua iframe",
+        "API di qua gateway cung domain"
+      ],
+      "sourceType": "external-module",
+      "runtime": "python",
+      "detailMode": "embed",
+      "embedUrl": "https://games.example.com/python-blast/embed",
+      "apiBaseUrl": "https://api.example.com/python-blast",
+      "manifestUrl": "https://games.example.com/python-blast/manifest.json",
+      "overrideExisting": false
+    },
+    {
+      "code": "ludo-api",
+      "displayName": "Ludo API",
+      "shortLabel": "Ludo",
+      "description": "API game ngoai chi cap room va gameplay qua HTTP.",
+      "iconClass": "bi-diagram-3-fill",
+      "availableNow": true,
+      "supportsOnline": true,
+      "supportsOffline": false,
+      "supportsGuest": true,
+      "primaryActionLabel": "",
+      "primaryActionUrl": "",
+      "roadmapItems": [
+        "Frontend se goi qua /games/external/ludo-api/api"
+      ],
+      "sourceType": "external-api",
+      "runtime": "nodejs",
+      "detailMode": "api",
+      "embedUrl": "",
+      "apiBaseUrl": "https://api.example.com/ludo",
+      "manifestUrl": "https://api.example.com/ludo/manifest.json",
+      "overrideExisting": false
+    }
+  ]
+}

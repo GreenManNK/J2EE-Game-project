@@ -1,21 +1,57 @@
 package com.game.hub.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 public class GameCatalogService {
-    private final List<GameCatalogItem> items;
-    private final Map<String, GameCatalogItem> byCode;
+    private final ExternalGameModuleService externalGameModuleService;
 
     public GameCatalogService() {
-        this.items = List.of(
+        this.externalGameModuleService = null;
+    }
+
+    @Autowired
+    public GameCatalogService(ExternalGameModuleService externalGameModuleService) {
+        this.externalGameModuleService = externalGameModuleService;
+    }
+
+    public List<GameCatalogItem> findAll() {
+        LinkedHashMap<String, GameCatalogItem> merged = new LinkedHashMap<>();
+        nativeItems().forEach(item -> merged.put(normalize(item.code()), item));
+        externalItems().forEach(item -> {
+            String key = normalize(item.code());
+            if (key.isBlank()) {
+                return;
+            }
+            if (item.overrideExisting() || !merged.containsKey(key)) {
+                merged.put(key, item);
+            }
+        });
+        return List.copyOf(merged.values());
+    }
+
+    public Optional<GameCatalogItem> findByCode(String code) {
+        return findAll().stream()
+            .filter(item -> normalize(item.code()).equals(normalize(code)))
+            .findFirst();
+    }
+
+    private List<GameCatalogItem> externalItems() {
+        if (externalGameModuleService == null) {
+            return List.of();
+        }
+        return externalGameModuleService.listCatalogItems();
+    }
+
+    private List<GameCatalogItem> nativeItems() {
+        return List.of(
             new GameCatalogItem(
                 "caro",
                 "Caro",
@@ -179,19 +215,6 @@ public class GameCatalogService {
                 )
             )
         );
-        this.byCode = this.items.stream()
-            .collect(Collectors.toUnmodifiableMap(
-                item -> normalize(item.code()),
-                Function.identity()
-            ));
-    }
-
-    public List<GameCatalogItem> findAll() {
-        return items;
-    }
-
-    public Optional<GameCatalogItem> findByCode(String code) {
-        return Optional.ofNullable(byCode.get(normalize(code)));
     }
 
     private String normalize(String value) {

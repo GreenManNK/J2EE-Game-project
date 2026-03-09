@@ -1,7 +1,13 @@
 package com.game.hub.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
+import java.net.http.HttpClient;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -82,5 +88,74 @@ class GameCatalogServiceTest {
         assertTrue(puzzle.supportsOffline());
         assertEquals(false, puzzle.supportsOnline());
         assertEquals("/games/puzzle", puzzle.primaryActionUrl());
+    }
+
+    @Test
+    void shouldMergeExternalModulesAndAllowOverride() throws Exception {
+        Path registryFile = Files.createTempFile("external-game-modules", ".json");
+        ExternalGameModuleService externalService = new ExternalGameModuleService(
+            new ObjectMapper(),
+            registryFile,
+            Duration.ofSeconds(5),
+            Duration.ofSeconds(5),
+            HttpClient.newHttpClient()
+        );
+        externalService.upsertModules(List.of(
+            new ExternalGameModuleConfig(
+                "python-blast",
+                "Python Blast",
+                "Py Blast",
+                "Game module viet bang Python.",
+                "bi-rocket-takeoff-fill",
+                true,
+                true,
+                false,
+                true,
+                "Mo module Python",
+                "https://python.example.com/play",
+                List.of("Embed + API"),
+                "external-module",
+                "python",
+                "redirect",
+                "",
+                "https://python.example.com/api",
+                "https://python.example.com/manifest.json",
+                false
+            ),
+            new ExternalGameModuleConfig(
+                "quiz",
+                "Quiz API Python",
+                "Quiz Py",
+                "Ghi de game quiz bang module ngoai.",
+                "bi-patch-question-fill",
+                true,
+                true,
+                false,
+                true,
+                "Mo quiz ngoai",
+                "https://python.example.com/quiz",
+                List.of("Override native quiz"),
+                "external-api",
+                "python",
+                "redirect",
+                "",
+                "https://python.example.com/quiz-api",
+                "https://python.example.com/manifest.json",
+                true
+            )
+        ), false);
+
+        GameCatalogService service = new GameCatalogService(externalService);
+
+        var externalModule = service.findByCode("python-blast").orElseThrow();
+        assertTrue(externalModule.isExternalSource());
+        assertEquals("python", externalModule.runtime());
+        assertEquals("https://python.example.com/play", externalModule.primaryActionUrl());
+        assertEquals("https://python.example.com/api", externalModule.apiBaseUrl());
+
+        var overriddenQuiz = service.findByCode("quiz").orElseThrow();
+        assertTrue(overriddenQuiz.isExternalSource());
+        assertEquals("Quiz API Python", overriddenQuiz.displayName());
+        assertEquals("https://python.example.com/quiz", overriddenQuiz.primaryActionUrl());
     }
 }
