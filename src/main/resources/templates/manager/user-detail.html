@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Manager User Detail')}"></head>
+<head th:replace="~{fragments :: appHead('Chi tiet tai khoan manager')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('manager-user-detail')}"></div>
 
@@ -10,10 +10,10 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-person-lines-fill"></i>
-          <span>Manager / User Detail</span>
+          <span>Quan ly / Chi tiet tai khoan</span>
         </div>
-        <h1 class="gx-page-title theme-text mt-2">Manager - User Detail</h1>
-        <p class="gx-page-subtitle">Cap nhat thong tin co ban, diem so va thao tac ban/unban user.</p>
+        <h1 class="gx-page-title theme-text mt-2">Quan ly - Chi tiet tai khoan</h1>
+        <p class="gx-page-subtitle">Cap nhat thong tin co ban, diem so va thao tac khoa/mo khoa tai khoan.</p>
       </div>
       <div class="gx-page-badge">
         <i class="bi bi-person-badge"></i>
@@ -23,58 +23,58 @@
     <div class="profile-summary-grid">
       <div class="profile-summary-item"><small>ID</small><strong th:text="${user.id}">0</strong></div>
       <div class="profile-summary-item"><small>Email</small><strong th:text="${user.email}">email@example.com</strong></div>
-      <div class="profile-summary-item"><small>Name</small><strong th:text="${user.displayName}">User</strong></div>
-      <div class="profile-summary-item"><small>Score</small><strong th:text="${user.score}">0</strong></div>
-      <div class="profile-summary-item"><small>Role</small><strong th:text="${user.role}">User</strong></div>
-      <div class="profile-summary-item"><small>Banned Until</small><strong th:text="${user.bannedUntil} ?: '-'">-</strong></div>
+      <div class="profile-summary-item"><small>Ten hien thi</small><strong th:text="${user.displayName}">Nguoi choi</strong></div>
+      <div class="profile-summary-item"><small>Diem</small><strong th:text="${user.score}">0</strong></div>
+      <div class="profile-summary-item"><small>Quyen</small><strong th:text="${user.role == 'Admin' ? 'Quan tri' : (user.role == 'Manager' ? 'Quan ly' : 'Nguoi choi')}">Nguoi choi</strong></div>
+      <div class="profile-summary-item"><small>Khoa den</small><strong th:text="${user.bannedUntil} ?: '-'">-</strong></div>
     </div>
   </section>
 
   <section class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
       <h2 class="gx-section-card__title theme-text mb-0">Cap nhat nhanh</h2>
-      <div class="gx-section-card__meta">Manager khong duoc doi role</div>
+      <div class="gx-section-card__meta">Quan ly khong duoc doi quyen</div>
     </div>
     <div class="row g-3">
       <div class="col-md-6">
-        <label class="form-label" for="displayName">Name</label>
+        <label class="form-label" for="displayName">Ten hien thi</label>
         <input id="displayName" class="form-control" th:value="${user.displayName}">
       </div>
       <div class="col-md-6">
-        <label class="form-label" for="score">Score</label>
+        <label class="form-label" for="score">Diem</label>
         <input id="score" class="form-control" type="number" th:value="${user.score}">
       </div>
       <div class="col-12">
-        <label class="form-label" for="avatarPath">Avatar Path</label>
+        <label class="form-label" for="avatarPath">Duong dan anh dai dien</label>
         <input id="avatarPath" class="form-control" th:value="${user.avatarPath}">
       </div>
       <div class="col-12">
-        <small class="text-muted">Manager khong duoc thay doi role tai khoan.</small>
+        <small class="text-muted">Quan ly khong duoc thay doi quyen tai khoan.</small>
       </div>
     </div>
-    <button id="saveBtn" type="button" class="btn btn-primary mt-3">Save</button>
+    <button id="saveBtn" type="button" class="btn btn-primary mt-3">Luu</button>
   </section>
 
   <section class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
-      <h2 class="gx-section-card__title theme-text mb-0">Ban / Unban</h2>
-      <div class="gx-section-card__meta">Quan ly truy cap nguoi dung</div>
+      <h2 class="gx-section-card__title theme-text mb-0">Khoa / Mo khoa</h2>
+      <div class="gx-section-card__meta">Quan ly truy cap tai khoan</div>
     </div>
     <div class="row g-2 align-items-end">
       <div class="col-sm-4 col-md-3">
-        <label class="form-label" for="minutes">Minutes</label>
+        <label class="form-label" for="minutes">So phut</label>
         <input id="minutes" class="form-control" type="number" value="60" min="1">
       </div>
       <div class="col-sm-8 col-md-9 d-flex flex-wrap gap-2">
-        <button id="banBtn" type="button" class="btn btn-warning">Ban</button>
-        <button id="unbanBtn" type="button" class="btn btn-outline-success">Unban</button>
+        <button id="banBtn" type="button" class="btn btn-warning">Khoa</button>
+        <button id="unbanBtn" type="button" class="btn btn-outline-success">Mo khoa</button>
       </div>
     </div>
     <div id="out" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
   </section>
 
   <div class="gx-inline-actions">
-    <a class="btn theme-outline-btn" th:href="@{/manager/users}">Back</a>
+    <a class="btn theme-outline-btn" th:href="@{/manager/users}">Quay lai</a>
   </div>
 </main>
 

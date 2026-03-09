@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   const root = document.getElementById('friendshipNotificationsRoot');
   if (!root) return;
 
@@ -24,7 +24,7 @@
   }
 
   function reportError(err) {
-    const message = String(err?.message || err || 'Request failed');
+    const message = String(err?.message || err || 'Yeu cau that bai');
     setStatus(message, false);
     ui.toast?.(message, { type: 'danger' });
   }

@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   const root = document.getElementById('friendshipSearchRoot');
   if (!root) return;
 
@@ -48,7 +48,7 @@
           btn.disabled = false;
         }
       } catch (err) {
-        const message = String(err?.message || err || 'Request failed');
+        const message = String(err?.message || err || 'Yeu cau that bai');
         setStatus(message, false);
         ui.toast?.(message, { type: 'danger' });
         btn.textContent = originalText;

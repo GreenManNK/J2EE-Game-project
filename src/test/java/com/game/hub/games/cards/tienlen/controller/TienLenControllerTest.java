@@ -29,6 +29,23 @@ class TienLenControllerTest {
 
         String view = controller.tienLen("room-a", request, model);
 
+        assertEquals("redirect:/cards/tien-len/room/room-a", view);
+    }
+
+    @Test
+    void shouldRenderTienLenRoomPageAndCreateGuestSessionWhenAnonymous() {
+        UserAccountRepository userRepo = mock(UserAccountRepository.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(null);
+        when(request.getSession(true)).thenReturn(session);
+        when(session.getAttribute("GUEST_USER_ID")).thenReturn(null);
+
+        TienLenController controller = new TienLenController(userRepo);
+        ConcurrentModel model = new ConcurrentModel();
+
+        String view = controller.tienLenRoom("room-a", request, model);
+
         assertEquals("cards/tien-len", view);
         assertEquals("room-a", model.getAttribute("defaultRoomId"));
         assertTrue(String.valueOf(model.getAttribute("sessionUserId")).startsWith("guest-"));

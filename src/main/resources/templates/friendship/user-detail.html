@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('User Detail')}"></head>
+<head th:replace="~{fragments :: appHead('Chi tiet ban be')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('friendship-user-detail')}"></div>
 
@@ -12,21 +12,21 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-person-vcard"></i>
-          <span>Social / User Detail</span>
+          <span>Xa hoi / Chi tiet ban be</span>
         </div>
-        <h1 class="gx-page-title theme-text mt-2">User Detail</h1>
-        <p class="gx-page-subtitle">Xem thong tin co ban, trang thai ket ban va thao tac lien quan voi nguoi dung nay.</p>
+        <h1 class="gx-page-title theme-text mt-2">Chi tiet ban be</h1>
+        <p class="gx-page-subtitle">Xem thong tin co ban, trang thai ket ban va thao tac lien quan voi tai khoan nay.</p>
       </div>
       <div class="gx-page-badge">
         <i class="bi bi-person-circle"></i>
-        <span th:text="${user.displayName}">User</span>
+        <span th:text="${user.displayName}">Nguoi choi</span>
       </div>
     </div>
     <div class="profile-summary-grid">
-      <div class="profile-summary-item"><small>Name</small><strong th:text="${user.displayName}">User</strong></div>
+      <div class="profile-summary-item"><small>Ten hien thi</small><strong th:text="${user.displayName}">Nguoi choi</strong></div>
       <div class="profile-summary-item"><small>Email</small><strong th:text="${user.email}">mail@example.com</strong></div>
-      <div class="profile-summary-item"><small>Score</small><strong th:text="${user.score}">0</strong></div>
-      <div class="profile-summary-item"><small>Friend Status</small><strong>
+      <div class="profile-summary-item"><small>Diem</small><strong th:text="${user.score}">0</strong></div>
+      <div class="profile-summary-item"><small>Trang thai ban be</small><strong>
         <span th:if="${isFriend}">Ban be</span>
         <span th:if="${!isFriend and hasPending}">Dang cho xu ly loi moi</span>
         <span th:if="${!isFriend and !hasPending}">Chua ket ban</span>
@@ -50,8 +50,8 @@
          th:href="@{/profile(userId=${user.id})}">Mo trang ho so cua toi</a>
       <a class="btn theme-outline-btn"
          th:if="${isFriend and currentUserId != null and !#strings.isEmpty(currentUserId)}"
-         th:href="@{/chat/private(currentUserId=${currentUserId},friendId=${user.id})}">Chat rieng</a>
-      <a class="btn btn-outline-secondary" th:href="@{/friendship(currentUserId=${currentUserId})}">Back Friendship</a>
+         th:href="@{/chat/private(currentUserId=${currentUserId},friendId=${user.id})}">Nhan tin rieng</a>
+      <a class="btn btn-outline-secondary" th:href="@{/friendship(currentUserId=${currentUserId})}">Ve trang ban be</a>
     </div>
     <div id="friendshipUserDetailOut" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
   </section>

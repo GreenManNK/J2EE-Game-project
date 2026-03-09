@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Chat Bot')}"></head>
+<head th:replace="~{fragments :: appHead('Tro ly hoi dap')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('chat-bot')}"></div>
 
@@ -10,10 +10,10 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-robot"></i>
-          <span>Assistant / Chat Bot</span>
+          <span>Tro ly / Hoi dap</span>
         </div>
-        <h1 class="gx-page-title theme-text mt-2">Chat Bot</h1>
-        <p class="gx-page-subtitle">Hoi dap nhanh trong game hub. Su dung o day de test cau hoi va luong UI chat co ban.</p>
+        <h1 class="gx-page-title theme-text mt-2">Tro ly hoi dap</h1>
+        <p class="gx-page-subtitle">Hoi dap nhanh trong thu vien game. Su dung o day de thu cau hoi va luong giao dien tro ly.</p>
       </div>
     </div>
   </section>
@@ -21,24 +21,24 @@
   <section class="theme-box rounded p-3 gx-section-card">
     <div class="gx-section-card__head">
       <h2 class="gx-section-card__title theme-text mb-0">Dat cau hoi</h2>
-      <div class="gx-section-card__meta">Nhap noi dung va gui den bot</div>
+      <div class="gx-section-card__meta">Nhap noi dung va gui cho tro ly</div>
     </div>
     <form id="chatForm" class="d-flex flex-wrap gap-2">
       <input id="message" class="form-control flex-grow-1" placeholder="Nhap cau hoi..." required>
-      <button class="btn btn-primary" type="submit">Send</button>
+      <button class="btn btn-primary" type="submit">Gui</button>
     </form>
   </section>
 
   <section class="theme-box rounded p-3 gx-section-card">
     <div class="gx-section-card__head">
       <h2 class="gx-section-card__title theme-text mb-0">Phan hoi</h2>
-      <div class="gx-section-card__meta">Trang thai request / response</div>
+      <div class="gx-section-card__meta">Trang thai gui va phan hoi</div>
     </div>
     <div id="out" class="mb-0 small theme-text" role="status" aria-live="polite"></div>
   </section>
 
   <div class="gx-inline-actions">
-    <a class="btn theme-outline-btn" th:href="@{/}">Home</a>
+    <a class="btn theme-outline-btn" th:href="@{/}">Trang chu</a>
   </div>
 </main>
 

@@ -30,19 +30,29 @@ public class TienLenController {
     public String tienLen(@RequestParam(required = false) String roomId,
                           HttpServletRequest request,
                           Model model) {
-        SessionPlayer player = resolveSessionPlayer(request);
-        model.addAttribute("sessionUserId", player.userId());
-        model.addAttribute("sessionDisplayName", player.displayName());
-        model.addAttribute("sessionAvatarPath", player.avatarPath());
-        model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
-        return "cards/tien-len";
+        String normalizedRoomId = roomId == null ? "" : roomId.trim();
+        if (!normalizedRoomId.isEmpty()) {
+            return "redirect:/cards/tien-len/room/" + normalizedRoomId;
+        }
+        return renderTienLen("", request, model);
     }
 
     @GetMapping("/tien-len/room/{roomId}")
     public String tienLenRoom(@PathVariable String roomId,
                               HttpServletRequest request,
                               Model model) {
-        return tienLen(roomId, request, model);
+        return renderTienLen(roomId, request, model);
+    }
+
+    private String renderTienLen(String roomId,
+                                 HttpServletRequest request,
+                                 Model model) {
+        SessionPlayer player = resolveSessionPlayer(request);
+        model.addAttribute("sessionUserId", player.userId());
+        model.addAttribute("sessionDisplayName", player.displayName());
+        model.addAttribute("sessionAvatarPath", player.avatarPath());
+        model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
+        return "cards/tien-len";
     }
 
     @GetMapping("/tien-len/bot")

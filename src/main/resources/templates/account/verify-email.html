@@ -1,26 +1,26 @@
 ﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Xác thực email')}"></head>
+<head th:replace="~{fragments :: appHead('Xac thuc email')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('account-verify')}"></div>
 
 <main class="auth-shell">
   <div class="auth-shell__grid">
     <div class="card theme-box mx-auto mt-5 w-100 auth-card-sm">
-      <div class="card-header"><h4 class="mb-0 theme-text">Xác thực email</h4></div>
+      <div class="card-header"><h4 class="mb-0 theme-text">Xac thuc email</h4></div>
       <div class="card-body theme-text">
         <form id="verifyForm">
           <div class="mb-3">
             <label for="email" class="form-label">Email</label>
-            <input id="email" type="email" class="form-control" required>
+            <input id="email" type="email" class="form-control" placeholder="Nhap email" required>
           </div>
           <div class="mb-3">
-            <label for="code" class="form-label">Mã xác thực</label>
-            <input id="code" class="form-control" required>
+            <label for="code" class="form-label">Ma xac thuc</label>
+            <input id="code" class="form-control" placeholder="Nhap ma xac thuc" required>
           </div>
-          <button type="submit" class="btn btn-primary w-100">Xác thực</button>
+          <button type="submit" class="btn btn-primary w-100">Xac thuc</button>
         </form>
-        <button id="resendCodeBtn" type="button" class="btn btn-outline-secondary w-100 mt-2">Gửi lại mã</button>
+        <button id="resendCodeBtn" type="button" class="btn btn-outline-secondary w-100 mt-2">Gui lai ma</button>
         <div id="out" class="small mt-3" role="status" aria-live="polite"></div>
       </div>
     </div>
@@ -28,13 +28,13 @@
     <aside class="theme-box auth-side-panel">
       <div class="home-dashboard__eyebrow">
         <i class="bi bi-envelope-check"></i>
-        <span>Xác thực email</span>
+        <span>Xac thuc email</span>
       </div>
-      <h2 class="theme-text mt-2">Hoàn tất kích hoạt tài khoản</h2>
-      <p>Nhập email và mã xác thực đã nhận để kích hoạt tài khoản trước khi đăng nhập.</p>
+      <h2 class="theme-text mt-2">Hoan tat kich hoat tai khoan</h2>
+      <p>Nhap email va ma xac thuc da nhan de kich hoat tai khoan truoc khi dang nhap.</p>
       <ul class="auth-side-list">
-        <li><strong>Nếu chưa có mã:</strong> Hãy quay lại trang đăng ký hoặc dùng nút gửi lại mã.</li>
-        <li><strong>Mã hết hạn:</strong> Yêu cầu gửi lại mã mới rồi xác thực lại.</li>
+        <li><strong>Neu chua co ma:</strong> Hay quay lai trang dang ky hoac dung nut gui lai ma.</li>
+        <li><strong>Ma het han:</strong> Yeu cau gui lai ma moi roi xac thuc lai.</li>
       </ul>
     </aside>
   </div>

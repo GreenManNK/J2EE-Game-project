@@ -1,4 +1,4 @@
-(function(){
+﻿(function(){
   const root = document.getElementById('managerUserDetailRoot');
   if(!root) return;
   const id = root.dataset.userId;
@@ -24,7 +24,7 @@
   }
 
   function reportError(err) {
-    const message = String(err?.message || err || 'Request failed');
+    const message = String(err?.message || err || 'Yeu cau that bai');
     setStatus(message, false);
     ui.toast?.(message, { type: 'danger' });
   }
@@ -45,7 +45,7 @@
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(readEditPayload())
       });
-      report(await r.json(), 'Cap nhat nguoi dung thanh cong');
+      report(await r.json(), 'Cap nhat tai khoan thanh cong');
     } catch (err) {
       reportError(err);
     }

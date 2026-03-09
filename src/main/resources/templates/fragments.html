@@ -478,7 +478,7 @@
         </button>
         <a class="cg-topbar__brand" th:href="@{/}">
           <i class="bi bi-controller"></i>
-          <span>Game Hub</span>
+          <span>Thu vien game</span>
         </a>
       </div>
 
@@ -505,7 +505,7 @@
                alt="Ảnh đại diện tài khoản">
           <span class="cg-topbar__account-text">
             <strong class="cg-topbar__account-name" data-current-user-name="true">Người chơi</strong>
-            <small class="cg-topbar__account-meta" data-current-user-meta="true">player</small>
+            <small class="cg-topbar__account-meta" data-current-user-meta="true">Tai khoan</small>
           </span>
         </a>
         <a class="cg-topbar__login-btn" th:href="@{/account/login-page}" data-guest-only="true">Đăng nhập</a>
@@ -520,12 +520,12 @@
     <a th:href="@{/games/chess}" class="cg-top-rail__item"><i class="bi bi-activity"></i> Chess</a>
     <a th:href="@{/games/xiangqi}" class="cg-top-rail__item"><i class="bi bi-diagram-3-fill"></i> Xiangqi</a>
     <a th:href="@{/games/cards}" class="cg-top-rail__item"><i class="bi bi-suit-spade-fill"></i> Bài lá</a>
-    <a th:href="@{/games/blackjack}" class="cg-top-rail__item"><i class="bi bi-suit-club-fill"></i> Blackjack</a>
+    <a th:href="@{/games/cards/blackjack}" class="cg-top-rail__item"><i class="bi bi-suit-club-fill"></i> Blackjack</a>
     <a th:href="@{/games/minesweeper}" class="cg-top-rail__item"><i class="bi bi-asterisk"></i> Dò mìn</a>
     <a th:href="@{/games/quiz}" class="cg-top-rail__item"><i class="bi bi-patch-question-fill"></i> Quiz</a>
     <a th:href="@{/games/typing}" class="cg-top-rail__item"><i class="bi bi-keyboard-fill"></i> Gõ chữ</a>
     <a th:href="@{/games/puzzle}" class="cg-top-rail__item"><i class="bi bi-puzzle-fill"></i> Giải đố</a>
-    <a th:href="@{/online-hub(game='caro')}" class="cg-top-rail__item"><i class="bi bi-wifi"></i> Phòng online</a>
+    <a th:href="@{/online-hub(game='caro')}" class="cg-top-rail__item"><i class="bi bi-wifi"></i> Sanh phong</a>
   </nav>
 
   <div id="friendSidebar" class="theme-text">
@@ -539,13 +539,13 @@
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-fire me-2"></i> Xu hướng</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-arrow-repeat me-2"></i> Cập nhật</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-grid-3x3-gap-fill me-2"></i> Nguyên bản</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/online-hub(game='caro')}"><i class="bi bi-people-fill me-2"></i> Nhiều người</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/online-hub(game='caro')}"><i class="bi bi-people-fill me-2"></i> Truc tuyen</a>
         </div>
 
         <div class="app-shell-menu-group">
           <div class="app-shell-menu-group__title">Danh mục</div>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/cards}"><i class="bi bi-suit-spade-fill me-2"></i> Đánh bài</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/blackjack}"><i class="bi bi-suit-club-fill me-2"></i> Blackjack</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/cards/blackjack}"><i class="bi bi-suit-club-fill me-2"></i> Blackjack</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/chess}"><i class="bi bi-activity me-2"></i> Cờ vua</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/minesweeper}"><i class="bi bi-asterisk me-2"></i> Dò mìn</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/quiz}"><i class="bi bi-patch-question-fill me-2"></i> Quiz</a>
@@ -570,7 +570,7 @@
                  alt="Ảnh đại diện tài khoản">
             <span class="app-shell-current-user__text">
               <strong class="app-shell-current-user__name" data-current-user-name="true">Người chơi</strong>
-              <small class="app-shell-current-user__meta" data-current-user-meta="true">player</small>
+              <small class="app-shell-current-user__meta" data-current-user-meta="true">Tai khoan</small>
             </span>
           </a>
           <div class="app-shell-current-user--guest" data-guest-only="true">
@@ -593,19 +593,19 @@
              data-require-user-id="true"
              data-auth-only="true"><i class="bi bi-bell-fill me-2"></i> Thông báo</a>
           <a id="myProfileLink" class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true"><i class="bi bi-person-circle me-2"></i> Hồ sơ của tôi</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/chat-bot}"><i class="bi bi-robot me-2"></i> Chat Bot</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/chat-bot}"><i class="bi bi-robot me-2"></i> Tro ly chat</a>
           <button id="activateAdminBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true">
-            <i class="bi bi-key-fill me-2"></i> Kích hoạt Admin
+            <i class="bi bi-key-fill me-2"></i> Kich hoat quan tri
           </button>
           <a class="btn theme-outline-btn w-100 text-start theme-text"
              th:href="@{/manager/users}"
              data-auth-only="true"
-             data-role-allowed="Manager,Admin"><i class="bi bi-people me-2"></i> Quản lý người dùng</a>
+             data-role-allowed="Manager,Admin"><i class="bi bi-people me-2"></i> Quan ly tai khoan</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text"
              th:href="@{/admin}"
              data-auth-only="true"
              data-admin-only="true"
-             data-role-allowed="Admin"><i class="bi bi-shield-lock me-2"></i> Trung tâm Admin</a>
+             data-role-allowed="Admin"><i class="bi bi-shield-lock me-2"></i> Trung tam quan tri</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/login-page}" data-guest-only="true"><i class="bi bi-box-arrow-in-right me-2"></i> Đăng nhập</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/register-page}" data-guest-only="true"><i class="bi bi-person-plus-fill me-2"></i> Đăng ký</a>
           <button id="logoutBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true"><i class="bi bi-box-arrow-right me-2"></i> Đăng xuất</button>
@@ -625,7 +625,7 @@
           <div class="app-shell-friends-head">
             <div>
               <div class="app-shell-friends-head__title">Bạn bè</div>
-              <div class="app-shell-friends-head__meta">Trạng thái online/offline cập nhật mỗi 5 giây</div>
+              <div class="app-shell-friends-head__meta">Trang thai truc tuyen/ngoai tuyen cap nhat moi 5 giay</div>
             </div>
             <i class="bi bi-people-fill"></i>
           </div>

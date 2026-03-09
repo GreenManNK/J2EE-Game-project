@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Blackjack')}"></head>
+<head th:replace="~{fragments :: appHead('Ban blackjack')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('games-blackjack')}"></div>
 
@@ -12,30 +12,35 @@
         <div class="hub-portal-hero__main">
             <div class="hub-portal-eyebrow">
                 <i class="bi bi-suit-club-fill"></i>
-                <span>BLACKJACK / ROOM TABLE</span>
+                <span>Blackjack / Phong choi</span>
             </div>
 
-            <h1 class="hub-portal-title">Blackjack phong choi realtime</h1>
+            <h1 class="hub-portal-title">Blackjack phong choi thoi gian thuc</h1>
             <p class="hub-portal-subtitle">
-                Dat cuoc, hit/stand, dau dealer theo nhip nhanh.
+                Dat cuoc, rut bai, dung bai va dau nha cai theo nhip nhanh.
             </p>
 
             <div class="hub-portal-chip-row">
                 <span class="hub-portal-chip is-live"><i class="bi bi-cash-coin"></i> Dat cuoc moi van</span>
                 <span class="hub-portal-chip"><i class="bi bi-star-fill"></i> Blackjack tu nhien 3:2</span>
-                <span class="hub-portal-chip"><i class="bi bi-arrow-repeat"></i> Rebet nhanh</span>
-                <span class="hub-portal-chip"><i class="bi bi-eye-fill"></i> Ho tro spectator</span>
+                <span class="hub-portal-chip"><i class="bi bi-arrow-repeat"></i> Dat lai nhanh</span>
+                <span class="hub-portal-chip"><i class="bi bi-eye-fill"></i> Ho tro nguoi xem</span>
             </div>
 
             <details class="game-rules">
-                <summary>Quick rules</summary>
+                <summary>Luat nhanh</summary>
                 <ul>
-                    <li>Dealer rut den khi dat it nhat 17 diem.</li>
+                    <li>Nha cai rut den khi dat it nhat 17 diem.</li>
                     <li>Blackjack tu nhien (2 la = 21) tra thuong 3:2.</li>
-                    <li>Double chi dung khi con 2 la dau va du tien cuoc.</li>
-                    <li>Rebet dat lai muc cuoc van truoc neu so du du.</li>
+                    <li>Gap doi chi dung khi con 2 la dau va du tien cuoc.</li>
+                    <li>Dat lai se su dung muc cuoc cua van truoc neu so du du.</li>
                 </ul>
             </details>
+
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <a th:href="@{/online-hub(game='blackjack')}" class="btn theme-outline-btn">Mo sanh phong</a>
+                <a th:href="@{/games/cards}" class="btn theme-outline-btn">Ve trang che do</a>
+            </div>
 
             <div id="room-selection" class="blackjack-room-panel">
                 <div class="blackjack-lobby-head">
@@ -43,7 +48,7 @@
                     <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
                 </div>
                 <div class="hub-portal-action blackjack-join-row">
-                    <input type="text" id="room-id-input" placeholder="Nhap Room ID">
+                    <input type="text" id="room-id-input" placeholder="Nhap ma phong">
                     <button id="join-room-btn" class="hub-portal-action__icon" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
                     <button id="spectate-room-btn" class="hub-portal-action__icon" title="Xem tran"><i class="bi bi-eye"></i></button>
                 </div>
@@ -53,21 +58,21 @@
 
             <div id="game-board" class="blackjack-shell" hidden>
                 <div class="blackjack-room-tools">
-                    <button id="copy-room-btn" class="hub-portal-action">Sao chep Room ID</button>
+                    <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
                     <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
                     <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
                 </div>
 
                 <div class="blackjack-hud">
                     <div class="blackjack-hud__item"><span>Phong</span><strong id="room-id-label">-</strong></div>
-                    <div class="blackjack-hud__item"><span>Trang thai</span><strong id="table-state-label">WAITING</strong></div>
+                    <div class="blackjack-hud__item"><span>Trang thai</span><strong id="table-state-label">Dang cho</strong></div>
                     <div class="blackjack-hud__item"><span>So du cua ban</span><strong id="my-balance-label">-</strong></div>
                     <div class="blackjack-hud__item"><span>Muc cuoc</span><strong id="my-bet-label">-</strong></div>
                 </div>
 
                 <section class="blackjack-table">
                     <div id="dealer-panel" class="blackjack-hand-panel">
-                        <div class="blackjack-hand-title">Dealer <span id="dealer-value-label"></span></div>
+                        <div class="blackjack-hand-title">Nha cai <span id="dealer-value-label"></span></div>
                         <div id="dealer-cards" class="blackjack-cards"></div>
                     </div>
                     <div id="player-hands" class="blackjack-player-grid"></div>
@@ -78,12 +83,12 @@
                         <label for="bet-amount" class="form-label">Tien cuoc</label>
                         <input type="number" id="bet-amount" min="1" value="10" class="form-control">
                         <button id="bet-btn" class="hub-portal-action hub-portal-action--primary">Dat cuoc</button>
-                        <button id="rebet-btn" class="hub-portal-action">Rebet</button>
+                        <button id="rebet-btn" class="hub-portal-action">Dat lai</button>
                     </div>
                     <div class="blackjack-action-row">
-                        <button id="hit-btn" class="hub-portal-action" disabled>Hit</button>
-                        <button id="stand-btn" class="hub-portal-action" disabled>Stand</button>
-                        <button id="double-btn" class="hub-portal-action" disabled>Double</button>
+                        <button id="hit-btn" class="hub-portal-action" disabled>Rut bai</button>
+                        <button id="stand-btn" class="hub-portal-action" disabled>Dung bai</button>
+                        <button id="double-btn" class="hub-portal-action" disabled>Gap doi</button>
                     </div>
                 </div>
 
@@ -420,6 +425,27 @@
         }
     }
 
+    function formatGameStateLabel(gameState) {
+        const normalized = String(gameState || '').trim().toUpperCase();
+        switch (normalized) {
+            case 'WAITING':
+                return 'Dang cho';
+            case 'PLAYER_TURN':
+                return 'Luot nguoi choi';
+            case 'DEALER_TURN':
+                return 'Luot nha cai';
+            case 'FINISHED':
+                return 'Da ket thuc';
+            default: {
+                if (!normalized) {
+                    return 'Dang cho';
+                }
+                const pretty = normalized.replace(/_/g, ' ').toLowerCase();
+                return pretty.charAt(0).toUpperCase() + pretty.slice(1);
+            }
+        }
+    }
+
     function clearReconnectTimer() {
         if (!reconnectTimer) {
             return;
@@ -507,7 +533,7 @@
     joinRoomBtn.addEventListener('click', () => {
         const roomIdToJoin = roomIdInput.value.trim();
         if (!roomIdToJoin) {
-            setConnectionStatus('Can nhap Room ID.', 'error');
+            setConnectionStatus('Can nhap ma phong.', 'error');
             return;
         }
         roomId = roomIdToJoin;
@@ -519,7 +545,7 @@
     spectateRoomBtn.addEventListener('click', () => {
         const roomIdToJoin = roomIdInput.value.trim();
         if (!roomIdToJoin) {
-            setConnectionStatus('Can nhap Room ID.', 'error');
+            setConnectionStatus('Can nhap ma phong.', 'error');
             return;
         }
         roomId = roomIdToJoin;
@@ -534,21 +560,21 @@
 
     copyRoomBtn.addEventListener('click', async () => {
         if (!roomId) {
-            setStatus('Room ID dang rong.', 'error');
+            setStatus('Ma phong dang rong.', 'error');
             return;
         }
         const ok = await copyToClipboard(roomId);
-        setStatus(ok ? 'Da copy Room ID.' : 'Khong the copy Room ID.', ok ? 'success' : 'error');
+        setStatus(ok ? 'Da sao chep ma phong.' : 'Khong the sao chep ma phong.', ok ? 'success' : 'error');
     });
 
     shareRoomBtn.addEventListener('click', async () => {
         if (!roomId) {
-            setStatus('Room ID dang rong.', 'error');
+            setStatus('Ma phong dang rong.', 'error');
             return;
         }
         const inviteUrl = buildInviteUrl(roomId, isSpectator ? 'spectate' : 'join');
         const ok = await copyToClipboard(inviteUrl);
-        setStatus(ok ? 'Da copy link moi.' : 'Khong the copy link moi.', ok ? 'success' : 'error');
+        setStatus(ok ? 'Da sao chep link moi.' : 'Khong the sao chep link moi.', ok ? 'success' : 'error');
     });
 
     leaveRoomBtn.addEventListener('click', () => {
@@ -569,11 +595,11 @@
     rebetBtn.addEventListener('click', () => {
         const myPlayer = getCurrentPlayer();
         if (!myPlayer || !myPlayer.lastBet || myPlayer.lastBet <= 0) {
-            setStatus('Khong co muc cuoc truoc de rebet.', 'error');
+            setStatus('Khong co muc cuoc truoc de dat lai.', 'error');
             return;
         }
         if (safeSend({ action: 'bet', roomId, amount: myPlayer.lastBet })) {
-            setStatus(`Da rebet: ${myPlayer.lastBet}.`, '');
+            setStatus(`Da dat lai muc cuoc: ${myPlayer.lastBet}.`, '');
         }
     });
 
@@ -585,13 +611,13 @@
 
     standBtn.addEventListener('click', () => {
         if (safeSend({ action: 'stand', roomId })) {
-            setStatus('Ban da stand. Dang cho dealer.', '');
+            setStatus('Ban da dung bai. Dang cho nha cai.', '');
         }
     });
 
     doubleBtn.addEventListener('click', () => {
         if (safeSend({ action: 'double', roomId })) {
-            setStatus('Da gui lenh double.', '');
+            setStatus('Da gui lenh gap doi.', '');
         }
     });
 
@@ -634,7 +660,7 @@
 
     function updateUI(room) {
         roomIdLabel.textContent = room.id || '-';
-        tableStateLabel.textContent = room.gameState || 'WAITING';
+        tableStateLabel.textContent = formatGameStateLabel(room.gameState);
 
         const myPlayer = getCurrentPlayer();
         myBalanceLabel.textContent = myPlayer ? String(myPlayer.balance) : (isSpectator ? 'Nguoi xem' : '-');
@@ -735,7 +761,7 @@
                 return;
             }
             if (playerValue < dealerValue) {
-                setStatus('Het van: Dealer thang van nay.', 'error');
+                setStatus('Het van: Nha cai thang van nay.', 'error');
                 return;
             }
             setStatus('Het van: Hoa (push).', '');
@@ -745,9 +771,9 @@
         if (room.gameState === 'WAITING') {
             setStatus('Dat cuoc de bat dau van moi.', '');
         } else if (room.gameState === 'PLAYER_TURN') {
-            setStatus('Den luot ban: hit, stand hoac double.', '');
+            setStatus('Den luot ban: rut bai, dung bai hoac gap doi.', '');
         } else if (room.gameState === 'DEALER_TURN') {
-            setStatus('Dealer dang choi...', '');
+            setStatus('Nha cai dang choi...', '');
         }
     }
 
@@ -793,10 +819,10 @@
 
     function formatSuit(suit) {
         switch (suit) {
-            case 'HEARTS': return '♥';
-            case 'DIAMONDS': return '♦';
-            case 'CLUBS': return '♣';
-            case 'SPADES': return '♠';
+            case 'HEARTS': return '&hearts;';
+            case 'DIAMONDS': return '&diams;';
+            case 'CLUBS': return '&clubs;';
+            case 'SPADES': return '&spades;';
             default: return '?';
         }
     }
@@ -853,7 +879,7 @@
             row.innerHTML = `
                 <div>
                     <strong>${escapeHtml(room.id)}</strong><br>
-                    <span>${escapeHtml(room.gameState || 'WAITING')} | N:${room.playerCount || 0} X:${room.spectatorCount || 0}</span>
+                    <span>${escapeHtml(formatGameStateLabel(room.gameState))} | Nguoi choi: ${room.playerCount || 0} | Nguoi xem: ${room.spectatorCount || 0}</span>
                 </div>
                 <div class="blackjack-room-item-actions">
                     <button class="hub-portal-action__icon" data-join="${escapeHtml(room.id)}" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
@@ -945,11 +971,8 @@
     function applyAutoJoinFromUrl() {
         const pathname = String(window.location.pathname || '').replace(/\/+$/, '');
         const roomMatch = pathname.match(/\/games\/cards\/blackjack\/room\/([^/]+?)(?:\/(spectate))?$/i);
-        const roomFromPath = roomMatch ? decodeURIComponent(roomMatch[1] || '').trim() : '';
-        const modeFromPath = roomMatch && roomMatch[2] ? 'spectate' : '';
-        const params = new URLSearchParams(window.location.search);
-        const room = roomFromPath || (params.get('room') || '').trim();
-        const mode = (modeFromPath || (params.get('mode') || '').trim()).toLowerCase();
+        const room = roomMatch ? decodeURIComponent(roomMatch[1] || '').trim() : '';
+        const mode = roomMatch && roomMatch[2] ? 'spectate' : '';
         if (!room) {
             return;
         }
@@ -979,3 +1002,4 @@
 </script>
 </body>
 </html>
+

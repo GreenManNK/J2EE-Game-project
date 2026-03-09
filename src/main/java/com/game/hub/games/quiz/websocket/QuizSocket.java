@@ -13,7 +13,9 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -152,15 +154,35 @@ public class QuizSocket extends TextWebSocketHandler {
 
     private void sendRoomMessage(QuizRoom room, Map<String, ?> payload) throws IOException {
         String message = objectMapper.writeValueAsString(payload);
-        for (WebSocketSession player : room.getPlayers().keySet()) {
+        List<WebSocketSession> disconnectedSessions = new ArrayList<>();
+        for (WebSocketSession player : new ArrayList<>(room.getPlayers().keySet())) {
             if (player.isOpen()) {
-                player.sendMessage(new TextMessage(message));
+                try {
+                    player.sendMessage(new TextMessage(message));
+                } catch (Exception ex) {
+                    disconnectedSessions.add(player);
+                }
+            } else {
+                disconnectedSessions.add(player);
             }
         }
-        for (WebSocketSession spectator : room.getSpectators()) {
+        for (WebSocketSession spectator : new ArrayList<>(room.getSpectators())) {
             if (spectator.isOpen()) {
-                spectator.sendMessage(new TextMessage(message));
+                try {
+                    spectator.sendMessage(new TextMessage(message));
+                } catch (Exception ex) {
+                    disconnectedSessions.add(spectator);
+                }
+            } else {
+                disconnectedSessions.add(spectator);
             }
+        }
+        for (WebSocketSession disconnected : disconnectedSessions) {
+            room.removePlayer(disconnected);
+            sessionToRoomMap.remove(disconnected);
+        }
+        if (room.getPlayers().isEmpty() && room.getSpectators().isEmpty()) {
+            quizService.removeRoom(room.getRoomId());
         }
     }
 

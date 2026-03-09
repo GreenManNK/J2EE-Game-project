@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Lobby')}"></head>
+<head th:replace="~{fragments :: appHead('Sanh phong Caro')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('lobby')}"></div>
 
@@ -8,9 +8,9 @@
   <section class="lobby-hero theme-box text-center">
     <div class="home-dashboard__eyebrow">
       <i class="bi bi-door-open"></i>
-      <span>Lobby / Online</span>
+      <span>Sanh cho / Truc tuyen</span>
     </div>
-    <h1 class="lobby-title theme-text mt-2">Sanh choi online</h1>
+    <h1 class="lobby-title theme-text mt-2">Sanh phong Caro</h1>
     <p class="lobby-subtitle theme-text">
       Tao phong hoac tham gia phong san co ngay ca khi chua dang nhap.
       He thong se tao ten khach tu dong de ban vao tran nhanh hon.
@@ -27,7 +27,7 @@
   <section class="card mx-auto theme-box cyberpunk-card lobby-room-list-card">
     <div class="card-header theme-text fw-bold d-flex justify-content-between align-items-center gap-2">
       <span><i class="bi bi-door-open-fill me-2"></i>Danh sach phong dang cho</span>
-      <small class="text-muted">Cap nhat realtime</small>
+      <small class="text-muted">Cap nhat thoi gian thuc</small>
     </div>
     <ul class="list-group list-group-flush" id="roomList">
       <li class="list-group-item" th:if="${#lists.isEmpty(availableRooms)}">Hien tai khong co phong nao.</li>

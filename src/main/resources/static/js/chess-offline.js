@@ -1,12 +1,12 @@
-(function () {
+﻿(function () {
     const boot = window.ChessBoot || {};
     const BOARD_SIZE = 8;
     const CHESS_STATS_KEY = "caroChessOfflineStats.v1";
     const GAME_STATS_CODE = "chess-offline";
     const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
     const PIECE_ICONS = {
-        wK: "♔", wQ: "♕", wR: "♖", wB: "♗", wN: "♘", wP: "♙",
-        bK: "♚", bQ: "♛", bR: "♜", bB: "♝", bN: "♞", bP: "♟"
+        wK: "â™”", wQ: "â™•", wR: "â™–", wB: "â™—", wN: "â™˜", wP: "â™™",
+        bK: "â™š", bQ: "â™›", bR: "â™œ", bB: "â™", bN: "â™ž", bP: "â™Ÿ"
     };
     const PIECE_NAMES = {
         K: "Vua",
@@ -373,13 +373,13 @@
 
         if (!opponentHasMove && opponentInCheck) {
             state.gameOver = true;
-            state.resultText = "Checkmate - " + colorName(sideJustMoved) + " thang";
-            setGameStatus("Checkmate! " + colorName(sideJustMoved) + " thang.");
+            state.resultText = "Chieu het - " + colorName(sideJustMoved) + " thang";
+            setGameStatus("Chieu het! " + colorName(sideJustMoved) + " thang.");
             recordOutcome(sideJustMoved);
         } else if (!opponentHasMove) {
             state.gameOver = true;
-            state.resultText = "Hoa (stalemate)";
-            setGameStatus("Stalemate - hoa.");
+            state.resultText = "Hoa";
+            setGameStatus("The co - hoa.");
             recordOutcome("draw");
         } else if (opponentInCheck) {
             state.resultText = "Dang choi";
@@ -959,3 +959,4 @@
         }
     }
 })();
+

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.LinkedHashMap;
@@ -22,18 +23,31 @@ public class QuizController {
     private QuizService quizService;
 
     @GetMapping
-    public String quizPage() {
-        return "games/quiz";
+    public String quizPage(@RequestParam(required = false) String room,
+                           @RequestParam(required = false) String mode) {
+        String normalizedRoomId = room == null ? "" : room.trim();
+        if (!normalizedRoomId.isEmpty()) {
+            StringBuilder redirect = new StringBuilder("redirect:/games/quiz/room/").append(normalizedRoomId);
+            if ("spectate".equalsIgnoreCase(mode)) {
+                redirect.append("/spectate");
+            }
+            return redirect.toString();
+        }
+        return renderQuizPage();
     }
 
     @GetMapping("/room/{roomId}")
     public String quizRoomPage(@PathVariable String roomId) {
-        return quizPage();
+        return renderQuizPage();
     }
 
     @GetMapping("/room/{roomId}/spectate")
     public String quizSpectatePage(@PathVariable String roomId) {
-        return quizPage();
+        return renderQuizPage();
+    }
+
+    private String renderQuizPage() {
+        return "games/quiz";
     }
 
     @GetMapping("/highscores")

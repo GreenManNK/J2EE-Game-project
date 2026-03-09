@@ -1,6 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('System Notifications')}"></head>
+<head th:replace="~{fragments :: appHead('Thong bao he thong')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('notification-admin')}"></div>
 
@@ -10,30 +10,30 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-megaphone"></i>
-          <span>Admin / Notices</span>
+          <span>Quan tri / Thong bao</span>
         </div>
-        <h1 class="gx-page-title theme-text mt-2">System Notifications</h1>
-        <p class="gx-page-subtitle">Tao va xoa thong bao he thong duoc hien thi cho nguoi dung trong game hub.</p>
+        <h1 class="gx-page-title theme-text mt-2">Thong bao he thong</h1>
+        <p class="gx-page-subtitle">Tao va go thong bao duoc hien thi cho tai khoan tren toan bo web.</p>
       </div>
       <div class="gx-page-badge">
         <i class="bi bi-bell-fill"></i>
-        <span th:text="${(notifications != null ? #lists.size(notifications) : 0)} + ' notices'">0 notices</span>
+        <span th:text="${(notifications != null ? #lists.size(notifications) : 0)} + ' thong bao'">0 thong bao</span>
       </div>
     </div>
   </section>
 
   <section class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
-      <h2 class="gx-section-card__title theme-text mb-0">Create Notice</h2>
-      <div class="gx-section-card__meta">Gui thong diep he thong</div>
+      <h2 class="gx-section-card__title theme-text mb-0">Tao thong bao</h2>
+      <div class="gx-section-card__meta">Gui thong bao den toan bo web</div>
     </div>
     <form id="createForm" class="row g-2 align-items-end">
       <div class="col-md-9">
-        <label class="form-label" for="content">Content</label>
-        <input id="content" class="form-control" placeholder="content" required>
+        <label class="form-label" for="content">Noi dung</label>
+        <input id="content" class="form-control" placeholder="Nhap noi dung thong bao" required>
       </div>
       <div class="col-md-3">
-        <button type="submit" class="btn btn-primary w-100">Create</button>
+        <button type="submit" class="btn btn-primary w-100">Tao</button>
       </div>
     </form>
     <div id="out" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
@@ -41,19 +41,20 @@
 
   <section class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
-      <h2 class="gx-section-card__title theme-text mb-0">Danh sach notices</h2>
-      <div class="gx-section-card__meta">Xoa notice khong con su dung</div>
+      <h2 class="gx-section-card__title theme-text mb-0">Danh sach thong bao</h2>
+      <div class="gx-section-card__meta">Xoa thong bao khong con su dung</div>
     </div>
     <ul class="list-group list-group-flush">
+      <li class="list-group-item text-muted" th:if="${notifications == null or #lists.isEmpty(notifications)}">Chua co thong bao.</li>
       <li class="list-group-item d-flex justify-content-between align-items-center gap-2" th:each="n : ${notifications}">
         <span th:text="${n.content + ' - ' + n.createdAt}"></span>
-        <button type="button" th:attr="data-id=${n.id}" class="del btn btn-sm btn-outline-danger">Delete</button>
+        <button type="button" th:attr="data-id=${n.id}" class="del btn btn-sm btn-outline-danger">Xoa</button>
       </li>
     </ul>
   </section>
 
   <div class="gx-inline-actions">
-    <a class="btn theme-outline-btn" th:href="@{/}">Home</a>
+    <a class="btn theme-outline-btn" th:href="@{/}">Trang chu</a>
   </div>
 </main>
 
@@ -61,3 +62,4 @@
 <script th:src="@{/js/notification-admin.js}"></script>
 </body>
 </html>
+

@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   const root = document.getElementById('friendshipUserDetailRoot');
   if (!root) return;
 
@@ -28,7 +28,7 @@
   }
 
   function reportError(err) {
-    const message = String(err?.message || err || 'Request failed');
+    const message = String(err?.message || err || 'Yeu cau that bai');
     setStatus(message, false);
     ui.toast?.(message, { type: 'danger' });
   }
@@ -56,8 +56,8 @@
 
   actionBtn.addEventListener('click', async () => {
     if (!currentUserId || !targetUserId) {
-      setStatus('Thieu thong tin nguoi dung.', false);
-      ui.toast?.('Thieu thong tin nguoi dung.', { type: 'danger' });
+      setStatus('Thieu thong tin tai khoan.', false);
+      ui.toast?.('Thieu thong tin tai khoan.', { type: 'danger' });
       return;
     }
 

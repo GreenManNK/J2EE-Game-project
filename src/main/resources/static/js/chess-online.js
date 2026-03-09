@@ -234,7 +234,7 @@
 
     function onCellClick(row, col) {
         if (state.spectate) {
-            setGameStatus("You are a spectator.");
+            setGameStatus("Ban dang o che do xem.");
             return;
         }
         if (!state.connected) {
@@ -343,12 +343,12 @@
 
         if (!opponentHasMove && opponentInCheck) {
             state.gameOver = true;
-            state.resultText = "Checkmate - " + colorName(sideJustMoved) + " thang";
-            setGameStatus("Checkmate! " + colorName(sideJustMoved) + " thang.");
+            state.resultText = "Chieu het - " + colorName(sideJustMoved) + " thang";
+            setGameStatus("Chieu het! " + colorName(sideJustMoved) + " thang.");
         } else if (!opponentHasMove) {
             state.gameOver = true;
-            state.resultText = "Hoa (stalemate)";
-            setGameStatus("Stalemate - hoa.");
+            state.resultText = "Hoa";
+            setGameStatus("The co - hoa.");
         } else if (opponentInCheck) {
             state.resultText = "Dang choi";
             setGameStatus(sideName + " dang bi chieu!");
@@ -820,7 +820,7 @@
     function connectSocket() {
         if (!state.roomId) {
             setConnectionStatus("Chua co ma phong");
-            setGameStatus("Hay quay lai Online Hub de tao/chon phong C\u1edd vua.");
+            setGameStatus("Hay quay lai trang phong truc tuyen de tao/chon phong Co vua.");
             return;
         }
         if (!state.userId) {
@@ -830,7 +830,7 @@
         }
         if (!window.StompJs || typeof SockJS === "undefined") {
             setConnectionStatus("Thieu thu vien WebSocket");
-            setGameStatus("Khong tai duoc SockJS/STOMP.");
+            setGameStatus("Khong tai duoc thu vien ket noi realtime.");
             return;
         }
 
@@ -970,7 +970,7 @@
         state.players = Array.isArray(room.players)
             ? room.players.map((p) => ({
                 userId: normalizeText(p.userId),
-                displayName: normalizeText(p.displayName) || normalizeText(p.userId) || "Guest",
+                displayName: normalizeText(p.displayName) || normalizeText(p.userId) || "Khach",
                 avatarPath: normalizeText(p.avatarPath),
                 color: normalizeText(p.color) === "b" ? "b" : "w"
             }))
@@ -1032,14 +1032,14 @@
 
         if (!hasMove && inCheck) {
             state.gameOver = true;
-            state.resultText = "Checkmate - " + colorName(winnerSide) + " thang";
-            setGameStatus(preferredMessage || ("Checkmate! " + colorName(winnerSide) + " thang."));
+            state.resultText = "Chieu het - " + colorName(winnerSide) + " thang";
+            setGameStatus(preferredMessage || ("Chieu het! " + colorName(winnerSide) + " thang."));
             return;
         }
         if (!hasMove) {
             state.gameOver = true;
-            state.resultText = "Hoa (stalemate)";
-            setGameStatus(preferredMessage || "Stalemate - hoa.");
+            state.resultText = "Hoa";
+            setGameStatus(preferredMessage || "The co - hoa.");
             return;
         }
 
@@ -1077,8 +1077,8 @@
             const colorText = player.color === "b" ? "Den" : "Trang";
             const meText = player.userId === state.userId ? " (Ban)" : "";
             const displayName = player.userId === state.userId
-                ? (state.displayName || player.displayName || player.userId || "Guest")
-                : (player.displayName || player.userId || "Guest");
+                ? (state.displayName || player.displayName || player.userId || "Khach")
+                : (player.displayName || player.userId || "Khach");
             const avatarHtml = buildAvatarHtml(
                 player.userId === state.userId ? state.avatarPath : player.avatarPath,
                 displayName,
@@ -1300,7 +1300,7 @@
     function buildAvatarHtml(avatarPath, displayName, className) {
         const avatarSrc = normalizeAvatarPath(avatarPath);
         if (avatarSrc) {
-            return '<img class="' + className + '" src="' + escapeHtml(avatarSrc) + '" alt="">';
+            return '<img class="' + className + '" src="' + escapeHtml(avatarSrc) + '" alt="Anh dai dien">';
         }
         return '<div class="' + className + ' ' + className + '--fallback" aria-hidden="true">' + escapeHtml(initialsOfName(displayName)) + '</div>';
     }
@@ -1328,24 +1328,24 @@
             ? nextUser
             : (window.CaroUser && typeof window.CaroUser.get === "function" ? window.CaroUser.get() : null);
         if (candidate && normalizeText(candidate.userId) === state.userId) {
-            state.displayName = normalizeText(candidate.displayName) || state.displayName || state.userId || "Guest";
+            state.displayName = normalizeText(candidate.displayName) || state.displayName || state.userId || "Khach";
             state.avatarPath = normalizeText(candidate.avatarPath) || state.avatarPath || DEFAULT_AVATAR_PATH;
             return;
         }
-        state.displayName = normalizeText(state.displayName) || state.userId || "Guest";
+        state.displayName = normalizeText(state.displayName) || state.userId || "Khach";
         state.avatarPath = normalizeText(state.avatarPath) || DEFAULT_AVATAR_PATH;
     }
 
     function renderCurrentUserSummary() {
         if (els.userLabel) {
-            els.userLabel.textContent = state.displayName || state.userId || "Guest";
+            els.userLabel.textContent = state.displayName || state.userId || "Khach";
         }
         if (els.userMeta) {
             els.userMeta.textContent = isGuestUserId(state.userId) ? "Khach tam thoi" : "Tai khoan dang nhap";
         }
         if (els.userAvatar) {
             els.userAvatar.setAttribute("src", currentUserAvatarSrc(state.avatarPath));
-            els.userAvatar.setAttribute("alt", "Avatar " + (state.displayName || "nguoi choi"));
+            els.userAvatar.setAttribute("alt", "Anh dai dien " + (state.displayName || "nguoi choi"));
         }
     }
 
@@ -1393,11 +1393,10 @@
     function resolveRouteState() {
         const pathname = String(window.location.pathname || "").replace(/\/+$/, "");
         const roomMatch = pathname.match(/\/chess\/online\/room\/([^/]+?)(?:\/(spectate))?$/i);
-        const params = new URLSearchParams(window.location.search);
         const roomId = roomMatch
             ? decodeURIComponent(roomMatch[1] || "").trim()
-            : String(boot.roomId || params.get("roomId") || "").trim();
-        const spectate = Boolean((roomMatch && roomMatch[2]) || params.get("spectate") === "true");
+            : String(boot.roomId || "").trim();
+        const spectate = Boolean(roomMatch && roomMatch[2]);
         return { roomId, spectate };
     }
 

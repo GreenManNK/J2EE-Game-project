@@ -23,7 +23,7 @@ class ChessOnlineControllerTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         ConcurrentModel model = new ConcurrentModel();
 
-        String view = controller.online("CHESS-ROOM-1", request, model);
+        String view = controller.onlineRoom("CHESS-ROOM-1", request, model);
 
         assertEquals("chess/online", view);
         assertEquals("CHESS-ROOM-1", model.getAttribute("defaultRoomId"));

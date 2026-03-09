@@ -23,6 +23,24 @@ import static org.mockito.Mockito.when;
 class HomeControllerTest {
 
     @Test
+    void multiplayerShouldRedirectToCanonicalCaroModePage() {
+        PostRepository postRepository = mock(PostRepository.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        HomeController controller = new HomeController(postRepository, userAccountRepository);
+
+        assertEquals("redirect:/games/caro", controller.multiplayer());
+    }
+
+    @Test
+    void singlePlayerShouldRedirectToCanonicalCaroBotPicker() {
+        PostRepository postRepository = mock(PostRepository.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        HomeController controller = new HomeController(postRepository, userAccountRepository);
+
+        assertEquals("redirect:/game-mode/bot?game=caro", controller.singlePlayer());
+    }
+
+    @Test
     void createPostShouldRequireLoginSession() {
         PostRepository postRepository = mock(PostRepository.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);

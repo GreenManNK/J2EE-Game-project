@@ -22,7 +22,7 @@ public class GameController {
         games.add(new Game("minesweeper", "Minesweeper", "Classic Minesweeper game", "bi-asterisk", false, true, true, "/games/minesweeper"));
         games.add(new Game("quiz", "Quiz", "A time-limited quiz game", "bi-patch-question-fill", true, false, true, "/games/quiz"));
         games.add(new Game("cards", "Cards", "Tien Len + Blackjack", "bi-suit-spade-fill", true, true, true, "/games/cards"));
-        games.add(new Game("blackjack", "Blackjack", "Realtime blackjack room with spectator mode", "bi-suit-club-fill", true, false, true, "/games/blackjack"));
+        games.add(new Game("blackjack", "Blackjack", "Realtime blackjack room with spectator mode", "bi-suit-club-fill", true, false, true, "/games/cards/blackjack"));
         games.add(new Game("typing", "Typing Battle", "PvP Typing Game", "bi-keyboard-fill", true, false, true, "/games/typing"));
         games.add(new Game("puzzle", "Puzzles", "Jigsaw, Sliding, Word and Sudoku", "bi-puzzle-fill", false, true, true, "/games/puzzle"));
         model.addAttribute("games", games);

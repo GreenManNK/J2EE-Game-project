@@ -1,4 +1,4 @@
-(function(){
+﻿(function(){
   const root = document.getElementById('adminUserDetailRoot');
   if(!root) return;
   const id = root.dataset.userId;
@@ -28,7 +28,7 @@
   }
 
   function reportError(err) {
-    const message = String(err?.message || err || 'Request failed');
+    const message = String(err?.message || err || 'Yeu cau that bai');
     setStatus(message, false);
     ui.toast?.(message, { type: 'danger' });
   }
@@ -50,7 +50,7 @@
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify(readEditPayload())
       });
-      report(await r.json(), 'Cap nhat nguoi dung thanh cong');
+      report(await r.json(), 'Cap nhat tai khoan thanh cong');
     } catch (err) {
       reportError(err);
     }
@@ -75,7 +75,7 @@
   delBtn.onclick = async()=>{
     try {
       const r=await fetch('/admin/users/'+id,{method:'DELETE'});
-      const ok = report(await r.json(), 'Da xoa nguoi dung');
+      const ok = report(await r.json(), 'Da xoa tai khoan');
       if (ok) {
         setTimeout(() => {
           window.location.href = window.CaroUrl?.path?.('/admin/users') || '/admin/users';

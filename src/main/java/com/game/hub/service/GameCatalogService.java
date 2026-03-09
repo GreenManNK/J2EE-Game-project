@@ -27,7 +27,7 @@ public class GameCatalogService {
                 true,
                 true,
                 "Vao Caro",
-                "/multiplayer",
+                "/games/caro",
                 List.of(
                     "Lobby + room invite + ws realtime.",
                     "Bot Easy/Hard va lich su tran dau.",
@@ -44,8 +44,8 @@ public class GameCatalogService {
                 true,
                 true,
                 true,
-                "Co vua online",
-                "/online-hub?game=chess",
+                "Mo Co vua",
+                "/games/chess",
                 List.of(
                     "Ban co 8x8 va setup quan co day du.",
                     "Bot Easy/Hard va che do offline local.",
@@ -62,8 +62,8 @@ public class GameCatalogService {
                 true,
                 true,
                 true,
-                "Co tuong online",
-                "/online-hub?game=xiangqi",
+                "Mo Co tuong",
+                "/games/xiangqi",
                 List.of(
                     "Bot Easy/Hard da san sang.",
                     "Offline 2 nguoi cung may.",
@@ -81,7 +81,7 @@ public class GameCatalogService {
                 true,
                 true,
                 "Mo Minesweeper",
-                "/minesweeper",
+                "/games/minesweeper",
                 List.of(
                     "3 muc do beginner/intermediate/expert.",
                     "Cam co va first-click safe.",
@@ -117,7 +117,7 @@ public class GameCatalogService {
                 false,
                 true,
                 "Mo Blackjack",
-                "/games/blackjack",
+                "/games/cards/blackjack",
                 List.of(
                     "Tao/join/spectate room blackjack.",
                     "Dat cuoc + hit/stand/double theo luat co ban.",

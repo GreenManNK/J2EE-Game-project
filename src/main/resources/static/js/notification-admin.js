@@ -1,4 +1,4 @@
-(function(){
+﻿(function(){
   const form = document.getElementById('createForm');
   if(!form) return;
   const out = document.getElementById('out');
@@ -18,14 +18,31 @@
       return ui.apiResult(data, { statusEl: out, successMessage });
     }
     const ok = !!(data && data.success);
-    setStatus(ok ? successMessage : String(data?.error || data?.message || 'That bai'), ok);
+    setStatus(ok ? successMessage : String(data?.error || data?.message || 'Thao tac that bai'), ok);
     return ok;
   }
 
   function reportError(err) {
-    const message = String(err?.message || err || 'Request failed');
+    const message = String(err?.message || err || 'Yeu cau that bai');
     setStatus(message, false);
     ui.toast?.(message, { type: 'danger' });
+  }
+
+  function ensureEmptyState() {
+    if (!list) return;
+    const rows = Array.from(list.querySelectorAll('.list-group-item'));
+    const hasRealRows = rows.some((row) => !row.classList.contains('text-muted'));
+    const emptyRow = rows.find((row) => row.classList.contains('text-muted'));
+    if (hasRealRows && emptyRow) {
+      emptyRow.remove();
+      return;
+    }
+    if (!hasRealRows && !emptyRow) {
+      const li = document.createElement('li');
+      li.className = 'list-group-item text-muted';
+      li.textContent = 'Chua co thong bao.';
+      list.appendChild(li);
+    }
   }
 
   function createRow(notification) {
@@ -36,7 +53,7 @@
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'del btn btn-sm btn-outline-danger';
-    btn.textContent = 'Delete';
+    btn.textContent = 'Xoa';
     if (notification?.id != null) {
       btn.dataset.id = String(notification.id);
     }
@@ -54,11 +71,12 @@
         body:JSON.stringify({content:content.value})
       });
       const data = await r.json();
-      const ok = report(data, 'Da tao thong bao he thong');
+      const ok = report(data, 'Da tao thong bao');
       if (ok) {
         if (content) content.value = '';
         if (list && data.notification) {
           list.prepend(createRow(data.notification));
+          ensureEmptyState();
         } else {
           window.location.reload();
         }
@@ -83,6 +101,7 @@
       const ok = report(data, 'Da xoa thong bao');
       if (ok) {
         btn.closest('.list-group-item')?.remove();
+        ensureEmptyState();
       } else {
         btn.disabled = false;
       }
@@ -92,3 +111,4 @@
     }
   });
 })();
+

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead(${pageTitle} ?: 'Tien len Bot')}"></head>
+<head th:replace="~{fragments :: appHead(${pageTitle} ?: 'Tien len voi bot')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('tien-len-bot')}"></div>
 
@@ -8,11 +8,11 @@
   <section class="gx-page-hero theme-box text-center mb-3">
     <div class="home-dashboard__eyebrow mx-auto">
       <i class="bi bi-suit-spade"></i>
-      <span>Tien Len / Bot</span>
+      <span>Tien len / Dau voi bot</span>
     </div>
-    <h1 class="theme-text fw-bold mb-2" th:text="${pageHeading} ?: 'TIEN LEN VOI BOT (EASY) - MVP'">TIEN LEN VOI BOT (EASY) - MVP</h1>
+    <h1 class="theme-text fw-bold mb-2" th:text="${pageHeading} ?: 'Tien len voi bot'">Tien len voi bot</h1>
     <p class="theme-text mb-1" th:text="${pageSubtitle} ?: '1 nguoi choi + 3 bot tren cung thiet bi. Khong can dang nhap.'">1 nguoi choi + 3 bot tren cung thiet bi. Khong can dang nhap.</p>
-    <p class="text-muted mb-0" th:text="${pageNote} ?: 'MVP ho tro don, doi, sam, tu quy, sanh, doi thong; da co chat 2 co ban (tu quy / doi thong). Cac luat nang cao khac dang bo sung.'">MVP ho tro don, doi, sam, tu quy, sanh, doi thong; da co chat 2 co ban (tu quy / doi thong). Cac luat nang cao khac dang bo sung.</p>
+    <p class="text-muted mb-0" th:text="${pageNote} ?: 'Ban hien tai ho tro don, doi, sam, tu quy, sanh, doi thong; da co chat 2 co ban (tu quy / doi thong). Cac luat nang cao khac dang bo sung.'">Ban hien tai ho tro don, doi, sam, tu quy, sanh, doi thong; da co chat 2 co ban (tu quy / doi thong). Cac luat nang cao khac dang bo sung.</p>
   </section>
 
   <div class="tienlen-bot-top-grid">
@@ -23,9 +23,9 @@
             <img id="tlBotSelfAvatar"
                  class="tl-self-summary__avatar"
                  th:src="@{/uploads/avatars/default-avatar.jpg}"
-                 alt="Avatar nguoi choi">
+                 alt="Anh dai dien nguoi choi">
             <div class="tl-self-summary__body">
-              <div class="small"><strong>Ban:</strong> <span id="tlBotSelfName" th:text="${sessionDisplayName}">Guest</span></div>
+              <div class="small"><strong>Ban:</strong> <span id="tlBotSelfName" th:text="${sessionDisplayName}">Khach</span></div>
               <div id="tlBotSelfMeta" class="text-muted small">Khach tam thoi</div>
             </div>
           </div>
@@ -37,8 +37,8 @@
         <div class="d-flex gap-2 flex-wrap">
           <button id="tlBotNewGameBtn" type="button" class="btn theme-outline-btn">Van moi</button>
           <button id="tlBotSurrenderBtn" type="button" class="btn btn-outline-warning">Dau hang</button>
-          <a th:href="@{/games/cards}" class="btn theme-outline-btn">Chi tiet game</a>
-          <a th:href="@{/game-mode/bot(game='cards')}" class="btn btn-outline-secondary">Doi do kho</a>
+          <a th:href="@{/games/cards}" class="btn theme-outline-btn">Ve trang che do</a>
+          <a th:href="@{/game-mode/bot(game='cards')}" class="btn btn-outline-secondary">Chon bot</a>
         </div>
       </div>
     </section>
@@ -83,7 +83,7 @@
             <div id="tlBotTrickCards" class="tienlen-bot-cards-row tl-trick-cards">
               <div class="text-muted small">Chua co bo bai nao</div>
             </div>
-            <div class="tl-table-center__hint">Bot se tu dong danh sau mot khoang tre ngan khi den luot</div>
+            <div class="tl-table-center__hint">Bot se tu dong danh sau mot khoang tre ngan moi khi den luot</div>
           </div>
         </div>
       </div>

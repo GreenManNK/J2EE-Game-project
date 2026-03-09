@@ -13,7 +13,7 @@
     <div class="hub-portal-hero__main">
       <div class="hub-portal-eyebrow">
         <i class="bi" th:classappend="' ' + ${game.iconClass}"></i>
-        <span>GAME DETAIL / <span th:text="${#strings.toUpperCase(game.code)}">CARO</span></span>
+        <span>CHI TIET GAME / <span th:text="${#strings.toUpperCase(game.code)}">CARO</span></span>
       </div>
 
       <h1 class="hub-portal-title" th:text="${game.displayName}">Caro</h1>
@@ -27,9 +27,9 @@
           <i class="bi" th:classappend="${game.availableNow} ? ' bi-check-circle-fill' : ' bi-hourglass-split'"></i>
           <span th:text="${game.availableNow} ? 'San sang choi' : 'Khung da san sang'">San sang choi</span>
         </span>
-        <span class="hub-portal-chip" th:if="${game.supportsOnline}"><i class="bi bi-wifi"></i> Online</span>
-        <span class="hub-portal-chip" th:if="${game.supportsOffline}"><i class="bi bi-laptop"></i> Offline</span>
-        <span class="hub-portal-chip" th:if="${game.supportsGuest}"><i class="bi bi-person-check"></i> Guest duoc choi</span>
+        <span class="hub-portal-chip" th:if="${game.supportsOnline}"><i class="bi bi-wifi"></i> Truc tuyen</span>
+        <span class="hub-portal-chip" th:if="${game.supportsOffline}"><i class="bi bi-laptop"></i> Cung may</span>
+        <span class="hub-portal-chip" th:if="${game.supportsGuest}"><i class="bi bi-person-check"></i> Khach duoc choi</span>
         <span class="hub-portal-chip"><i class="bi bi-code-square"></i> Ma: <span th:text="${game.code}">caro</span></span>
       </div>
 
@@ -58,7 +58,7 @@
           <span class="hub-portal-action__icon"><i class="bi bi-house-fill"></i></span>
           <span class="hub-portal-action__text">
             <strong>Trang chu</strong>
-            <small>Dashboard tong quan</small>
+            <small>Trang tong quan</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
@@ -66,17 +66,17 @@
         <a th:if="${game.code == 'caro'}" th:href="@{/lobby}" class="hub-portal-action hub-portal-action--soft">
           <span class="hub-portal-action__icon"><i class="bi bi-door-open-fill"></i></span>
           <span class="hub-portal-action__text">
-            <strong>Caro Lobby</strong>
-            <small>Route cu tuong thich he thong</small>
+            <strong>Sanh Caro</strong>
+            <small>Mo sanh de tao hoac vao phong nhanh</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
 
-        <a th:if="${game.code == 'caro'}" th:href="@{/single-player}" class="hub-portal-action hub-portal-action--soft">
+        <a th:if="${game.code == 'caro'}" th:href="@{/game-mode/bot(game='caro')}" class="hub-portal-action hub-portal-action--soft">
           <span class="hub-portal-action__icon"><i class="bi bi-person-fill"></i></span>
           <span class="hub-portal-action__text">
-            <strong>Caro Single Player</strong>
-            <small>Route cu choi nhanh</small>
+            <strong>Caro voi bot</strong>
+            <small>Mo che do luyen tap nhanh cua Caro</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
@@ -86,7 +86,7 @@
           <span class="hub-portal-action__icon"><i class="bi bi-hourglass-split"></i></span>
           <span class="hub-portal-action__text">
             <strong>Chua co gameplay</strong>
-            <small>Khung route da san sang, dang bo sung logic choi</small>
+            <small>Dieu huong da san sang, dang bo sung logic choi</small>
           </span>
           <i class="bi bi-slash-circle"></i>
         </div>
@@ -98,33 +98,33 @@
         <div class="hub-portal-panel__head">
           <div>
             <div class="hub-portal-panel__label">Tinh nang game</div>
-            <div class="hub-portal-panel__title">Capability matrix</div>
+            <div class="hub-portal-panel__title">Tong quan tinh nang</div>
           </div>
-          <span class="hub-portal-pill">MVP</span>
+          <span class="hub-portal-pill">Hien tai</span>
         </div>
 
         <div class="hub-portal-preview">
           <div class="hub-portal-preview-grid" aria-hidden="true">
             <div class="hub-portal-preview-cell is-accent-a"><i class="bi bi-wifi"></i></div>
-            <div class="hub-portal-preview-cell" th:text="${game.supportsOnline ? 'ON' : 'OFF'}">ON</div>
+            <div class="hub-portal-preview-cell" th:text="${game.supportsOnline ? 'Co' : 'Khong'}">Co</div>
             <div class="hub-portal-preview-cell is-accent-b"><i class="bi bi-laptop"></i></div>
-            <div class="hub-portal-preview-cell" th:text="${game.supportsOffline ? 'ON' : 'OFF'}">ON</div>
+            <div class="hub-portal-preview-cell" th:text="${game.supportsOffline ? 'Co' : 'Khong'}">Co</div>
             <div class="hub-portal-preview-cell is-accent-a"><i class="bi bi-person-check"></i></div>
-            <div class="hub-portal-preview-cell" th:text="${game.supportsGuest ? 'ON' : 'OFF'}">ON</div>
+            <div class="hub-portal-preview-cell" th:text="${game.supportsGuest ? 'Co' : 'Khong'}">Co</div>
           </div>
         </div>
 
         <div class="hub-portal-meta-list">
           <div class="hub-portal-meta-item">
-            <span>Online</span>
+            <span>Truc tuyen</span>
             <strong th:text="${game.supportsOnline ? 'Co' : 'Khong'}">Co</strong>
           </div>
           <div class="hub-portal-meta-item">
-            <span>Offline</span>
+            <span>Cung may</span>
             <strong th:text="${game.supportsOffline ? 'Co' : 'Khong'}">Co</strong>
           </div>
           <div class="hub-portal-meta-item">
-            <span>Guest</span>
+            <span>Khach</span>
             <strong th:text="${game.supportsGuest ? 'Co' : 'Khong'}">Co</strong>
           </div>
         </div>
@@ -137,22 +137,22 @@
     <article class="hub-portal-highlight">
       <div class="hub-portal-highlight__icon"><i class="bi bi-info-circle-fill"></i></div>
       <div>
-        <h2>Mo ta / route ro rang</h2>
-        <p>Trang detail hien thong tin kha nang, roadmap va duong vao gameplay cho tung game.</p>
+        <h2>Thong tin ro rang</h2>
+        <p>Trang nay hien kha nang va duong vao che do choi cho tung game.</p>
       </div>
     </article>
     <article class="hub-portal-highlight">
       <div class="hub-portal-highlight__icon"><i class="bi bi-layers-fill"></i></div>
       <div>
         <h2>Khung mo rong</h2>
-        <p>Khi them game moi, chi can them metadata + route, giao dien co the tai su dung layout nay.</p>
+        <p>Khi them game moi, chi can bo sung metadata va dieu huong, giao dien co the tai su dung layout nay.</p>
       </div>
     </article>
     <article class="hub-portal-highlight">
       <div class="hub-portal-highlight__icon"><i class="bi bi-link-45deg"></i></div>
       <div>
-        <h2>Ket noi voi mode pages</h2>
-        <p>Game co trang mode rieng (nhu Caro/Chess/Xiangqi/Cards/Minesweeper) de vao van nhanh hon.</p>
+        <h2>Ket noi voi trang che do</h2>
+        <p>Game co trang che do rieng (nhu Caro/Co vua/Co tuong/Danh bai/Do min) de vao van nhanh hon.</p>
       </div>
     </article>
   </section>
@@ -161,28 +161,28 @@
     <div class="hub-portal-main">
       <section class="hub-portal-card">
         <div class="hub-portal-card__head">
-          <h2>Roadmap trien khai</h2>
-          <span class="hub-portal-tag">Roadmap</span>
+          <h2>Huong phat trien</h2>
+          <span class="hub-portal-tag">Ke hoach</span>
         </div>
         <div class="hub-portal-rule-grid" th:if="${game.roadmapItems != null and !#lists.isEmpty(game.roadmapItems)}">
           <div class="hub-portal-rule-item" th:each="item, iter : ${game.roadmapItems}">
             <strong th:text="${iter.index + 1} + '.'">1.</strong>
-            <span th:text="${item}">Roadmap item</span>
+            <span th:text="${item}">Muc tieu tiep theo</span>
           </div>
         </div>
         <div class="hub-portal-empty" th:if="${game.roadmapItems == null or #lists.isEmpty(game.roadmapItems)}">
-          Chua co roadmap chi tiet cho game nay.
+          Chua co ke hoach chi tiet cho game nay.
         </div>
       </section>
 
       <section class="hub-portal-card" th:if="${game.code == 'chess'}">
         <div class="hub-portal-card__head">
-          <h2>Gioi han ban MVP hien tai</h2>
-          <span class="hub-portal-tag">Chess MVP</span>
+          <h2>Gioi han phien ban hien tai</h2>
+          <span class="hub-portal-tag">Co vua</span>
         </div>
         <p>
-          Co vua hien da choi duoc offline 2 nguoi cung may, bot easy/hard va online room MVP.
-          Luat co ban va ket thuc van da duoc xu ly server-side cho online.
+          Co vua hien da choi duoc 2 nguoi cung may, bot de/kho va phong truc tuyen.
+          Luat co ban va ket thuc van da duoc xu ly o server cho che do truc tuyen.
         </p>
         <p>
           Cac mo rong tiep theo co the la UX lich su nuoc di, replay, va them tuy chon cai dat phong.
@@ -191,16 +191,16 @@
 
       <section class="hub-portal-card" th:if="${game.code == 'cards'}">
         <div class="hub-portal-card__head">
-          <h2>Tien len Mien Nam (module Cards)</h2>
+          <h2>Tien len Mien Nam</h2>
           <span class="hub-portal-tag">TLMN</span>
         </div>
         <p>
-          Ban Tien Len online 4 nguoi + bot da duoc nang cap gameplay TLMN, gom toi trang,
+          Ban Tien Len truc tuyen 4 nguoi + bot da duoc nang cap loi choi TLMN, gom toi trang,
           tinh phat theo van, phat chat heo/chat hang va giao dien hien thi delta diem.
         </p>
         <ul class="hub-portal-bullet-list">
-          <li>Phong online 4 nguoi, start khi du nguoi.</li>
-          <li>Bot easy/hard tren cung thiet bi.</li>
+          <li>Phong truc tuyen 4 nguoi, bat dau khi du nguoi.</li>
+          <li>Bot de/kho tren cung thiet bi.</li>
           <li>Cac bien the luat co the tiep tuc cau hinh theo phong.</li>
         </ul>
       </section>
@@ -208,11 +208,11 @@
       <section class="hub-portal-card" th:if="${game.code != 'chess' and game.code != 'cards'}">
         <div class="hub-portal-card__head">
           <h2>Trang thai hien tai</h2>
-          <span class="hub-portal-tag">Status</span>
+          <span class="hub-portal-tag">Hien tai</span>
         </div>
         <p>
-          Game nay da duoc gan vao he thong menu + route + trang mode rieng trong Game Hub.
-          Muc tieu la mo rong gameplay ma khong lam anh huong cac game dang hoat dong.
+          Game nay da duoc dua vao he thong menu, dieu huong va trang che do rieng trong toan bo web.
+          Muc tieu la mo rong loi choi ma khong lam anh huong cac game dang hoat dong.
         </p>
       </section>
     </div>
@@ -227,7 +227,7 @@
             <i class="bi bi-play-fill"></i>
             <div>
               <strong th:text="${game.primaryActionLabel != null and !#strings.isEmpty(game.primaryActionLabel) ? game.primaryActionLabel : 'Choi game'}">Choi game</strong>
-              <small>Mo mode chinh cua game</small>
+              <small>Mo che do chinh cua game</small>
             </div>
           </a>
           <a th:href="@{/games}" class="hub-portal-side-action">

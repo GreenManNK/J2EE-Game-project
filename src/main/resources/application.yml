@@ -71,7 +71,7 @@ app:
     root: ${APP_UPLOAD_ROOT:uploads}
     avatar-dir: ${APP_UPLOAD_AVATAR_DIR:${APP_UPLOAD_ROOT:uploads}/avatars}
   websocket:
-    allowed-origin-patterns: ${WS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*,http://j2ee,https://*.trycloudflare.com,http://*.trycloudflare.com}
+    allowed-origin-patterns: ${WS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*,http://j2ee,https://*.trycloudflare.com,http://*.trycloudflare.com,https://*.runlocal.eu,http://*.runlocal.eu,https://*.loca.lt,http://*.loca.lt,https://*.localtunnel.me,http://*.localtunnel.me}
   tienlen:
     automation:
       auto-fill-wait-ms: ${TIENLEN_AUTO_FILL_WAIT_MS:20000}

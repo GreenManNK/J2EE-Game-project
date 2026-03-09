@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.LinkedHashMap;
@@ -21,13 +22,21 @@ public class TypingController {
     private TypingService typingService;
 
     @GetMapping
-    public String typingPage() {
-        return "games/typing";
+    public String typingPage(@RequestParam(required = false) String room) {
+        String normalizedRoomId = room == null ? "" : room.trim();
+        if (!normalizedRoomId.isEmpty()) {
+            return "redirect:/games/typing/room/" + normalizedRoomId;
+        }
+        return renderTypingPage();
     }
 
     @GetMapping("/room/{roomId}")
     public String typingRoomPage(@PathVariable String roomId) {
-        return typingPage();
+        return renderTypingPage();
+    }
+
+    private String renderTypingPage() {
+        return "games/typing";
     }
 
     @GetMapping("/rooms")

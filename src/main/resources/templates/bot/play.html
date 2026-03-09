@@ -8,14 +8,14 @@
   <section class="theme-box board-page-hero">
     <div class="home-dashboard__eyebrow">
       <i class="bi bi-cpu"></i>
-      <span>Caro / Bot</span>
+      <span>Caro / Dau voi bot</span>
     </div>
-    <h1 class="gx-page-title theme-text fw-bold mt-2 mb-1" th:text="${title}">Bot</h1>
+    <h1 class="gx-page-title theme-text fw-bold mt-2 mb-1" th:text="${title}">Tran dau voi bot</h1>
     <p id="botStatus" class="theme-text mb-0">Ban danh X. Chon o de danh.</p>
     <div class="board-page-hero__actions">
       <button id="resetBtn" class="btn btn-outline-warning">Choi lai</button>
       <button id="botSurrenderBtn" class="btn btn-outline-danger">Dau hang</button>
-      <a th:href="@{/single-player}" class="btn btn-outline-secondary">Quay lai</a>
+      <a th:href="@{/game-mode/bot(game='caro')}" class="btn btn-outline-secondary">Ve chon bot</a>
     </div>
   </section>
 

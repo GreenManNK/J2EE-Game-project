@@ -12,30 +12,30 @@
     <div class="hub-portal-hero__main">
       <div class="hub-portal-eyebrow">
         <i class="bi bi-asterisk"></i>
-        <span>MINESWEEPER / CLASSIC PUZZLE</span>
+        <span>DO MIN / CO DIEN</span>
       </div>
 
       <h1 class="hub-portal-title">
         <span th:text="${game != null ? game.displayName : 'Minesweeper'}">Minesweeper</span>
-        do min offline voi che do leo thang
+        do min cung may voi che do leo thang
       </h1>
 
       <p class="hub-portal-subtitle">
-        Quet min nhip nhanh: chon level, vao ban, leo do kho lien tuc.
+        Quet min nhip nhanh: chon muc do, vao ban, leo do kho lien tuc.
       </p>
 
       <div class="hub-portal-chip-row">
-        <span class="hub-portal-chip is-live"><i class="bi bi-check-circle-fill"></i> Offline san sang</span>
-        <span class="hub-portal-chip"><i class="bi bi-sliders"></i> Custom rows / cols</span>
-        <span class="hub-portal-chip"><i class="bi bi-graph-up-arrow"></i> Progressive difficulty</span>
-        <span class="hub-portal-chip"><i class="bi bi-phone"></i> Long-press mobile</span>
+        <span class="hub-portal-chip is-live"><i class="bi bi-check-circle-fill"></i> Che do cung may san sang</span>
+        <span class="hub-portal-chip"><i class="bi bi-sliders"></i> Tuy bien hang / cot</span>
+        <span class="hub-portal-chip"><i class="bi bi-graph-up-arrow"></i> Do kho tang dan</span>
+        <span class="hub-portal-chip"><i class="bi bi-phone"></i> Nhan giu tren mobile</span>
       </div>
 
       <div class="hub-portal-action-grid">
         <a th:href="@{/minesweeper(level='beginner')}" class="hub-portal-action hub-portal-action--primary">
           <span class="hub-portal-action__icon"><i class="bi bi-play-fill"></i></span>
           <span class="hub-portal-action__text">
-            <strong>Bat dau (Beginner)</strong>
+            <strong>Choi de</strong>
             <small>9x9 / 10 min, lan dau an toan</small>
           </span>
           <i class="bi bi-arrow-right"></i>
@@ -44,7 +44,7 @@
         <a th:href="@{/minesweeper(level='intermediate')}" class="hub-portal-action hub-portal-action--accent">
           <span class="hub-portal-action__icon"><i class="bi bi-speedometer2"></i></span>
           <span class="hub-portal-action__text">
-            <strong>Trung binh</strong>
+            <strong>Choi vua</strong>
             <small>16x16 / 40 min</small>
           </span>
           <i class="bi bi-arrow-right"></i>
@@ -53,7 +53,7 @@
         <a th:href="@{/minesweeper(level='expert')}" class="hub-portal-action hub-portal-action--soft">
           <span class="hub-portal-action__icon"><i class="bi bi-fire"></i></span>
           <span class="hub-portal-action__text">
-            <strong>Kho (Expert)</strong>
+            <strong>Choi kho</strong>
             <small>16x30 / 99 min</small>
           </span>
           <i class="bi bi-arrow-right"></i>
@@ -75,9 +75,9 @@
         <div class="hub-portal-panel__head">
           <div>
             <div class="hub-portal-panel__label">Preview luot choi</div>
-            <div class="hub-portal-panel__title">Classic board interactions</div>
+            <div class="hub-portal-panel__title">Tuong tac ban co co dien</div>
           </div>
-          <span class="hub-portal-pill">Chord + Auto-flag</span>
+          <span class="hub-portal-pill">Chord + tu danh dau</span>
         </div>
 
         <div class="hub-portal-preview">
@@ -98,9 +98,9 @@
         </div>
 
         <div class="hub-portal-meta-list">
-          <div class="hub-portal-meta-item"><span>Gameplay</span><strong>Classic Minesweeper</strong></div>
-          <div class="hub-portal-meta-item"><span>Custom board</span><strong>Rows + Cols + density</strong></div>
-          <div class="hub-portal-meta-item"><span>Mobile UX</span><strong>Long-press = right click</strong></div>
+          <div class="hub-portal-meta-item"><span>Loi choi</span><strong>Do min co dien</strong></div>
+          <div class="hub-portal-meta-item"><span>Ban tuy bien</span><strong>Hang + cot + mat do min</strong></div>
+          <div class="hub-portal-meta-item"><span>Trai nghiem mobile</span><strong>Nhan giu = click phai</strong></div>
         </div>
       </section>
 
@@ -119,14 +119,14 @@
       <div class="hub-portal-highlight__icon"><i class="bi bi-sliders2"></i></div>
       <div>
         <h2>Tuy bien theo 2 huong</h2>
-        <p>Custom rows/cols va mat do min.</p>
+        <p>Tuy bien hang/cot va mat do min.</p>
       </div>
     </article>
     <article class="hub-portal-highlight">
       <div class="hub-portal-highlight__icon"><i class="bi bi-phone-fill"></i></div>
       <div>
-        <h2>Mobile-friendly gameplay</h2>
-        <p>Long-press, chord va auto-flag tren mobile.</p>
+        <h2>Loi choi hop mobile</h2>
+        <p>Nhan giu, chord va tu danh dau tren mobile.</p>
       </div>
     </article>
   </section>
@@ -135,56 +135,56 @@
     <div class="hub-portal-main">
       <section class="hub-portal-card">
         <div class="hub-portal-card__head">
-          <h2>Cac che do vao nhanh</h2>
-          <span class="hub-portal-tag">Levels</span>
+        <h2>Chon muc do nhanh</h2>
+          <span class="hub-portal-tag">Muc do</span>
         </div>
         <div class="hub-portal-rule-grid">
-          <div class="hub-portal-rule-item"><strong>1.</strong><span>Beginner: 9x9 / 10 min (bat dau nhanh).</span></div>
-          <div class="hub-portal-rule-item"><strong>2.</strong><span>Intermediate: 16x16 / 40 min.</span></div>
-          <div class="hub-portal-rule-item"><strong>3.</strong><span>Expert: 16x30 / 99 min.</span></div>
-          <div class="hub-portal-rule-item"><strong>4.</strong><span>Custom + progressive trong trang choi.</span></div>
+          <div class="hub-portal-rule-item"><strong>1.</strong><span>De: 9x9 / 10 min (bat dau nhanh).</span></div>
+          <div class="hub-portal-rule-item"><strong>2.</strong><span>Vua: 16x16 / 40 min.</span></div>
+          <div class="hub-portal-rule-item"><strong>3.</strong><span>Kho: 16x30 / 99 min.</span></div>
+          <div class="hub-portal-rule-item"><strong>4.</strong><span>Tuy bien + do kho tang dan trong trang choi.</span></div>
         </div>
       </section>
 
       <section class="hub-portal-card">
         <div class="hub-portal-card__head">
-          <h2>Gameplay da cap nhat</h2>
-          <span class="hub-portal-tag">Classic</span>
+          <h2>Loi choi da cap nhat</h2>
+          <span class="hub-portal-tag">Co dien</span>
         </div>
         <ul class="hub-portal-bullet-list">
-          <li>First click safe, flood reveal, timer, mine counter, win/lose state.</li>
+          <li>Luot bam dau an toan, mo rong o trong, dong ho, dem min, trang thai thang/thua.</li>
           <li>Flag -> ? -> clear cycle, hien thi co sai khi thua.</li>
-          <li>Chord reveal va auto-flag tren o so da mo.</li>
-          <li>Long-press mobile de thao tac nhu click phai desktop.</li>
+          <li>Chord reveal va tu danh dau tren o so da mo.</li>
+          <li>Nhan giu tren mobile de thao tac nhu click phai tren desktop.</li>
         </ul>
       </section>
 
       <section class="hub-portal-card" th:if="${game != null and game.roadmapItems != null}">
         <div class="hub-portal-card__head">
-          <h2>Roadmap module</h2>
-          <span class="hub-portal-tag">Roadmap</span>
+          <h2>Huong phat trien</h2>
+          <span class="hub-portal-tag">Ke hoach</span>
         </div>
         <ul class="hub-portal-bullet-list">
-          <li th:each="item : ${game.roadmapItems}" th:text="${item}">Roadmap item</li>
+          <li th:each="item : ${game.roadmapItems}" th:text="${item}">Muc tieu tiep theo</li>
         </ul>
       </section>
     </div>
 
     <aside class="hub-portal-side">
       <section class="hub-portal-card">
-        <h3>Mo nhanh ban choi</h3>
+        <h3>Chon muc do</h3>
         <div class="hub-portal-side-actions">
           <a th:href="@{/minesweeper(level='beginner')}" class="hub-portal-side-action">
             <i class="bi bi-play-fill"></i>
-            <div><strong>Beginner</strong><small>9x9 / 10 min</small></div>
+            <div><strong>De</strong><small>9x9 / 10 min</small></div>
           </a>
           <a th:href="@{/minesweeper(level='intermediate')}" class="hub-portal-side-action">
             <i class="bi bi-speedometer2"></i>
-            <div><strong>Intermediate</strong><small>16x16 / 40 min</small></div>
+            <div><strong>Vua</strong><small>16x16 / 40 min</small></div>
           </a>
           <a th:href="@{/minesweeper(level='expert')}" class="hub-portal-side-action">
             <i class="bi bi-fire"></i>
-            <div><strong>Expert</strong><small>16x30 / 99 min</small></div>
+            <div><strong>Kho</strong><small>16x30 / 99 min</small></div>
           </a>
         </div>
       </section>

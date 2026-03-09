@@ -366,7 +366,7 @@
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.success) {
-        throw new Error(String(data?.error || "Khong the luu preferences vao database"));
+        throw new Error(String(data?.error || "Khong the luu tuy chon vao tai khoan"));
       }
       return toServerPreferencesPayload(data.data || payload);
     };
@@ -391,7 +391,7 @@
       if (isAuthenticated && authUserId) {
         const stored = await persistPreferencesToServer(payload);
         applyPreferencesPayload(stored, true);
-        setStatus(preferencesStatus, successMessage + " (da dong bo database).", true);
+        setStatus(preferencesStatus, successMessage + " (da dong bo tai khoan).", true);
       } else {
         setStatus(preferencesStatus, successMessage, true);
       }
@@ -447,9 +447,9 @@
         link.click();
         link.remove();
         window.URL.revokeObjectURL(url);
-        setStatus(preferencesStatus, "Da export file cai dat JSON.", true);
+        setStatus(preferencesStatus, "Da xuat tep cai dat JSON.", true);
       } catch (error) {
-        setStatus(preferencesStatus, "Khong the export cai dat.", false);
+        setStatus(preferencesStatus, "Khong the xuat cai dat.", false);
       }
     });
 
@@ -477,7 +477,7 @@
         }
       };
       reader.onerror = () => {
-        setStatus(preferencesStatus, "Khong doc duoc file cai dat.", false);
+        setStatus(preferencesStatus, "Khong doc duoc tep cai dat.", false);
         importPreferencesFileInput.value = "";
       };
       reader.readAsText(file);
@@ -519,8 +519,8 @@
         const data = await res.json();
         const ok = !!(data && data.success);
         const message = ok
-          ? String(data?.data?.message || "Profile updated")
-          : String(data?.error || "Cannot update profile");
+          ? String(data?.data?.message || "Da cap nhat ho so")
+          : String(data?.error || "Khong the cap nhat ho so");
         setStatus(accountStatus, message, ok);
         notify(message, ok ? "success" : "danger");
         if (!ok) {
@@ -531,14 +531,14 @@
         const updated = data.data || {};
         window.CaroUser?.set?.({
           userId: updated.userId || current.userId || authUserId,
-          displayName: updated.displayName || payload.displayName || current.displayName || "Player",
+          displayName: updated.displayName || payload.displayName || current.displayName || "Nguoi choi",
           email: updated.email || payload.email || current.email || "",
           role: updated.role || current.role || "User",
           avatarPath: updated.avatarPath || payload.avatarPath || current.avatarPath || DEFAULT_AVATAR_PATH
         });
         updateAvatarPreview(updated.avatarPath || payload.avatarPath || current.avatarPath || DEFAULT_AVATAR_PATH);
       } catch (error) {
-        const message = String(error?.message || error || "Cannot update profile");
+        const message = String(error?.message || error || "Khong the cap nhat ho so");
         setStatus(accountStatus, message, false);
         notify(message, "danger");
       }
@@ -577,8 +577,8 @@
         const data = await res.json();
         const ok = !!(data && data.success);
         const message = ok
-          ? String(data?.data?.message || "Password changed")
-          : String(data?.error || "Cannot change password");
+          ? String(data?.data?.message || "Da doi mat khau")
+          : String(data?.error || "Khong the doi mat khau");
         setStatus(passwordStatus, message, ok);
         notify(message, ok ? "success" : "danger");
         if (ok) {
@@ -587,7 +587,7 @@
           if (confirmPasswordInput) confirmPasswordInput.value = "";
         }
       } catch (error) {
-        const message = String(error?.message || error || "Cannot change password");
+        const message = String(error?.message || error || "Khong the doi mat khau");
         setStatus(passwordStatus, message, false);
         notify(message, "danger");
       }
@@ -595,12 +595,12 @@
 
     activateAdminFromSettingsBtn?.addEventListener("click", async () => {
       if (!isAuthenticated || !authUserId) {
-        setStatus(securityStatus, "Ban can dang nhap de kich hoat admin.", false);
+        setStatus(securityStatus, "Ban can dang nhap de kich hoat quyen quan tri.", false);
         return;
       }
       const activationCode = String(activateAdminCodeInput?.value || "").trim();
       if (!activationCode) {
-        setStatus(securityStatus, "Vui long nhap ma kich hoat admin.", false);
+        setStatus(securityStatus, "Vui long nhap ma kich hoat quan tri.", false);
         return;
       }
 
@@ -614,8 +614,8 @@
         const payload = await response.json();
         const success = !!(payload && payload.success);
         const message = success
-          ? String(payload?.data?.message || "Admin role activated")
-          : String(payload?.error || "Cannot activate admin role");
+          ? String(payload?.data?.message || "Da kich hoat quyen quan tri")
+          : String(payload?.error || "Khong the kich hoat quyen quan tri");
 
         setStatus(securityStatus, message, success);
         notify(message, success ? "success" : "danger");
@@ -627,7 +627,7 @@
         const current = window.CaroUser?.get?.() || { userId: authUserId };
         window.CaroUser?.set?.({
           userId: current.userId || authUserId,
-          displayName: payload?.data?.displayName || current.displayName || "Player",
+          displayName: payload?.data?.displayName || current.displayName || "Nguoi choi",
           email: payload?.data?.email || current.email || "",
           role: "Admin",
           avatarPath: payload?.data?.avatarPath || current.avatarPath || "/uploads/avatars/default-avatar.jpg"
@@ -637,7 +637,7 @@
           activateAdminCodeInput.value = "";
         }
       } catch (error) {
-        const message = String(error?.message || error || "Cannot activate admin role");
+        const message = String(error?.message || error || "Khong the kich hoat quyen quan tri");
         setStatus(securityStatus, message, false);
         notify(message, "danger");
       } finally {

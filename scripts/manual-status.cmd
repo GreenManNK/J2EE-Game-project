@@ -7,9 +7,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$appPidRaw=(Get-Content 'app-prod.pid' -ErrorAction SilentlyContinue | Select-Object -First 1);" ^
   "$quickPidRaw=(Get-Content 'cloudflared.pid' -ErrorAction SilentlyContinue | Select-Object -First 1);" ^
   "$namedPidRaw=(Get-Content 'cloudflared-named.pid' -ErrorAction SilentlyContinue | Select-Object -First 1);" ^
+  "$fallbackPidRaw=(Get-Content 'public-fallback-tunnel.pid' -ErrorAction SilentlyContinue | Select-Object -First 1);" ^
   "$appProc=$null; if($appPidRaw){ try{$appProc=Get-Process -Id ([int]$appPidRaw) -ErrorAction Stop}catch{} };" ^
   "$quickProc=$null; if($quickPidRaw){ try{$quickProc=Get-Process -Id ([int]$quickPidRaw) -ErrorAction Stop}catch{} };" ^
   "$namedProc=$null; if($namedPidRaw){ try{$namedProc=Get-Process -Id ([int]$namedPidRaw) -ErrorAction Stop}catch{} };" ^
+  "$fallbackProc=$null; if($fallbackPidRaw){ try{$fallbackProc=Get-Process -Id ([int]$fallbackPidRaw) -ErrorAction Stop}catch{} };" ^
   "$listen=Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1;" ^
   "$quickUrlMatch=$null; if(Test-Path 'cloudflared.err.log'){ $quickUrlMatch=Select-String -Path 'cloudflared.err.log' -Pattern 'https://[a-z0-9-]+\.trycloudflare\.com' -AllMatches -ErrorAction SilentlyContinue | Select-Object -Last 1; };" ^
   "$quickUrl=$null; if($quickProc -and $quickUrlMatch -and $quickUrlMatch.Matches.Count -gt 0){$quickUrl=$quickUrlMatch.Matches[$quickUrlMatch.Matches.Count-1].Value.TrimEnd('/') + '/Game'};" ^
@@ -26,14 +28,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "  if(-not [string]::IsNullOrWhiteSpace($savedPublicUrl)){ $namedUrl=$savedPublicUrl.TrimEnd('/') }" ^
   "  elseif(-not [string]::IsNullOrWhiteSpace($savedPublicBase)){ $namedUrl=$savedPublicBase.TrimEnd('/') + '/Game' }" ^
   "};" ^
+  "$fallbackUrl=$null;" ^
+  "if($fallbackProc -and -not [string]::IsNullOrWhiteSpace($savedPublicUrl)){ $fallbackUrl=$savedPublicUrl.TrimEnd('/') };" ^
   "$activeMode='';" ^
   "if($savedTunnelMode -eq 'named' -and $namedProc){ $activeMode='named' }" ^
   "elseif($savedTunnelMode -eq 'quick' -and $quickProc){ $activeMode='quick' }" ^
+  "elseif(($savedTunnelMode -eq 'runlocal' -or $savedTunnelMode -eq 'localtunnel') -and $fallbackProc){ $activeMode=$savedTunnelMode }" ^
   "elseif($namedProc){ $activeMode='named' }" ^
-  "elseif($quickProc){ $activeMode='quick' };" ^
+  "elseif($quickProc){ $activeMode='quick' }" ^
+  "elseif($fallbackProc -and $savedTunnelMode){ $activeMode=$savedTunnelMode };" ^
   "$activePublicUrl='';" ^
   "if($activeMode -eq 'named'){ $activePublicUrl=$namedUrl }" ^
   "elseif($activeMode -eq 'quick'){ $activePublicUrl=$quickUrl }" ^
+  "elseif($activeMode -eq 'runlocal' -or $activeMode -eq 'localtunnel'){ $activePublicUrl=$fallbackUrl }" ^
   "Write-Output ('APP_PID_FILE=' + ($appPidRaw | ForEach-Object {$_}));" ^
   "Write-Output ('APP_PROCESS_ALIVE=' + ($(if($appProc){'1'} else {'0'})));" ^
   "Write-Output ('APP_LISTEN_8080=' + ($(if($listen){'1'} else {'0'})));" ^
@@ -44,6 +51,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "Write-Output ('NAMED_TUNNEL_PID_FILE=' + ($namedPidRaw | ForEach-Object {$_}));" ^
   "Write-Output ('NAMED_TUNNEL_PROCESS_ALIVE=' + ($(if($namedProc){'1'} else {'0'})));" ^
   "Write-Output ('NAMED_TUNNEL_URL=' + ($(if($namedUrl){$namedUrl}else{''})));" ^
+  "Write-Output ('FALLBACK_TUNNEL_PID_FILE=' + ($fallbackPidRaw | ForEach-Object {$_}));" ^
+  "Write-Output ('FALLBACK_TUNNEL_PROCESS_ALIVE=' + ($(if($fallbackProc){'1'} else {'0'})));" ^
+  "Write-Output ('FALLBACK_TUNNEL_URL=' + ($(if($fallbackUrl){$fallbackUrl}else{''})));" ^
   "Write-Output ('ACTIVE_TUNNEL_MODE=' + $activeMode);" ^
   "Write-Output ('ACTIVE_PUBLIC_GAME_URL=' + ($(if($activePublicUrl){$activePublicUrl}else{''})));" ^
   "Write-Output ('STALE_PUBLIC_GAME_URL=' + ($(if((-not $activeMode) -and $savedPublicUrl){$savedPublicUrl}else{''})));" ^
@@ -54,7 +64,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
 echo ==================
 echo.
 echo Neu ACTIVE_PUBLIC_GAME_URL co gia tri, gui link do cho nguoi choi.
-echo ACTIVE_TUNNEL_MODE cho biet dang dung named hay quick.
+echo ACTIVE_TUNNEL_MODE cho biet dang dung named, quick, runlocal hoac localtunnel.
 echo STALE_PUBLIC_GAME_URL la link cu duoc luu khi hien tai khong co tunnel active.
 echo LAST_PUBLIC_GAME_URL la link lan chay gan nhat da luu (co the da het hieu luc neu tunnel da tat).
 

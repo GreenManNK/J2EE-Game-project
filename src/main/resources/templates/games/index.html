@@ -10,7 +10,7 @@
       <span class="cg-chip is-live"><i class="bi bi-check-circle-fill"></i> <span th:text="${#lists.size(games)} + ' game san sang'">0 game san sang</span></span>
       <span class="cg-chip"><i class="bi bi-lightning-charge-fill"></i> Choi ngay tren trinh duyet</span>
       <span class="cg-chip"><i class="bi bi-phone-fill"></i> Tren moi thiet bi</span>
-      <span class="cg-chip"><i class="bi bi-people-fill"></i> Co mode online</span>
+      <span class="cg-chip"><i class="bi bi-people-fill"></i> Co che do truc tuyen</span>
     </div>
 
     <div class="cg-browser-controls">
@@ -75,7 +75,7 @@
                th:each="g,st : ${games}"
                th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' || g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 70 : 35) + (g.supportsOnline ? 18 : 0) + (20 - st.index)}">
         <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
-          <span class="cg-tile-badge" th:text="${g.availableNow} ? 'Live' : 'Soon'">Live</span>
+          <span class="cg-tile-badge" th:text="${g.availableNow} ? 'San sang' : 'Sap co'">San sang</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
         <div class="cg-tile-body">
@@ -85,7 +85,7 @@
             <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
             <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
                th:href="@{${g.primaryActionUrl}}"
-               class="hub-portal-inline-btn primary">Play</a>
+               class="hub-portal-inline-btn primary">Choi</a>
             <button type="button"
                     class="hub-portal-inline-btn js-favorite-toggle"
                     th:attr="data-game-code=${g.code},data-game-name=${g.displayName}">
@@ -99,7 +99,7 @@
 
   <section class="cg-lane" data-lane-section>
     <header class="cg-lane-head">
-      <h2>Multiplayer</h2>
+      <h2>Truc tuyen</h2>
       <a th:href="@{/online-hub(game='caro')}" class="cg-lane-more">Xem them</a>
     </header>
     <div class="cg-lane-track" data-lane-track>
@@ -108,7 +108,7 @@
                th:if="${g.supportsOnline}"
                th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' || g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 85 : 45)}">
         <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
-          <span class="cg-tile-badge">Online</span>
+          <span class="cg-tile-badge">Truc tuyen</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
         <div class="cg-tile-body">
@@ -118,7 +118,7 @@
             <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
             <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
                th:href="@{${g.primaryActionUrl}}"
-               class="hub-portal-inline-btn primary">Play</a>
+               class="hub-portal-inline-btn primary">Choi</a>
             <button type="button"
                     class="hub-portal-inline-btn js-favorite-toggle"
                     th:attr="data-game-code=${g.code},data-game-name=${g.displayName}">
@@ -132,7 +132,7 @@
 
   <section class="cg-lane" data-lane-section>
     <header class="cg-lane-head">
-      <h2>Classic va Chien thuat</h2>
+      <h2>Co dien va chien thuat</h2>
       <a th:href="@{/games/chess}" class="cg-lane-more">Xem them</a>
     </header>
     <div class="cg-lane-track" data-lane-track>
@@ -141,7 +141,7 @@
                th:if="${g.code == 'caro' or g.code == 'chess' or g.code == 'xiangqi' or g.code == 'puzzle'}"
                th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' ? 2026 : 2025},data-popularity=${(g.availableNow ? 74 : 40) + (g.supportsOnline ? 10 : 0)}">
         <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
-          <span class="cg-tile-badge">Top</span>
+          <span class="cg-tile-badge">Noi bat</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
         <div class="cg-tile-body">
@@ -151,7 +151,7 @@
             <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
             <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
                th:href="@{${g.primaryActionUrl}}"
-               class="hub-portal-inline-btn primary">Play</a>
+               class="hub-portal-inline-btn primary">Choi</a>
             <button type="button"
                     class="hub-portal-inline-btn js-favorite-toggle"
                     th:attr="data-game-code=${g.code},data-game-name=${g.displayName}">
@@ -165,7 +165,7 @@
 
   <section class="cg-lane" data-lane-section>
     <header class="cg-lane-head">
-      <h2>Cards, Blackjack va Nhanh</h2>
+      <h2>Danh bai, Blackjack va game nhanh</h2>
       <a th:href="@{/games/cards}" class="cg-lane-more">Xem them</a>
     </header>
     <div class="cg-lane-track" data-lane-track>
@@ -174,7 +174,7 @@
                th:if="${g.code == 'cards' or g.code == 'blackjack' or g.code == 'puzzle' or g.code == 'quiz' or g.code == 'typing' or g.code == 'minesweeper'}"
                th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' or g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 65 : 42) + (g.supportsGuest ? 12 : 0)}">
         <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
-          <span class="cg-tile-badge">New</span>
+          <span class="cg-tile-badge">Moi</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
         <div class="cg-tile-body">
@@ -184,7 +184,7 @@
             <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
             <a th:if="${g.primaryActionUrl != null and !#strings.isEmpty(g.primaryActionUrl)}"
                th:href="@{${g.primaryActionUrl}}"
-               class="hub-portal-inline-btn primary">Play</a>
+               class="hub-portal-inline-btn primary">Choi</a>
             <button type="button"
                     class="hub-portal-inline-btn js-favorite-toggle"
                     th:attr="data-game-code=${g.code},data-game-name=${g.displayName}">

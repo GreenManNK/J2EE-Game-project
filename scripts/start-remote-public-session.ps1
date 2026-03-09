@@ -4,7 +4,7 @@ param(
     [int]$WaitSeconds = 30,
     [string]$PublicUrlFile = "public-game-url.txt",
     [string]$AppEnvFile = ".env.public.local",
-    [ValidateSet("auto", "named", "quick")]
+    [ValidateSet("auto", "named", "quick", "runlocal", "localtunnel")]
     [string]$TunnelMode = "auto",
     [switch]$OpenBrowser,
     [switch]$SkipBootstrap,
@@ -19,10 +19,13 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $appStartScript = Join-Path $PSScriptRoot "start-prod-app.ps1"
 $tunnelStartScript = Join-Path $PSScriptRoot "start-remote-quick-tunnel.ps1"
 $namedTunnelStartScript = Join-Path $PSScriptRoot "start-cloudflare-named-tunnel.ps1"
+$fallbackTunnelStartScript = Join-Path $PSScriptRoot "start-fallback-public-tunnel.ps1"
 $stopQuickTunnelScript = Join-Path $PSScriptRoot "stop-remote-quick-tunnel.ps1"
 $stopNamedTunnelScript = Join-Path $PSScriptRoot "stop-cloudflare-named-tunnel.ps1"
+$stopFallbackTunnelScript = Join-Path $PSScriptRoot "stop-fallback-public-tunnel.ps1"
 $cfErrLog = Join-Path $repoRoot "cloudflared.err.log"
 $namedCfErrLog = Join-Path $repoRoot "cloudflared-named.err.log"
+$fallbackTunnelErrLog = Join-Path $repoRoot "public-fallback-tunnel.err.log"
 $appOutLog = Join-Path $repoRoot "run-prod-public.out.log"
 $appErrLog = Join-Path $repoRoot "run-prod-public.err.log"
 $appPidFile = Join-Path $repoRoot "app-prod.pid"
@@ -209,8 +212,10 @@ function Resolve-BootstrapDbKind([string]$ExplicitDb, [string]$EnvFilePath) {
 Require-Script $appStartScript
 Require-Script $tunnelStartScript
 Require-Script $namedTunnelStartScript
+Require-Script $fallbackTunnelStartScript
 Require-Script $stopQuickTunnelScript
 Require-Script $stopNamedTunnelScript
+Require-Script $stopFallbackTunnelScript
 if (-not $SkipBootstrap) {
     Require-Script $bootstrapScript
 }
@@ -239,9 +244,9 @@ try {
     $appScriptOutput = @()
     try {
         if ($AutoBuild) {
-            $appScriptOutput = & $appStartScript -AutoBuild -Port $Port -EnvFile $AppEnvFile -EnableH2Fallback 2>&1
+            $appScriptOutput = & $appStartScript -AutoBuild -Port $Port -EnvFile $AppEnvFile -EnableH2Fallback -WaitSeconds ([Math]::Max(45, $WaitSeconds)) 2>&1
         } else {
-            $appScriptOutput = & $appStartScript -Port $Port -EnvFile $AppEnvFile -EnableH2Fallback 2>&1
+            $appScriptOutput = & $appStartScript -Port $Port -EnvFile $AppEnvFile -EnableH2Fallback -WaitSeconds ([Math]::Max(45, $WaitSeconds)) 2>&1
         }
     } catch {
         throw ("Khoi dong app that bai: {0}" -f $_.Exception.Message)
@@ -273,14 +278,29 @@ try {
             }
         }
     }
-
     $publicBaseUrl = $null
     $publicGameUrl = $null
     $tunnelLogErr = $null
 
+    if (($resolvedTunnelMode -eq "runlocal") -or ($resolvedTunnelMode -eq "localtunnel")) {
+        Write-Output "STEP=START_TUNNEL_FALLBACK"
+        & $stopQuickTunnelScript | Out-Null
+        & $stopNamedTunnelScript | Out-Null
+        $fallbackOutput = & $fallbackTunnelStartScript -LocalPort $Port -ContextPath "/Game" -Provider $resolvedTunnelMode 2>&1
+        $fallbackOutput | ForEach-Object { Write-Output ([string]$_) }
+        $fallbackMap = Parse-KeyValueLines -Lines $fallbackOutput
+        if (-not $fallbackMap.ContainsKey("PUBLIC_GAME_URL")) {
+            throw "Fallback provider khong tao duoc PUBLIC_GAME_URL."
+        }
+        $publicGameUrl = Normalize-GameUrl -Url ([string]$fallbackMap["PUBLIC_GAME_URL"])
+        $publicBaseUrl = Normalize-BaseUrl -BaseUrl ([string]$fallbackMap["PUBLIC_BASE_URL"]) -GameUrl $publicGameUrl
+        $tunnelLogErr = $fallbackTunnelErrLog
+    }
+
     if ($resolvedTunnelMode -eq "named") {
         Write-Output "STEP=START_TUNNEL_NAMED"
         & $stopQuickTunnelScript | Out-Null
+        & $stopFallbackTunnelScript | Out-Null
         try {
             $namedOutput = & $namedTunnelStartScript -EnvFile $AppEnvFile -WaitSeconds ([Math]::Max(20, $WaitSeconds)) 2>&1
             $namedOutput | ForEach-Object { Write-Output ([string]$_) }
@@ -316,6 +336,7 @@ try {
     if ($resolvedTunnelMode -eq "quick") {
         Write-Output "STEP=START_TUNNEL_QUICK"
         & $stopNamedTunnelScript | Out-Null
+        & $stopFallbackTunnelScript | Out-Null
         $quickMaxAttempts = 3
         $quickAttempt = 0
         $quickLastError = $null
@@ -359,7 +380,20 @@ try {
         }
 
         if ([string]::IsNullOrWhiteSpace($publicGameUrl)) {
-            throw ("Quick tunnel khong on dinh sau {0} lan thu. Loi cuoi: {1}" -f $quickMaxAttempts, $quickLastError)
+            Write-Warning ("Quick tunnel khong on dinh sau {0} lan thu. Dang thu fallback provider..." -f $quickMaxAttempts)
+            Write-Output "STEP=START_TUNNEL_FALLBACK"
+            $fallbackOutput = & $fallbackTunnelStartScript -LocalPort $Port -ContextPath "/Game" 2>&1
+            $fallbackOutput | ForEach-Object { Write-Output ([string]$_) }
+            $fallbackMap = Parse-KeyValueLines -Lines $fallbackOutput
+            if (-not $fallbackMap.ContainsKey("PUBLIC_GAME_URL")) {
+                throw ("Quick tunnel that bai va fallback provider cung khong tao duoc public URL. Loi quick tunnel cuoi: {0}" -f $quickLastError)
+            }
+            $publicGameUrl = Normalize-GameUrl -Url ([string]$fallbackMap["PUBLIC_GAME_URL"])
+            $publicBaseUrl = Normalize-BaseUrl -BaseUrl ([string]$fallbackMap["PUBLIC_BASE_URL"]) -GameUrl $publicGameUrl
+            if ($fallbackMap.ContainsKey("TUNNEL_MODE")) {
+                $resolvedTunnelMode = [string]$fallbackMap["TUNNEL_MODE"]
+            }
+            $tunnelLogErr = $fallbackTunnelErrLog
         }
     }
 
@@ -370,7 +404,11 @@ try {
     $publicGameOk = Wait-HttpOk -Url $publicPingUrl -TimeoutSeconds $publicProbeTimeoutSeconds
     $publicWsOk = Wait-HttpOk -Url $publicWsInfoUrl -TimeoutSeconds ([Math]::Max(20, [Math]::Min(120, $publicProbeTimeoutSeconds + 15)))
     $publicPageOk = Wait-HttpOk -Url $publicGameUrl -TimeoutSeconds 12
-    $tunnelPidCheckFile = if ($resolvedTunnelMode -eq "named") { $namedTunnelPidFile } else { $tunnelPidFile }
+    $tunnelPidCheckFile = switch ($resolvedTunnelMode) {
+        "named" { $namedTunnelPidFile }
+        "quick" { $tunnelPidFile }
+        default { Join-Path $repoRoot "public-fallback-tunnel.pid" }
+    }
     $tunnelAlive = Test-ProcessAliveByPidFile -PidFilePath $tunnelPidCheckFile
     $appAlive = Test-ProcessAliveByPidFile -PidFilePath $appPidFile
     $publicHost = Get-UrlHost -Url $publicGameUrl
@@ -388,6 +426,8 @@ try {
             }
             if ($resolvedTunnelMode -eq "quick") {
                 $hint += " Neu mang cong cong bi chan *.trycloudflare.com, hay cau hinh CLOUDFLARE_TUNNEL_TOKEN + PUBLIC_BASE_URL de dung named tunnel domain co dinh."
+            } elseif (($resolvedTunnelMode -eq "runlocal") -or ($resolvedTunnelMode -eq "localtunnel")) {
+                $hint += " Fallback provider da tao URL nhung public probe that bai; hay xem public-fallback-tunnel.err.log."
             }
             throw ("Tunnel mode '{0}' da tao nhung URL public khong truy cap duoc: {1} (probe: {2}){3}" -f $resolvedTunnelMode, $publicGameUrl, $publicPingUrl, $hint)
         }
@@ -401,14 +441,15 @@ try {
         }
     }
 
-    @(
+    $publicUrlLines = @(
         "# Auto-generated by scripts/start-remote-public-session.ps1"
         "TUNNEL_MODE=$resolvedTunnelMode"
         "PUBLIC_GAME_URL=$publicGameUrl"
         "PUBLIC_BASE_URL=$publicBaseUrl"
         "LOCAL_GAME_URL=$localGameUrl"
         "UPDATED_AT_UTC=$(([DateTime]::UtcNow).ToString('yyyy-MM-ddTHH:mm:ssZ'))"
-    ) | Set-Content -Path $publicUrlFilePath -Encoding UTF8
+    )
+    [System.IO.File]::WriteAllLines($publicUrlFilePath, $publicUrlLines, [System.Text.Encoding]::ASCII)
 
     Write-Output ""
     Write-Output "========================================"

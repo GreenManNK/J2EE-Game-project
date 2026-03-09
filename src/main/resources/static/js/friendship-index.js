@@ -32,7 +32,7 @@
   }
 
   function reportError(err){
-    const message = String(err?.message || err || 'Request failed');
+    const message = String(err?.message || err || 'Yeu cau that bai');
     setStatus(message, false);
     ui.toast?.(message, { type: 'danger' });
   }
@@ -135,7 +135,7 @@
 
     const img = document.createElement('img');
     img.src = avatarPath;
-    img.alt = 'avatar';
+    img.alt = 'Anh dai dien';
     img.width = 40;
     img.height = 40;
     img.className = 'rounded-circle border flex-shrink-0';
@@ -154,13 +154,13 @@
 
     const onlineBadge = document.createElement('span');
     onlineBadge.className = 'badge ' + (isOnline ? 'text-bg-success' : 'text-bg-secondary');
-    onlineBadge.textContent = isOnline ? 'Online' : 'Offline';
+    onlineBadge.textContent = isOnline ? 'Truc tuyen' : 'Ngoai tuyen';
     titleRow.appendChild(onlineBadge);
 
     const scoreBadge = document.createElement('span');
     scoreBadge.className = 'badge text-bg-light border';
     scoreBadge.textContent = Number.isFinite(Number(scoreValue))
-      ? ('Score ' + Number(scoreValue))
+      ? ('Diem ' + Number(scoreValue))
       : 'Moi chap nhan';
     titleRow.appendChild(scoreBadge);
 
@@ -180,7 +180,7 @@
     ));
     actions.appendChild(createLink(
       'btn btn-sm btn-outline-success',
-      'Chat',
+      'Nhan tin',
       buildHref('/chat/private', { currentUserId: uid, friendId })
     ));
     actions.appendChild(createButton(

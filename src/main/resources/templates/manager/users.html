@@ -1,6 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Manager Users')}"></head>
+<head th:replace="~{fragments :: appHead('Nguoi dung quan ly')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('manager-users')}"></div>
 
@@ -10,27 +10,27 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-people"></i>
-          <span>Manager / User Management</span>
+          <span>Quan ly / Quan ly tai khoan</span>
         </div>
-        <h1 class="gx-page-title theme-text mt-2">Manager - Users</h1>
-        <p class="gx-page-subtitle">Manager co the loc danh sach, tao user role User va chinh sua nhanh thong tin co ban.</p>
+        <h1 class="gx-page-title theme-text mt-2">Quan ly - Tai khoan</h1>
+        <p class="gx-page-subtitle">Quan ly co the loc danh sach, tao tai khoan quyen Nguoi choi va chinh sua nhanh thong tin co ban.</p>
       </div>
       <div class="gx-page-badge">
         <i class="bi bi-people-fill"></i>
-        <span th:text="${totalItems} + ' users'">0 users</span>
+        <span th:text="${totalItems} + ' tai khoan'">0 tai khoan</span>
       </div>
       <div class="gx-inline-actions">
         <a class="btn theme-outline-btn"
            th:href="@{/manager/export-users-csv(searchTerm=${searchTerm},banFilter=${banFilter},page=${page},size=${size},scope='page')}">
-          CSV Trang nay
+          Xuat CSV trang nay
         </a>
         <a class="btn theme-outline-btn"
            th:href="@{/manager/export-users-excel(searchTerm=${searchTerm},banFilter=${banFilter},page=${page},size=${size},scope='page')}">
-          Excel Trang nay
+          Xuat Excel trang nay
         </a>
         <a class="btn theme-outline-btn"
            th:href="@{/manager/export-users-excel(searchTerm=${searchTerm},banFilter=${banFilter},page=${page},size=${size},scope='all')}">
-          Excel Tat ca da loc
+          Xuat Excel tat ca da loc
         </a>
       </div>
     </div>
@@ -38,36 +38,36 @@
 
   <form method="get" th:action="@{/manager/users}" class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
-      <h2 class="gx-section-card__title theme-text mb-0">Filter users</h2>
+      <h2 class="gx-section-card__title theme-text mb-0">Loc tai khoan</h2>
       <div class="gx-section-card__meta">Tim va loc trang thai ban</div>
     </div>
     <div class="row g-2 align-items-end">
       <div class="col-md-5">
-        <label class="form-label" for="searchTerm">Search</label>
-        <input id="searchTerm" class="form-control" name="searchTerm" placeholder="Search user" th:value="${searchTerm}">
+        <label class="form-label" for="searchTerm">Tim kiem</label>
+        <input id="searchTerm" class="form-control" name="searchTerm" placeholder="Tim theo ten hoac email" th:value="${searchTerm}">
       </div>
       <div class="col-md-3">
-        <label class="form-label" for="banFilter">Ban filter</label>
+        <label class="form-label" for="banFilter">Loc khoa</label>
         <select id="banFilter" class="form-select" name="banFilter">
-          <option value="" th:selected="${banFilter==''}">All</option>
-          <option value="banned" th:selected="${banFilter=='banned'}">Banned</option>
-          <option value="active" th:selected="${banFilter=='active'}">Active</option>
+          <option value="" th:selected="${banFilter==''}">Tat ca</option>
+          <option value="banned" th:selected="${banFilter=='banned'}">Da khoa</option>
+          <option value="active" th:selected="${banFilter=='active'}">Dang hoat dong</option>
         </select>
       </div>
       <div class="col-md-2">
         <input type="hidden" name="size" th:value="${size}">
-        <button type="submit" class="btn btn-primary w-100">Filter</button>
+        <button type="submit" class="btn btn-primary w-100">Loc</button>
       </div>
       <div class="col-md-2 text-md-end">
-        <small class="text-muted">Total: <span th:text="${totalItems}"></span></small>
+        <small class="text-muted">Tong: <span th:text="${totalItems}"></span></small>
       </div>
     </div>
   </form>
 
   <section class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
-      <h2 class="gx-section-card__title theme-text mb-0">Create User</h2>
-      <div class="gx-section-card__meta">Manager chi tao tai khoan role User</div>
+      <h2 class="gx-section-card__title theme-text mb-0">Tao tai khoan</h2>
+      <div class="gx-section-card__meta">Quan ly chi tao tai khoan quyen Nguoi choi</div>
     </div>
     <form id="managerCreateUserForm" class="row g-2 align-items-end">
       <div class="col-md-4">
@@ -75,24 +75,24 @@
         <input id="createEmail" class="form-control" type="email" required>
       </div>
       <div class="col-md-3">
-        <label class="form-label" for="createDisplayName">Name</label>
+        <label class="form-label" for="createDisplayName">Ten hien thi</label>
         <input id="createDisplayName" class="form-control">
       </div>
       <div class="col-md-3">
-        <label class="form-label" for="createPassword">Password</label>
+        <label class="form-label" for="createPassword">Mat khau</label>
         <input id="createPassword" class="form-control" type="password" required>
       </div>
       <div class="col-md-2">
-        <label class="form-label" for="createScore">Score</label>
+        <label class="form-label" for="createScore">Diem</label>
         <input id="createScore" class="form-control" type="number" value="0">
       </div>
       <div class="col-12">
-        <label class="form-label" for="createAvatarPath">Avatar Path</label>
+        <label class="form-label" for="createAvatarPath">Duong dan anh dai dien</label>
         <input id="createAvatarPath" class="form-control" placeholder="/uploads/avatars/default-avatar.jpg">
       </div>
       <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
-        <button type="submit" class="btn btn-primary">Create</button>
-        <small class="text-muted">Manager chi tao tai khoan role `User`.</small>
+        <button type="submit" class="btn btn-primary">Tao</button>
+        <small class="text-muted">Quan ly chi tao tai khoan quyen Nguoi choi.</small>
         <div id="managerCreateUserOut" class="small mb-0 theme-text flex-grow-1" role="status" aria-live="polite"></div>
       </div>
     </form>
@@ -101,16 +101,16 @@
   <div class="gx-inline-actions mb-0 theme-text">
     <a class="btn btn-sm btn-outline-secondary"
        th:if="${page > 0}"
-       th:href="@{/manager/users(searchTerm=${searchTerm},banFilter=${banFilter},page=${page-1},size=${size})}">Prev</a>
-    <span class="small">Page <span th:text="${page+1}"></span>/<span th:text="${totalPages}"></span></span>
+       th:href="@{/manager/users(searchTerm=${searchTerm},banFilter=${banFilter},page=${page-1},size=${size})}">Truoc</a>
+    <span class="small">Trang <span th:text="${page+1}"></span>/<span th:text="${totalPages}"></span></span>
     <a class="btn btn-sm btn-outline-secondary"
        th:if="${page+1 < totalPages}"
-       th:href="@{/manager/users(searchTerm=${searchTerm},banFilter=${banFilter},page=${page+1},size=${size})}">Next</a>
+       th:href="@{/manager/users(searchTerm=${searchTerm},banFilter=${banFilter},page=${page+1},size=${size})}">Sau</a>
   </div>
 
   <section class="theme-box rounded p-2 gx-section-card gx-table-card">
     <div class="gx-section-card__head">
-      <h2 class="gx-section-card__title theme-text mb-0">User list</h2>
+      <h2 class="gx-section-card__title theme-text mb-0">Danh sach tai khoan</h2>
       <div class="gx-section-card__meta">Trang hien tai: <span th:text="${page+1}">1</span></div>
     </div>
     <div class="table-responsive">
@@ -119,10 +119,10 @@
         <tr class="theme-table-header">
           <th>ID</th>
           <th>Email</th>
-          <th>Name</th>
-          <th>Score</th>
-          <th>Role</th>
-          <th>Action</th>
+          <th>Ten hien thi</th>
+          <th>Diem</th>
+          <th>Quyen</th>
+          <th>Thao tac</th>
         </tr>
         </thead>
         <tbody>
@@ -131,9 +131,9 @@
           <td th:text="${u.email}"></td>
           <td th:text="${u.displayName}"></td>
           <td th:text="${u.score}"></td>
-          <td th:text="${u.role}"></td>
+          <td th:text="${u.role == 'Admin' ? 'Quan tri' : (u.role == 'Manager' ? 'Quan ly' : 'Nguoi choi')}"></td>
           <td>
-            <a class="btn btn-sm btn-outline-primary" th:href="@{/manager/users/{id}(id=${u.id})}">Detail</a>
+            <a class="btn btn-sm btn-outline-primary" th:href="@{/manager/users/{id}(id=${u.id})}">Chi tiet</a>
           </td>
         </tr>
         </tbody>
@@ -142,7 +142,7 @@
   </section>
 
   <div class="gx-inline-actions">
-    <a class="btn theme-outline-btn" th:href="@{/}">Home</a>
+    <a class="btn theme-outline-btn" th:href="@{/}">Trang chu</a>
   </div>
 </main>
 
@@ -150,3 +150,4 @@
 <script th:src="@{/js/manager-users.js}"></script>
 </body>
 </html>
+

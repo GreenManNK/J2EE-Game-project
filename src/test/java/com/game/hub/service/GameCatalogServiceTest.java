@@ -29,11 +29,18 @@ class GameCatalogServiceTest {
         assertTrue(codes.contains("typing"));
         assertTrue(codes.contains("puzzle"));
         assertTrue(service.findByCode("CARO").isPresent());
+        var caro = service.findByCode("caro").orElseThrow();
+        assertTrue(caro.availableNow());
+        assertTrue(caro.supportsOnline());
+        assertTrue(caro.supportsOffline());
+        assertEquals("/games/caro", caro.primaryActionUrl());
+
         var chess = service.findByCode("chess").orElseThrow();
         assertTrue(chess.availableNow());
         assertTrue(chess.supportsOffline());
         assertTrue(chess.supportsOnline());
         assertNotNull(chess.primaryActionUrl());
+        assertEquals("/games/chess", chess.primaryActionUrl());
 
         var cards = service.findByCode("cards").orElseThrow();
         assertTrue(cards.availableNow());
@@ -45,20 +52,20 @@ class GameCatalogServiceTest {
         assertTrue(blackjack.availableNow());
         assertTrue(blackjack.supportsOnline());
         assertEquals(false, blackjack.supportsOffline());
-        assertEquals("/games/blackjack", blackjack.primaryActionUrl());
+        assertEquals("/games/cards/blackjack", blackjack.primaryActionUrl());
 
         var xiangqi = service.findByCode("xiangqi").orElseThrow();
         assertTrue(xiangqi.availableNow());
         assertTrue(xiangqi.supportsOffline());
         assertTrue(xiangqi.supportsOnline());
-        assertEquals("/online-hub?game=xiangqi", xiangqi.primaryActionUrl());
+        assertEquals("/games/xiangqi", xiangqi.primaryActionUrl());
 
         var minesweeper = service.findByCode("minesweeper").orElseThrow();
         assertTrue(minesweeper.availableNow());
         assertTrue(minesweeper.supportsOffline());
         assertTrue(minesweeper.supportsGuest());
         assertEquals(false, minesweeper.supportsOnline());
-        assertEquals("/minesweeper", minesweeper.primaryActionUrl());
+        assertEquals("/games/minesweeper", minesweeper.primaryActionUrl());
 
         var quiz = service.findByCode("quiz").orElseThrow();
         assertTrue(quiz.availableNow());

@@ -29,6 +29,23 @@ class GameControllerTest {
 
         String view = controller.index("room1", null, request, model);
 
+        assertEquals("redirect:/game/room/room1", view);
+    }
+
+    @Test
+    void roomPageShouldAllowGuestWhenNoSessionUser() {
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(null);
+        when(request.getSession(true)).thenReturn(session);
+        when(session.getAttribute("GUEST_USER_ID")).thenReturn(null);
+
+        GameController controller = new GameController(userAccountRepository);
+        Model model = new ConcurrentModel();
+
+        String view = controller.roomPage("room1", null, request, model);
+
         assertEquals("game/index", view);
         assertEquals("room1", model.getAttribute("roomId"));
         assertTrue(String.valueOf(model.getAttribute("sessionUserId")).startsWith("guest-"));

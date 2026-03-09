@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Leaderboard')}"></head>
+<head th:replace="~{fragments :: appHead('Bang xep hang')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('leaderboard')}"></div>
 
@@ -10,10 +10,10 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-trophy"></i>
-          <span>Rankings</span>
+          <span>Bang xep hang</span>
         </div>
         <h1 class="gx-page-title theme-text mt-2">Bang xep hang</h1>
-        <p class="gx-page-subtitle">Tim kiem nguoi choi, loc nguong diem va xuat bao cao nhanh.</p>
+        <p class="gx-page-subtitle">Tim kiem tai khoan, loc nguong diem va xuat bao cao nhanh.</p>
       </div>
       <div class="gx-page-badge">
         <i class="bi bi-people-fill"></i>
@@ -24,14 +24,14 @@
     <form method="get" th:action="@{/leaderboard}" class="row g-2 align-items-end">
       <div class="col-12 col-md-5 col-lg-4">
         <label class="form-label" for="q">Tim kiem</label>
-        <input id="q" class="form-control" name="q" th:value="${q}" placeholder="Nhap user id hoac ten hien thi">
+        <input id="q" class="form-control" name="q" th:value="${q}" placeholder="Nhap ma tai khoan hoac ten hien thi">
       </div>
       <div class="col-6 col-md-3 col-lg-2">
         <label class="form-label" for="minScore">Diem toi thieu</label>
         <input id="minScore" class="form-control" name="minScore" type="number" th:value="${minScore}" placeholder="0">
       </div>
       <div class="col-6 col-md-2 col-lg-2">
-        <label class="form-label" for="size">Size</label>
+        <label class="form-label" for="size">So dong</label>
         <select id="size" class="form-select" name="size">
           <option value="10" th:selected="${size == 10}">10</option>
           <option value="20" th:selected="${size == 20}">20</option>
@@ -46,16 +46,16 @@
 
       <div class="col-12 d-flex flex-wrap gap-2 justify-content-md-end mt-2">
         <a class="btn theme-outline-btn"
-           th:href="@{/leaderboard/export-csv(q=${q},minScore=${minScore},page=${page},size=${size},scope='page')}">CSV Trang nay</a>
+           th:href="@{/leaderboard/export-csv(q=${q},minScore=${minScore},page=${page},size=${size},scope='page')}">Xuat CSV trang nay</a>
         <a class="btn theme-outline-btn"
-           th:href="@{/leaderboard/export-excel(q=${q},minScore=${minScore},page=${page},size=${size},scope='page')}">Excel Trang nay</a>
+           th:href="@{/leaderboard/export-excel(q=${q},minScore=${minScore},page=${page},size=${size},scope='page')}">Xuat Excel trang nay</a>
         <a class="btn theme-outline-btn"
-           th:href="@{/leaderboard/export-excel(q=${q},minScore=${minScore},page=${page},size=${size},scope='all')}">Excel Tat ca da loc</a>
+           th:href="@{/leaderboard/export-excel(q=${q},minScore=${minScore},page=${page},size=${size},scope='all')}">Xuat Excel tat ca da loc</a>
       </div>
     </form>
 
     <div class="gx-chip-row mt-2">
-      <span class="gx-chip"><i class="bi bi-graph-up-arrow"></i> Thu hang theo diem</span>
+      <span class="gx-chip"><i class="bi bi-graph-up-arrow"></i> Xep hang theo diem</span>
       <span class="gx-chip"><i class="bi bi-arrow-repeat"></i> Cap nhat tu server</span>
     </div>
   </section>
@@ -72,9 +72,9 @@
         <thead>
         <tr class="theme-table-header">
           <th>#</th>
-          <th>User ID</th>
-          <th>Name</th>
-          <th>Score</th>
+          <th>Ma tai khoan</th>
+          <th>Ten hien thi</th>
+          <th>Diem</th>
         </tr>
         </thead>
         <tbody>
@@ -92,18 +92,19 @@
   <div class="gx-inline-actions">
     <a class="btn btn-sm btn-outline-secondary"
        th:if="${page > 0}"
-       th:href="@{/leaderboard(q=${q},minScore=${minScore},page=${page-1},size=${size})}">Prev</a>
-    <span class="small">Page <span th:text="${page+1}"></span>/<span th:text="${totalPages}"></span></span>
+       th:href="@{/leaderboard(q=${q},minScore=${minScore},page=${page-1},size=${size})}">Truoc</a>
+    <span class="small">Trang <span th:text="${page+1}"></span>/<span th:text="${totalPages}"></span></span>
     <a class="btn btn-sm btn-outline-secondary"
        th:if="${page+1 < totalPages}"
-       th:href="@{/leaderboard(q=${q},minScore=${minScore},page=${page+1},size=${size})}">Next</a>
+       th:href="@{/leaderboard(q=${q},minScore=${minScore},page=${page+1},size=${size})}">Sau</a>
   </div>
 
   <div class="gx-inline-actions">
-    <a class="btn theme-outline-btn" th:href="@{/}">Ve Home</a>
+    <a class="btn theme-outline-btn" th:href="@{/}">Ve trang chu</a>
   </div>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('leaderboard')}"></th:block>
 </body>
 </html>
+

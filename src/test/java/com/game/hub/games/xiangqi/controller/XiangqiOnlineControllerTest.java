@@ -23,7 +23,7 @@ class XiangqiOnlineControllerTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         ConcurrentModel model = new ConcurrentModel();
 
-        String view = controller.online("XQ-ROOM-1", request, model);
+        String view = controller.onlineRoom("XQ-ROOM-1", request, model);
 
         assertEquals("xiangqi/online", view);
         assertEquals("XQ-ROOM-1", model.getAttribute("defaultRoomId"));

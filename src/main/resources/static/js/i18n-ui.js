@@ -40,6 +40,36 @@
     { vi: "Bảng tin", en: "Feed", aliases: ["Bang tin"] },
     { vi: "Bình luận", en: "Comments", aliases: ["Binh luan"] },
     { vi: "Gửi", en: "Send", aliases: ["Gui"] },
+    { vi: "Nhan tin", en: "Message", aliases: ["Nhan tin"] },
+    { vi: "Tin nhan rieng", en: "Private messages", aliases: ["Tin nhan rieng"] },
+    { vi: "Tro ly hoi dap", en: "Assistant", aliases: ["Tro ly hoi dap"] },
+    { vi: "Loi tro ly", en: "Assistant error", aliases: ["Loi tro ly"] },
+    { vi: "Da nhan phan hoi tu tro ly", en: "Received assistant response", aliases: ["Da nhan phan hoi tu tro ly"] },
+    { vi: "Tro ly da phan hoi", en: "Assistant responded", aliases: ["Tro ly da phan hoi"] },
+    { vi: "Da tao thong bao", en: "Notification created", aliases: ["Da tao thong bao"] },
+    { vi: "Chua co thong bao.", en: "No notifications yet.", aliases: ["Chua co thong bao."] },
+    { vi: "Tai anh dai dien thanh cong", en: "Avatar uploaded successfully", aliases: ["Tai anh dai dien thanh cong"] },
+    { vi: "Vui long chon tep anh", en: "Please choose an image file", aliases: ["Vui long chon tep anh"] },
+    { vi: "Chua chon tai khoan", en: "No account selected", aliases: ["Chua chon tai khoan"] },
+    { vi: "Xep hang theo diem", en: "Ranked by score", aliases: ["Xep hang theo diem"] },
+    { vi: "Tra cuu tran dau theo tai khoan, ma game, ket qua, khoang ngay va xuat du lieu nhanh.", en: "Look up matches by account, game code, result, date range, and export quickly.", aliases: ["Tra cuu tran dau theo tai khoan, ma game, ket qua, khoang ngay va xuat du lieu nhanh."] },
+    { vi: "Quen mat khau?", en: "Forgot password?", aliases: ["Quen mat khau?"] },
+    { vi: "Dang nhap voi Google", en: "Login with Google", aliases: ["Dang nhap voi Google"] },
+    { vi: "Dang nhap voi Facebook", en: "Login with Facebook", aliases: ["Dang nhap voi Facebook"] },
+    { vi: "Gui ma xac thuc", en: "Send verification code", aliases: ["Gui ma xac thuc"] },
+    { vi: "Dat lai mat khau", en: "Reset password", aliases: ["Dat lai mat khau"] },
+    { vi: "Ma xac thuc", en: "Verification code", aliases: ["Ma xac thuc"] },
+    { vi: "Duong dan anh dai dien", en: "Avatar path", aliases: ["Duong dan anh dai dien"] },
+    { vi: "Tai khoan duy nhat", en: "Unique accounts", aliases: ["Tai khoan duy nhat"] },
+    { vi: "Trinh duyet", en: "Browser", aliases: ["Trinh duyet"] },
+    { vi: "Truy van", en: "Query", aliases: ["Truy van"] },
+    { vi: "Xuat CSV trang nay", en: "Export current page CSV", aliases: ["Xuat CSV trang nay"] },
+    { vi: "Xuat Excel trang nay", en: "Export current page Excel", aliases: ["Xuat Excel trang nay"] },
+    { vi: "Xuat Excel tat ca da loc", en: "Export all filtered Excel", aliases: ["Xuat Excel tat ca da loc"] },
+    { vi: "Da xuat tep cai dat JSON.", en: "Settings JSON exported.", aliases: ["Da xuat tep cai dat JSON."] },
+    { vi: "Khong the xuat cai dat.", en: "Cannot export settings.", aliases: ["Khong the xuat cai dat."] },
+    { vi: "Khong doc duoc tep cai dat.", en: "Cannot read settings file.", aliases: ["Khong doc duoc tep cai dat."] },
+    { vi: "Tieng Anh", en: "English", aliases: ["Tieng Anh"] },
     { vi: "Đầu hàng", en: "Surrender", aliases: ["Dau hang"] },
     { vi: "Rời phòng", en: "Leave room", aliases: ["Roi phong"] },
     { vi: "Ván mới", en: "New match", aliases: ["Van moi"] },
@@ -58,6 +88,7 @@
     { vi: "Chưa có", en: "No data yet", aliases: ["Chua co"] },
     { vi: "Không có", en: "None", aliases: ["Khong co"] },
     { vi: "Không thể", en: "Cannot", aliases: ["Khong the"] },
+    { vi: "Không thể sao chép tự động. Hãy sao chép thủ công", en: "Cannot copy automatically. Please copy manually.", aliases: ["Khong the sao chep tu dong. Hay sao chep thu cong"] },
     { vi: "Không xác định được", en: "Unable to determine", aliases: ["Khong xac dinh duoc"] },
     { vi: "Không kết nối được máy chủ", en: "Cannot connect to server", aliases: ["Khong ket noi duoc may chu"] },
     { vi: "Vui lòng", en: "Please", aliases: ["Vui long"] },
@@ -75,13 +106,13 @@
     { vi: "Dò mìn", en: "Minesweeper", aliases: ["Do min"] },
     { vi: "Gõ chữ", en: "Typing", aliases: ["Go chu"] },
     { vi: "Giải đố", en: "Puzzle", aliases: ["Giai do"] },
-    { vi: "Phòng online", en: "Online hub", aliases: ["Phong online", "Phong truc tuyen"] },
+    { vi: "Phòng online", en: "Room hub", aliases: ["Sanh phong", "Phong online", "Phong truc tuyen"] },
     { vi: "Tài khoản", en: "Account", aliases: ["Tai khoan"] },
     { vi: "Cài đặt", en: "Settings", aliases: ["Cai dat"] },
     { vi: "Yêu thích", en: "Favorites", aliases: ["Yeu thich"] },
-    { vi: "Kích hoạt Admin", en: "Activate Admin", aliases: ["Kich hoat Admin"] },
-    { vi: "Quản lý người dùng", en: "Manager Users", aliases: ["Quan ly nguoi dung"] },
-    { vi: "Trung tâm Admin", en: "Admin Center", aliases: ["Trung tam Admin"] },
+    { vi: "Kích hoạt Admin", en: "Activate admin", aliases: ["Kich hoat quan tri", "Kich hoat Admin"] },
+    { vi: "Quản lý người dùng", en: "User management", aliases: ["Quan ly tai khoan", "Quan ly nguoi dung"] },
+    { vi: "Trung tâm Admin", en: "Admin center", aliases: ["Trung tam quan tri", "Trung tam Admin"] },
     { vi: "Ẩn sidebar", en: "Hide sidebar", aliases: ["An sidebar"] },
     { vi: "Hiện sidebar", en: "Show sidebar", aliases: ["Hien sidebar"] },
     { vi: "Đóng sidebar", en: "Close sidebar", aliases: ["Dong sidebar"] },
@@ -91,9 +122,15 @@
     { vi: "Trực tuyến", en: "Online", aliases: ["Truc tuyen"] },
     { vi: "Ngoại tuyến", en: "Offline", aliases: ["Ngoai tuyen"] },
     { vi: "Bạn cần đăng nhập", en: "Login required", aliases: ["Ban can dang nhap"] },
+    { vi: "Email là bắt buộc", en: "Email is required", aliases: ["Email la bat buoc"] },
+    { vi: "Xuử lý thành công", en: "Operation completed successfully", aliases: ["Xu ly thanh cong"] },
+    { vi: "Xác thực email thành công", en: "Email verified successfully", aliases: ["Xac thuc email thanh cong"] },
+    { vi: "Gửi lại mã", en: "Resend code", aliases: ["Gui lai ma"] },
+    { vi: "Đã sao chép link mời", en: "Invite link copied", aliases: ["Da sao chep link moi"] },
+    { vi: "Đã sao chép link xem", en: "Spectator link copied", aliases: ["Da sao chep link xem"] },
     { vi: "Mã kích hoạt là bắt buộc", en: "Activation code is required", aliases: ["Ma kich hoat la bat buoc"] },
-    { vi: "Đã kích hoạt vai trò Admin", en: "Admin role activated", aliases: ["Da kich hoat vai tro Admin"] },
-    { vi: "Không thể kích hoạt vai trò Admin", en: "Cannot activate admin role", aliases: ["Khong the kich hoat vai tro Admin"] },
+    { vi: "Đã kích hoạt vai trò Admin", en: "Admin access activated", aliases: ["Da kich hoat quyen quan tri", "Da kich hoat vai tro Admin"] },
+    { vi: "Không thể kích hoạt vai trò Admin", en: "Cannot activate admin access", aliases: ["Khong the kich hoat quyen quan tri", "Khong the kich hoat vai tro Admin"] },
     { vi: "Chưa có bạn bè nào.", en: "No friends yet.", aliases: ["Chua co ban be nao."] },
     { vi: "Hiện chưa có bạn nào đang online.", en: "No friends are currently online.", aliases: ["Hien chua co ban nao dang online."] },
     { vi: "Không tải được danh sách bạn bè.", en: "Unable to load friends list.", aliases: ["Khong tai duoc danh sach ban be."] },
@@ -104,7 +141,7 @@
     { vi: "Bấm để chuyển sang", en: "Click to switch to", aliases: ["Bam de chuyen sang"] },
     { vi: "Chuyển giao diện", en: "Switch theme", aliases: ["Chuyen giao dien"] },
     { vi: "tiếp theo", en: "next", aliases: ["tiep theo"] },
-    { vi: "Nhập mã kích hoạt Admin:", en: "Enter admin activation code:", aliases: ["Nhap ma kich hoat Admin:"] }
+    { vi: "Nhập mã kích hoạt Admin:", en: "Enter admin activation code:", aliases: ["Nhap ma kich hoat quan tri:", "Nhap ma kich hoat Admin:"] }
   ];
 
   const VI_FIXES = [
@@ -189,6 +226,43 @@
     ["Nhap ma phong", "Nhập mã phòng"],
     ["Nhap tin nhan", "Nhập tin nhắn"],
     ["Nhap cau hoi", "Nhập câu hỏi"],
+    ["Nhan tin", "Nhắn tin"],
+    ["Tin nhan rieng", "Tin nhắn riêng"],
+    ["Tro ly hoi dap", "Trợ lý hỏi đáp"],
+    ["Loi tro ly", "Lỗi trợ lý"],
+    ["Da nhan phan hoi tu tro ly", "Đã nhận phản hồi từ trợ lý"],
+    ["Tro ly da phan hoi", "Trợ lý đã phản hồi"],
+    ["Da tao thong bao", "Đã tạo thông báo"],
+    ["Chua co thong bao.", "Chưa có thông báo."],
+    ["Tai anh dai dien thanh cong", "Tải ảnh đại diện thành công"],
+    ["Vui long chon tep anh", "Vui lòng chọn tệp ảnh"],
+    ["Chua chon tai khoan", "Chưa chọn tài khoản"],
+    ["Xep hang theo diem", "Xếp hạng theo điểm"],
+    ["Tra cuu tran dau theo tai khoan, ma game, ket qua, khoang ngay va xuat du lieu nhanh.", "Tra cứu trận đấu theo tài khoản, mã game, kết quả, khoảng ngày và xuất dữ liệu nhanh."],
+    ["Quen mat khau?", "Quên mật khẩu?"],
+    ["Dang nhap voi Google", "Đăng nhập với Google"],
+    ["Dang nhap voi Facebook", "Đăng nhập với Facebook"],
+    ["Gui ma xac thuc", "Gửi mã xác thực"],
+    ["Dat lai mat khau", "Đặt lại mật khẩu"],
+    ["Ma xac thuc", "Mã xác thực"],
+    ["Duong dan anh dai dien", "Đường dẫn ảnh đại diện"],
+    ["Tai khoan duy nhat", "Tài khoản duy nhất"],
+    ["Trinh duyet", "Trình duyệt"],
+    ["Truy van", "Truy vấn"],
+    ["Xuat CSV trang nay", "Xuất CSV trang này"],
+    ["Xuat Excel trang nay", "Xuất Excel trang này"],
+    ["Xuat Excel tat ca da loc", "Xuất Excel tất cả đã lọc"],
+    ["Da xuat tep cai dat JSON.", "Đã xuất tệp cài đặt JSON."],
+    ["Khong the xuat cai dat.", "Không thể xuất cài đặt."],
+    ["Khong doc duoc tep cai dat.", "Không đọc được tệp cài đặt."],
+    ["Tieng Anh", "Tiếng Anh"],
+    ["Khong the sao chep tu dong. Hay sao chep thu cong", "Không thể sao chép tự động. Hãy sao chép thủ công"],
+    ["Email la bat buoc", "Email là bắt buộc"],
+    ["Xu ly thanh cong", "Xử lý thành công"],
+    ["Xac thuc email thanh cong", "Xác thực email thành công"],
+    ["Gui lai ma", "Gửi lại mã"],
+    ["Da sao chep link moi", "Đã sao chép link mời"],
+    ["Da sao chep link xem", "Đã sao chép link xem"],
     ["Nhap user id de loc", "Nhập user ID để lọc"],
     ["Co vua", "Cờ vua"],
     ["Co tuong", "Cờ tướng"],
@@ -205,9 +279,12 @@
     ["Go chu", "Gõ chữ"],
     ["Giai do", "Giải đố"],
     ["Phong online", "Phòng online"],
+    ["Sanh phong", "Sảnh phòng"],
     ["Kich hoat Admin", "Kích hoạt Admin"],
+    ["Kich hoat quan tri", "Kích hoạt quản trị"],
     ["Quan ly nguoi dung", "Quản lý người dùng"],
     ["Trung tam Admin", "Trung tâm Admin"],
+    ["Trung tam quan tri", "Trung tâm quản trị"],
     ["An sidebar", "Ẩn sidebar"],
     ["Hien sidebar", "Hiện sidebar"],
     ["Dong sidebar", "Đóng sidebar"],
@@ -227,12 +304,21 @@
     ["Tham gia choi", "Tham gia chơi"],
     ["Vao che do xem", "Vào chế độ xem"],
     ["Ve Online Hub", "Về Online Hub"],
+    ["Da kich hoat quyen quan tri", "Đã kích hoạt quyền quản trị"],
+    ["Khong the kich hoat quyen quan tri", "Không thể kích hoạt quyền quản trị"],
+    ["Nhap ma kich hoat quan tri:", "Nhập mã kích hoạt quản trị:"],
     ["Quay lai", "Quay lại"],
     ["Ban co the", "Bạn có thể"],
     ["tu cach khach", "tư cách khách"],
     ["khong can dang nhap", "không cần đăng nhập"],
     ["Phong cho", "Phòng chờ"]
   ];
+
+  function preferredViText(pair) {
+    const aliases = Array.isArray(pair?.aliases) ? pair.aliases : [];
+    const preferredAlias = aliases.find((value) => String(value || "").trim());
+    return String(preferredAlias || pair?.vi || "").trim();
+  }
 
   function toAscii(value) {
     return String(value || "")
@@ -262,13 +348,14 @@
     const all = [];
     PHRASE_PAIRS.forEach((pair) => {
       const aliases = pair.aliases || [];
-      const sources = new Set([pair.vi, pair.en, toAscii(pair.vi), toAscii(pair.en), ...aliases]);
+      const preferredVi = preferredViText(pair);
+      const sources = new Set([pair.vi, preferredVi, pair.en, toAscii(pair.vi), toAscii(preferredVi), toAscii(pair.en), ...aliases]);
       sources.forEach((source) => {
         const text = String(source || "").trim();
         if (!text) return;
         all.push({
           regex: new RegExp(buildSearchPattern(text), "gi"),
-          vi: pair.vi,
+          vi: preferredVi,
           en: pair.en
         });
       });
@@ -279,10 +366,17 @@
 
   const PHRASE_REPLACEMENTS = buildPairReplacements();
   const VI_FIX_REPLACEMENTS = VI_FIXES
-    .map(([oldValue, newValue]) => ({
-      regex: new RegExp(escapeRegExp(oldValue), "gi"),
-      value: newValue
-    }))
+    .flatMap(([oldValue, newValue]) => {
+      const normalizedValue = String(oldValue || "").trim();
+      const patterns = new Set([oldValue, newValue]);
+      return Array.from(patterns)
+        .map((pattern) => String(pattern || "").trim())
+        .filter(Boolean)
+        .map((pattern) => ({
+          regex: new RegExp(escapeRegExp(pattern), "gi"),
+          value: normalizedValue
+        }));
+    })
     .sort((a, b) => String(b.value).length - String(a.value).length);
 
   function normalizeLanguage(language) {
@@ -519,3 +613,5 @@
     supportedLanguages: SUPPORTED_LANGS.slice()
   };
 })();
+
+

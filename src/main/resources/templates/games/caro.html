@@ -12,16 +12,16 @@
     <div class="caro-hero__main">
       <div class="caro-eyebrow">
         <i class="bi bi-grid-3x3-gap-fill"></i>
-        <span>CARO / GOMOKU STYLE</span>
+        <span>CARO / CHON CHE DO</span>
       </div>
 
       <h1 class="caro-title">
         <span th:text="${game != null ? game.displayName : 'Caro'}">Caro</span>
-        Online, Offline va Bot
+        Truc tuyen, cung may va bot
       </h1>
 
       <p class="caro-subtitle">
-        Vao van Caro trong 1 cham: online, bot, hoac offline 2 nguoi.
+        Vao van Caro trong 1 cham: truc tuyen, bot, hoac cung may 2 nguoi.
       </p>
 
       <div class="caro-chip-row">
@@ -29,13 +29,13 @@
           <i class="bi bi-broadcast"></i> San sang
         </span>
         <span class="caro-chip" th:if="${game != null and game.supportsOnline}">
-          <i class="bi bi-wifi"></i> Online room
+          <i class="bi bi-wifi"></i> Phong truc tuyen
         </span>
         <span class="caro-chip" th:if="${game != null and game.supportsOffline}">
-          <i class="bi bi-laptop"></i> Offline
+          <i class="bi bi-laptop"></i> Cung may
         </span>
         <span class="caro-chip" th:if="${game != null and game.supportsGuest}">
-          <i class="bi bi-person-check"></i> Guest duoc choi
+          <i class="bi bi-person-check"></i> Khach duoc choi
         </span>
       </div>
 
@@ -43,8 +43,8 @@
         <a th:href="@{/online-hub(game='caro')}" class="caro-cta caro-cta--primary">
           <span class="caro-cta__icon"><i class="bi bi-lightning-charge-fill"></i></span>
           <span class="caro-cta__text">
-            <strong>Choi online ngay</strong>
-            <small>Tao / tim phong Caro online</small>
+            <strong>Mo sanh phong</strong>
+            <small>Tao / tim phong Caro truc tuyen</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
@@ -61,7 +61,7 @@
         <a th:href="@{/game/offline}" class="caro-cta caro-cta--soft">
           <span class="caro-cta__icon"><i class="bi bi-people-fill"></i></span>
           <span class="caro-cta__text">
-            <strong>Offline 2 nguoi</strong>
+            <strong>Cung may 2 nguoi</strong>
             <small>Choi chung tren cung thiet bi</small>
           </span>
           <i class="bi bi-arrow-right"></i>
@@ -70,8 +70,8 @@
         <a th:href="@{/lobby}" class="caro-cta caro-cta--soft">
           <span class="caro-cta__icon"><i class="bi bi-door-open-fill"></i></span>
           <span class="caro-cta__text">
-            <strong>Lobby Caro (route cu)</strong>
-            <small>Tuong thich luong cu cua he thong</small>
+            <strong>Vao sanh Caro</strong>
+            <small>Mo luong sanh nhanh cho Caro</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
@@ -85,7 +85,7 @@
             <div class="caro-preview-card__label">Ban co xem nhanh</div>
             <div class="caro-preview-card__title">Caro 10x10</div>
           </div>
-          <span class="caro-preview-card__pill">Realtime</span>
+          <span class="caro-preview-card__pill">Thoi gian thuc</span>
         </div>
 
         <div class="caro-board-preview" aria-hidden="true">
@@ -105,11 +105,11 @@
         <div class="caro-preview-meta">
           <div class="caro-preview-meta__item">
             <span>Che do de xuat</span>
-            <strong>Online 1v1</strong>
+            <strong>Truc tuyen 1v1</strong>
           </div>
           <div class="caro-preview-meta__item">
             <span>Truy cap nhanh</span>
-            <strong>Guest / Tai khoan</strong>
+            <strong>Khach / Tai khoan</strong>
           </div>
           <div class="caro-preview-meta__item">
             <span>Phu hop</span>
@@ -134,15 +134,15 @@
       <div class="caro-surface-card__icon"><i class="bi bi-people-fill"></i></div>
       <div>
         <h2>Phu hop nhieu kieu nguoi choi</h2>
-        <p>Guest va tai khoan deu vao phong duoc.</p>
+        <p>Khach va tai khoan deu vao phong duoc.</p>
       </div>
     </article>
 
     <article class="caro-surface-card">
       <div class="caro-surface-card__icon"><i class="bi bi-shield-check"></i></div>
       <div>
-        <h2>Tuong thich he thong hien tai</h2>
-        <p>Giu route cu, bo sung mode page moi.</p>
+        <h2>Dieu huong dong nhat</h2>
+        <p>Cac loi vao Caro da duoc gom ve cung mot trang che do.</p>
       </div>
     </article>
   </section>
@@ -162,7 +162,7 @@
         <div class="caro-rule-grid">
           <div class="caro-rule-item">
             <strong>1.</strong>
-            <span>Chon che do: Online / Bot / Offline.</span>
+            <span>Chon che do: Truc tuyen / Bot / Cung may.</span>
           </div>
           <div class="caro-rule-item">
             <strong>2.</strong>
@@ -174,7 +174,7 @@
           </div>
           <div class="caro-rule-item">
             <strong>4.</strong>
-            <span>Neu online, co chat va dau hang trong van.</span>
+            <span>Neu truc tuyen, co chat va dau hang trong van.</span>
           </div>
         </div>
       </section>
@@ -199,14 +199,14 @@
       <section class="caro-article-card">
         <div class="caro-article-card__head">
           <h2>Lich su va mo rong (cho module Caro)</h2>
-          <span class="caro-section-tag">Roadmap</span>
+          <span class="caro-section-tag">Ke hoach</span>
         </div>
         <p class="mb-2">
-          Module Caro hien la game trung tam cua du an va da co online/offline/bot. Giao dien moi se
+          Module Caro hien la game trung tam cua du an va da co truc tuyen/cung may/bot. Giao dien moi se
           la nen de bo sung them thong ke, xep hang va lich su tran dau trong cac buoc tiep theo.
         </p>
         <ul class="caro-bullet-list" th:if="${game != null and game.roadmapItems != null}">
-          <li th:each="item : ${game.roadmapItems}" th:text="${item}">Roadmap item</li>
+          <li th:each="item : ${game.roadmapItems}" th:text="${item}">Muc tieu tiep theo</li>
         </ul>
       </section>
     </div>
@@ -218,21 +218,21 @@
           <a th:href="@{/online-hub(game='caro')}" class="caro-side-action">
             <i class="bi bi-globe2"></i>
             <div>
-              <strong>Online hub</strong>
-              <small>Tao phong, moi ban, choi realtime</small>
+              <strong>Mo sanh phong</strong>
+              <small>Tao phong, moi ban, choi thoi gian thuc</small>
             </div>
           </a>
           <a th:href="@{/game-mode/bot(game='caro')}" class="caro-side-action">
             <i class="bi bi-cpu"></i>
             <div>
-              <strong>Bot mode</strong>
+              <strong>Chon bot</strong>
               <small>Tap luyen, chon do kho</small>
             </div>
           </a>
           <a th:href="@{/game/offline}" class="caro-side-action">
             <i class="bi bi-grid"></i>
             <div>
-              <strong>Offline board</strong>
+              <strong>Cung may 2 nguoi</strong>
               <small>2 nguoi choi tren cung may</small>
             </div>
           </a>

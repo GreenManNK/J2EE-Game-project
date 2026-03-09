@@ -28,28 +28,39 @@ public class XiangqiOnlineController {
 
     @GetMapping("/online")
     public String online(@RequestParam(required = false) String roomId,
+                         @RequestParam(required = false) Boolean spectate,
                          HttpServletRequest request,
                          Model model) {
-        SessionPlayer player = resolveSessionPlayer(request);
-        model.addAttribute("sessionUserId", player.userId());
-        model.addAttribute("sessionDisplayName", player.displayName());
-        model.addAttribute("sessionAvatarPath", player.avatarPath());
-        model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
-        return "xiangqi/online";
+        String normalizedRoomId = roomId == null ? "" : roomId.trim();
+        if (!normalizedRoomId.isEmpty()) {
+            return buildRoomRedirect(normalizedRoomId, Boolean.TRUE.equals(spectate));
+        }
+        return renderOnline("", request, model);
     }
 
     @GetMapping("/online/room/{roomId}")
     public String onlineRoom(@PathVariable String roomId,
                              HttpServletRequest request,
                              Model model) {
-        return online(roomId, request, model);
+        return renderOnline(roomId, request, model);
     }
 
     @GetMapping("/online/room/{roomId}/spectate")
     public String spectateRoom(@PathVariable String roomId,
                                HttpServletRequest request,
                                Model model) {
-        return online(roomId, request, model);
+        return renderOnline(roomId, request, model);
+    }
+
+    private String renderOnline(String roomId,
+                                HttpServletRequest request,
+                                Model model) {
+        SessionPlayer player = resolveSessionPlayer(request);
+        model.addAttribute("sessionUserId", player.userId());
+        model.addAttribute("sessionDisplayName", player.displayName());
+        model.addAttribute("sessionAvatarPath", player.avatarPath());
+        model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
+        return "xiangqi/online";
     }
 
     private SessionPlayer resolveSessionPlayer(HttpServletRequest request) {
@@ -106,6 +117,14 @@ public class XiangqiOnlineController {
         String normalized = guestUserId.trim();
         String suffix = normalized.length() <= 4 ? normalized : normalized.substring(normalized.length() - 4);
         return "Guest " + suffix.toUpperCase();
+    }
+
+    private String buildRoomRedirect(String roomId, boolean spectate) {
+        StringBuilder redirect = new StringBuilder("redirect:/xiangqi/online/room/").append(roomId);
+        if (spectate) {
+            redirect.append("/spectate");
+        }
+        return redirect.toString();
     }
 
     private record SessionPlayer(String userId, String displayName, String avatarPath) {

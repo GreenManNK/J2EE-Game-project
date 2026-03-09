@@ -799,7 +799,7 @@
           return {
             migratedCount: 0,
             migratedPreferences: false,
-            error: String(data?.error || 'Cannot migrate guest data')
+            error: String(data?.error || 'Khong the chuyen du lieu khach')
           };
         }
 
@@ -838,7 +838,7 @@
           migratedPreferences: false,
           migratedGamesBrowserState: false,
           migratedPuzzleCatalogState: false,
-          error: 'Cannot migrate guest data'
+          error: 'Khong the chuyen du lieu khach'
         };
       }
     })();
@@ -1038,7 +1038,7 @@
       userAvatars.forEach((el) => {
         const avatarPath = safeUser ? safeUser.avatarPath : DEFAULT_AVATAR_PATH;
         el.setAttribute('src', toAppPath(avatarPath));
-        el.setAttribute('alt', safeUser ? ('Avatar ' + safeUser.displayName) : 'Avatar');
+        el.setAttribute('alt', safeUser ? ('Anh dai dien ' + safeUser.displayName) : 'Anh dai dien');
       });
 
       authOnly.forEach((el) => {

@@ -10,10 +10,10 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-search"></i>
-          <span>Social / Friend Search</span>
+          <span>Ban be / Tim kiem</span>
         </div>
         <h1 class="gx-page-title theme-text mt-2">Ket qua tim kiem</h1>
-        <p class="gx-page-subtitle">Tim user theo ten/email va gui loi moi ket ban ngay tai ket qua.</p>
+        <p class="gx-page-subtitle">Tim tai khoan theo ten hien thi hoac email va gui loi moi ket ban ngay tai ket qua.</p>
       </div>
       <div class="gx-page-badge">
         <i class="bi bi-key"></i>
@@ -31,11 +31,11 @@
     <div class="list-group-item d-flex justify-content-between align-items-center gap-2" th:each="u : ${exactMatches}">
       <div class="d-flex align-items-center gap-2 flex-grow-1">
         <img th:src="@{${u.avatarPath != null and !#strings.isEmpty(u.avatarPath) ? u.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
-             alt="avatar" width="32" height="32" class="rounded-circle border">
+             alt="Anh dai dien" width="32" height="32" class="rounded-circle border">
         <div class="small">
           <div class="fw-semibold" th:text="${u.displayName}">Name</div>
           <div class="text-muted" th:text="${u.email}">mail@example.com</div>
-          <div class="text-muted" th:text="${'Score: ' + u.score}">Score</div>
+          <div class="text-muted" th:text="${'Diem: ' + u.score}">Diem</div>
         </div>
       </div>
       <span class="d-flex gap-2 align-items-center">
@@ -59,11 +59,11 @@
     <div class="list-group-item d-flex justify-content-between align-items-center gap-2" th:each="u : ${similarMatches}">
       <div class="d-flex align-items-center gap-2 flex-grow-1">
         <img th:src="@{${u.avatarPath != null and !#strings.isEmpty(u.avatarPath) ? u.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
-             alt="avatar" width="32" height="32" class="rounded-circle border">
+             alt="Anh dai dien" width="32" height="32" class="rounded-circle border">
         <div class="small">
           <div class="fw-semibold" th:text="${u.displayName}">Name</div>
           <div class="text-muted" th:text="${u.email}">mail@example.com</div>
-          <div class="text-muted" th:text="${'Score: ' + u.score}">Score</div>
+          <div class="text-muted" th:text="${'Diem: ' + u.score}">Diem</div>
         </div>
       </div>
       <span class="d-flex gap-2 align-items-center">

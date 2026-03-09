@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   const appPath = (window.CaroUrl && typeof window.CaroUrl.path === "function")
     ? window.CaroUrl.path
     : function (value) { return value; };
@@ -31,6 +31,14 @@
 
   function normalizeText(value) {
     return String(value == null ? "" : value).trim();
+  }
+
+  function roleLabel(value) {
+    const role = normalizeText(value).toLowerCase();
+    if (role === "admin") return "Quan tri";
+    if (role === "manager") return "Quan ly";
+    if (role === "user") return "Nguoi choi";
+    return value ? String(value) : "-";
   }
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -99,13 +107,13 @@
 
     function updateTopBadges() {
       if (userCountBadge) {
-        userCountBadge.textContent = state.users.length + " users";
+        userCountBadge.textContent = state.users.length + " tai khoan";
       }
       if (noticeCountBadge) {
-        noticeCountBadge.textContent = state.notices.length + " notices";
+        noticeCountBadge.textContent = state.notices.length + " thong bao";
       }
       if (logCountBadge) {
-        logCountBadge.textContent = state.logs.totalItems + " logs";
+        logCountBadge.textContent = state.logs.totalItems + " log";
       }
     }
 
@@ -149,7 +157,7 @@
       const pageItems = state.users.slice(from, to);
 
       if (usersPagerText) {
-        usersPagerText.textContent = "Page " + (state.usersPage + 1) + "/" + state.usersTotalPages;
+        usersPagerText.textContent = "Trang " + (state.usersPage + 1) + "/" + state.usersTotalPages;
       }
       if (usersPrevBtn) {
         usersPrevBtn.disabled = state.usersPage <= 0;
@@ -162,7 +170,7 @@
         return;
       }
       if (pageItems.length === 0) {
-        usersTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Khong co user phu hop.</td></tr>';
+        usersTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Khong co tai khoan phu hop.</td></tr>';
         buildUsersExportLinks();
         updateTopBadges();
         return;
@@ -172,13 +180,13 @@
         const id = escapeHtml(u.id);
         const email = escapeHtml(u.email);
         const displayName = escapeHtml(u.displayName || "");
-        const role = escapeHtml(u.role || "User");
+        const role = escapeHtml(roleLabel(u.role || "User"));
         const score = escapeHtml(String(u.score ?? 0));
         const banned = !!u.banned || !!u.isBanned || !!u.bannedUntil;
-        const banLabel = banned ? "Banned" : "Active";
+        const banLabel = banned ? "Da khoa" : "Dang hoat dong";
         const banBtn = banned
-          ? '<button type="button" class="btn btn-sm btn-outline-success" data-user-action="unban" data-user-id="' + id + '">Unban</button>'
-          : '<button type="button" class="btn btn-sm btn-outline-warning" data-user-action="ban60" data-user-id="' + id + '">Ban 60m</button>';
+          ? '<button type="button" class="btn btn-sm btn-outline-success" data-user-action="unban" data-user-id="' + id + '">Mo khoa</button>'
+          : '<button type="button" class="btn btn-sm btn-outline-warning" data-user-action="ban60" data-user-id="' + id + '">Khoa 60 phut</button>';
         return '' +
           "<tr>" +
           "<td>" + id + "</td>" +
@@ -189,7 +197,7 @@
           "<td>" + banLabel + "</td>" +
           "<td class=\"d-flex flex-wrap gap-1\">" +
           banBtn +
-          "<button type=\"button\" class=\"btn btn-sm btn-outline-danger\" data-user-action=\"delete\" data-user-id=\"" + id + "\">Delete</button>" +
+          "<button type=\"button\" class=\"btn btn-sm btn-outline-danger\" data-user-action=\"delete\" data-user-id=\"" + id + "\">Xoa</button>" +
           "</td>" +
           "</tr>";
       }).join("");
@@ -219,9 +227,9 @@
         state.users = Array.isArray(data) ? data : [];
         renderUsers();
       } catch (error) {
-        setStatus(usersStatus, String(error?.message || error || "Khong tai duoc danh sach user"), false);
+        setStatus(usersStatus, String(error?.message || error || "Khong tai duoc danh sach tai khoan"), false);
         if (usersTableBody) {
-          usersTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Khong tai duoc danh sach user.</td></tr>';
+          usersTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Khong tai duoc danh sach tai khoan.</td></tr>';
         }
       }
     }
@@ -265,7 +273,7 @@
         return;
       }
       if (!Array.isArray(state.notices) || state.notices.length === 0) {
-        noticesList.innerHTML = '<li class="list-group-item text-muted">Chua co notice.</li>';
+        noticesList.innerHTML = '<li class="list-group-item text-muted">Chua co thong bao.</li>';
         updateTopBadges();
         return;
       }
@@ -276,7 +284,7 @@
         return '' +
           '<li class="list-group-item d-flex justify-content-between align-items-center gap-2">' +
           '<span>' + content + (createdAt ? (" - " + createdAt) : "") + '</span>' +
-          '<button type="button" class="btn btn-sm btn-outline-danger" data-notice-action="delete" data-notice-id="' + id + '">Delete</button>' +
+          '<button type="button" class="btn btn-sm btn-outline-danger" data-notice-action="delete" data-notice-id="' + id + '">Xoa</button>' +
           "</li>";
       }).join("");
       updateTopBadges();
@@ -289,9 +297,9 @@
         state.notices = Array.isArray(data) ? data : [];
         renderNotices();
       } catch (error) {
-        setStatus(noticesStatus, String(error?.message || error || "Khong tai duoc notices"), false);
+        setStatus(noticesStatus, String(error?.message || error || "Khong tai duoc thong bao"), false);
         if (noticesList) {
-          noticesList.innerHTML = '<li class="list-group-item text-danger">Khong tai duoc notices.</li>';
+          noticesList.innerHTML = '<li class="list-group-item text-danger">Khong tai duoc thong bao.</li>';
         }
       }
     }
@@ -350,7 +358,7 @@
       state.logs.totalPages = totalPages;
 
       if (logsPagerText) {
-        logsPagerText.textContent = "Page " + (page + 1) + "/" + totalPages;
+        logsPagerText.textContent = "Trang " + (page + 1) + "/" + totalPages;
       }
       if (logsPrevBtn) {
         logsPrevBtn.disabled = page <= 0;
@@ -375,9 +383,9 @@
             const visitedAt = escapeHtml(log.visitedAt || "");
             const method = escapeHtml(log.httpMethod || "-");
             const path = escapeHtml(log.requestPath || "-");
-            const userDisplay = escapeHtml(log.userDisplayName || "Guest");
+            const userDisplay = escapeHtml(log.userDisplayName || "Khach");
             const userId = escapeHtml(log.userId || "-");
-            const role = escapeHtml(log.userRole || "-");
+            const role = escapeHtml(roleLabel(log.userRole || "-"));
             const ip = escapeHtml(log.clientIp || "-");
             const userAgent = escapeHtml(log.userAgent || "-");
             return '' +
@@ -426,9 +434,9 @@
         state.logs.summary = data?.summary || {};
         renderLogs();
       } catch (error) {
-        setStatus(logsStatus, String(error?.message || error || "Khong tai duoc logs"), false);
+        setStatus(logsStatus, String(error?.message || error || "Khong tai duoc log"), false);
         if (logsTableBody) {
-          logsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Khong tai duoc logs.</td></tr>';
+          logsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Khong tai duoc log.</td></tr>';
         }
       }
     }
@@ -477,7 +485,7 @@
       try {
         const data = await createUser(payload);
         const ok = !!(data && data.success);
-        setStatus(usersStatus, ok ? "Tao nguoi dung thanh cong" : String(data?.error || "Tao nguoi dung that bai"), ok);
+        setStatus(usersStatus, ok ? "Tao tai khoan thanh cong" : String(data?.error || "Tao tai khoan that bai"), ok);
         if (ok) {
           createUserForm.reset();
           const defaultRole = document.getElementById("adminCreateRole");
@@ -491,7 +499,7 @@
           await loadUsers(false);
         }
       } catch (error) {
-        setStatus(usersStatus, String(error?.message || error || "Tao nguoi dung that bai"), false);
+        setStatus(usersStatus, String(error?.message || error || "Tao tai khoan that bai"), false);
       }
     });
 
@@ -505,7 +513,7 @@
       if (!action || !userId) {
         return;
       }
-      if (action === "delete" && !window.confirm("Xoa user nay?")) {
+      if (action === "delete" && !window.confirm("Xoa tai khoan nay?")) {
         return;
       }
       button.disabled = true;
@@ -513,16 +521,16 @@
         const data = await userAction(userId, action);
         const ok = !!(data && data.success);
         const successMessage = action === "delete"
-          ? "Da xoa user"
-          : (action === "ban60" ? "Da ban user 60 phut" : "Da unban user");
-        setStatus(usersStatus, ok ? successMessage : String(data?.error || "Khong the cap nhat user"), ok);
+          ? "Da xoa tai khoan"
+          : (action === "ban60" ? "Da khoa tai khoan 60 phut" : "Da mo khoa tai khoan");
+        setStatus(usersStatus, ok ? successMessage : String(data?.error || "Khong the cap nhat tai khoan"), ok);
         if (ok) {
           await loadUsers(false);
         } else {
           button.disabled = false;
         }
       } catch (error) {
-        setStatus(usersStatus, String(error?.message || error || "Khong the cap nhat user"), false);
+        setStatus(usersStatus, String(error?.message || error || "Khong the cap nhat tai khoan"), false);
         button.disabled = false;
       }
     });
@@ -531,13 +539,13 @@
       event.preventDefault();
       const content = normalizeText(noticesContent?.value);
       if (!content) {
-        setStatus(noticesStatus, "Content is required", false);
+        setStatus(noticesStatus, "Noi dung la bat buoc", false);
         return;
       }
       try {
         const data = await createNotice(content);
         const ok = !!(data && data.success);
-        setStatus(noticesStatus, ok ? "Da tao notice" : String(data?.error || "Khong the tao notice"), ok);
+        setStatus(noticesStatus, ok ? "Da tao thong bao" : String(data?.error || "Khong the tao thong bao"), ok);
         if (ok) {
           if (noticesContent) {
             noticesContent.value = "";
@@ -545,7 +553,7 @@
           await loadNotices();
         }
       } catch (error) {
-        setStatus(noticesStatus, String(error?.message || error || "Khong the tao notice"), false);
+        setStatus(noticesStatus, String(error?.message || error || "Khong the tao thong bao"), false);
       }
     });
 
@@ -562,14 +570,14 @@
       try {
         const data = await deleteNotice(id);
         const ok = !!(data && data.success);
-        setStatus(noticesStatus, ok ? "Da xoa notice" : String(data?.error || "Khong the xoa notice"), ok);
+        setStatus(noticesStatus, ok ? "Da xoa thong bao" : String(data?.error || "Khong the xoa thong bao"), ok);
         if (ok) {
           await loadNotices();
         } else {
           button.disabled = false;
         }
       } catch (error) {
-        setStatus(noticesStatus, String(error?.message || error || "Khong the xoa notice"), false);
+        setStatus(noticesStatus, String(error?.message || error || "Khong the xoa thong bao"), false);
         button.disabled = false;
       }
     });
@@ -603,3 +611,4 @@
     ]);
   });
 })();
+

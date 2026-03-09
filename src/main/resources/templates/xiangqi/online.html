@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Co tuong Online')}"></head>
+<head th:replace="~{fragments :: appHead('Co tuong truc tuyen')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('xiangqi-online')}"></div>
 
@@ -8,11 +8,11 @@
   <section class="gx-page-hero theme-box text-center mb-3">
     <div class="home-dashboard__eyebrow mx-auto">
       <i class="bi bi-diagram-3"></i>
-      <span>Xiangqi / Online</span>
+      <span>Co tuong / Truc tuyen</span>
     </div>
-    <h1 class="theme-text fw-bold mb-2">CO TUONG ONLINE (MVP)</h1>
-    <p class="theme-text mb-1">2 nguoi choi online trong 1 phong. Guest duoc phep vao choi va xem.</p>
-    <p class="text-muted mb-0">MVP hien tai dong bo luot va nuoc di qua server. Client kiem tra luat Co tuong va trang thai chieu/chieu bi.</p>
+    <h1 class="theme-text fw-bold mb-2">Co tuong truc tuyen</h1>
+    <p class="theme-text mb-1">2 nguoi choi truc tuyen trong 1 phong. Khach duoc phep vao choi va xem.</p>
+    <p class="text-muted mb-0">Ban hien tai dong bo luot va nuoc di qua server. He thong tu kiem tra luat Co tuong va trang thai chieu, chieu bi.</p>
   </section>
 
   <section class="card shadow-sm theme-box mb-3 gx-section-card">
@@ -24,9 +24,9 @@
             <img id="xiangqiOnlineUserAvatar"
                  class="online-user-summary__avatar"
                  th:src="@{/uploads/avatars/default-avatar.jpg}"
-                 alt="Avatar nguoi choi">
+                 alt="Anh dai dien nguoi choi">
             <div class="online-user-summary__body">
-              <div><strong>Ban:</strong> <span id="xiangqiOnlineUserLabel" th:text="${sessionDisplayName}">Guest</span></div>
+              <div><strong>Ban:</strong> <span id="xiangqiOnlineUserLabel" th:text="${sessionDisplayName}">Khach</span></div>
               <div id="xiangqiOnlineUserMeta" class="text-muted">Khach tam thoi</div>
             </div>
           </div>
@@ -39,7 +39,8 @@
           <button id="xiangqiOnlineJoinPlayBtn" type="button" class="btn btn-sm theme-outline-btn d-none" disabled>Tham gia choi</button>
           <button id="xiangqiOnlineSwitchSpectateBtn" type="button" class="btn btn-sm theme-outline-btn d-none" disabled>Vao che do xem</button>
           <button id="xiangqiOnlineLeaveBtn" type="button" class="btn btn-sm btn-outline-danger">Roi phong</button>
-          <a class="btn btn-sm theme-outline-btn" th:href="@{/online-hub(game='xiangqi', roomId=${defaultRoomId})}">Ve Online Hub</a>
+          <a class="btn btn-sm theme-outline-btn" th:href="@{/online-hub(game='xiangqi', roomId=${defaultRoomId})}">Mo sanh phong</a>
+          <a class="btn btn-sm theme-outline-btn" th:href="@{/games/xiangqi}">Ve trang che do</a>
         </div>
       </div>
       <div class="mt-2 small">
@@ -64,7 +65,7 @@
         </div>
 
         <div class="xiangqi-board-wrap">
-          <div id="xiangqiBoard" class="xiangqi-board" role="grid" aria-label="Ban co tuong online"></div>
+          <div id="xiangqiBoard" class="xiangqi-board" role="grid" aria-label="Ban co tuong truc tuyen"></div>
         </div>
       </div>
     </section>

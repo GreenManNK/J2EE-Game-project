@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Đăng nhập')}"></head>
+<head th:replace="~{fragments :: appHead('Dang nhap')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('account-login')}"></div>
 
@@ -8,7 +8,7 @@
   <div class="auth-shell__grid">
     <div class="card theme-box mx-auto mt-5 w-100 auth-card-sm">
       <div class="card-header">
-        <h4 class="mb-0 theme-text">Đăng nhập</h4>
+        <h4 class="mb-0 theme-text">Dang nhap</h4>
       </div>
       <div class="card-body theme-text">
         <div th:if="${socialError != null}" class="alert alert-danger py-2" role="alert" th:text="${socialError}">
@@ -17,18 +17,18 @@
         <form id="loginForm">
           <div class="mb-3">
             <label for="email" class="form-label">Email</label>
-            <input id="email" class="form-control" type="email" placeholder="Nhập email" required>
+            <input id="email" class="form-control" type="email" placeholder="Nhap email" required>
           </div>
           <div class="mb-3">
-            <label for="password" class="form-label">Mật khẩu</label>
+            <label for="password" class="form-label">Mat khau</label>
             <div class="input-group">
-              <input id="password" class="form-control" type="password" placeholder="Nhập mật khẩu" required>
+              <input id="password" class="form-control" type="password" placeholder="Nhap mat khau" required>
               <button class="btn btn-outline-secondary" id="togglePasswordBtn" type="button">👁</button>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+          <button type="submit" class="btn btn-primary w-100">Dang nhap</button>
           <div class="text-center mt-2">
-            <a th:href="@{/account/reset-page}" class="btn btn-link">Quên mật khẩu?</a>
+            <a th:href="@{/account/reset-page}" class="btn btn-link">Quen mat khau?</a>
           </div>
         </form>
 
@@ -40,10 +40,10 @@
           </div>
           <div class="d-grid gap-2">
             <a th:if="${googleLoginEnabled}" class="btn btn-outline-danger" th:href="@{/oauth2/authorization/google}">
-              <i class="bi bi-google me-2"></i> Đăng nhập với Google
+              <i class="bi bi-google me-2"></i> Dang nhap voi Google
             </a>
             <a th:if="${facebookLoginEnabled}" class="btn btn-outline-primary" th:href="@{/oauth2/authorization/facebook}">
-              <i class="bi bi-facebook me-2"></i> Đăng nhập với Facebook
+              <i class="bi bi-facebook me-2"></i> Dang nhap voi Facebook
             </a>
           </div>
         </div>
@@ -56,12 +56,12 @@
         <i class="bi bi-shield-check"></i>
         <span>Truy cập tài khoản</span>
       </div>
-      <h2 class="theme-text mt-2">Đăng nhập để mở đầy đủ tính năng</h2>
-      <p>Đồng bộ hồ sơ, lịch sử đấu, bảng xếp hạng và hệ thống bạn bè/chat riêng.</p>
+      <h2 class="theme-text mt-2">Dang nhap de mo day du tinh nang</h2>
+      <p>Dong bo ho so, lich su dau, bang xep hang va he thong ban be/tin nhan rieng.</p>
       <ul class="auth-side-list">
-        <li><strong>Truy cập nhanh:</strong> Vào nhanh các chế độ chơi và lobby online.</li>
-        <li><strong>Kết nối xã hội:</strong> Quản lý bạn bè, thông báo và chat riêng.</li>
-        <li><strong>Tiến trình:</strong> Lưu điểm, rank và thành tích.</li>
+        <li><strong>Truy cap nhanh:</strong> Vao nhanh cac che do choi va sanh phong truc tuyen.</li>
+        <li><strong>Ket noi xa hoi:</strong> Quan ly ban be, thong bao va tin nhan rieng.</li>
+        <li><strong>Tien trinh:</strong> Luu diem, hang va thanh tich.</li>
       </ul>
     </aside>
   </div>

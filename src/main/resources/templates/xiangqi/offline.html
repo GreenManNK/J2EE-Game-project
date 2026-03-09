@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead(${pageTitle} ?: 'Co tuong Offline')}"></head>
+<head th:replace="~{fragments :: appHead(${pageTitle} ?: 'Co tuong cung may')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('xiangqi-offline')}"></div>
 
@@ -8,11 +8,11 @@
   <section class="gx-page-hero theme-box text-center mb-3">
     <div class="home-dashboard__eyebrow mx-auto">
       <i class="bi bi-diagram-3"></i>
-      <span>Xiangqi / Offline</span>
+      <span>Co tuong / Cung may</span>
     </div>
-    <h1 class="theme-text fw-bold mb-2" th:text="${pageHeading} ?: 'CO TUONG OFFLINE (MVP)'">CO TUONG OFFLINE (MVP)</h1>
+    <h1 class="theme-text fw-bold mb-2" th:text="${pageHeading} ?: 'Co tuong cung may'">Co tuong cung may</h1>
     <p class="theme-text mb-1" th:text="${pageSubtitle} ?: '2 nguoi choi tren cung thiet bi. Khong can dang nhap.'">2 nguoi choi tren cung thiet bi. Khong can dang nhap.</p>
-    <p class="text-muted mb-0" th:text="${pageNote} ?: 'MVP ho tro luat di quan co ban, chieu/chieu bi va ket thuc van co.'">MVP ho tro luat di quan co ban, chieu/chieu bi va ket thuc van co.</p>
+    <p class="text-muted mb-0" th:text="${pageNote} ?: 'Ban hien tai ho tro luat di quan co ban, chieu/chieu bi va ket thuc van co.'">Ban hien tai ho tro luat di quan co ban, chieu/chieu bi va ket thuc van co.</p>
   </section>
 
   <div class="xiangqi-layout">
@@ -24,15 +24,15 @@
             <div id="xiangqiGameStatus" class="text-muted small">Chon quan co de bat dau.</div>
           </div>
           <div class="d-flex gap-2 flex-wrap">
-            <button id="xiangqiUndoBtn" type="button" class="btn btn-sm theme-outline-btn">Undo</button>
+            <button id="xiangqiUndoBtn" type="button" class="btn btn-sm theme-outline-btn">Di lai</button>
             <button id="xiangqiResetBtn" type="button" class="btn btn-sm theme-outline-btn">Van moi</button>
             <button id="xiangqiSurrenderBtn" type="button" class="btn btn-sm btn-outline-warning">Dau hang</button>
-            <a th:href="@{/games/xiangqi}" class="btn btn-sm theme-outline-btn">Chi tiet game</a>
+            <a th:href="@{/games/xiangqi}" class="btn btn-sm theme-outline-btn">Ve trang che do</a>
           </div>
         </div>
 
         <div class="xiangqi-board-wrap">
-          <div id="xiangqiBoard" class="xiangqi-board" role="grid" aria-label="Ban co tuong"></div>
+          <div id="xiangqiBoard" class="xiangqi-board" role="grid" aria-label="Ban co tuong cung may"></div>
         </div>
       </div>
     </section>
@@ -47,7 +47,7 @@
           <div class="theme-text">Thong ke (Do/Den/Hoa): <span id="xiangqiStatsWld">0/0/0</span></div>
         </div>
 
-        <div class="small text-muted mb-2">Phim tat: U Undo, R Van moi, S Dau hang</div>
+        <div class="small text-muted mb-2">Phim tat: U Di lai, R Van moi, S Dau hang</div>
         <h3 class="h6 theme-text">Nhat ky nuoc di</h3>
         <ol id="xiangqiMoveLog" class="small xiangqi-move-log mb-0"></ol>
       </div>

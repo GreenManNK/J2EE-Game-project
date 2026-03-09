@@ -1,6 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Profile')}"></head>
+<head th:replace="~{fragments :: appHead('Ho so nguoi choi')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('profile')}"></div>
 
@@ -10,54 +10,54 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-person-badge"></i>
-          <span>Player Profile</span>
+          <span>Ho so nguoi choi</span>
         </div>
-        <h1 class="gx-page-title theme-text mt-2">Profile</h1>
+        <h1 class="gx-page-title theme-text mt-2">Ho so</h1>
         <p class="gx-page-subtitle">
           Tong hop thong tin tai khoan, chi so thi dau, danh hieu va khu vuc cap nhat thong tin ca nhan.
         </p>
       </div>
       <div class="gx-page-badge">
         <i class="bi bi-star-fill"></i>
-        <span th:text="${'Rank #' + rank}">Rank #0</span>
+        <span th:text="${'Hang ' + rank}">Hang 0</span>
       </div>
     </div>
 
     <div class="profile-summary-grid">
       <div class="profile-summary-item">
-        <small>User</small>
-        <strong th:text="${user.displayName}">Player</strong>
+        <small>Tai khoan</small>
+        <strong th:text="${user.displayName}">Nguoi choi</strong>
       </div>
       <div class="profile-summary-item">
         <small>Email</small>
         <strong th:text="${user.email}">email@example.com</strong>
       </div>
       <div class="profile-summary-item">
-        <small>Score</small>
+        <small>Diem</small>
         <strong th:text="${user.score}">0</strong>
       </div>
       <div class="profile-summary-item">
-        <small>Win Rate</small>
+        <small>Ty le thang</small>
         <strong><span th:text="${winRate}">0</span>%</strong>
       </div>
       <div class="profile-summary-item">
-        <small>Total Games</small>
+        <small>Tong tran</small>
         <strong th:text="${totalGames}">0</strong>
       </div>
       <div class="profile-summary-item">
-        <small>Win Count</small>
+        <small>So tran thang</small>
         <strong th:text="${winCount}">0</strong>
       </div>
       <div class="profile-summary-item">
-        <small>Rank</small>
+        <small>Hang</small>
         <strong th:text="${rank}">0</strong>
       </div>
       <div class="profile-summary-item">
-        <small>Best Streak</small>
+        <small>Chuoi thang tot nhat</small>
         <strong th:text="${bestStreak}">0</strong>
       </div>
       <div class="profile-summary-item">
-        <small>Win Fast Ranked</small>
+        <small>Thang xep hang nhanh</small>
         <strong th:text="${winFastRanked}">0</strong>
       </div>
     </div>
@@ -74,7 +74,7 @@
     </div>
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">Diem Achievements</h2>
+        <h2 class="h5 theme-text">Diem thanh tuu</h2>
         <ul class="list-group list-group-flush">
           <li class="list-group-item" th:each="a : ${diemAchievements}" th:text="${a}"></li>
         </ul>
@@ -82,7 +82,7 @@
     </div>
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">Locked</h2>
+        <h2 class="h5 theme-text">Chua mo khoa</h2>
         <ul class="list-group list-group-flush">
           <li class="list-group-item" th:each="a : ${lockedAchievements}" th:text="${a}"></li>
         </ul>
@@ -93,7 +93,7 @@
   <div class="row g-3 mt-1">
     <div class="col-lg-6">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">Achievement Lap Lai</h2>
+        <h2 class="h5 theme-text">Thanh tuu lap lai</h2>
         <ul class="list-group list-group-flush" th:if="${!#maps.isEmpty(repeatAchievements)}">
           <li class="list-group-item"
               th:each="entry : ${repeatAchievements}"
@@ -104,7 +104,7 @@
     </div>
     <div class="col-lg-6">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">Achievement Dac Biet</h2>
+        <h2 class="h5 theme-text">Thanh tuu dac biet</h2>
         <ul class="list-group list-group-flush" th:if="${!#lists.isEmpty(achievements)}">
           <li class="list-group-item" th:each="a : ${achievements}" th:text="${a}"></li>
         </ul>
@@ -119,11 +119,11 @@
            th:attr="data-user-id=${user.id}">
     <div class="gx-section-card__head">
       <h2 class="h5 mb-0 theme-text">Cap nhat thong tin</h2>
-      <div class="gx-section-card__meta">Chi chu so huu profile moi thay doi duoc</div>
+      <div class="gx-section-card__meta">Chi chu so huu ho so moi thay doi duoc</div>
     </div>
     <form id="editProfileForm" class="row g-3">
       <div class="col-md-6">
-        <label class="form-label" for="displayName">Display Name</label>
+        <label class="form-label" for="displayName">Ten hien thi</label>
         <input id="displayName" class="form-control" th:value="${user.displayName}">
       </div>
       <div class="col-md-6">
@@ -131,19 +131,19 @@
         <input id="email" class="form-control" type="email" th:value="${user.email}">
       </div>
       <div class="col-lg-4">
-        <label class="form-label d-block" for="avatarPreview">Avatar hien tai</label>
+        <label class="form-label d-block" for="avatarPreview">Anh dai dien hien tai</label>
         <img id="avatarPreview"
              class="profile-avatar-preview"
              th:src="@{${user.avatarPath != null and !#strings.isEmpty(user.avatarPath) ? user.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
-             alt="avatar-preview">
+             alt="Anh dai dien xem truoc">
       </div>
       <div class="col-lg-5">
-        <label class="form-label" for="avatarPath">Avatar Path</label>
+        <label class="form-label" for="avatarPath">Duong dan anh dai dien</label>
         <input id="avatarPath" class="form-control" th:value="${user.avatarPath}">
-        <div class="form-text">Co the paste URL hoac upload anh o khung ben canh.</div>
+        <div class="form-text">Co the dan URL hoac tai anh o khung ben canh.</div>
       </div>
       <div class="col-lg-3">
-        <label class="form-label" for="avatarFile">Upload avatar</label>
+        <label class="form-label" for="avatarFile">Tai anh dai dien</label>
         <input id="avatarFile" class="form-control" type="file" accept=".jpg,.jpeg,.png,.gif,.webp,image/*">
         <button id="uploadAvatarBtn" type="button" class="btn btn-outline-primary btn-sm mt-2 w-100">Tai anh</button>
         <div class="form-text">Toi da 2MB (JPG/PNG/GIF/WEBP)</div>
@@ -172,7 +172,7 @@
   </section>
 
   <div class="gx-inline-actions">
-    <a class="btn theme-outline-btn" th:href="@{/}">Ve Home</a>
+    <a class="btn theme-outline-btn" th:href="@{/}">Ve trang chu</a>
   </div>
 </main>
 
@@ -214,7 +214,7 @@
     }
 
     function reportError(err) {
-      const message = String(err?.message || err || 'Request failed');
+      const message = String(err?.message || err || 'Yeu cau that bai');
       setStatus(message, false);
       ui.toast?.(message, { type: 'danger' });
     }
@@ -258,7 +258,7 @@
     uploadAvatarBtn?.addEventListener('click', async () => {
       const file = avatarFileInput?.files?.[0];
       if (!file) {
-        setStatus('Vui long chon file anh', false);
+        setStatus('Vui long chon tep anh', false);
         return;
       }
       uploadAvatarBtn.disabled = true;
@@ -270,7 +270,7 @@
           body
         });
         const data = await res.json().catch(() => ({}));
-        const ok = report(data, 'Upload avatar thanh cong');
+        const ok = report(data, 'Tai anh dai dien thanh cong');
         if (!ok) {
           setAvatarPreview(avatarPathInput?.value || defaultAvatarPath);
           return;
@@ -287,7 +287,7 @@
           const current = window.CaroUser.get() || { userId };
           window.CaroUser.set({
             userId: userId,
-            displayName: current.displayName || 'Player',
+            displayName: current.displayName || 'Nguoi choi',
             email: current.email || '',
             role: current.role || 'User',
             avatarPath: updatedPath
@@ -366,3 +366,4 @@
 </script>
 </body>
 </html>
+

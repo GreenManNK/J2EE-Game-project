@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Typing Battle')}"></head>
+<head th:replace="~{fragments :: appHead('Dua go chu')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('games-typing')}"></div>
 
@@ -12,10 +12,10 @@
         <div class="hub-portal-hero__main">
             <div class="hub-portal-eyebrow">
                 <i class="bi bi-keyboard-fill"></i>
-                <span>TYPING / SPEED RACE</span>
+                <span>Go chu / Dua toc do</span>
             </div>
 
-            <h1 class="hub-portal-title">Typing Battle theo phong realtime</h1>
+            <h1 class="hub-portal-title">Typing theo phong thoi gian thuc</h1>
             <p class="hub-portal-subtitle">
                 Vao room, go chuan, ve dich dau tien.
             </p>
@@ -23,8 +23,8 @@
             <div class="hub-portal-chip-row">
                 <span class="hub-portal-chip is-live"><i class="bi bi-people-fill"></i> 2+ nguoi la bat dau</span>
                 <span class="hub-portal-chip"><i class="bi bi-check2-circle"></i> Chi thang khi go dung 100%</span>
-                <span class="hub-portal-chip"><i class="bi bi-speedometer2"></i> Theo doi WPM + Accuracy</span>
-                <span class="hub-portal-chip"><i class="bi bi-arrow-repeat"></i> Co rematch sau tran</span>
+                <span class="hub-portal-chip"><i class="bi bi-speedometer2"></i> Theo doi WPM + do chinh xac</span>
+                <span class="hub-portal-chip"><i class="bi bi-arrow-repeat"></i> Co tai dau sau tran</span>
             </div>
 
             <div class="typing-signal-strip" aria-hidden="true">
@@ -32,14 +32,19 @@
             </div>
 
             <details class="game-rules">
-                <summary>Quick rules</summary>
+                <summary>Luat nhanh</summary>
                 <ul>
                     <li>Phong bat dau khi co it nhat 2 nguoi choi.</li>
                     <li>Chi duoc tinh ve dich khi go chinh xac toan bo cau.</li>
                     <li>Nguoi hoan thanh dung dau tien la nguoi thang.</li>
-                    <li>Sau tran co the bam Rematch de choi tiep ngay.</li>
+                    <li>Sau tran co the bam Tai dau de choi tiep ngay.</li>
                 </ul>
             </details>
+
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <a th:href="@{/online-hub(game='typing')}" class="btn theme-outline-btn">Mo sanh phong</a>
+                <a th:href="@{/games}" class="btn theme-outline-btn">Ve thu vien</a>
+            </div>
 
             <div id="room-selection" class="typing-room-panel">
                 <div class="typing-lobby-head">
@@ -50,7 +55,7 @@
                     <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
                 </div>
                 <div class="hub-portal-action typing-join-row">
-                    <input type="text" id="room-id-input" placeholder="Nhap Room ID" class="form-control">
+                    <input type="text" id="room-id-input" placeholder="Nhap ma phong" class="form-control">
                     <button id="join-room-btn" class="hub-portal-action__icon" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
                 </div>
                 <div id="typing-room-list" class="typing-room-list"></div>
@@ -59,7 +64,7 @@
 
             <div id="game-container" class="typing-shell" hidden>
                 <div class="typing-room-tools">
-                    <button id="copy-room-btn" class="hub-portal-action">Sao chep Room ID</button>
+                    <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
                     <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
                     <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
                     <button id="rematch-btn" class="hub-portal-action">Tai dau</button>
@@ -67,7 +72,7 @@
 
                 <div class="typing-hud">
                     <div class="typing-hud__item"><span>Phong</span><strong id="room-id-display">-</strong></div>
-                    <div class="typing-hud__item"><span>Trang thai</span><strong id="race-status">WAITING</strong></div>
+                    <div class="typing-hud__item"><span>Trang thai</span><strong id="race-status">Dang cho</strong></div>
                     <div class="typing-hud__item"><span>WPM</span><strong id="wpm-value">0</strong></div>
                     <div class="typing-hud__item"><span>Do chinh xac</span><strong id="accuracy-value">0%</strong></div>
                 </div>
@@ -454,6 +459,25 @@
         }
     }
 
+    function formatGameStateLabel(gameState) {
+        const normalized = String(gameState || '').trim().toUpperCase();
+        switch (normalized) {
+            case 'WAITING':
+                return 'Dang cho';
+            case 'PLAYING':
+                return 'Dang dua';
+            case 'FINISHED':
+                return 'Da ket thuc';
+            default: {
+                if (!normalized) {
+                    return 'Dang cho';
+                }
+                const pretty = normalized.replace(/_/g, ' ').toLowerCase();
+                return pretty.charAt(0).toUpperCase() + pretty.slice(1);
+            }
+        }
+    }
+
     function clearReconnectTimer() {
         if (!reconnectTimer) {
             return;
@@ -535,7 +559,7 @@
     joinRoomBtn.addEventListener('click', () => {
         roomId = roomIdInput.value.trim();
         if (!roomId) {
-            setConnectionStatus('Can nhap Room ID.', 'error');
+            setConnectionStatus('Can nhap ma phong.', 'error');
             return;
         }
         myPlayerId = null;
@@ -548,21 +572,21 @@
 
     copyRoomBtn.addEventListener('click', async () => {
         if (!roomId) {
-            setStatus('Room ID dang rong.', 'error');
+            setStatus('Ma phong dang rong.', 'error');
             return;
         }
         const ok = await copyToClipboard(roomId);
-        setStatus(ok ? 'Da copy Room ID.' : 'Khong the copy Room ID.', ok ? 'success' : 'error');
+        setStatus(ok ? 'Da sao chep ma phong.' : 'Khong the sao chep ma phong.', ok ? 'success' : 'error');
     });
 
     shareRoomBtn.addEventListener('click', async () => {
         if (!roomId) {
-            setStatus('Room ID dang rong.', 'error');
+            setStatus('Ma phong dang rong.', 'error');
             return;
         }
         const inviteUrl = buildInviteUrl(roomId);
         const ok = await copyToClipboard(inviteUrl);
-        setStatus(ok ? 'Da copy link moi.' : 'Khong the copy link moi.', ok ? 'success' : 'error');
+        setStatus(ok ? 'Da sao chep link moi.' : 'Khong the sao chep link moi.', ok ? 'success' : 'error');
     });
 
     leaveRoomBtn.addEventListener('click', () => {
@@ -574,7 +598,7 @@
             return;
         }
         if (safeSend({ action: 'rematch', roomId })) {
-            setStatus('Da gui yeu cau rematch. Dang chuan bi cau moi...', '');
+            setStatus('Da gui yeu cau tai dau. Dang chuan bi van moi...', '');
         }
     });
 
@@ -611,7 +635,7 @@
             roomIdDisplay.textContent = roomId || '-';
             roomIdInput.value = roomId || '';
             replaceRoomUrl(roomId);
-            raceStatusEl.textContent = room.gameState || 'WAITING';
+            raceStatusEl.textContent = formatGameStateLabel(room.gameState);
 
             const text = room.textToType || '';
             const myTyped = getMyTypedText(room);
@@ -638,9 +662,9 @@
                 typingInput.disabled = true;
                 const winner = room.winner || 'Chua xac dinh';
                 winnerDisplay.hidden = false;
-                winnerDisplay.textContent = `Nguoi thang: ${winner}`;
+                winnerDisplay.textContent = `Nguoi ve dich: ${winner}`;
                 rematchBtn.disabled = false;
-                setStatus('Tran da ket thuc. Bam rematch de choi tiep.', 'success');
+                setStatus('Tran da ket thuc. Bam tai dau de choi tiep.', 'success');
             } else {
                 winnerDisplay.hidden = true;
                 rematchBtn.disabled = room.gameState !== 'PLAYING' && room.gameState !== 'WAITING';
@@ -809,7 +833,7 @@
             row.innerHTML = `
                 <div>
                     <strong>${escapeHtml(room.id)}</strong><br>
-                    <span>${escapeHtml(room.gameState || 'WAITING')} | Nguoi choi: ${room.playerCount || 0}</span>
+                    <span>${escapeHtml(formatGameStateLabel(room.gameState))} | Nguoi choi: ${room.playerCount || 0}</span>
                 </div>
                 <button class="hub-portal-action__icon" data-join="${escapeHtml(room.id)}" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
             `;
@@ -880,9 +904,7 @@
     function applyAutoJoinFromUrl() {
         const pathname = String(window.location.pathname || '').replace(/\/+$/, '');
         const roomMatch = pathname.match(/\/games\/typing\/room\/([^/]+)$/i);
-        const roomFromPath = roomMatch ? decodeURIComponent(roomMatch[1] || '').trim() : '';
-        const params = new URLSearchParams(window.location.search);
-        const room = roomFromPath || (params.get('room') || '').trim();
+        const room = roomMatch ? decodeURIComponent(roomMatch[1] || '').trim() : '';
         if (!room) {
             return;
         }

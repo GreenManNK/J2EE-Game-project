@@ -33,10 +33,12 @@ public class GameController {
                         @RequestParam(required = false) String symbol,
                         HttpServletRequest request,
                         Model model) {
-        model.addAttribute("roomId", roomId == null ? "" : roomId);
-        model.addAttribute("symbol", symbol == null ? "" : symbol);
-        addSessionPlayer(model, request);
-        return "game/index";
+        String normalizedRoomId = roomId == null ? "" : roomId.trim();
+        String normalizedSymbol = symbol == null ? "" : symbol.trim();
+        if (!normalizedRoomId.isEmpty()) {
+            return buildRoomRedirect(normalizedRoomId, normalizedSymbol);
+        }
+        return renderIndex("", normalizedSymbol, request, model);
     }
 
     @GetMapping("/room/{roomId}")
@@ -44,7 +46,17 @@ public class GameController {
                            @RequestParam(required = false) String symbol,
                            HttpServletRequest request,
                            Model model) {
-        return index(roomId, symbol, request, model);
+        return renderIndex(roomId, symbol, request, model);
+    }
+
+    private String renderIndex(String roomId,
+                               String symbol,
+                               HttpServletRequest request,
+                               Model model) {
+        model.addAttribute("roomId", roomId == null ? "" : roomId);
+        model.addAttribute("symbol", symbol == null ? "" : symbol);
+        addSessionPlayer(model, request);
+        return "game/index";
     }
 
     @ResponseBody
@@ -143,6 +155,14 @@ public class GameController {
 
     private String avatarPathOf(UserAccount user) {
         return user.getAvatarPath() == null ? "" : user.getAvatarPath();
+    }
+
+    private String buildRoomRedirect(String roomId, String symbol) {
+        StringBuilder redirect = new StringBuilder("redirect:/game/room/").append(roomId);
+        if (symbol != null && !symbol.isBlank()) {
+            redirect.append("?symbol=").append(symbol);
+        }
+        return redirect.toString();
     }
 
     private record SessionPlayer(String userId, String displayName, String avatarPath) {

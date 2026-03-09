@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   const boot = window.TienLenBotBoot || {};
   const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
     ? window.CaroUrl.path
@@ -50,7 +50,7 @@
 
   const me = {
     id: String(boot.sessionUserId || 'guest-local').trim() || 'guest-local',
-    name: String(boot.sessionDisplayName || 'Guest').trim() || 'Guest',
+    name: String(boot.sessionDisplayName || 'Khach').trim() || 'Khach',
     avatarPath: String(boot.sessionAvatarPath || '').trim()
   };
 
@@ -121,7 +121,7 @@
     ];
     renderSelfSummary();
     if (els.difficultyLabel) {
-      els.difficultyLabel.textContent = state.difficulty === 'hard' ? 'Hard' : 'Easy';
+      els.difficultyLabel.textContent = state.difficulty === 'hard' ? 'Kho' : 'De';
     }
   }
 
@@ -1568,7 +1568,7 @@
   function buildAvatarHtml(avatarPath, displayName, className) {
     const avatarSrc = normalizeAvatarPath(avatarPath);
     if (avatarSrc) {
-      return '<img class="' + className + '" src="' + escapeHtml(avatarSrc) + '" alt="">';
+      return '<img class="' + className + '" src="' + escapeHtml(avatarSrc) + '" alt="Anh dai dien">';
     }
     return '<div class="' + className + '" aria-hidden="true">' + escapeHtml(initialsOfName(displayName)) + '</div>';
   }
@@ -1596,7 +1596,7 @@
     }
     if (els.selfAvatar) {
       els.selfAvatar.setAttribute('src', currentUserAvatarSrc(me.avatarPath));
-      els.selfAvatar.setAttribute('alt', 'Avatar ' + String(me.name || 'nguoi choi'));
+      els.selfAvatar.setAttribute('alt', 'Anh dai dien ' + String(me.name || 'nguoi choi'));
     }
   }
 
@@ -1605,11 +1605,11 @@
       ? nextUser
       : (window.CaroUser && typeof window.CaroUser.get === 'function' ? window.CaroUser.get() : null);
     if (candidate && String(candidate.userId || '').trim() === me.id) {
-      me.name = String(candidate.displayName || '').trim() || me.name || me.id || 'Guest';
+      me.name = String(candidate.displayName || '').trim() || me.name || me.id || 'Khach';
       me.avatarPath = String(candidate.avatarPath || '').trim() || me.avatarPath || DEFAULT_AVATAR_PATH;
       return;
     }
-    me.name = String(me.name || '').trim() || me.id || 'Guest';
+    me.name = String(me.name || '').trim() || me.id || 'Khach';
     me.avatarPath = String(me.avatarPath || '').trim() || DEFAULT_AVATAR_PATH;
   }
 
@@ -1644,12 +1644,12 @@
 
   function suitVisualMeta(suitCode) {
     switch (String(suitCode || '').toUpperCase()) {
-      case 'H': return { symbol: '♥', nameVi: 'co', red: true };
-      case 'D': return { symbol: '♦', nameVi: 'ro', red: true };
-      case 'C': return { symbol: '♣', nameVi: 'tep', red: false };
+      case 'H': return { symbol: 'â™¥', nameVi: 'co', red: true };
+      case 'D': return { symbol: 'â™¦', nameVi: 'ro', red: true };
+      case 'C': return { symbol: 'â™£', nameVi: 'tep', red: false };
       case 'S':
       default:
-        return { symbol: '♠', nameVi: 'bich', red: false };
+        return { symbol: 'â™ ', nameVi: 'bich', red: false };
     }
   }
 
@@ -1699,3 +1699,4 @@
       .replaceAll("'", '&#39;');
   }
 })();
+

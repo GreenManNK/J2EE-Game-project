@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Game Online')}"></head>
+<head th:replace="~{fragments :: appHead('Phong choi Caro')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('game-index')}"></div>
 
@@ -154,7 +154,7 @@
     const surrenderBtn = document.getElementById('surrenderBtn');
 
     const userId = (sessionUserId || '').trim();
-    const displayName = (sessionDisplayName || (userId ? ('Guest ' + userId.slice(-4).toUpperCase()) : '')).trim();
+    const displayName = (sessionDisplayName || (userId ? ('Khach ' + userId.slice(-4).toUpperCase()) : '')).trim();
     const avatarPath = (sessionAvatarPath || '/uploads/avatars/default-avatar.jpg').trim();
     const isGuestUser = /^guest-/i.test(userId);
 
@@ -173,7 +173,7 @@
         : null;
       window.CaroUser.set({
         userId: userId,
-        displayName: displayName || (persistedUser ? persistedUser.displayName : '') || 'Player',
+        displayName: displayName || (persistedUser ? persistedUser.displayName : '') || 'Nguoi choi',
         email: persistedUser ? (persistedUser.email || '') : '',
         role: persistedUser ? (persistedUser.role || 'User') : 'User',
         avatarPath: avatarPath || (persistedUser ? persistedUser.avatarPath : '') || '/uploads/avatars/default-avatar.jpg'
@@ -285,7 +285,7 @@
       const line = document.createElement('div');
       line.className = 'chat-message ' + (isYou ? 'chat-you' : 'chat-other');
       const strong = document.createElement('strong');
-      strong.textContent = (name || 'Unknown') + ': ';
+      strong.textContent = (name || 'Khong ro') + ': ';
       line.appendChild(strong);
       line.appendChild(document.createTextNode(text || ''));
       chatBox.appendChild(line);
@@ -397,7 +397,7 @@
             updateActionButtons();
           }
           if (payload.type === 'CHAT') {
-            appendChat(payload.displayName || 'Unknown', payload.message || '', payload.userId === userId);
+            appendChat(payload.displayName || 'Khong ro', payload.message || '', payload.userId === userId);
           }
         });
 

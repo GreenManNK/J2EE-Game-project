@@ -1,28 +1,28 @@
 ﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Puzzle Arena')}"></head>
+<head th:replace="~{fragments :: appHead('Khu puzzle')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('games-puzzle')}"></div>
 
 <main class="cg-market-catalog hub-portal-theme-puzzle">
   <section class="hub-portal-panel cg-market-topbar">
     <div>
-      <h1 class="cg-title">Puzzle Arena</h1>
-      <p class="cg-subtitle">Category puzzle da duoc doi bo cuc gan voi CrazyGames: co search, filter, sort, lane discovery va card game thumbnail.</p>
+      <h1 class="cg-title">Khu puzzle</h1>
+      <p class="cg-subtitle">Tong hop cac game puzzle voi tim kiem, bo loc, sap xep va danh sach de xuat de vao choi nhanh.</p>
       <div class="cg-chip-row">
         <span class="cg-chip is-live"><i class="bi bi-puzzle-fill"></i> 4 game dang hoat dong</span>
-        <span class="cg-chip"><i class="bi bi-bookmark-fill"></i> Favorite</span>
-        <span class="cg-chip"><i class="bi bi-star-fill"></i> User rating</span>
-        <span class="cg-chip"><i class="bi bi-clock-history"></i> Recently played</span>
+        <span class="cg-chip"><i class="bi bi-bookmark-fill"></i> Yeu thich</span>
+        <span class="cg-chip"><i class="bi bi-star-fill"></i> Danh gia cua ban</span>
+        <span class="cg-chip"><i class="bi bi-clock-history"></i> Choi gan day</span>
       </div>
     </div>
 
-    <label class="cg-control" aria-label="Tim puzzle">
+    <label class="cg-control" aria-label="Tim game puzzle">
       <i class="bi bi-search"></i>
       <input id="puzzleSearchInput" type="text" placeholder="Tim game puzzle...">
     </label>
 
-    <label class="cg-control" aria-label="Sap xep puzzle">
+    <label class="cg-control" aria-label="Sap xep game puzzle">
       <span>Sap xep</span>
       <select id="puzzleSortSelect">
         <option value="popular">Pho bien nhat</option>
@@ -39,16 +39,16 @@
         <div class="cg-section-head">
           <div>
             <h2>Bo loc puzzle</h2>
-            <small>Category rail</small>
+            <small>Loc theo nhom</small>
           </div>
         </div>
 
-        <div class="cg-market-filter-list" role="group" aria-label="Puzzle filters">
+        <div class="cg-market-filter-list" role="group" aria-label="Bo loc puzzle">
           <button type="button" class="cg-market-filter-btn is-active" data-filter="all">Tat ca</button>
           <button type="button" class="cg-market-filter-btn" data-filter="logic">Logic</button>
-          <button type="button" class="cg-market-filter-btn" data-filter="classic">Classic</button>
-          <button type="button" class="cg-market-filter-btn" data-filter="word">Word</button>
-          <button type="button" class="cg-market-filter-btn" data-filter="quick">Quick</button>
+          <button type="button" class="cg-market-filter-btn" data-filter="classic">Co dien</button>
+          <button type="button" class="cg-market-filter-btn" data-filter="word">Tu ngu</button>
+          <button type="button" class="cg-market-filter-btn" data-filter="quick">Nhanh</button>
           <button type="button" class="cg-market-filter-btn" data-filter="favorite">Yeu thich</button>
         </div>
 
@@ -74,8 +74,8 @@
       <section class="hub-portal-panel cg-market-panel">
         <div class="cg-section-head">
           <div>
-            <h2>Featured picks</h2>
-            <small>Quick lane nhu trang category</small>
+            <h2>De xuat noi bat</h2>
+            <small>Lua chon vao choi nhanh</small>
           </div>
         </div>
         <div id="puzzleFeaturedStrip" class="puz-featured-strip"></div>
@@ -85,78 +85,78 @@
         <div id="puzzleCatalogGrid" class="cg-market-grid">
           <article class="cg-market-card puz-card"
                    data-code="jigsaw"
-                   data-name="Jigsaw Puzzle"
+                   data-name="Xep hinh"
                    data-category="classic"
                    data-tags="classic image drag drop relaxing"
                    data-popularity="95"
                    data-rating="4.8"
                    data-release="2026">
             <div class="puz-thumb-wrap">
-              <img th:src="@{/images/puzzle/jigsaw.svg}" src="/images/puzzle/jigsaw.svg" alt="Jigsaw thumbnail" class="puz-thumb">
-              <span class="puz-badge">Jigsaw</span>
+              <img th:src="@{/images/puzzle/jigsaw.svg}" src="/images/puzzle/jigsaw.svg" alt="Anh xep hinh" class="puz-thumb">
+              <span class="puz-badge">Xep hinh</span>
               <button type="button" class="puz-fav-btn" data-favorite-btn aria-pressed="false" title="Luu vao yeu thich"><i class="bi bi-bookmark"></i></button>
-              <a th:href="@{/games/puzzle/jigsaw}" class="puz-thumb-link" data-play-link data-code="jigsaw" aria-label="Mo Jigsaw Puzzle"></a>
+              <a th:href="@{/games/puzzle/jigsaw}" class="puz-thumb-link" data-play-link data-code="jigsaw" aria-label="Mo game xep hinh"></a>
             </div>
             <div class="cg-market-body">
-              <h2>Jigsaw Puzzle</h2>
+              <h2>Xep hinh</h2>
               <p>Keo tha manh ghep vao dung vi tri va hoan thanh buc tranh nhanh nhat.</p>
-              <div class="cg-market-badges"><span>Classic</span><span>Image</span><span>Relax</span></div>
+              <div class="cg-market-badges"><span>Co dien</span><span>Hinh anh</span><span>Thu gian</span></div>
               <div class="puz-rate" data-user-rate></div>
               <div class="cg-market-actions">
-                <small><i class="bi bi-graph-up-arrow"></i> Popular 95</small>
-                <a th:href="@{/games/puzzle/jigsaw}" class="hub-portal-inline-btn primary" data-play-link data-code="jigsaw">Play</a>
+                <small><i class="bi bi-graph-up-arrow"></i> Pho bien 95</small>
+                <a th:href="@{/games/puzzle/jigsaw}" class="hub-portal-inline-btn primary" data-play-link data-code="jigsaw">Choi</a>
               </div>
             </div>
           </article>
 
           <article class="cg-market-card puz-card"
                    data-code="sliding"
-                   data-name="Sliding Puzzle"
+                   data-name="Ghep o truot"
                    data-category="quick"
                    data-tags="sliding tiles numbers quick"
                    data-popularity="90"
                    data-rating="4.6"
                    data-release="2025">
             <div class="puz-thumb-wrap">
-              <img th:src="@{/images/puzzle/sliding.svg}" src="/images/puzzle/sliding.svg" alt="Sliding thumbnail" class="puz-thumb">
-              <span class="puz-badge">Sliding</span>
+              <img th:src="@{/images/puzzle/sliding.svg}" src="/images/puzzle/sliding.svg" alt="Anh ghep o truot" class="puz-thumb">
+              <span class="puz-badge">O truot</span>
               <button type="button" class="puz-fav-btn" data-favorite-btn aria-pressed="false" title="Luu vao yeu thich"><i class="bi bi-bookmark"></i></button>
-              <a th:href="@{/games/puzzle/sliding}" class="puz-thumb-link" data-play-link data-code="sliding" aria-label="Mo Sliding Puzzle"></a>
+              <a th:href="@{/games/puzzle/sliding}" class="puz-thumb-link" data-play-link data-code="sliding" aria-label="Mo game ghep o truot"></a>
             </div>
             <div class="cg-market-body">
-              <h2>Sliding Puzzle</h2>
+              <h2>Ghep o truot</h2>
               <p>Truot cac o de dua ban co ve trang thai hoan chinh theo dung thu tu.</p>
-              <div class="cg-market-badges"><span>Quick</span><span>Tiles</span><span>Brain</span></div>
+              <div class="cg-market-badges"><span>Nhanh</span><span>O so</span><span>Tri nao</span></div>
               <div class="puz-rate" data-user-rate></div>
               <div class="cg-market-actions">
-                <small><i class="bi bi-graph-up-arrow"></i> Popular 90</small>
-                <a th:href="@{/games/puzzle/sliding}" class="hub-portal-inline-btn primary" data-play-link data-code="sliding">Play</a>
+                <small><i class="bi bi-graph-up-arrow"></i> Pho bien 90</small>
+                <a th:href="@{/games/puzzle/sliding}" class="hub-portal-inline-btn primary" data-play-link data-code="sliding">Choi</a>
               </div>
             </div>
           </article>
 
           <article class="cg-market-card puz-card"
                    data-code="word"
-                   data-name="Word Puzzle"
+                   data-name="Puzzle tu ngu"
                    data-category="word"
                    data-tags="word letters vocabulary search"
                    data-popularity="82"
                    data-rating="4.4"
                    data-release="2025">
             <div class="puz-thumb-wrap">
-              <img th:src="@{/images/puzzle/word.svg}" src="/images/puzzle/word.svg" alt="Word thumbnail" class="puz-thumb">
-              <span class="puz-badge">Word</span>
+              <img th:src="@{/images/puzzle/word.svg}" src="/images/puzzle/word.svg" alt="Anh puzzle tu ngu" class="puz-thumb">
+              <span class="puz-badge">Tu ngu</span>
               <button type="button" class="puz-fav-btn" data-favorite-btn aria-pressed="false" title="Luu vao yeu thich"><i class="bi bi-bookmark"></i></button>
-              <a th:href="@{/games/puzzle/word}" class="puz-thumb-link" data-play-link data-code="word" aria-label="Mo Word Puzzle"></a>
+              <a th:href="@{/games/puzzle/word}" class="puz-thumb-link" data-play-link data-code="word" aria-label="Mo game puzzle tu ngu"></a>
             </div>
             <div class="cg-market-body">
-              <h2>Word Puzzle</h2>
+              <h2>Puzzle tu ngu</h2>
               <p>Tim tu theo hang, cot va duong cheo, cap nhat tien do theo buoc choi.</p>
-              <div class="cg-market-badges"><span>Word</span><span>Search</span><span>Vocabulary</span></div>
+              <div class="cg-market-badges"><span>Tu ngu</span><span>Tim tu</span><span>Tu vung</span></div>
               <div class="puz-rate" data-user-rate></div>
               <div class="cg-market-actions">
-                <small><i class="bi bi-graph-up-arrow"></i> Popular 82</small>
-                <a th:href="@{/games/puzzle/word}" class="hub-portal-inline-btn primary" data-play-link data-code="word">Play</a>
+                <small><i class="bi bi-graph-up-arrow"></i> Pho bien 82</small>
+                <a th:href="@{/games/puzzle/word}" class="hub-portal-inline-btn primary" data-play-link data-code="word">Choi</a>
               </div>
             </div>
           </article>
@@ -170,19 +170,19 @@
                    data-rating="4.7"
                    data-release="2026">
             <div class="puz-thumb-wrap">
-              <img th:src="@{/images/puzzle/sudoku.svg}" src="/images/puzzle/sudoku.svg" alt="Sudoku thumbnail" class="puz-thumb">
+              <img th:src="@{/images/puzzle/sudoku.svg}" src="/images/puzzle/sudoku.svg" alt="Anh Sudoku" class="puz-thumb">
               <span class="puz-badge">Sudoku</span>
               <button type="button" class="puz-fav-btn" data-favorite-btn aria-pressed="false" title="Luu vao yeu thich"><i class="bi bi-bookmark"></i></button>
-              <a th:href="@{/games/puzzle/sudoku}" class="puz-thumb-link" data-play-link data-code="sudoku" aria-label="Mo Sudoku"></a>
+              <a th:href="@{/games/puzzle/sudoku}" class="puz-thumb-link" data-play-link data-code="sudoku" aria-label="Mo game Sudoku"></a>
             </div>
             <div class="cg-market-body">
               <h2>Sudoku</h2>
               <p>Dien so 1-9 khong trung lap tren hang, cot va tung vung 3x3.</p>
-              <div class="cg-market-badges"><span>Logic</span><span>Classic</span><span>Solo</span></div>
+              <div class="cg-market-badges"><span>Logic</span><span>Co dien</span><span>Don</span></div>
               <div class="puz-rate" data-user-rate></div>
               <div class="cg-market-actions">
-                <small><i class="bi bi-graph-up-arrow"></i> Popular 88</small>
-                <a th:href="@{/games/puzzle/sudoku}" class="hub-portal-inline-btn primary" data-play-link data-code="sudoku">Play</a>
+                <small><i class="bi bi-graph-up-arrow"></i> Pho bien 88</small>
+                <a th:href="@{/games/puzzle/sudoku}" class="hub-portal-inline-btn primary" data-play-link data-code="sudoku">Choi</a>
               </div>
             </div>
           </article>
@@ -200,7 +200,7 @@
       <section class="hub-portal-panel cg-market-panel">
         <div class="cg-section-head">
           <div>
-            <h2>Trending</h2>
+            <h2>Dang hot</h2>
             <small>Pho bien nhat</small>
           </div>
         </div>
@@ -211,7 +211,7 @@
         <div class="cg-section-head">
           <div>
             <h2>Moi cap nhat</h2>
-            <small>Release moi</small>
+            <small>Ban cap nhat moi</small>
           </div>
         </div>
         <div id="puzzleNewestLane" class="cg-market-lane-list"></div>
@@ -220,8 +220,8 @@
       <section id="puzzleRecentPanel" class="hub-portal-panel cg-market-panel" hidden>
         <div class="cg-section-head">
           <div>
-            <h2>Recently played</h2>
-            <small>Game vua click</small>
+            <h2>Choi gan day</h2>
+            <small>Game vua mo</small>
           </div>
         </div>
         <div id="puzzleRecentList" class="cg-market-lane-list"></div>
@@ -427,9 +427,9 @@
     const filterLabels = {
       all: 'Tat ca',
       logic: 'Logic',
-      classic: 'Classic',
-      word: 'Word',
-      quick: 'Quick',
+      classic: 'Co dien',
+      word: 'Tu ngu',
+      quick: 'Nhanh',
       favorite: 'Yeu thich'
     };
 
@@ -642,7 +642,7 @@
           '<img src="' + getCardThumb(card) + '" alt="' + getCardName(card) + '">' +
           '<div class="puz-featured-body">' +
             '<strong>#' + (idx + 1) + ' ' + getCardName(card) + '</strong>' +
-            '<small>Popular ' + String(card.dataset.popularity || '0') + ' • Rating ' + String(card.dataset.rating || '-') + '</small>' +
+            '<small>Pho bien ' + String(card.dataset.popularity || '0') + ' • Danh gia ' + String(card.dataset.rating || '-') + '</small>' +
           '</div>' +
         '</a>';
       }).join('');
@@ -732,14 +732,14 @@
       renderLane(trendingHost, sortCards(filtered, 'popular').slice(0, 5), (card, idx) =>
         '<a class="cg-market-lane-item" href="' + getCardHref(card) + '" data-play-link data-code="' + getCardCode(card) + '">' +
           '<strong>#' + (idx + 1) + ' ' + getCardName(card) + '</strong>' +
-          '<small>Popular ' + String(card.dataset.popularity || '0') + ' • Rating ' + String(card.dataset.rating || '-') + '</small>' +
+          '<small>Pho bien ' + String(card.dataset.popularity || '0') + ' • Danh gia ' + String(card.dataset.rating || '-') + '</small>' +
         '</a>'
       );
 
       renderLane(newestHost, sortCards(filtered, 'newest').slice(0, 5), (card) =>
         '<a class="cg-market-lane-item" href="' + getCardHref(card) + '" data-play-link data-code="' + getCardCode(card) + '">' +
           '<strong>' + getCardName(card) + '</strong>' +
-          '<small>Release ' + String(card.dataset.release || '-') + '</small>' +
+          '<small>Cap nhat ' + String(card.dataset.release || '-') + '</small>' +
         '</a>'
       );
     };

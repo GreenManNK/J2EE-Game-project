@@ -23,13 +23,13 @@
       });
       const data = await r.json();
       const ok = !!(data && data.success);
-      setStatus(ok ? 'Da nhan phan hoi tu chatbot' : String(data?.message || data?.error || 'Loi chatbot'), ok);
+      setStatus(ok ? 'Da nhan phan hoi tu tro ly' : String(data?.message || data?.error || 'Loi tro ly'), ok);
       if (out) {
-        out.textContent = ok ? String(data.reply || '') : String(data?.message || data?.error || 'Loi chatbot');
+        out.textContent = ok ? String(data.reply || '') : String(data?.message || data?.error || 'Loi tro ly');
       }
-      ui.toast?.(ok ? 'Chatbot da phan hoi' : String(data?.message || 'Loi chatbot'), { type: ok ? 'success' : 'danger' });
+      ui.toast?.(ok ? 'Tro ly da phan hoi' : String(data?.message || 'Loi tro ly'), { type: ok ? 'success' : 'danger' });
     } catch (err) {
-      const msg = String(err?.message || err || 'Loi chatbot');
+      const msg = String(err?.message || err || 'Loi tro ly');
       setStatus(msg, false);
       ui.toast?.(msg, { type: 'danger' });
     }

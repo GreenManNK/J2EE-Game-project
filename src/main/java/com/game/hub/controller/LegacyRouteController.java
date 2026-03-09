@@ -14,12 +14,12 @@ public class LegacyRouteController {
 
     @GetMapping("/Home/Multiplayer")
     public String homeMultiplayer() {
-        return "redirect:/multiplayer";
+        return "redirect:/games/caro";
     }
 
     @GetMapping("/Home/Singleplayer")
     public String homeSinglePlayer() {
-        return "redirect:/single-player";
+        return "redirect:/game-mode/bot?game=caro";
     }
 
     @GetMapping("/Home/Games")

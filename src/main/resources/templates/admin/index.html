@@ -1,6 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Admin Center')}"></head>
+<head th:replace="~{fragments :: appHead('Quan tri he thong')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('admin-center')}"></div>
 
@@ -10,39 +10,39 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-shield-lock"></i>
-          <span>ADMIN CENTER</span>
+          <span>QUAN TRI HE THONG</span>
         </div>
         <h1 class="gx-page-title theme-text mt-2">Dieu khien he thong</h1>
         <p class="gx-page-subtitle">Tat ca chuc nang quan tri duoc gom vao mot trang duy nhat.</p>
       </div>
       <div class="gx-inline-actions">
-        <span class="gx-page-badge"><i class="bi bi-people-fill"></i><span id="adminCenterUserCount">0 users</span></span>
-        <span class="gx-page-badge"><i class="bi bi-bell-fill"></i><span id="adminCenterNoticeCount">0 notices</span></span>
-        <span class="gx-page-badge"><i class="bi bi-activity"></i><span id="adminCenterLogCount">0 logs</span></span>
+        <span class="gx-page-badge"><i class="bi bi-people-fill"></i><span id="adminCenterUserCount">0 tai khoan</span></span>
+        <span class="gx-page-badge"><i class="bi bi-bell-fill"></i><span id="adminCenterNoticeCount">0 thong bao</span></span>
+        <span class="gx-page-badge"><i class="bi bi-activity"></i><span id="adminCenterLogCount">0 log</span></span>
       </div>
     </div>
   </section>
 
   <section class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
-      <h2 class="gx-section-card__title theme-text mb-0">Quan ly user</h2>
-      <div class="gx-section-card__meta">Loc, tao user va quan ly quyen/trang thai.</div>
+      <h2 class="gx-section-card__title theme-text mb-0">Quan ly tai khoan</h2>
+      <div class="gx-section-card__meta">Loc, tao tai khoan va quan ly quyen, trang thai.</div>
     </div>
     <div class="row g-2 align-items-end">
       <div class="col-md-4">
-        <label class="form-label" for="adminUsersSearch">Search</label>
-        <input id="adminUsersSearch" class="form-control" placeholder="name, email">
+        <label class="form-label" for="adminUsersSearch">Tim kiem</label>
+        <input id="adminUsersSearch" class="form-control" placeholder="Tim theo ten hoac email">
       </div>
       <div class="col-md-2">
-        <label class="form-label" for="adminUsersBanFilter">Ban filter</label>
+        <label class="form-label" for="adminUsersBanFilter">Loc khoa</label>
         <select id="adminUsersBanFilter" class="form-select">
-          <option value="">All</option>
-          <option value="banned">Banned</option>
-          <option value="active">Active</option>
+          <option value="">Tat ca</option>
+          <option value="banned">Da khoa</option>
+          <option value="active">Dang hoat dong</option>
         </select>
       </div>
       <div class="col-md-2">
-        <label class="form-label" for="adminUsersPageSize">Page size</label>
+        <label class="form-label" for="adminUsersPageSize">So dong</label>
         <select id="adminUsersPageSize" class="form-select">
           <option value="10" selected>10</option>
           <option value="20">20</option>
@@ -53,8 +53,8 @@
         <button id="adminUsersReloadBtn" type="button" class="btn btn-primary w-100">Tai lai</button>
       </div>
       <div class="col-md-2 d-grid gap-2">
-        <a id="adminUsersExportCsvPage" class="btn theme-outline-btn" href="#">CSV page</a>
-        <a id="adminUsersExportExcelAll" class="btn theme-outline-btn" href="#">Excel all</a>
+        <a id="adminUsersExportCsvPage" class="btn theme-outline-btn" href="#">Xuat CSV trang nay</a>
+        <a id="adminUsersExportExcelAll" class="btn theme-outline-btn" href="#">Xuat Excel tat ca</a>
       </div>
     </div>
 
@@ -64,39 +64,39 @@
         <input id="adminCreateEmail" class="form-control" type="email" required>
       </div>
       <div class="col-md-2">
-        <label class="form-label" for="adminCreateDisplayName">Name</label>
+        <label class="form-label" for="adminCreateDisplayName">Ten hien thi</label>
         <input id="adminCreateDisplayName" class="form-control">
       </div>
       <div class="col-md-2">
-        <label class="form-label" for="adminCreatePassword">Password</label>
+        <label class="form-label" for="adminCreatePassword">Mat khau</label>
         <input id="adminCreatePassword" class="form-control" type="password" required>
       </div>
       <div class="col-md-1">
-        <label class="form-label" for="adminCreateScore">Score</label>
+        <label class="form-label" for="adminCreateScore">Diem</label>
         <input id="adminCreateScore" class="form-control" type="number" value="0">
       </div>
       <div class="col-md-2">
-        <label class="form-label" for="adminCreateRole">Role</label>
+        <label class="form-label" for="adminCreateRole">Quyen</label>
         <select id="adminCreateRole" class="form-select">
-          <option value="User" selected>User</option>
-          <option value="Manager">Manager</option>
-          <option value="Admin">Admin</option>
+          <option value="User" selected>Nguoi choi</option>
+          <option value="Manager">Quan ly</option>
+          <option value="Admin">Quan tri</option>
         </select>
       </div>
       <div class="col-md-2">
-        <label class="form-label" for="adminCreateAvatarPath">Avatar</label>
+        <label class="form-label" for="adminCreateAvatarPath">Duong dan anh dai dien</label>
         <input id="adminCreateAvatarPath" class="form-control" placeholder="/uploads/avatars/default-avatar.jpg">
       </div>
       <div class="col-12 d-flex flex-wrap gap-2">
-        <button type="submit" class="btn btn-primary">Tao user</button>
+        <button type="submit" class="btn btn-primary">Tao tai khoan</button>
         <div id="adminUsersStatus" class="small mb-0 theme-text flex-grow-1" role="status" aria-live="polite"></div>
       </div>
     </form>
 
     <div class="gx-inline-actions mt-2 mb-2 theme-text">
-      <button id="adminUsersPrevBtn" type="button" class="btn btn-sm btn-outline-secondary">Prev</button>
-      <span class="small" id="adminUsersPagerText">Page 1/1</span>
-      <button id="adminUsersNextBtn" type="button" class="btn btn-sm btn-outline-secondary">Next</button>
+      <button id="adminUsersPrevBtn" type="button" class="btn btn-sm btn-outline-secondary">Truoc</button>
+      <span class="small" id="adminUsersPagerText">Trang 1/1</span>
+      <button id="adminUsersNextBtn" type="button" class="btn btn-sm btn-outline-secondary">Sau</button>
     </div>
 
     <div class="table-responsive">
@@ -105,11 +105,11 @@
         <tr class="theme-table-header">
           <th>ID</th>
           <th>Email</th>
-          <th>Name</th>
-          <th>Score</th>
-          <th>Role</th>
-          <th>Ban</th>
-          <th>Action</th>
+          <th>Ten hien thi</th>
+          <th>Diem</th>
+          <th>Quyen</th>
+          <th>Khoa</th>
+          <th>Thao tac</th>
         </tr>
         </thead>
         <tbody id="adminUsersTableBody">
@@ -121,16 +121,16 @@
 
   <section class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
-      <h2 class="gx-section-card__title theme-text mb-0">System notices</h2>
-      <div class="gx-section-card__meta">Tao/xoa thong bao he thong.</div>
+      <h2 class="gx-section-card__title theme-text mb-0">Thong bao he thong</h2>
+      <div class="gx-section-card__meta">Tao va xoa thong bao he thong.</div>
     </div>
     <form id="adminNoticeForm" class="row g-2 align-items-end">
       <div class="col-md-9">
-        <label class="form-label" for="adminNoticeContent">Content</label>
+        <label class="form-label" for="adminNoticeContent">Noi dung</label>
         <input id="adminNoticeContent" class="form-control" required>
       </div>
       <div class="col-md-3">
-        <button type="submit" class="btn btn-primary w-100">Tao notice</button>
+        <button type="submit" class="btn btn-primary w-100">Tao thong bao</button>
       </div>
       <div class="col-12">
         <div id="adminNoticesStatus" class="small mb-0 theme-text" role="status" aria-live="polite"></div>
@@ -143,19 +143,19 @@
 
   <section class="theme-box rounded p-3 gx-section-card gx-table-card">
     <div class="gx-section-card__head">
-      <h2 class="gx-section-card__title theme-text mb-0">Access logs</h2>
+      <h2 class="gx-section-card__title theme-text mb-0">Nhat ky truy cap</h2>
       <div class="gx-section-card__meta">Theo doi request va xuat bao cao.</div>
     </div>
 
     <form id="adminLogsFilterForm" class="row g-2 align-items-end">
       <div class="col-lg-4">
-        <label class="form-label" for="adminLogsQ">Search</label>
-        <input id="adminLogsQ" class="form-control" placeholder="path, user, ip">
+        <label class="form-label" for="adminLogsQ">Tim kiem</label>
+        <input id="adminLogsQ" class="form-control" placeholder="duong dan, tai khoan, ip">
       </div>
       <div class="col-lg-2">
-        <label class="form-label" for="adminLogsMethod">Method</label>
+        <label class="form-label" for="adminLogsMethod">Phuong thuc</label>
         <select id="adminLogsMethod" class="form-select">
-          <option value="">All</option>
+          <option value="">Tat ca</option>
           <option value="GET">GET</option>
           <option value="POST">POST</option>
           <option value="PATCH">PATCH</option>
@@ -164,15 +164,15 @@
         </select>
       </div>
       <div class="col-lg-2">
-        <label class="form-label" for="adminLogsFromDate">From date</label>
+        <label class="form-label" for="adminLogsFromDate">Tu ngay</label>
         <input id="adminLogsFromDate" class="form-control" type="date">
       </div>
       <div class="col-lg-2">
-        <label class="form-label" for="adminLogsToDate">To date</label>
+        <label class="form-label" for="adminLogsToDate">Den ngay</label>
         <input id="adminLogsToDate" class="form-control" type="date">
       </div>
       <div class="col-lg-1">
-        <label class="form-label" for="adminLogsSize">Size</label>
+        <label class="form-label" for="adminLogsSize">So dong</label>
         <select id="adminLogsSize" class="form-select">
           <option value="20">20</option>
           <option value="50" selected>50</option>
@@ -186,23 +186,23 @@
     </form>
 
     <div class="d-flex flex-wrap gap-2 mt-2">
-      <a id="adminLogsExportCsvPage" class="btn theme-outline-btn" href="#">CSV page</a>
-      <a id="adminLogsExportExcelAll" class="btn theme-outline-btn" href="#">Excel all</a>
+      <a id="adminLogsExportCsvPage" class="btn theme-outline-btn" href="#">Xuat CSV trang nay</a>
+      <a id="adminLogsExportExcelAll" class="btn theme-outline-btn" href="#">Xuat Excel tat ca</a>
     </div>
 
     <div class="row g-2 mt-2">
       <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">Hom nay</small><div class="fw-bold" id="adminLogsTodayCount">0</div></div></div>
-      <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">Guest</small><div class="fw-bold" id="adminLogsGuestCount">0</div></div></div>
-      <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">User duy nhat</small><div class="fw-bold" id="adminLogsUniqueUsers">0</div></div></div>
+      <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">Khach</small><div class="fw-bold" id="adminLogsGuestCount">0</div></div></div>
+      <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">Tai khoan duy nhat</small><div class="fw-bold" id="adminLogsUniqueUsers">0</div></div></div>
       <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">IP duy nhat</small><div class="fw-bold" id="adminLogsUniqueIps">0</div></div></div>
       <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">POST</small><div class="fw-bold" id="adminLogsPostCount">0</div></div></div>
-      <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">Tong logs</small><div class="fw-bold" id="adminLogsTotalCount">0</div></div></div>
+      <div class="col-sm-6 col-lg-2"><div class="theme-box rounded p-2"><small class="text-muted">Tong log</small><div class="fw-bold" id="adminLogsTotalCount">0</div></div></div>
     </div>
 
     <div class="gx-inline-actions mt-2 mb-2 theme-text">
-      <button id="adminLogsPrevBtn" type="button" class="btn btn-sm btn-outline-secondary">Prev</button>
-      <span class="small" id="adminLogsPagerText">Page 1/1</span>
-      <button id="adminLogsNextBtn" type="button" class="btn btn-sm btn-outline-secondary">Next</button>
+      <button id="adminLogsPrevBtn" type="button" class="btn btn-sm btn-outline-secondary">Truoc</button>
+      <span class="small" id="adminLogsPagerText">Trang 1/1</span>
+      <button id="adminLogsNextBtn" type="button" class="btn btn-sm btn-outline-secondary">Sau</button>
       <div id="adminLogsStatus" class="small mb-0 theme-text ms-auto" role="status" aria-live="polite"></div>
     </div>
 
@@ -211,12 +211,12 @@
         <thead>
         <tr class="theme-table-header">
           <th style="min-width: 150px;">Thoi gian</th>
-          <th>Method</th>
-          <th style="min-width: 220px;">Path</th>
-          <th style="min-width: 180px;">User</th>
-          <th>Role</th>
+          <th>Phuong thuc</th>
+          <th style="min-width: 220px;">Duong dan</th>
+          <th style="min-width: 180px;">Tai khoan</th>
+          <th>Quyen</th>
           <th style="min-width: 130px;">IP</th>
-          <th style="min-width: 260px;">User-Agent</th>
+          <th style="min-width: 260px;">Trinh duyet</th>
         </tr>
         </thead>
         <tbody id="adminLogsTableBody">
@@ -231,3 +231,4 @@
 <script th:src="@{/js/admin-center.js}"></script>
 </body>
 </html>
+

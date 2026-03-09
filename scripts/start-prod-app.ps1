@@ -5,7 +5,7 @@ param(
     [string]$EnvFile = ".env.public.local",
     [switch]$AutoBuild,
     [switch]$EnableH2Fallback,
-    [int]$WaitSeconds = 20
+    [int]$WaitSeconds = 45
 )
 
 $ErrorActionPreference = "Stop"
@@ -74,17 +74,38 @@ function Build-AppJar {
 }
 
 function Stop-PreviousApp {
-    if (-not (Test-Path $pidFile)) {
-        return
+    $targetIds = New-Object System.Collections.Generic.List[int]
+
+    if (Test-Path $pidFile) {
+        $existingPid = Get-Content $pidFile -ErrorAction SilentlyContinue | Select-Object -First 1
+        $parsedPid = 0
+        if ($existingPid -and [int]::TryParse([string]$existingPid, [ref]$parsedPid)) {
+            $targetIds.Add($parsedPid) | Out-Null
+        }
     }
-    $existingPid = Get-Content $pidFile -ErrorAction SilentlyContinue | Select-Object -First 1
-    if (-not $existingPid) {
-        return
+
+    $listeningPid = Get-ListeningPid -AppPort $Port
+    if ($listeningPid) {
+        $targetIds.Add($listeningPid) | Out-Null
     }
-    try {
-        Stop-Process -Id ([int]$existingPid) -Force -ErrorAction SilentlyContinue
-        Start-Sleep -Seconds 1
-    } catch {
+
+    foreach ($targetId in ($targetIds | Select-Object -Unique)) {
+        try {
+            Stop-Process -Id $targetId -Force -ErrorAction SilentlyContinue
+        } catch {
+        }
+    }
+
+    $deadline = (Get-Date).AddSeconds(8)
+    while ((Get-Date) -lt $deadline) {
+        if (-not (Get-ListeningPid -AppPort $Port)) {
+            break
+        }
+        Start-Sleep -Milliseconds 400
+    }
+
+    if (-not (Get-ListeningPid -AppPort $Port)) {
+        Remove-Item $pidFile -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -111,6 +132,18 @@ function Get-ListeningPid([int]$AppPort) {
         return $null
     }
     return [int]$conn.OwningProcess
+}
+
+function Wait-ListeningPid([int]$AppPort, [int]$TimeoutSeconds) {
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    while ((Get-Date) -lt $deadline) {
+        $listeningPid = Get-ListeningPid -AppPort $AppPort
+        if ($listeningPid) {
+            return $listeningPid
+        }
+        Start-Sleep -Milliseconds 500
+    }
+    return $null
 }
 
 Push-Location $repoRoot
@@ -163,7 +196,7 @@ try {
         -RedirectStandardOutput $outLog -RedirectStandardError $errLog
 
     $ready = Wait-AppReady -TimeoutSeconds $WaitSeconds -AppPort $Port
-    $listeningPid = Get-ListeningPid -AppPort $Port
+    $listeningPid = if ($ready) { Wait-ListeningPid -AppPort $Port -TimeoutSeconds 8 } else { Get-ListeningPid -AppPort $Port }
     $effectivePid = if ($listeningPid) { $listeningPid } else { $proc.Id }
     $effectivePid | Set-Content $pidFile
 

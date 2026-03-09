@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   const form = document.getElementById('managerCreateUserForm');
   if (!form) return;
 
@@ -37,16 +37,16 @@
       });
       const data = await res.json();
       const ok = ui.apiResult
-        ? ui.apiResult(data, { statusEl: out, successMessage: 'Tao nguoi dung thanh cong' })
+        ? ui.apiResult(data, { statusEl: out, successMessage: 'Tao tai khoan thanh cong' })
         : !!data.success;
       if (!ui.apiResult) {
-        setStatus(ok ? 'Tao nguoi dung thanh cong' : String(data?.error || data?.message || 'Tao nguoi dung that bai'), ok);
+        setStatus(ok ? 'Tao tai khoan thanh cong' : String(data?.error || data?.message || 'Tao tai khoan that bai'), ok);
       }
       if (ok) {
         window.location.reload();
       }
     } catch (err) {
-      const message = String(err?.message || err || 'Request failed');
+      const message = String(err?.message || err || 'Yeu cau that bai');
       setStatus(message, false);
       ui.toast?.(message, { type: 'danger' });
     }

@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('History')}"></head>
+<head th:replace="~{fragments :: appHead('Lich su dau')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('history')}"></div>
 
@@ -10,25 +10,25 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-clock-history"></i>
-          <span>Match History</span>
+          <span>Lich su dau</span>
         </div>
         <h1 class="gx-page-title theme-text mt-2">Lich su dau</h1>
-        <p class="gx-page-subtitle">Tra cuu tran dau theo game, ket qua, khoang ngay va xuat du lieu nhanh.</p>
+        <p class="gx-page-subtitle">Tra cuu tran dau theo tai khoan, ma game, ket qua, khoang ngay va xuat du lieu nhanh.</p>
       </div>
       <div class="gx-page-badge">
         <i class="bi bi-person-badge"></i>
-        <span th:text="${(userId != null and !#strings.isEmpty(userId)) ? userId : 'Chua chon user'}">Chua chon user</span>
+        <span th:text="${(userId != null and !#strings.isEmpty(userId)) ? userId : 'Chua chon tai khoan'}">Chua chon tai khoan</span>
       </div>
     </div>
 
     <form method="get" th:action="@{/history}" class="row g-2 align-items-end">
       <div class="col-12 col-md-4 col-lg-3">
-        <label class="form-label" for="userId">User ID</label>
-        <input id="userId" class="form-control" name="userId" th:value="${userId}" placeholder="Nhap user id de loc">
+        <label class="form-label" for="userId">Ma tai khoan</label>
+        <input id="userId" class="form-control" name="userId" th:value="${userId}" placeholder="Nhap ma tai khoan">
       </div>
       <div class="col-6 col-md-4 col-lg-2">
-        <label class="form-label" for="gameCode">Game</label>
-        <input id="gameCode" class="form-control" name="gameCode" th:value="${gameCode}" placeholder="caro/chess/...">
+        <label class="form-label" for="gameCode">Ma game</label>
+        <input id="gameCode" class="form-control" name="gameCode" th:value="${gameCode}" placeholder="Vi du: caro, chess">
       </div>
       <div class="col-6 col-md-4 col-lg-2">
         <label class="form-label" for="result">Ket qua</label>
@@ -47,7 +47,7 @@
         <input id="toDate" class="form-control" type="date" name="toDate" th:value="${toDate}">
       </div>
       <div class="col-6 col-md-4 col-lg-1">
-        <label class="form-label" for="size">Size</label>
+        <label class="form-label" for="size">So dong</label>
         <select id="size" name="size" class="form-select">
           <option value="10" th:selected="${size == 10}">10</option>
           <option value="20" th:selected="${size == 20}">20</option>
@@ -63,22 +63,22 @@
       <div class="col-12 d-flex flex-wrap gap-2 justify-content-md-end mt-2">
         <a class="btn theme-outline-btn"
            th:href="@{/history/export-csv(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page},size=${size},scope='page')}">
-          CSV Trang nay
+          Xuat CSV trang nay
         </a>
         <a class="btn theme-outline-btn"
            th:href="@{/history/export-excel(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page},size=${size},scope='page')}">
-          Excel Trang nay
+          Xuat Excel trang nay
         </a>
         <a class="btn theme-outline-btn"
            th:href="@{/history/export-excel(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page},size=${size},scope='all')}">
-          Excel Tat ca da loc
+          Xuat Excel tat ca da loc
         </a>
       </div>
     </form>
 
     <div class="gx-chip-row mt-2">
       <span class="gx-chip"><i class="bi bi-list-ul"></i> <span th:text="${totalItems} + ' ban ghi'">0 ban ghi</span></span>
-      <span class="gx-chip"><i class="bi bi-file-earmark-spreadsheet"></i> Co ho tro export CSV/Excel</span>
+      <span class="gx-chip"><i class="bi bi-file-earmark-spreadsheet"></i> Co ho tro xuat CSV/Excel</span>
     </div>
   </section>
 
@@ -97,14 +97,14 @@
         <thead>
         <tr class="theme-table-header">
           <th>#</th>
-          <th>GameCode</th>
-          <th>P1</th>
-          <th>P2</th>
-          <th>First</th>
-          <th>Moves</th>
-          <th>Winner</th>
-          <th>Result</th>
-          <th>At</th>
+          <th>Ma game</th>
+          <th>Nguoi choi 1</th>
+          <th>Nguoi choi 2</th>
+          <th>Di truoc</th>
+          <th>So nuoc</th>
+          <th>Nguoi thang</th>
+          <th>Ket qua</th>
+          <th>Thoi gian</th>
         </tr>
         </thead>
         <tbody>
@@ -127,18 +127,19 @@
   <div class="gx-inline-actions">
     <a class="btn btn-sm btn-outline-secondary"
        th:if="${page > 0}"
-       th:href="@{/history(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page-1},size=${size})}">Prev</a>
-    <span class="small">Page <span th:text="${page+1}"></span>/<span th:text="${totalPages}"></span></span>
+       th:href="@{/history(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page-1},size=${size})}">Truoc</a>
+    <span class="small">Trang <span th:text="${page+1}"></span>/<span th:text="${totalPages}"></span></span>
     <a class="btn btn-sm btn-outline-secondary"
        th:if="${page+1 < totalPages}"
-       th:href="@{/history(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page+1},size=${size})}">Next</a>
+       th:href="@{/history(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page+1},size=${size})}">Sau</a>
   </div>
 
   <div class="gx-inline-actions">
-    <a class="btn theme-outline-btn" th:href="@{/}">Ve Home</a>
+    <a class="btn theme-outline-btn" th:href="@{/}">Ve trang chu</a>
   </div>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('history')}"></th:block>
 </body>
 </html>
+

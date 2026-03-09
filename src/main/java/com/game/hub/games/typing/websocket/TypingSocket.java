@@ -13,6 +13,8 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -141,7 +143,8 @@ public class TypingSocket extends TextWebSocketHandler {
         if (sessions == null || sessions.isEmpty()) {
             return;
         }
-        for (WebSocketSession ws : sessions) {
+        List<WebSocketSession> disconnectedSessions = new ArrayList<>();
+        for (WebSocketSession ws : new ArrayList<>(sessions)) {
             if (ws.isOpen()) {
                 Map<String, Object> roomPayload = new LinkedHashMap<>();
                 roomPayload.put("id", room.getId());
@@ -152,8 +155,17 @@ public class TypingSocket extends TextWebSocketHandler {
                 roomPayload.put("yourId", sessionPlayerIds.get(ws));
                 roomPayload.put("playerCount", room.getPlayers().size());
                 String payload = objectMapper.writeValueAsString(roomPayload);
-                ws.sendMessage(new TextMessage(payload));
+                try {
+                    ws.sendMessage(new TextMessage(payload));
+                } catch (Exception ex) {
+                    disconnectedSessions.add(ws);
+                }
+            } else {
+                disconnectedSessions.add(ws);
             }
+        }
+        for (WebSocketSession disconnected : disconnectedSessions) {
+            pruneSession(room, disconnected);
         }
     }
 
@@ -180,5 +192,21 @@ public class TypingSocket extends TextWebSocketHandler {
             return "guest-" + sessionId.substring(sessionId.length() - 8);
         }
         return "guest-" + sessionId;
+    }
+
+    private void pruneSession(TypingRoom room, WebSocketSession session) {
+        sessionToRoomMap.remove(session);
+        String playerId = sessionPlayerIds.remove(session);
+        if (playerId != null && !playerId.isBlank()) {
+            room.removePlayer(playerId);
+        }
+        Set<WebSocketSession> sessions = roomToSessionsMap.get(room.getId());
+        if (sessions != null) {
+            sessions.remove(session);
+            if (sessions.isEmpty()) {
+                roomToSessionsMap.remove(room.getId());
+                typingService.removeRoom(room.getId());
+            }
+        }
     }
 }

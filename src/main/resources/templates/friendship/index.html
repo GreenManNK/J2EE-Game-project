@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Friendship')}"></head>
+<head th:replace="~{fragments :: appHead('Ban be')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('friendship-index')}"></div>
 
@@ -10,14 +10,14 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-people-fill"></i>
-          <span>Social / Friendship</span>
+          <span>Xa hoi / Ban be</span>
         </div>
-        <h1 class="gx-page-title theme-text mt-2">Friendship</h1>
-        <p class="gx-page-subtitle">Quan ly ban be, loi moi ket ban va thao tac chat rieng tu mot trang tong hop.</p>
+        <h1 class="gx-page-title theme-text mt-2">Ban be</h1>
+        <p class="gx-page-subtitle">Quan ly ban be, loi moi ket ban va tro chuyen rieng tu mot trang tong hop.</p>
       </div>
       <div class="gx-inline-actions">
         <span class="gx-page-badge"><i class="bi bi-person-circle"></i><span th:text="${currentUserId}">user</span></span>
-        <a class="btn theme-outline-btn" th:href="@{/friendship/notifications(currentUserId=${currentUserId})}">Notifications</a>
+        <a class="btn theme-outline-btn" th:href="@{/friendship/notifications(currentUserId=${currentUserId})}">Thong bao</a>
       </div>
     </div>
 
@@ -28,11 +28,11 @@
       </div>
       <form id="sendByEmailForm" class="row g-2 align-items-end">
         <div class="col-md-8">
-          <label class="form-label" for="email">Friend email</label>
-          <input id="email" class="form-control" placeholder="friend email">
+          <label class="form-label" for="email">Email ban be</label>
+          <input id="email" class="form-control" placeholder="Nhap email ban">
         </div>
         <div class="col-md-4">
-          <button type="submit" class="btn btn-primary w-100">Send Request</button>
+          <button type="submit" class="btn btn-primary w-100">Gui loi moi</button>
         </div>
       </form>
       <div id="out" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
@@ -42,7 +42,7 @@
   <div class="row g-3">
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">Friends</h2>
+        <h2 class="h5 theme-text">Ban be</h2>
         <ul class="list-group list-group-flush" id="friendsList">
           <li class="list-group-item text-muted small" th:if="${#lists.isEmpty(friendViews)}">Chua co ban be.</li>
           <li class="list-group-item"
@@ -50,24 +50,24 @@
               th:attr="data-friend-id=${f.userId}">
             <div class="d-flex align-items-start gap-2">
               <img th:src="@{${f.avatarPath}}"
-                   alt="avatar"
+                   alt="Anh dai dien"
                    width="40"
                    height="40"
                    class="rounded-circle border flex-shrink-0">
               <div class="flex-grow-1">
                 <div class="d-flex flex-wrap align-items-center gap-2">
-                  <span class="fw-semibold" th:text="${f.displayName}">Friend Name</span>
+                  <span class="fw-semibold" th:text="${f.displayName}">Ten ban be</span>
                   <span class="badge"
                         th:classappend="${f.online} ? ' text-bg-success' : ' text-bg-secondary'"
-                        th:text="${f.online} ? 'Online' : 'Offline'">Online</span>
-                  <span class="badge text-bg-light border" th:text="${'Score ' + f.score}">Score 0</span>
+                        th:text="${f.online} ? 'Truc tuyen' : 'Ngoai tuyen'">Truc tuyen</span>
+                  <span class="badge text-bg-light border" th:text="${'Diem ' + f.score}">Diem 0</span>
                 </div>
                 <div class="small text-muted" th:text="${f.email}">friend@example.com</div>
                 <div class="d-flex flex-wrap gap-2 mt-2">
                   <a class="btn btn-sm btn-outline-primary"
                      th:href="@{/friendship/user-detail/{id}(id=${f.userId},currentUserId=${currentUserId})}">Xem</a>
                   <a class="btn btn-sm btn-outline-success"
-                     th:href="@{/chat/private(currentUserId=${currentUserId},friendId=${f.userId})}">Chat</a>
+                     th:href="@{/chat/private(currentUserId=${currentUserId},friendId=${f.userId})}">Nhan tin</a>
                   <button class="remove-friend btn btn-sm btn-outline-danger"
                           type="button"
                           th:attr="data-friend-id=${f.userId}">Huy ban</button>
@@ -80,7 +80,7 @@
     </div>
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">Pending Requests</h2>
+        <h2 class="h5 theme-text">Loi moi dang cho</h2>
         <ul class="list-group list-group-flush" id="pendingRequestsList">
           <li class="list-group-item text-muted small" th:if="${#lists.isEmpty(pendingRequestViews)}">Khong co loi moi dang cho.</li>
           <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2"
@@ -88,20 +88,20 @@
               th:attr="data-friendship-id=${p.friendshipId},data-requester-id=${p.requesterId}">
             <div class="d-flex align-items-center gap-2 flex-grow-1">
               <img th:src="@{${p.requesterAvatarPath}}"
-                   alt="avatar"
+                   alt="Anh dai dien"
                    width="36"
                    height="36"
                    class="rounded-circle border">
               <div class="small">
-                <div class="fw-semibold" th:text="${p.requesterName}">Requester</div>
+                <div class="fw-semibold" th:text="${p.requesterName}">Nguoi gui</div>
                 <div class="text-muted" th:text="${p.requesterEmail}">email@example.com</div>
               </div>
             </div>
             <span class="d-flex gap-2">
               <a class="btn btn-sm btn-outline-primary"
                  th:href="@{/friendship/user-detail/{id}(id=${p.requesterId},currentUserId=${currentUserId})}">Xem</a>
-              <button class="accept btn btn-sm btn-success" type="button" th:attr="data-id=${p.friendshipId}">Accept</button>
-              <button class="decline btn btn-sm btn-outline-secondary" type="button" th:attr="data-id=${p.friendshipId}">Decline</button>
+              <button class="accept btn btn-sm btn-success" type="button" th:attr="data-id=${p.friendshipId}">Chap nhan</button>
+              <button class="decline btn btn-sm btn-outline-secondary" type="button" th:attr="data-id=${p.friendshipId}">Tu choi</button>
             </span>
           </li>
         </ul>
@@ -109,7 +109,7 @@
     </div>
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">Sent Requests</h2>
+        <h2 class="h5 theme-text">Loi moi da gui</h2>
         <ul class="list-group list-group-flush" id="sentRequestsList">
           <li class="list-group-item text-muted small" th:if="${#lists.isEmpty(sentRequestViews)}">Khong co loi moi da gui.</li>
           <li class="list-group-item"
@@ -117,12 +117,12 @@
               th:attr="data-friendship-id=${s.friendshipId},data-friend-id=${s.addresseeId}">
             <div class="d-flex align-items-center gap-2">
               <img th:src="@{${s.addresseeAvatarPath}}"
-                   alt="avatar"
+                   alt="Anh dai dien"
                    width="36"
                    height="36"
                    class="rounded-circle border">
               <div class="flex-grow-1">
-                <div class="fw-semibold" th:text="${s.addresseeName}">Target</div>
+                <div class="fw-semibold" th:text="${s.addresseeName}">Nguoi nhan</div>
                 <div class="small text-muted" th:text="${s.addresseeEmail}">target@example.com</div>
                 <div class="d-flex flex-wrap gap-2 mt-2">
                   <a class="btn btn-sm btn-outline-primary"
@@ -140,7 +140,7 @@
   </div>
 
   <div class="mt-3">
-    <a class="btn theme-outline-btn" th:href="@{/}">Home</a>
+    <a class="btn theme-outline-btn" th:href="@{/}">Trang chu</a>
   </div>
 </main>
 

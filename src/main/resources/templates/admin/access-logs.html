@@ -1,6 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Admin Access Logs')}"></head>
+<head th:replace="~{fragments :: appHead('Nhat ky truy cap admin')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('admin-access-logs')}"></div>
 
@@ -10,24 +10,24 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-activity"></i>
-          <span>Admin / Access Logs</span>
+          <span>Quan tri / Nhat ky truy cap</span>
         </div>
         <h1 class="gx-page-title theme-text mt-2">Nhat ky truy cap</h1>
-        <p class="gx-page-subtitle">Theo doi request vao web, loc theo user, duong dan, method va xuat bao cao CSV/Excel.</p>
+        <p class="gx-page-subtitle">Theo doi request vao web, loc theo tai khoan, duong dan, method va xuat bao cao CSV/Excel.</p>
       </div>
       <div class="gx-inline-actions">
-        <span class="gx-page-badge"><i class="bi bi-database-fill"></i><span th:text="${totalItems} + ' logs'">0 logs</span></span>
+        <span class="gx-page-badge"><i class="bi bi-database-fill"></i><span th:text="${totalItems} + ' log'">0 log</span></span>
         <a class="btn theme-outline-btn"
            th:href="@{/admin/access-logs/export-csv(q=${q},method=${method},fromDate=${fromDate},toDate=${toDate},page=${page},size=${size},scope='page')}">
-          CSV Trang nay
+          Xuat CSV trang nay
         </a>
         <a class="btn theme-outline-btn"
            th:href="@{/admin/access-logs/export-excel(q=${q},method=${method},fromDate=${fromDate},toDate=${toDate},page=${page},size=${size},scope='page')}">
-          Excel Trang nay
+          Xuat Excel trang nay
         </a>
         <a class="btn theme-outline-btn"
            th:href="@{/admin/access-logs/export-excel(q=${q},method=${method},fromDate=${fromDate},toDate=${toDate},scope='all')}">
-          Excel Tat ca da loc
+          Xuat Excel tat ca da loc
         </a>
       </div>
     </div>
@@ -35,18 +35,18 @@
 
   <form method="get" th:action="@{/admin/access-logs}" class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
-      <h2 class="gx-section-card__title theme-text mb-0">Filter logs</h2>
-      <div class="gx-section-card__meta">Tim theo duong dan, user, IP, user-agent va khoang ngay</div>
+      <h2 class="gx-section-card__title theme-text mb-0">Loc log</h2>
+      <div class="gx-section-card__meta">Tim theo duong dan, tai khoan, IP, trinh duyet va khoang ngay</div>
     </div>
     <div class="row g-2 align-items-end">
       <div class="col-lg-4">
-        <label class="form-label" for="q">Search</label>
-        <input id="q" class="form-control" name="q" placeholder="path, user, ip..." th:value="${q}">
+        <label class="form-label" for="q">Tim kiem</label>
+        <input id="q" class="form-control" name="q" placeholder="duong dan, tai khoan, ip..." th:value="${q}">
       </div>
       <div class="col-lg-2">
         <label class="form-label" for="method">Method</label>
         <select id="method" class="form-select" name="method">
-          <option value="" th:selected="${method==''}">All</option>
+          <option value="" th:selected="${method==''}">Tat ca</option>
           <option value="GET" th:selected="${method=='GET'}">GET</option>
           <option value="POST" th:selected="${method=='POST'}">POST</option>
           <option value="PATCH" th:selected="${method=='PATCH'}">PATCH</option>
@@ -55,15 +55,15 @@
         </select>
       </div>
       <div class="col-lg-2">
-        <label class="form-label" for="fromDate">From date</label>
+        <label class="form-label" for="fromDate">Tu ngay</label>
         <input id="fromDate" name="fromDate" class="form-control" type="date" th:value="${fromDate}">
       </div>
       <div class="col-lg-2">
-        <label class="form-label" for="toDate">To date</label>
+        <label class="form-label" for="toDate">Den ngay</label>
         <input id="toDate" name="toDate" class="form-control" type="date" th:value="${toDate}">
       </div>
       <div class="col-lg-1">
-        <label class="form-label" for="size">Size</label>
+        <label class="form-label" for="size">So dong</label>
         <select id="size" class="form-select" name="size">
           <option value="20" th:selected="${size==20}">20</option>
           <option value="50" th:selected="${size==50}">50</option>
@@ -91,13 +91,13 @@
       </div>
       <div class="col-sm-6 col-lg-2">
         <div class="theme-box rounded p-2 h-100">
-          <small class="text-muted">Guest</small>
+          <small class="text-muted">Khach</small>
           <div class="fw-bold" th:text="${summary['guestCount']}">0</div>
         </div>
       </div>
       <div class="col-sm-6 col-lg-2">
         <div class="theme-box rounded p-2 h-100">
-          <small class="text-muted">User duy nhat</small>
+          <small class="text-muted">Tai khoan duy nhat</small>
           <div class="fw-bold" th:text="${summary['uniqueUsers']}">0</div>
         </div>
       </div>
@@ -115,7 +115,7 @@
       </div>
       <div class="col-sm-6 col-lg-2">
         <div class="theme-box rounded p-2 h-100">
-          <small class="text-muted">Tong logs</small>
+          <small class="text-muted">Tong log</small>
           <div class="fw-bold" th:text="${totalItems}">0</div>
         </div>
       </div>
@@ -125,11 +125,11 @@
   <div class="gx-inline-actions mb-0 theme-text">
     <a class="btn btn-sm btn-outline-secondary"
        th:if="${page > 0}"
-       th:href="@{/admin/access-logs(q=${q},method=${method},fromDate=${fromDate},toDate=${toDate},page=${page-1},size=${size})}">Prev</a>
-    <span class="small">Page <span th:text="${page+1}"></span>/<span th:text="${totalPages}"></span></span>
+       th:href="@{/admin/access-logs(q=${q},method=${method},fromDate=${fromDate},toDate=${toDate},page=${page-1},size=${size})}">Truoc</a>
+    <span class="small">Trang <span th:text="${page+1}"></span>/<span th:text="${totalPages}"></span></span>
     <a class="btn btn-sm btn-outline-secondary"
        th:if="${page+1 < totalPages}"
-       th:href="@{/admin/access-logs(q=${q},method=${method},fromDate=${fromDate},toDate=${toDate},page=${page+1},size=${size})}">Next</a>
+       th:href="@{/admin/access-logs(q=${q},method=${method},fromDate=${fromDate},toDate=${toDate},page=${page+1},size=${size})}">Sau</a>
   </div>
 
   <section class="theme-box rounded p-2 gx-section-card gx-table-card">
@@ -143,12 +143,12 @@
         <tr class="theme-table-header">
           <th style="min-width: 150px;">Thoi gian</th>
           <th>Method</th>
-          <th style="min-width: 220px;">Path</th>
-          <th style="min-width: 200px;">Query</th>
-          <th style="min-width: 160px;">User</th>
-          <th>Role</th>
+          <th style="min-width: 220px;">Duong dan</th>
+          <th style="min-width: 200px;">Truy van</th>
+          <th style="min-width: 160px;">Tai khoan</th>
+          <th>Quyen</th>
           <th style="min-width: 130px;">IP</th>
-          <th style="min-width: 280px;">User-Agent</th>
+          <th style="min-width: 280px;">Trinh duyet</th>
         </tr>
         </thead>
         <tbody>
@@ -161,10 +161,10 @@
           <td th:text="${log.requestPath} ?: '-'"></td>
           <td th:text="${log.queryString} ?: '-'"></td>
           <td>
-            <div th:text="${log.userDisplayName} ?: 'Guest'">Guest</div>
+            <div th:text="${log.userDisplayName} ?: 'Khach'">Khach</div>
             <small class="text-muted" th:text="${log.userId} ?: '-'">-</small>
           </td>
-          <td th:text="${log.userRole} ?: '-'">User</td>
+          <td th:text="${log.userRole == 'Admin' ? 'Quan tri' : (log.userRole == 'Manager' ? 'Quan ly' : (log.userRole == 'User' ? 'Nguoi choi' : '-'))}">Nguoi choi</td>
           <td th:text="${log.clientIp} ?: '-'">127.0.0.1</td>
           <td>
             <div class="text-truncate" style="max-width: 340px;" th:text="${log.userAgent} ?: '-'">Mozilla/5.0</div>
@@ -176,11 +176,12 @@
   </section>
 
   <div class="gx-inline-actions">
-    <a class="btn theme-outline-btn" th:href="@{/admin/users}">Admin Users</a>
-    <a class="btn theme-outline-btn" th:href="@{/}">Home</a>
+    <a class="btn theme-outline-btn" th:href="@{/admin/users}">Tai khoan quan tri</a>
+    <a class="btn theme-outline-btn" th:href="@{/}">Trang chu</a>
   </div>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('admin-access-logs')}"></th:block>
 </body>
 </html>
+

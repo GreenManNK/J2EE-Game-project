@@ -134,12 +134,12 @@ public class HomeController {
 
     @GetMapping("multiplayer")
     public String multiplayer() {
-        return "home/multiplayer";
+        return "redirect:/games/caro";
     }
 
     @GetMapping("single-player")
     public String singlePlayer() {
-        return "home/single-player";
+        return "redirect:/game-mode/bot?game=caro";
     }
 
     public record CreatePostRequest(String content, String author, String imagePath) {

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Chon do kho bot')}"></head>
+<head th:replace="~{fragments :: appHead('Chon muc do bot')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('game-mode-bot')}"></div>
 
@@ -9,30 +9,30 @@
     <div class="card-body">
       <div class="home-dashboard__eyebrow">
         <i class="bi bi-cpu"></i>
-        <span>Bot Mode Picker</span>
+        <span>Dau voi bot / Chon muc do</span>
       </div>
       <h1 class="h3 theme-text mb-2">
-        CHON BOT - <span th:text="${game.displayName}">Game</span>
+        Chon muc do bot - <span th:text="${game.displayName}">Game</span>
       </h1>
       <p class="theme-text mb-2">
         Chon muc do bot de bat dau. Luong nay duoc dung chung cho Caro, Co vua, Co tuong va Danh bai.
       </p>
       <p class="text-muted mb-3" th:if="${hasRealBotNow}">
-        Game nay da co bot that (Easy/Hard).
+        Game nay da co bot that o muc de va muc kho.
       </p>
       <p class="text-muted mb-3" th:if="${!hasRealBotNow}">
-        Game nay da co khung chon Easy/Hard; engine bot chi tiet dang duoc trien khai tiep.
+        Game nay da co khung chon muc de / muc kho; engine bot chi tiet dang duoc trien khai tiep.
       </p>
 
       <div class="d-grid gap-2 mode-picker-stack">
-        <a th:href="@{${easyUrl}}" class="btn theme-outline-btn btn-lg">Bot De (Easy)</a>
-        <a th:href="@{${hardUrl}}" class="btn theme-outline-btn btn-lg">Bot Kho (Hard)</a>
+        <a th:href="@{${easyUrl}}" class="btn theme-outline-btn btn-lg">Muc de</a>
+        <a th:href="@{${hardUrl}}" class="btn theme-outline-btn btn-lg">Muc kho</a>
       </div>
 
       <div class="d-flex flex-wrap gap-2 mt-3">
         <a th:href="@{/}" class="btn theme-outline-btn">Ve trang chu</a>
-        <a th:href="@{'/games/' + ${game.code}}" class="btn theme-outline-btn">Chi tiet game</a>
-        <a th:href="@{'/online-hub?game=' + ${game.code}}" class="btn theme-outline-btn">Chuyen sang online</a>
+        <a th:href="@{'/games/' + ${game.code}}" class="btn theme-outline-btn">Ve trang che do</a>
+        <a th:href="@{'/online-hub?game=' + ${game.code}}" class="btn theme-outline-btn">Mo sanh phong</a>
       </div>
     </div>
   </section>

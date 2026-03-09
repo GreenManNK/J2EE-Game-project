@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.LinkedHashMap;
@@ -21,18 +22,31 @@ public class BlackjackController {
     private BlackjackService blackjackService;
 
     @GetMapping
-    public String blackjackPage() {
-        return "games/cards/blackjack";
+    public String blackjackPage(@RequestParam(required = false) String room,
+                                @RequestParam(required = false) String mode) {
+        String normalizedRoomId = room == null ? "" : room.trim();
+        if (!normalizedRoomId.isEmpty()) {
+            StringBuilder redirect = new StringBuilder("redirect:/games/cards/blackjack/room/").append(normalizedRoomId);
+            if ("spectate".equalsIgnoreCase(mode)) {
+                redirect.append("/spectate");
+            }
+            return redirect.toString();
+        }
+        return renderBlackjackPage();
     }
 
     @GetMapping("/room/{roomId}")
     public String blackjackRoomPage(@PathVariable String roomId) {
-        return blackjackPage();
+        return renderBlackjackPage();
     }
 
     @GetMapping("/room/{roomId}/spectate")
     public String blackjackSpectatePage(@PathVariable String roomId) {
-        return blackjackPage();
+        return renderBlackjackPage();
+    }
+
+    private String renderBlackjackPage() {
+        return "games/cards/blackjack";
     }
 
     @GetMapping("/rooms")

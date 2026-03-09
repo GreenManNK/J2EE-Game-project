@@ -12,49 +12,49 @@
     <div class="hub-portal-hero__main">
       <div class="hub-portal-eyebrow">
         <i class="bi bi-activity"></i>
-        <span>CHESS / MODE SELECT</span>
+        <span>CO VUA / CHON CHE DO</span>
       </div>
 
       <h1 class="hub-portal-title">
         <span th:text="${game != null ? game.displayName : 'Co vua'}">Co vua</span>
-        Bot, Offline va Online room
+        Bot, cung may va phong truc tuyen
       </h1>
 
       <p class="hub-portal-subtitle">
-        Nhip dau co nhanh: chon mode va vao ban ngay.
+        Nhip dau co nhanh: chon che do va vao ban ngay.
       </p>
 
       <div class="hub-portal-chip-row">
-        <span class="hub-portal-chip is-live"><i class="bi bi-check-circle-fill"></i> Bot / Offline / Online MVP</span>
-        <span class="hub-portal-chip" th:if="${game != null and game.supportsOnline}"><i class="bi bi-wifi"></i> Online room</span>
-        <span class="hub-portal-chip" th:if="${game != null and game.supportsOffline}"><i class="bi bi-laptop"></i> Offline</span>
-        <span class="hub-portal-chip" th:if="${game != null and game.supportsGuest}"><i class="bi bi-person-check"></i> Guest</span>
+        <span class="hub-portal-chip is-live"><i class="bi bi-check-circle-fill"></i> Bot / cung may / phong truc tuyen</span>
+        <span class="hub-portal-chip" th:if="${game != null and game.supportsOnline}"><i class="bi bi-wifi"></i> Phong truc tuyen</span>
+        <span class="hub-portal-chip" th:if="${game != null and game.supportsOffline}"><i class="bi bi-laptop"></i> Cung may</span>
+        <span class="hub-portal-chip" th:if="${game != null and game.supportsGuest}"><i class="bi bi-person-check"></i> Khach</span>
       </div>
 
       <div class="hub-portal-action-grid">
         <a th:href="@{/online-hub(game='chess')}" class="hub-portal-action hub-portal-action--primary">
           <span class="hub-portal-action__icon"><i class="bi bi-globe2"></i></span>
           <span class="hub-portal-action__text">
-            <strong>Chess Online Hub</strong>
-            <small>Tao / tim phong Co vua online</small>
+            <strong>Mo sanh phong</strong>
+            <small>Tao / tim phong Co vua truc tuyen</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
 
-        <a th:href="@{/chess/bot(difficulty='hard')}" class="hub-portal-action hub-portal-action--accent">
-          <span class="hub-portal-action__icon"><i class="bi bi-cpu-fill"></i></span>
+        <a th:href="@{/chess/online}" class="hub-portal-action hub-portal-action--accent">
+          <span class="hub-portal-action__icon"><i class="bi bi-broadcast-pin"></i></span>
           <span class="hub-portal-action__text">
-            <strong>Bot Hard</strong>
-            <small>Luyen tap voi heuristic bot</small>
+            <strong>Mo ban truc tuyen</strong>
+            <small>Vao ban Co vua truc tiep</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
 
-        <a th:href="@{/chess/bot(difficulty='easy')}" class="hub-portal-action hub-portal-action--soft">
+        <a th:href="@{/game-mode/bot(game='chess')}" class="hub-portal-action hub-portal-action--soft">
           <span class="hub-portal-action__icon"><i class="bi bi-cpu"></i></span>
           <span class="hub-portal-action__text">
-            <strong>Bot Easy</strong>
-            <small>Nuoc di hop le ngau nhien (uu tien an)</small>
+            <strong>Chon bot</strong>
+            <small>De / Kho tren cung thiet bi</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
@@ -62,7 +62,7 @@
         <a th:href="@{/chess/offline}" class="hub-portal-action hub-portal-action--soft">
           <span class="hub-portal-action__icon"><i class="bi bi-people-fill"></i></span>
           <span class="hub-portal-action__text">
-            <strong>Offline 2 nguoi</strong>
+            <strong>Choi cung may</strong>
             <small>Choi tren cung thiet bi</small>
           </span>
           <i class="bi bi-arrow-right"></i>
@@ -75,9 +75,9 @@
         <div class="hub-portal-panel__head">
           <div>
             <div class="hub-portal-panel__label">Ban co mo phong</div>
-            <div class="hub-portal-panel__title">Chess tactical preview</div>
+            <div class="hub-portal-panel__title">Preview chien thuat Co vua</div>
           </div>
-          <span class="hub-portal-pill">Server validated</span>
+          <span class="hub-portal-pill">Xac nhan boi server</span>
         </div>
 
         <div class="hub-portal-preview">
@@ -98,9 +98,9 @@
         </div>
 
         <div class="hub-portal-meta-list">
-          <div class="hub-portal-meta-item"><span>Bot mode</span><strong>Easy / Hard</strong></div>
-          <div class="hub-portal-meta-item"><span>Offline</span><strong>2 nguoi / may</strong></div>
-          <div class="hub-portal-meta-item"><span>Online</span><strong>Room + luot + move sync</strong></div>
+          <div class="hub-portal-meta-item"><span>Che do bot</span><strong>De / Kho</strong></div>
+          <div class="hub-portal-meta-item"><span>Cung may</span><strong>2 nguoi / may</strong></div>
+          <div class="hub-portal-meta-item"><span>Truc tuyen</span><strong>Phong + luot + dong bo nuoc di</strong></div>
         </div>
       </section>
 
@@ -111,21 +111,21 @@
     <article class="hub-portal-highlight">
       <div class="hub-portal-highlight__icon"><i class="bi bi-shield-check"></i></div>
       <div>
-        <h2>Server-side move validation</h2>
-        <p>Move online duoc xac nhan backend.</p>
+        <h2>Xac thuc nuoc di boi server</h2>
+        <p>Nuoc di truc tuyen duoc xac nhan o backend.</p>
       </div>
     </article>
     <article class="hub-portal-highlight">
       <div class="hub-portal-highlight__icon"><i class="bi bi-flag-fill"></i></div>
       <div>
-        <h2>GAME_OVER dong bo</h2>
+        <h2>Ket thuc van dong bo</h2>
         <p>Ket thuc van dong bo theo su kien.</p>
       </div>
     </article>
     <article class="hub-portal-highlight">
       <div class="hub-portal-highlight__icon"><i class="bi bi-display"></i></div>
       <div>
-        <h2>UI mode page dong bo</h2>
+        <h2>Giao dien che do dong bo</h2>
         <p>Mot layout, vao mode trong 1 cham.</p>
       </div>
     </article>
@@ -136,48 +136,48 @@
       <section class="hub-portal-card">
         <div class="hub-portal-card__head">
           <h2>Cac che do choi Co vua</h2>
-          <span class="hub-portal-tag">Modes</span>
+          <span class="hub-portal-tag">Che do</span>
         </div>
         <div class="hub-portal-rule-grid">
           <div class="hub-portal-rule-item">
             <strong>1.</strong>
-            <span>Bot Easy: nhanh, phu hop test UI va tap co ban.</span>
+            <span>Mo sanh phong: tao / tim phong va moi ban.</span>
           </div>
           <div class="hub-portal-rule-item">
             <strong>2.</strong>
-            <span>Bot Hard: uu tien nuoc co loi (heuristic).</span>
+            <span>Mo ban truc tuyen: vao ban Co vua truc tiep.</span>
           </div>
           <div class="hub-portal-rule-item">
             <strong>3.</strong>
-            <span>Offline 2 nguoi: choi cung may khong can dang nhap.</span>
+            <span>Chon bot: De / Kho de luyen tap.</span>
           </div>
           <div class="hub-portal-rule-item">
             <strong>4.</strong>
-            <span>Online hub: vao phong choi realtime voi ban be.</span>
+            <span>Choi cung may: 2 nguoi tren cung mot thiet bi, khong can dang nhap.</span>
           </div>
         </div>
       </section>
 
       <section class="hub-portal-card">
         <div class="hub-portal-card__head">
-          <h2>Trang thai MVP hien tai</h2>
-          <span class="hub-portal-tag">MVP</span>
+          <h2>Trang thai hien tai</h2>
+          <span class="hub-portal-tag">Ban hien tai</span>
         </div>
         <ul class="hub-portal-bullet-list">
-          <li>Bot Easy/Hard da hoat dong.</li>
-          <li>Offline 2 nguoi da hoat dong.</li>
-          <li>Online Co vua MVP dong bo phong, luot, nuoc di va ket thuc van qua server.</li>
-          <li>Client co pending lock de tranh gui double-click move.</li>
+          <li>Bot muc de va muc kho da san sang.</li>
+          <li>Che do cung may 2 nguoi da hoat dong.</li>
+          <li>Phong Co vua truc tuyen dong bo phong, luot, nuoc di va ket thuc van qua server.</li>
+          <li>He thong co khoa tam de tranh gui nuoc di lap khi bam nhanh.</li>
         </ul>
       </section>
 
       <section class="hub-portal-card" th:if="${game != null and game.roadmapItems != null}">
         <div class="hub-portal-card__head">
-          <h2>Roadmap module</h2>
-          <span class="hub-portal-tag">Roadmap</span>
+          <h2>Huong phat trien</h2>
+          <span class="hub-portal-tag">Ke hoach</span>
         </div>
         <ul class="hub-portal-bullet-list">
-          <li th:each="item : ${game.roadmapItems}" th:text="${item}">Roadmap item</li>
+          <li th:each="item : ${game.roadmapItems}" th:text="${item}">Muc tieu tiep theo</li>
         </ul>
       </section>
     </div>
@@ -188,15 +188,19 @@
         <div class="hub-portal-side-actions">
           <a th:href="@{/online-hub(game='chess')}" class="hub-portal-side-action">
             <i class="bi bi-globe2"></i>
-            <div><strong>Online Hub</strong><small>Tao / tim phong Co vua</small></div>
+            <div><strong>Mo sanh phong</strong><small>Tao / tim phong Co vua</small></div>
           </a>
-          <a th:href="@{/chess/bot(difficulty='easy')}" class="hub-portal-side-action">
+          <a th:href="@{/chess/online}" class="hub-portal-side-action">
+            <i class="bi bi-broadcast-pin"></i>
+            <div><strong>Ban truc tuyen</strong><small>Vao ban truc tiep</small></div>
+          </a>
+          <a th:href="@{/game-mode/bot(game='chess')}" class="hub-portal-side-action">
             <i class="bi bi-cpu"></i>
-            <div><strong>Bot Easy</strong><small>Luyen tap nhanh</small></div>
+            <div><strong>Chon bot</strong><small>De / Kho</small></div>
           </a>
           <a th:href="@{/chess/offline}" class="hub-portal-side-action">
             <i class="bi bi-grid"></i>
-            <div><strong>Offline 2 nguoi</strong><small>Choi tren cung may</small></div>
+            <div><strong>Choi cung may</strong><small>Choi tren cung may</small></div>
           </a>
         </div>
       </section>

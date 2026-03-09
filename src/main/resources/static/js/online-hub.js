@@ -136,13 +136,13 @@
       if (!invite) return;
       try {
         await navigator.clipboard.writeText(invite);
-        setStatus('Da copy link moi');
+        setStatus('Da sao chep link moi');
       } catch (_) {
         if (els.inviteUrl) {
           els.inviteUrl.focus();
           els.inviteUrl.select();
         }
-        setStatus('Khong copy tu dong duoc. Hay copy thu cong');
+        setStatus('Khong the sao chep tu dong. Hay sao chep thu cong');
       }
     });
 
@@ -151,13 +151,13 @@
       if (!spectateInvite) return;
       try {
         await navigator.clipboard.writeText(spectateInvite);
-        setStatus('Da copy link xem');
+        setStatus('Da sao chep link xem');
       } catch (_) {
         if (els.spectateUrl) {
           els.spectateUrl.focus();
           els.spectateUrl.select();
         }
-        setStatus('Khong copy tu dong duoc. Hay copy thu cong');
+        setStatus('Khong the sao chep tu dong. Hay sao chep thu cong');
       }
     });
 
@@ -341,7 +341,7 @@
       );
       els.goPlayBtn.disabled = !canPlay;
       if (!state.onlineSupportedNow) {
-        els.goPlayBtn.textContent = 'Gameplay online chua san sang';
+        els.goPlayBtn.textContent = 'Ban choi truc tuyen chua san sang';
       } else if (selectedRoomFull && state.supportsSpectateNow) {
         els.goPlayBtn.textContent = 'Phong day - hay vao xem';
       } else {

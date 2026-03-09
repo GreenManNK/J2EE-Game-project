@@ -93,7 +93,7 @@
   });
 
   window.addEventListener('offline', () => {
-    showStatus('Dang offline - kiem tra mang internet', 'error');
+    showStatus('Dang ngoai tuyen - kiem tra mang internet', 'error');
   });
 
   document.addEventListener('DOMContentLoaded', () => {

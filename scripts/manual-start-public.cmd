@@ -30,6 +30,12 @@ if not "%RC%"=="0" (
   echo.
   echo ===== TAIL cloudflared-named.err.log =====
   powershell -NoProfile -ExecutionPolicy Bypass -Command "if(Test-Path 'cloudflared-named.err.log'){Get-Content -Path 'cloudflared-named.err.log' -Tail 40}"
+  echo.
+  echo ===== TAIL public-fallback-tunnel.out.log =====
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "if(Test-Path 'public-fallback-tunnel.out.log'){Get-Content -Path 'public-fallback-tunnel.out.log' -Tail 40}"
+  echo.
+  echo ===== TAIL public-fallback-tunnel.err.log =====
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "if(Test-Path 'public-fallback-tunnel.err.log'){Get-Content -Path 'public-fallback-tunnel.err.log' -Tail 40}"
   if exist "public-game-url.txt" del /q "public-game-url.txt" >nul 2>nul
 ) else (
   if exist "public-game-url.txt" (

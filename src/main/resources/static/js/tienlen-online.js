@@ -93,7 +93,7 @@
   }
 
   function initClient() {
-    setStatus('Dang ket noi WebSocket...');
+    setStatus('Dang ket noi may chu...');
     const client = new window.StompJs.Client({
       webSocketFactory: () => new SockJS(appPath('/ws'), null, {
         transports: ['websocket', 'xhr-streaming', 'xhr-polling']
@@ -113,7 +113,7 @@
       },
       onStompError: () => {
         state.connected = false;
-        setStatus('Loi STOMP');
+        setStatus('Loi kenh ket noi');
         updateActionButtons();
       },
       onWebSocketClose: () => {
@@ -123,7 +123,7 @@
       },
       onWebSocketError: () => {
         state.connected = false;
-        setStatus('Loi WebSocket. Dang thu lai...');
+        setStatus('Loi ket noi. Dang thu lai...');
         updateActionButtons();
       }
     });
@@ -326,14 +326,14 @@
 
   function renderSelfSummary() {
     if (els.selfName) {
-      els.selfName.textContent = me.displayName || 'Guest';
+      els.selfName.textContent = me.displayName || 'Khach';
     }
     if (els.selfMeta) {
       els.selfMeta.textContent = isGuestUserId(me.userId) ? 'Khach tam thoi' : 'Tai khoan dang nhap';
     }
     if (els.selfAvatar) {
       els.selfAvatar.setAttribute('src', currentUserAvatarSrc(me.avatarPath));
-      els.selfAvatar.setAttribute('alt', 'Avatar ' + String(me.displayName || 'nguoi choi'));
+      els.selfAvatar.setAttribute('alt', 'Anh dai dien ' + String(me.displayName || 'nguoi choi'));
     }
   }
 
@@ -406,8 +406,8 @@
       }
 
       const displayName = p.userId === me.userId
-        ? (me.displayName || p.displayName || p.userId || 'Player')
-        : (p.displayName || p.userId || 'Player');
+        ? (me.displayName || p.displayName || p.userId || 'Nguoi choi')
+        : (p.displayName || p.userId || 'Nguoi choi');
       const badgeHtml = [
         (p.userId === me.userId) ? '<span class="tl-seat-badge tl-seat-badge--me">Ban</span>' : '',
         (p.bot) ? '<span class="tl-seat-badge tl-seat-badge--bot">Bot</span>' : '',
@@ -471,15 +471,15 @@
     const sorted = tablePlayers.slice().sort((a, b) => Number(b.score || 0) - Number(a.score || 0));
     const rowsHtml = sorted.map((player) => {
       const displayName = String(player.userId === me.userId
-        ? (me.displayName || player.displayName || player.userId || 'Player')
-        : (player.displayName || player.userId || 'Player'));
+        ? (me.displayName || player.displayName || player.userId || 'Nguoi choi')
+        : (player.displayName || player.userId || 'Nguoi choi'));
       const points = Number(player.score || 0);
       const avatarSrc = normalizeAvatarPath(player.userId === me.userId ? me.avatarPath : player.avatarPath);
       const isTurn = Boolean(state.room?.currentTurnUserId && state.room.currentTurnUserId === player.userId && !state.room?.gameOver);
       const isMe = player.userId === me.userId;
       const rowClass = 'tl-score-item' + (isTurn ? ' is-turn' : '');
       const avatarHtml = avatarSrc
-        ? '<img class="tl-score-item__avatar" src="' + escapeHtml(avatarSrc) + '" alt="">' 
+        ? '<img class="tl-score-item__avatar" src="' + escapeHtml(avatarSrc) + '" alt="Anh dai dien">' 
         : '<div class="tl-score-item__avatar tl-score-item__avatar--text" aria-hidden="true">' + escapeHtml(initialsOfName(displayName)) + '</div>';
       return (
         '<div class="' + rowClass + '">' +
@@ -510,7 +510,7 @@
     if (avatarSrc) {
       return (
         '<div class="' + className + '" aria-hidden="true">' +
-          '<img class="tl-player-avatar__img" src="' + escapeHtml(avatarSrc) + '" alt="">' +
+          '<img class="tl-player-avatar__img" src="' + escapeHtml(avatarSrc) + '" alt="Anh dai dien">' +
         '</div>'
       );
     }
@@ -558,11 +558,11 @@
       ? nextUser
       : (window.CaroUser && typeof window.CaroUser.get === 'function' ? window.CaroUser.get() : null);
     if (candidate && String(candidate.userId || '').trim() === me.userId) {
-      me.displayName = String(candidate.displayName || '').trim() || me.displayName || me.userId || 'Guest';
+      me.displayName = String(candidate.displayName || '').trim() || me.displayName || me.userId || 'Khach';
       me.avatarPath = String(candidate.avatarPath || '').trim() || me.avatarPath || DEFAULT_AVATAR_PATH;
       return;
     }
-    me.displayName = String(me.displayName || '').trim() || me.userId || 'Guest';
+    me.displayName = String(me.displayName || '').trim() || me.userId || 'Khach';
     me.avatarPath = String(me.avatarPath || '').trim() || DEFAULT_AVATAR_PATH;
   }
 

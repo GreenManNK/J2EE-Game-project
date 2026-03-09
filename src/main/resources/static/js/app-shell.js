@@ -88,7 +88,7 @@
         cache: 'no-store'
       });
       if (!res.ok) {
-        throw new Error('Cannot fetch friend list');
+        throw new Error('Khong tai duoc danh sach ban be');
       }
       const friends = await res.json();
       if (!Array.isArray(friends) || friends.length === 0) {

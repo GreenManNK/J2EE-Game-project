@@ -9,6 +9,16 @@ class LegacyRouteControllerTest {
     private final LegacyRouteController controller = new LegacyRouteController();
 
     @Test
+    void homeMultiplayerShouldRedirectToCanonicalCaroModePage() {
+        assertEquals("redirect:/games/caro", controller.homeMultiplayer());
+    }
+
+    @Test
+    void homeSinglePlayerShouldRedirectToCanonicalCaroBotPicker() {
+        assertEquals("redirect:/game-mode/bot?game=caro", controller.homeSinglePlayer());
+    }
+
+    @Test
     void gameIndexShouldRedirectRoomRequestsToDedicatedRoomPage() {
         assertEquals("redirect:/game/room/ROOM-123?symbol=X", controller.gameIndex("ROOM-123", "X"));
     }

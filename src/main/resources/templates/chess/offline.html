@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead(${pageTitle} ?: 'Co vua Offline')}"></head>
+<head th:replace="~{fragments :: appHead(${pageTitle} ?: 'Co vua cung may')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('chess-offline')}"></div>
 
@@ -8,11 +8,11 @@
   <section class="gx-page-hero theme-box text-center mb-3">
     <div class="home-dashboard__eyebrow mx-auto">
       <i class="bi bi-grid-3x3"></i>
-      <span>Chess / Offline</span>
+      <span>Co vua / Cung may</span>
     </div>
-    <h1 class="theme-text fw-bold mb-2" th:text="${pageHeading} ?: 'CO VUA OFFLINE (MVP)'">CO VUA OFFLINE (MVP)</h1>
+    <h1 class="theme-text fw-bold mb-2" th:text="${pageHeading} ?: 'Co vua cung may'">Co vua cung may</h1>
     <p class="theme-text mb-1" th:text="${pageSubtitle} ?: '2 nguoi choi tren cung thiet bi. Khong can dang nhap.'">2 nguoi choi tren cung thiet bi. Khong can dang nhap.</p>
-    <p class="text-muted mb-0" th:text="${pageNote} ?: 'Ho tro luot di hop le, check/checkmate/stalemate, phong cap tot thanh Hau.'">Ho tro luot di hop le, check/checkmate/stalemate, phong cap tot thanh Hau.</p>
+    <p class="text-muted mb-0" th:text="${pageNote} ?: 'Ho tro luot di hop le, chieu/chieu het/the hoa, phong cap tot thanh Hau.'">Ho tro luot di hop le, chieu/chieu het/the hoa, phong cap tot thanh Hau.</p>
   </section>
 
   <div class="chess-layout">
@@ -24,15 +24,15 @@
             <div id="chessGameStatus" class="text-muted small">Chon quan co de bat dau.</div>
           </div>
           <div class="d-flex gap-2 flex-wrap">
-            <button id="chessUndoBtn" type="button" class="btn btn-sm theme-outline-btn">Undo</button>
+            <button id="chessUndoBtn" type="button" class="btn btn-sm theme-outline-btn">Di lai</button>
             <button id="chessResetBtn" type="button" class="btn btn-sm theme-outline-btn">Van moi</button>
             <button id="chessSurrenderBtn" type="button" class="btn btn-sm btn-outline-warning">Dau hang</button>
-            <a th:href="@{/games/chess}" class="btn btn-sm theme-outline-btn">Chi tiet game</a>
+            <a th:href="@{/games/chess}" class="btn btn-sm theme-outline-btn">Ve trang che do</a>
           </div>
         </div>
 
         <div class="chess-board-wrap">
-          <div id="chessBoard" class="chess-board" role="grid" aria-label="Ban co vua offline"></div>
+          <div id="chessBoard" class="chess-board" role="grid" aria-label="Ban co vua cung may"></div>
         </div>
       </div>
     </section>
@@ -47,7 +47,7 @@
           <div class="theme-text">Thong ke (Trang/Den/Hoa): <span id="chessStatsWld">0/0/0</span></div>
         </div>
 
-        <div class="small text-muted mb-2">Phim tat: U Undo, R Van moi, S Dau hang</div>
+        <div class="small text-muted mb-2">Phim tat: U Di lai, R Van moi, S Dau hang</div>
         <h3 class="h6 theme-text">Nhat ky nuoc di</h3>
         <ol id="chessMoveLog" class="small chess-move-log mb-0"></ol>
       </div>

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Notifications')}"></head>
+<head th:replace="~{fragments :: appHead('Thong bao ban be')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('friendship-notifications')}"></div>
 
@@ -12,9 +12,9 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-bell"></i>
-          <span>Social / Notifications</span>
+          <span>Xa hoi / Thong bao</span>
         </div>
-        <h1 class="gx-page-title theme-text mt-2">Notifications</h1>
+        <h1 class="gx-page-title theme-text mt-2">Thong bao</h1>
         <p class="gx-page-subtitle">Tong hop loi moi ket ban, thong bao achievement va thong diep he thong.</p>
       </div>
       <div class="gx-page-badge">
@@ -27,27 +27,27 @@
   <div class="row g-3">
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">Friend Requests</h2>
+        <h2 class="h5 theme-text">Loi moi ket ban</h2>
         <ul class="list-group list-group-flush" id="friendRequestList">
           <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2"
               th:each="f : ${friendRequestViews}"
               th:attr="data-friendship-id=${f.friendshipId}">
             <div class="d-flex align-items-center gap-2 flex-grow-1">
               <img th:src="@{${f.requesterAvatarPath}}"
-                   alt="avatar"
+                   alt="Anh dai dien"
                    width="32"
                    height="32"
                    class="rounded-circle border">
               <div class="small">
-                <div class="fw-semibold" th:text="${f.requesterName}">Requester</div>
+                <div class="fw-semibold" th:text="${f.requesterName}">Nguoi gui</div>
                 <div class="text-muted" th:text="${f.requesterEmail}">email@example.com</div>
               </div>
             </div>
             <span class="d-flex gap-2">
               <a class="btn btn-sm btn-outline-primary"
                  th:href="@{/friendship/user-detail/{id}(id=${f.requesterId},currentUserId=${currentUserId})}">Xem</a>
-              <button class="accept btn btn-sm btn-success" type="button" th:attr="data-id=${f.friendshipId}">Accept</button>
-              <button class="decline btn btn-sm btn-outline-secondary" type="button" th:attr="data-id=${f.friendshipId}">Decline</button>
+              <button class="accept btn btn-sm btn-success" type="button" th:attr="data-id=${f.friendshipId}">Chap nhan</button>
+              <button class="decline btn btn-sm btn-outline-secondary" type="button" th:attr="data-id=${f.friendshipId}">Tu choi</button>
             </span>
           </li>
         </ul>
@@ -56,7 +56,7 @@
     </div>
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">Achievement</h2>
+        <h2 class="h5 theme-text">Thanh tuu</h2>
         <ul class="list-group list-group-flush">
           <li class="list-group-item" th:each="a : ${achievementNotifications}" th:text="${a.achievementName + ' - ' + a.createdAt}"></li>
         </ul>
@@ -64,7 +64,7 @@
     </div>
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">System</h2>
+        <h2 class="h5 theme-text">He thong</h2>
         <ul class="list-group list-group-flush">
           <li class="list-group-item" th:each="s : ${systemNotifications}" th:text="${s.content + ' - ' + s.createdAt}"></li>
         </ul>
@@ -73,7 +73,7 @@
   </div>
 
   <div class="gx-inline-actions">
-    <a class="btn theme-outline-btn" th:href="@{/friendship(currentUserId=${currentUserId})}">Back Friendship</a>
+    <a class="btn theme-outline-btn" th:href="@{/friendship(currentUserId=${currentUserId})}">Ve trang ban be</a>
   </div>
   <div id="friendshipNotificationsOut" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
 </main>

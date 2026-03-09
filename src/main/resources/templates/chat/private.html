@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Chat Rieng')}"></head>
+<head th:replace="~{fragments :: appHead('Tin nhan rieng')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('chat-private')}"></div>
 
@@ -12,11 +12,11 @@
       <div class="private-chat-meta">
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-chat-dots-fill"></i>
-          <span>Private Chat</span>
+          <span>Tin nhan rieng</span>
         </div>
-        <h1 class="gx-page-title theme-text mt-2 mb-0">Chat Rieng</h1>
+        <h1 class="gx-page-title theme-text mt-2 mb-0">Tin nhan rieng</h1>
         <div class="theme-text"><strong>Ban:</strong> <span th:text="${currentUserName}"></span></div>
-        <div class="theme-text"><strong>Ban dang chat voi:</strong> <span th:text="${friendName}"></span></div>
+        <div class="theme-text"><strong>Ban dang tro chuyen voi:</strong> <span th:text="${friendName}"></span></div>
       </div>
       <div class="private-chat-status-chip">
         <i class="bi bi-broadcast-pin"></i>
@@ -30,13 +30,13 @@
       <button id="privateSendBtn" class="btn btn-primary">Gui</button>
     </div>
     <div class="gx-inline-actions mt-2">
-      <a class="btn theme-outline-btn btn-sm" th:href="@{/}">Home</a>
+      <a class="btn theme-outline-btn btn-sm" th:href="@{/}">Trang chu</a>
     </div>
   </section>
 
   <section class="theme-box gx-section-card" th:if="${success == false}">
-    <div class="alert alert-danger mb-2" th:text="${error}">User not found</div>
-    <a class="btn theme-outline-btn btn-sm" th:href="@{/}">Home</a>
+    <div class="alert alert-danger mb-2" th:text="${error}">Khong tim thay tai khoan</div>
+    <a class="btn theme-outline-btn btn-sm" th:href="@{/}">Trang chu</a>
   </section>
 </main>
 

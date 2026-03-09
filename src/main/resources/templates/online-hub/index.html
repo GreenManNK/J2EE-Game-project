@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Phong choi online')}"></head>
+<head th:replace="~{fragments :: appHead('Sanh phong truc tuyen')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('online-hub')}"></div>
 
@@ -11,19 +11,19 @@
         <div>
           <div class="home-dashboard__eyebrow mb-2">
             <i class="bi bi-wifi"></i>
-            <span>Online Hub</span>
+            <span>Sanh phong</span>
           </div>
           <h1 class="gx-page-title theme-text mb-1">
-            PHONG ONLINE - <span th:text="${selectedGameName}">Game</span>
+            SANH PHONG - <span th:text="${selectedGameName}">Game</span>
           </h1>
           <p class="gx-page-subtitle mb-0 text-muted">
-            Trang nay dung chung cho tat ca game online: tim phong, tao phong, moi nguoi choi va vao ban.
+            Trang nay dung chung cho tat ca game truc tuyen: tim phong, tao phong, moi nguoi choi va vao ban.
           </p>
         </div>
         <span class="badge fs-6"
               th:classappend="${onlineSupportedNow} ? ' text-bg-success' : ' text-bg-warning'"
-              th:text="${onlineSupportedNow} ? 'Online gameplay san sang' : 'Phong san sang - gameplay dang hoan thien'">
-          Online gameplay san sang
+              th:text="${onlineSupportedNow} ? 'Choi truc tuyen san sang' : 'Sanh phong san sang - ban choi dang hoan thien'">
+          Choi truc tuyen san sang
         </span>
       </div>
     </div>
@@ -60,7 +60,7 @@
 
           <div class="alert alert-warning mt-3 mb-0 py-2"
                th:if="${!onlineSupportedNow}">
-            Gameplay online cua <strong th:text="${selectedGameName}">game</strong> chua hoan thien.
+            Ban choi truc tuyen cua <strong th:text="${selectedGameName}">game</strong> chua hoan thien.
             Ban van co the tao ma phong va moi nguoi choi truoc de test luong phong.
           </div>
         </div>
@@ -71,21 +71,21 @@
       <div class="card shadow-sm theme-box h-100 gx-section-card">
         <div class="card-body">
           <h2 class="h5 theme-text mb-3">2. Moi nguoi choi</h2>
-          <label for="onlineHubInviteUrl" class="form-label theme-text mb-1">Link moi (copy gui ban be)</label>
+          <label for="onlineHubInviteUrl" class="form-label theme-text mb-1">Link moi (sao chep gui ban be)</label>
           <input id="onlineHubInviteUrl" class="form-control" type="text" readonly value="">
           <div class="d-flex flex-wrap gap-2 mt-2">
-            <button id="onlineHubCopyInviteBtn" class="btn theme-outline-btn" type="button" disabled>Copy link moi</button>
+            <button id="onlineHubCopyInviteBtn" class="btn theme-outline-btn" type="button" disabled>Sao chep link moi</button>
             <a id="onlineHubOpenInviteBtn" class="btn theme-outline-btn disabled" href="#" aria-disabled="true">Mo link moi</a>
           </div>
           <p class="text-muted small mt-2 mb-0">
-            Ban be mo link nay se vao dung game va dung ma phong. Neu game da co gameplay online, ho co the vao ban ngay.
+            Ban be mo link nay se vao dung game va dung ma phong. Neu game da co ban choi truc tuyen, ho co the vao ban ngay.
           </p>
 
           <div id="onlineHubSpectateInviteWrap" class="mt-3">
-            <label for="onlineHubSpectateUrl" class="form-label theme-text mb-1">Link xem (spectate)</label>
+            <label for="onlineHubSpectateUrl" class="form-label theme-text mb-1">Link theo doi tran</label>
             <input id="onlineHubSpectateUrl" class="form-control" type="text" readonly value="">
             <div class="d-flex flex-wrap gap-2 mt-2">
-              <button id="onlineHubCopySpectateBtn" class="btn theme-outline-btn" type="button" disabled>Copy link xem</button>
+              <button id="onlineHubCopySpectateBtn" class="btn theme-outline-btn" type="button" disabled>Sao chep link xem</button>
               <a id="onlineHubOpenSpectateBtn" class="btn theme-outline-btn disabled" href="#" aria-disabled="true">Mo link xem</a>
             </div>
             <p class="text-muted small mt-2 mb-0">

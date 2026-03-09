@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Che do bot')}"></head>
+<head th:replace="~{fragments :: appHead('Che do dau voi bot')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('game-mode-bot')}"></div>
 
@@ -9,21 +9,21 @@
     <div class="card-body">
       <div class="home-dashboard__eyebrow">
         <i class="bi bi-tools"></i>
-        <span>Bot Mode Placeholder</span>
+        <span>Dau voi bot / Dang bo sung</span>
       </div>
       <h1 class="h3 theme-text mb-2">
-        BOT <span th:text="${difficultyLabel}">De</span> - <span th:text="${game.displayName}">Game</span>
+        Che do bot <span th:text="${difficultyLabel}">De</span> - <span th:text="${game.displayName}">Game</span>
       </h1>
       <p class="theme-text mb-2">
         Muc do bot <strong th:text="${difficultyLabel}">De</strong> cho game nay chua duoc trien khai day du.
       </p>
       <p class="text-muted mb-3">
-        Luong chon do kho (Easy/Hard) da san sang va se giu nguyen khi bo sung engine bot thuc te.
+        Luong chon muc do da san sang va se giu nguyen khi bo sung engine bot thuc te.
       </p>
       <div class="d-flex flex-wrap gap-2">
         <a th:href="@{${backToPickerUrl}}" class="btn theme-outline-btn">Chon lai do kho</a>
-        <a th:href="@{'/games/' + ${game.code}}" class="btn theme-outline-btn">Xem chi tiet game</a>
-        <a th:href="@{'/online-hub?game=' + ${game.code}}" class="btn theme-outline-btn">Chuyen sang phong online</a>
+        <a th:href="@{'/games/' + ${game.code}}" class="btn theme-outline-btn">Ve trang che do</a>
+        <a th:href="@{'/online-hub?game=' + ${game.code}}" class="btn theme-outline-btn">Mo sanh phong</a>
       </div>
     </div>
   </section>

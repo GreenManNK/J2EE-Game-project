@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Quiz Battle')}"></head>
+<head th:replace="~{fragments :: appHead('Dau quiz')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('games-quiz')}"></div>
 
@@ -12,18 +12,18 @@
         <div class="hub-portal-hero__main">
             <div class="hub-portal-eyebrow">
                 <i class="bi bi-patch-question-fill"></i>
-                <span>QUIZ / REALTIME ROOM</span>
+                <span>Quiz / Phong thi dau</span>
             </div>
 
-            <h1 class="hub-portal-title">Quiz Battle theo phong realtime</h1>
+            <h1 class="hub-portal-title">Quiz theo phong thoi gian thuc</h1>
             <p class="hub-portal-subtitle">
-                Chon room, tra loi nhanh, leo top diem.
+                Chon phong, tra loi nhanh, leo bang diem.
             </p>
 
             <div class="hub-portal-chip-row">
                 <span class="hub-portal-chip is-live"><i class="bi bi-lightning-charge-fill"></i> Tra loi +2 / sai -1</span>
                 <span class="hub-portal-chip"><i class="bi bi-stopwatch-fill"></i> Dem nguoc tung cau</span>
-                <span class="hub-portal-chip"><i class="bi bi-people-fill"></i> Ho tro spectator</span>
+                <span class="hub-portal-chip"><i class="bi bi-people-fill"></i> Ho tro nguoi xem</span>
                 <span class="hub-portal-chip"><i class="bi bi-bar-chart-fill"></i> Bang xep hang theo diem</span>
             </div>
 
@@ -32,14 +32,19 @@
             </div>
 
             <details class="game-rules">
-                <summary>Quick rules</summary>
+                <summary>Luat nhanh</summary>
                 <ul>
                     <li>Moi cau tra loi dung: +2 diem.</li>
                     <li>Moi cau sai hoac het gio: -1 diem (khong am).</li>
                     <li>Moi nguoi chi gui 1 dap an cho moi cau.</li>
-                    <li>Cau typed answer bo qua hoa/thuong va khoang trang thua.</li>
+                    <li>Cau tu nhap bo qua hoa/thuong va khoang trang thua.</li>
                 </ul>
             </details>
+
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <a th:href="@{/online-hub(game='quiz')}" class="btn theme-outline-btn">Mo sanh phong</a>
+                <a th:href="@{/games}" class="btn theme-outline-btn">Ve thu vien</a>
+            </div>
 
             <div id="room-selection" class="quiz-room-panel">
                 <div class="quiz-lobby-head">
@@ -47,7 +52,7 @@
                     <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
                 </div>
                 <div class="hub-portal-action quiz-join-row">
-                    <input type="text" id="room-id-input" placeholder="Nhap Room ID" maxlength="64">
+                    <input type="text" id="room-id-input" placeholder="Nhap ma phong" maxlength="64">
                     <button id="join-room-btn" class="hub-portal-action__icon" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
                     <button id="spectate-room-btn" class="hub-portal-action__icon" title="Xem tran"><i class="bi bi-eye"></i></button>
                 </div>
@@ -57,7 +62,7 @@
 
             <div id="quiz-container" class="quiz-shell" hidden>
                 <div class="quiz-room-tools">
-                    <button id="copy-room-btn" class="hub-portal-action">Sao chep Room ID</button>
+                    <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
                     <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
                     <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
                 </div>
@@ -98,7 +103,7 @@
             <section class="hub-portal-card">
                 <div class="hub-portal-card__head">
                     <h2>Bang xep hang quiz</h2>
-                    <span class="hub-portal-tag">Top diem</span>
+                    <span class="hub-portal-tag">Diem cao</span>
                 </div>
                 <ol id="high-scores-list" class="hub-portal-bullet-list"></ol>
             </section>
@@ -605,6 +610,25 @@
         }
     }
 
+    function formatGameStateLabel(gameState) {
+        const normalized = String(gameState || '').trim().toUpperCase();
+        switch (normalized) {
+            case 'WAITING':
+                return 'Dang cho';
+            case 'PLAYING':
+                return 'Dang thi dau';
+            case 'FINISHED':
+                return 'Da ket thuc';
+            default: {
+                if (!normalized) {
+                    return 'Dang cho';
+                }
+                const pretty = normalized.replace(/_/g, ' ').toLowerCase();
+                return pretty.charAt(0).toUpperCase() + pretty.slice(1);
+            }
+        }
+    }
+
     function clearReconnectTimer() {
         if (!reconnectTimer) {
             return;
@@ -692,7 +716,7 @@
     joinRoomBtn.addEventListener('click', () => {
         const roomId = roomIdInput.value.trim();
         if (!roomId) {
-            setStatus('Can nhap Room ID.', 'error');
+            setStatus('Can nhap ma phong.', 'error');
             return;
         }
         isSpectator = false;
@@ -702,7 +726,7 @@
     spectateRoomBtn.addEventListener('click', () => {
         const roomId = roomIdInput.value.trim();
         if (!roomId) {
-            setStatus('Can nhap Room ID.', 'error');
+            setStatus('Can nhap ma phong.', 'error');
             return;
         }
         isSpectator = true;
@@ -715,21 +739,21 @@
 
     copyRoomBtn.addEventListener('click', async () => {
         if (!currentRoomId) {
-            setQuestionFeedback('Room ID dang rong.', 'error');
+            setQuestionFeedback('Ma phong dang rong.', 'error');
             return;
         }
         const ok = await copyToClipboard(currentRoomId);
-        setQuestionFeedback(ok ? 'Da copy Room ID.' : 'Khong the copy Room ID.', ok ? 'success' : 'error');
+        setQuestionFeedback(ok ? 'Da sao chep ma phong.' : 'Khong the sao chep ma phong.', ok ? 'success' : 'error');
     });
 
     shareRoomBtn.addEventListener('click', async () => {
         if (!currentRoomId) {
-            setQuestionFeedback('Room ID dang rong.', 'error');
+            setQuestionFeedback('Ma phong dang rong.', 'error');
             return;
         }
         const inviteUrl = buildInviteUrl(currentRoomId, isSpectator ? 'spectate' : 'join');
         const ok = await copyToClipboard(inviteUrl);
-        setQuestionFeedback(ok ? 'Da copy link moi.' : 'Khong the copy link moi.', ok ? 'success' : 'error');
+        setQuestionFeedback(ok ? 'Da sao chep link moi.' : 'Khong the sao chep link moi.', ok ? 'success' : 'error');
     });
 
     leaveRoomBtn.addEventListener('click', () => {
@@ -927,7 +951,7 @@
 
         questionEl.innerHTML = resultHtml;
         optionsEl.innerHTML = '';
-        setQuestionFeedback('Da co ket qua cuoi. Ban co the share phong hoac roi ve lobby.', 'success');
+        setQuestionFeedback('Da co ket qua cuoi. Ban co the sao chep link moi hoac roi phong.', 'success');
         fetchHighScores();
         fetchRoomList(false);
     }
@@ -1087,7 +1111,7 @@
             row.innerHTML = `
                 <div>
                     <strong>${escapeHtml(room.id)}</strong><br>
-                    <span>${escapeHtml(room.gameState || 'WAITING')} | P:${room.playerCount || 0} S:${room.spectatorCount || 0}</span>
+                    <span>${escapeHtml(formatGameStateLabel(room.gameState))} | Nguoi choi: ${room.playerCount || 0} | Nguoi xem: ${room.spectatorCount || 0}</span>
                 </div>
                 <div class="quiz-room-actions">
                     <button class="hub-portal-action__icon" data-join="${escapeHtml(room.id)}" title="Vao phong"><i class="bi bi-arrow-right"></i></button>
@@ -1177,11 +1201,8 @@
     function applyAutoJoinFromUrl() {
         const pathname = String(window.location.pathname || '').replace(/\/+$/, '');
         const roomMatch = pathname.match(/\/games\/quiz\/room\/([^/]+?)(?:\/(spectate))?$/i);
-        const roomFromPath = roomMatch ? decodeURIComponent(roomMatch[1] || '').trim() : '';
-        const modeFromPath = roomMatch && roomMatch[2] ? 'spectate' : '';
-        const params = new URLSearchParams(window.location.search);
-        const room = roomFromPath || (params.get('room') || '').trim();
-        const mode = (modeFromPath || (params.get('mode') || '').trim()).toLowerCase();
+        const room = roomMatch ? decodeURIComponent(roomMatch[1] || '').trim() : '';
+        const mode = roomMatch && roomMatch[2] ? 'spectate' : '';
         if (!room) {
             return;
         }

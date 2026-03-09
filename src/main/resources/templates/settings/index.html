@@ -12,7 +12,7 @@
       <div>
         <div class="home-dashboard__eyebrow">
           <i class="bi bi-gear-fill"></i>
-          <span>SETTINGS CENTER</span>
+          <span>TRUNG TAM CAI DAT</span>
         </div>
         <h1 class="gx-page-title theme-text mt-2">Cai dat he thong</h1>
         <p class="gx-page-subtitle">
@@ -31,7 +31,7 @@
       <section class="theme-box rounded p-3 gx-section-card">
         <div class="gx-section-card__head">
           <h2 class="h5 mb-0 theme-text">Cai dat tai khoan</h2>
-          <div class="gx-section-card__meta">Cap nhat thong tin ca nhan dung cho profile va cac game online.</div>
+          <div class="gx-section-card__meta">Cap nhat thong tin ca nhan dung cho ho so va cac game truc tuyen.</div>
         </div>
 
         <div class="alert alert-info py-2 px-3 mb-3" th:if="${!isAuthenticated}">
@@ -42,7 +42,7 @@
         <form id="accountSettingsForm" class="row g-3">
           <input type="hidden" id="settingsUserId" th:value="${authUserId}">
           <div class="col-md-6">
-            <label class="form-label" for="settingsDisplayName">Display name</label>
+            <label class="form-label" for="settingsDisplayName">Ten hien thi</label>
             <input id="settingsDisplayName"
                    class="form-control"
                    th:value="${settingsUser != null ? settingsUser.displayName : ''}"
@@ -56,10 +56,10 @@
                    class="form-control"
                    th:value="${settingsUser != null ? settingsUser.email : ''}"
                    th:disabled="${!isAuthenticated}"
-                   placeholder="you@example.com">
+                   placeholder="ban@example.com">
           </div>
           <div class="col-12">
-            <label class="form-label" for="settingsAvatarPath">Avatar path</label>
+            <label class="form-label" for="settingsAvatarPath">Duong dan anh dai dien</label>
             <input id="settingsAvatarPath"
                    class="form-control"
                    th:value="${settingsUser != null ? settingsUser.avatarPath : '/uploads/avatars/default-avatar.jpg'}"
@@ -67,21 +67,21 @@
                    placeholder="/uploads/avatars/default-avatar.jpg">
           </div>
           <div class="col-12" th:if="${isAuthenticated}">
-            <label class="form-label d-block" for="settingsAvatarPreview">Anh profile hien tai</label>
+            <label class="form-label d-block" for="settingsAvatarPreview">Anh dai dien hien tai</label>
             <img id="settingsAvatarPreview"
                  class="profile-avatar-preview"
                  th:src="@{${settingsUser != null and settingsUser.avatarPath != null and !#strings.isEmpty(settingsUser.avatarPath) ? settingsUser.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
-                 alt="avatar-settings-preview">
+                 alt="Anh dai dien hien tai">
           </div>
           <div class="col-12 d-flex gap-2">
             <button type="submit" class="btn btn-primary" th:disabled="${!isAuthenticated}">
               <i class="bi bi-check2-circle me-1"></i> Luu tai khoan
             </button>
             <a class="btn theme-outline-btn" th:if="${isAuthenticated}" th:href="@{/profile/{id}(id=${authUserId})}">
-              <i class="bi bi-person-circle me-1"></i> Mo Profile
+              <i class="bi bi-person-circle me-1"></i> Mo ho so
             </a>
             <a class="btn theme-outline-btn" th:if="${!isAuthenticated}" th:href="@{/account/login-page}">
-              <i class="bi bi-person-circle me-1"></i> Mo Profile
+              <i class="bi bi-person-circle me-1"></i> Mo ho so
             </a>
           </div>
         </form>
@@ -125,11 +125,11 @@
 
         <form id="appPreferencesForm" class="row g-3">
           <div class="col-md-6">
-            <label class="form-label" for="themeModeSelect">Theme mode</label>
+            <label class="form-label" for="themeModeSelect">Che do giao dien</label>
             <select id="themeModeSelect" class="form-select">
               <option value="system">Theo he thong</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
+              <option value="light">Sang</option>
+              <option value="dark">Toi</option>
             </select>
           </div>
 
@@ -137,7 +137,7 @@
             <label class="form-label" for="languageModeSelect">Ngon ngu</label>
             <select id="languageModeSelect" class="form-select">
               <option value="vi">Tieng Viet</option>
-              <option value="en">English</option>
+              <option value="en">Tieng Anh</option>
             </select>
           </div>
 
@@ -181,7 +181,7 @@
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" id="showOfflineFriendsInSidebar">
               <label class="form-check-label" for="showOfflineFriendsInSidebar">
-                Hien thi ban offline trong sidebar ban be
+                Hien thi ban ngoai tuyen trong sidebar ban be
               </label>
             </div>
           </div>
@@ -190,13 +190,13 @@
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" id="autoRefreshFriendList">
               <label class="form-check-label" for="autoRefreshFriendList">
-                Tu dong refresh danh sach ban be
+                Tu dong lam moi danh sach ban be
               </label>
             </div>
           </div>
 
           <div class="col-md-6">
-            <label class="form-label" for="friendListRefreshMsSelect">Chu ky refresh ban be</label>
+            <label class="form-label" for="friendListRefreshMsSelect">Chu ky lam moi ban be</label>
             <select id="friendListRefreshMsSelect" class="form-select">
               <option value="5000">5 giay</option>
               <option value="10000">10 giay</option>
@@ -216,10 +216,10 @@
             <i class="bi bi-arrow-counterclockwise me-1"></i> Ve mac dinh
           </button>
           <button id="exportPreferencesBtn" class="btn theme-outline-btn" type="button">
-            <i class="bi bi-download me-1"></i> Export cai dat
+            <i class="bi bi-download me-1"></i> Xuat cai dat
           </button>
           <button id="importPreferencesBtn" class="btn theme-outline-btn" type="button">
-            <i class="bi bi-upload me-1"></i> Import cai dat
+            <i class="bi bi-upload me-1"></i> Nhap cai dat
           </button>
           <input id="importPreferencesFileInput" type="file" accept="application/json" class="d-none">
         </div>
@@ -229,12 +229,12 @@
       <section class="theme-box rounded p-3 mt-3 gx-section-card">
         <div class="gx-section-card__head">
           <h2 class="h5 mb-0 theme-text">Bao mat nang cao</h2>
-          <div class="gx-section-card__meta">Kich hoat quyen admin bang ma kich hoat.</div>
+          <div class="gx-section-card__meta">Kich hoat quyen quan tri bang ma kich hoat.</div>
         </div>
 
         <div class="row g-2 align-items-end">
           <div class="col-md-8">
-            <label class="form-label" for="settingsAdminCode">Ma kich hoat admin</label>
+            <label class="form-label" for="settingsAdminCode">Ma kich hoat quan tri</label>
             <input id="settingsAdminCode"
                    class="form-control"
                    type="password"
@@ -275,14 +275,14 @@
              th:href="@{/manager/export-users-excel(scope='all')}"
              data-auth-only="true"
              data-role-allowed="Manager,Admin">
-            Users Excel (Manager)
+            Excel tai khoan (quan ly)
           </a>
           <a class="btn theme-outline-btn"
              th:href="@{/admin}"
              data-admin-only="true"
              data-auth-only="true"
              data-role-allowed="Admin">
-            Admin Center
+            Trung tam quan tri
           </a>
         </div>
       </section>
@@ -293,7 +293,7 @@
           <div class="gx-section-card__meta">Cac thay doi luu ngay tren trinh duyet va ap dung toan bo trang.</div>
         </div>
         <ul class="mb-0 small">
-          <li>Theme va ngon ngu se doi ngay lap tuc.</li>
+          <li>Giao dien va ngon ngu se doi ngay lap tuc.</li>
           <li>Cau hinh sidebar se co hieu luc tu lan mo trang tiep theo.</li>
           <li>Nen dang nhap de cap nhat thong tin tai khoan va doi mat khau.</li>
         </ul>
