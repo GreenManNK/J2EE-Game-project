@@ -36,13 +36,19 @@ class GuestOnlineAccessIntegrationTest {
 
     @Test
     void anonymousUserCanOpenGameAndReceiveGuestSessionIdentity() throws Exception {
-        MvcResult gamePageResult = mockMvc.perform(get("/game").param("roomId", "guest-room"))
+        mockMvc.perform(get("/game").param("roomId", "guest-room"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/game/room/guest-room"))
+            .andReturn();
+
+        MvcResult roomPageResult = mockMvc.perform(get("/game/room/guest-room"))
             .andExpect(status().isOk())
             .andExpect(view().name("game/index"))
             .andReturn();
 
-        MockHttpSession session = (MockHttpSession) gamePageResult.getRequest().getSession(false);
+        MockHttpSession session = (MockHttpSession) roomPageResult.getRequest().getSession(false);
         org.junit.jupiter.api.Assertions.assertNotNull(session);
+
         Object guestUserId = session.getAttribute("GUEST_USER_ID");
         org.junit.jupiter.api.Assertions.assertNotNull(guestUserId);
         org.junit.jupiter.api.Assertions.assertTrue(String.valueOf(guestUserId).startsWith("guest-"));

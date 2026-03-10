@@ -4,6 +4,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
+$statusScript = Join-Path $PSScriptRoot "print-runtime-status.ps1"
 
 function Test-ComposeV2 {
     if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
@@ -41,6 +42,10 @@ try {
         if ($code -eq 0) {
             Write-Host "Docker app da chay: http://127.0.0.1:8080/Game" -ForegroundColor Green
             Write-Host "Dung app: powershell -File .\scripts\dev-stop-docker.ps1" -ForegroundColor Gray
+            if (Test-Path $statusScript) {
+                Write-Host ""
+                & $statusScript -Title "DOCKER STATUS" -NoHints | Out-Host
+            }
         }
     }
     exit $code

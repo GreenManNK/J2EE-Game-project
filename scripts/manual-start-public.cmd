@@ -76,6 +76,8 @@ if not "%RC%"=="0" (
   ) else (
     echo Khong doc duoc public-game-url.txt. Hay xem dong PUBLIC_GAME_URL= trong log ben tren.
   )
+  echo.
+  powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\print-runtime-status.ps1" -Title "STATUS SAU KHI START"
 )
 
 popd

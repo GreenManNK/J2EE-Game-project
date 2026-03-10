@@ -33,6 +33,7 @@ $tunnelPidFile = Join-Path $repoRoot "cloudflared.pid"
 $namedTunnelPidFile = Join-Path $repoRoot "cloudflared-named.pid"
 $publicUrlFilePath = if ([System.IO.Path]::IsPathRooted($PublicUrlFile)) { $PublicUrlFile } else { Join-Path $repoRoot $PublicUrlFile }
 $bootstrapScript = Join-Path $PSScriptRoot "dev-env-bootstrap.ps1"
+$statusScript = Join-Path $PSScriptRoot "print-runtime-status.ps1"
 
 function Require-Script([string]$Path) {
     if (-not (Test-Path $Path)) {
@@ -186,6 +187,33 @@ function Test-HostResolvableOnPublicDns([string]$HostName) {
             }
         } catch {
         }
+    }
+    return $false
+}
+
+function Test-HostResolvableLocally([string]$HostName) {
+    if ([string]::IsNullOrWhiteSpace($HostName)) { return $false }
+    try {
+        $addresses = [System.Net.Dns]::GetHostAddresses($HostName)
+        return ($addresses.Count -gt 0)
+    } catch {
+        return $false
+    }
+}
+
+function Wait-HostResolvableOnPublicDns([string]$HostName, [int]$TimeoutSeconds, [int]$ProbeIntervalMs = 1500) {
+    if ([string]::IsNullOrWhiteSpace($HostName)) { return $false }
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $attempt = 0
+    while ((Get-Date) -lt $deadline) {
+        $attempt++
+        if (Test-HostResolvableOnPublicDns -HostName $HostName) {
+            return $true
+        }
+        if (($attempt -eq 1) -or (($attempt % 5) -eq 0)) {
+            Write-Warning ("Dang cho DNS public resolve host {0}..." -f $HostName)
+        }
+        Start-Sleep -Milliseconds $ProbeIntervalMs
     }
     return $false
 }
@@ -399,6 +427,27 @@ try {
 
     $publicPingUrl = $publicGameUrl.TrimEnd("/") + "/api/connectivity/ping"
     $publicWsInfoUrl = $publicGameUrl.TrimEnd("/") + "/ws/info?t=1"
+    $publicHost = Get-UrlHost -Url $publicGameUrl
+    $publicDnsWaitSeconds = if ($resolvedTunnelMode -eq "quick") {
+        [Math]::Max(20, [Math]::Min(120, $WaitSeconds + 45))
+    } else {
+        10
+    }
+    $publicDnsOkOnPublicResolvers = $true
+    $publicDnsOkOnSystemResolver = $true
+
+    if (-not [string]::IsNullOrWhiteSpace($publicHost)) {
+        Write-Output "PUBLIC_HOST=$publicHost"
+        if ($resolvedTunnelMode -eq "quick") {
+            Write-Output "STEP=WAIT_PUBLIC_DNS"
+            $publicDnsOkOnPublicResolvers = Wait-HostResolvableOnPublicDns -HostName $publicHost -TimeoutSeconds $publicDnsWaitSeconds
+        } else {
+            $publicDnsOkOnPublicResolvers = Test-HostResolvableOnPublicDns -HostName $publicHost
+        }
+        $publicDnsOkOnSystemResolver = Test-HostResolvableLocally -HostName $publicHost
+        Write-Output "PUBLIC_DNS_PUBLIC_OK=$([int]$publicDnsOkOnPublicResolvers)"
+        Write-Output "PUBLIC_DNS_LOCAL_OK=$([int]$publicDnsOkOnSystemResolver)"
+    }
 
     $publicProbeTimeoutSeconds = [Math]::Max($WaitSeconds, 75)
     $publicGameOk = Wait-HttpOk -Url $publicPingUrl -TimeoutSeconds $publicProbeTimeoutSeconds
@@ -411,9 +460,15 @@ try {
     }
     $tunnelAlive = Test-ProcessAliveByPidFile -PidFilePath $tunnelPidCheckFile
     $appAlive = Test-ProcessAliveByPidFile -PidFilePath $appPidFile
-    $publicHost = Get-UrlHost -Url $publicGameUrl
-    $publicDnsOkOnPublicResolvers = Test-HostResolvableOnPublicDns -HostName $publicHost
     $allowQuickDnsBypass = ($resolvedTunnelMode -eq "quick") -and $tunnelAlive -and $appAlive -and $publicDnsOkOnPublicResolvers
+
+    if (($resolvedTunnelMode -eq "quick") -and (-not $publicDnsOkOnPublicResolvers)) {
+        $dnsHint = "Hay doi them 10-30s roi chay lai. Neu can on dinh hon, cau hinh CLOUDFLARE_TUNNEL_TOKEN + PUBLIC_BASE_URL de dung named tunnel."
+        if ($tunnelAlive -and $appAlive) {
+            $dnsHint = "Tunnel/app dang chay nhung DNS public cua quick tunnel chua resolve. " + $dnsHint
+        }
+        throw ("Quick tunnel da tao URL nhung DNS public chua resolve: {0} (host: {1}). {2}" -f $publicGameUrl, $publicHost, $dnsHint)
+    }
 
     if (-not $publicGameOk) {
         if ($allowQuickDnsBypass) {
@@ -461,9 +516,12 @@ try {
     Write-Output "TUNNEL_MODE=$resolvedTunnelMode"
     Write-Output "LOCAL_GAME_URL=$localGameUrl"
     Write-Output "PUBLIC_GAME_URL=$publicGameUrl"
+    Write-Output "PUBLIC_HOST=$publicHost"
     Write-Output "PUBLIC_PING_URL=$publicPingUrl"
     Write-Output "LOCAL_GAME_OK=$([int]$localAppOk)"
     Write-Output "LOCAL_WS_OK=$([int]$localWsOk)"
+    Write-Output "PUBLIC_DNS_PUBLIC_OK=$([int]$publicDnsOkOnPublicResolvers)"
+    Write-Output "PUBLIC_DNS_LOCAL_OK=$([int]$publicDnsOkOnSystemResolver)"
     Write-Output "PUBLIC_GAME_OK=$([int]$publicGameOk)"
     Write-Output "PUBLIC_WS_OK=$([int]$publicWsOk)"
     Write-Output "PUBLIC_PAGE_OK=$([int]$publicPageOk)"
@@ -472,6 +530,11 @@ try {
     Write-Output "TUNNEL_LOG_ERR=$tunnelLogErr"
     Write-Output "PUBLIC_URL_FILE=$publicUrlFilePath"
     Write-Output "APP_ENV_FILE=$AppEnvFile"
+
+    if (Test-Path $statusScript) {
+        Write-Output ""
+        & $statusScript -Title "PUBLIC SESSION STATUS" -NoHints | ForEach-Object { Write-Output ([string]$_) }
+    }
 
     if ($OpenBrowser) {
         Start-Process $publicGameUrl | Out-Null

@@ -1,5 +1,6 @@
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
+$statusScript = Join-Path $PSScriptRoot "print-runtime-status.ps1"
 
 function Test-ComposeV2 {
     if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
@@ -31,6 +32,10 @@ function Invoke-Compose([string[]]$Args) {
 Push-Location $repoRoot
 try {
     $code = Invoke-Compose @("down")
+    if (Test-Path $statusScript) {
+        Write-Host ""
+        & $statusScript -Title "STATUS SAU KHI DUNG DOCKER" | Out-Host
+    }
     exit $code
 } finally {
     Pop-Location

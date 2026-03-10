@@ -14,6 +14,7 @@ $pidFile = Join-Path $repoRoot "app-prod.pid"
 $outLog = Join-Path $repoRoot "run-prod-public.out.log"
 $errLog = Join-Path $repoRoot "run-prod-public.err.log"
 $buildScript = Join-Path $PSScriptRoot "build-prod.ps1"
+$statusScript = Join-Path $PSScriptRoot "print-runtime-status.ps1"
 
 function Load-EnvFile([string]$Path) {
     if (-not (Test-Path $Path)) {
@@ -204,12 +205,18 @@ try {
     Write-Output "APP_PID=$effectivePid"
     Write-Output "PROFILE=$Profile"
     Write-Output "LOCAL_URL=http://127.0.0.1:$Port/Game"
+    Write-Output "APP_PING_URL=http://127.0.0.1:$Port/Game/api/connectivity/ping"
+    Write-Output "APP_WS_INFO_URL=http://127.0.0.1:$Port/Game/ws/info?t=1"
     Write-Output "LOG_OUT=$outLog"
     Write-Output "LOG_ERR=$errLog"
     if ($ready) {
         Write-Output "APP_READY=1"
     } else {
         Write-Output "APP_READY=0"
+    }
+    if (Test-Path $statusScript) {
+        Write-Output ""
+        & $statusScript -Title "APP STATUS" -NoHints | ForEach-Object { Write-Output ([string]$_) }
     }
 } finally {
     Pop-Location

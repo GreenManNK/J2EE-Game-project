@@ -14,6 +14,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\stop-fallback-pub
 echo [4/4] Dung app production...
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\stop-prod-app.ps1"
 
+echo.
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\print-runtime-status.ps1" -Title "STATUS SAU KHI DUNG"
+
 popd
 if /I not "%~1"=="--no-pause" pause
 exit /b 0

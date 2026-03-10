@@ -19,10 +19,14 @@ echo.
 if "%RC%"=="0" (
   echo Local URL ^(J2EE^): http://J2EE/Game
   echo Local URL ^(localhost^): http://127.0.0.1:8080/Game
+  echo.
+  powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\print-runtime-status.ps1" -Title "STATUS SAU KHI START"
 ) else (
   echo Co loi khi chay app. Kiem tra log:
   echo   run-prod-public.out.log
   echo   run-prod-public.err.log
+  echo.
+  powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\print-runtime-status.ps1" -Title "STATUS SAU LOI KHOI DONG"
 )
 
 popd

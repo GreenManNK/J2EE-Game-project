@@ -94,6 +94,7 @@ try {
     }
 
     Write-Output "TUNNEL_PID=$($proc.Id)"
+    Write-Output "TUNNEL_MODE=named"
     if ($ready) {
         Write-Output "TUNNEL_READY=1"
     } else {

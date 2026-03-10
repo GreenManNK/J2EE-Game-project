@@ -6,6 +6,9 @@ echo [1/1] Dung app Docker...
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\dev-stop-docker.ps1"
 set "RC=%ERRORLEVEL%"
 
+echo.
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\print-runtime-status.ps1" -Title "STATUS SAU KHI DUNG DOCKER"
+
 popd
 if /I not "%~1"=="--no-pause" pause
 exit /b %RC%

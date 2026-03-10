@@ -23,6 +23,8 @@ if not "%RC%"=="0" (
   echo   run-prod-public.out.log
   echo   run-prod-public.err.log
   echo   cloudflared.err.log hoac cloudflared-named.err.log
+  echo.
+  powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\print-runtime-status.ps1" -Title "STATUS SAU LOI KHOI DONG"
   if exist "public-game-url.txt" del /q "public-game-url.txt" >nul 2>nul
 ) else (
   if exist "public-game-url.txt" (
@@ -38,6 +40,8 @@ if not "%RC%"=="0" (
   ) else (
     echo Khong doc duoc public-game-url.txt. Hay xem dong PUBLIC_GAME_URL= trong log ben tren.
   )
+  echo.
+  powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\print-runtime-status.ps1" -Title "STATUS SAU KHI START"
 )
 
 popd
