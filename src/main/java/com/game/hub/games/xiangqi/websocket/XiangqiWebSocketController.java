@@ -3,6 +3,7 @@ package com.game.hub.games.xiangqi.websocket;
 import com.game.hub.games.xiangqi.service.XiangqiOnlineRoomService;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.AchievementService;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -26,14 +27,17 @@ public class XiangqiWebSocketController {
     private final XiangqiOnlineRoomService roomService;
     private final SimpMessagingTemplate messagingTemplate;
     private final UserAccountRepository userAccountRepository;
+    private final AchievementService achievementService;
     private final Map<String, RoomPresence> sessionRoomPresence = new ConcurrentHashMap<>();
 
     public XiangqiWebSocketController(XiangqiOnlineRoomService roomService,
-                                    SimpMessagingTemplate messagingTemplate,
-                                    UserAccountRepository userAccountRepository) {
+                                      SimpMessagingTemplate messagingTemplate,
+                                      UserAccountRepository userAccountRepository,
+                                      AchievementService achievementService) {
         this.roomService = roomService;
         this.messagingTemplate = messagingTemplate;
         this.userAccountRepository = userAccountRepository;
+        this.achievementService = achievementService;
     }
 
     @MessageMapping("/xiangqi.join")
@@ -123,6 +127,7 @@ public class XiangqiWebSocketController {
             }
             return;
         }
+        awardWinnerAchievement(result.room());
         broadcastRoomState(roomId, "MOVE", result.room(), result.room() == null ? null : result.room().statusMessage());
     }
 
@@ -167,6 +172,7 @@ public class XiangqiWebSocketController {
             }
             return;
         }
+        awardWinnerAchievement(result.room());
         broadcastRoomState(roomId, "SURRENDER", result.room(), result.room() == null ? "Nguoi choi da dau hang" : result.room().statusMessage());
     }
 
@@ -263,6 +269,27 @@ public class XiangqiWebSocketController {
                 "error", error
             ));
         }
+    }
+
+    private void awardWinnerAchievement(XiangqiOnlineRoomService.RoomSnapshot room) {
+        String winnerUserId = winnerUserId(room);
+        if (winnerUserId != null) {
+            achievementService.checkAndAward(winnerUserId, "Xiangqi", true);
+        }
+    }
+
+    private String winnerUserId(XiangqiOnlineRoomService.RoomSnapshot room) {
+        if (room == null || !"GAME_OVER".equals(room.status()) || room.currentTurnColor() == null || room.players() == null) {
+            return null;
+        }
+        return room.players().stream()
+            .filter(Objects::nonNull)
+            .filter(player -> Objects.equals(player.color(), room.currentTurnColor()))
+            .map(XiangqiOnlineRoomService.PlayerSnapshot::userId)
+            .filter(Objects::nonNull)
+            .filter(userId -> !userId.isBlank())
+            .findFirst()
+            .orElse(null);
     }
 
     private void rememberRoomPresence(SimpMessageHeaderAccessor headers, String roomId, String userId) {

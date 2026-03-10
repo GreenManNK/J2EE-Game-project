@@ -3,6 +3,7 @@ package com.game.hub.games.cards.tienlen.websocket;
 import com.game.hub.games.cards.tienlen.service.TienLenRoomService;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.AchievementService;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,7 @@ public class TienLenWebSocketController {
     private final TienLenRoomService roomService;
     private final SimpMessagingTemplate messagingTemplate;
     private final UserAccountRepository userAccountRepository;
+    private final AchievementService achievementService;
     private final Map<String, RoomPresence> sessionRoomPresence = new ConcurrentHashMap<>();
     private final Map<String, ScheduledFuture<?>> autoFillTasks = new ConcurrentHashMap<>();
     private final Map<String, ScheduledFuture<?>> botTurnTasks = new ConcurrentHashMap<>();
@@ -53,10 +55,12 @@ public class TienLenWebSocketController {
 
     public TienLenWebSocketController(TienLenRoomService roomService,
                                       SimpMessagingTemplate messagingTemplate,
-                                      UserAccountRepository userAccountRepository) {
+                                      UserAccountRepository userAccountRepository,
+                                      AchievementService achievementService) {
         this.roomService = roomService;
         this.messagingTemplate = messagingTemplate;
         this.userAccountRepository = userAccountRepository;
+        this.achievementService = achievementService;
     }
 
     @PreDestroy
@@ -117,6 +121,7 @@ public class TienLenWebSocketController {
         broadcastRoomState(roomId, result.eventType(), result.room(), "Bat dau van moi");
         sendPrivateStates(roomId);
         if ("GAME_OVER".equals(result.eventType())) {
+            awardWinnerAchievement(result.room());
             TienLenRoomService.RoomSnapshot waitingRoom = roomService.resetToWaitingAfterGame(roomId);
             if (waitingRoom != null) {
                 broadcastRoomState(roomId, "ROOM_STATE", waitingRoom, waitingRoom.statusMessage());
@@ -151,6 +156,7 @@ public class TienLenWebSocketController {
         broadcastRoomState(roomId, result.eventType(), result.room(), result.room() == null ? null : result.room().statusMessage());
         sendPrivateState(roomId, userId);
         if ("GAME_OVER".equals(result.eventType())) {
+            awardWinnerAchievement(result.room());
             TienLenRoomService.RoomSnapshot waitingRoom = roomService.resetToWaitingAfterGame(roomId);
             if (waitingRoom != null) {
                 broadcastRoomState(roomId, "ROOM_STATE", waitingRoom, waitingRoom.statusMessage());
@@ -430,6 +436,7 @@ public class TienLenWebSocketController {
                 broadcastRoomState(roomId, eventType, result.room(), result.room().statusMessage());
                 sendPrivateStates(roomId);
                 if ("GAME_OVER".equals(eventType)) {
+                    awardWinnerAchievement(result.room());
                     TienLenRoomService.RoomSnapshot waitingRoom = roomService.resetToWaitingAfterGame(roomId);
                     if (waitingRoom != null) {
                         broadcastRoomState(roomId, "ROOM_STATE", waitingRoom, waitingRoom.statusMessage());
@@ -466,6 +473,7 @@ public class TienLenWebSocketController {
             sendPrivateStates(roomId);
 
             if ("GAME_OVER".equals(result.eventType())) {
+                awardWinnerAchievement(result.room());
                 TienLenRoomService.RoomSnapshot waitingRoom = roomService.resetToWaitingAfterGame(roomId);
                 if (waitingRoom != null) {
                     broadcastRoomState(roomId, "ROOM_STATE", waitingRoom, waitingRoom.statusMessage());
@@ -516,6 +524,22 @@ public class TienLenWebSocketController {
             return fallback;
         }
         return configuredDelayMs;
+    }
+
+    private void awardWinnerAchievement(TienLenRoomService.RoomSnapshot room) {
+        if (room == null || !room.gameOver()) {
+            return;
+        }
+        String winnerUserId = safeTrim(room.winnerUserId());
+        if (winnerUserId == null || room.players() == null) {
+            return;
+        }
+        boolean botWinner = room.players().stream()
+            .filter(Objects::nonNull)
+            .anyMatch(player -> Objects.equals(player.userId(), winnerUserId) && player.bot());
+        if (!botWinner) {
+            achievementService.checkAndAward(winnerUserId, "Tien Len", true);
+        }
     }
 
     private void rememberRoomPresence(SimpMessageHeaderAccessor headers, String roomId, String userId) {

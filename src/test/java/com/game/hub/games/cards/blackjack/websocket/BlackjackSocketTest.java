@@ -1,9 +1,12 @@
 package com.game.hub.games.cards.blackjack.websocket;
 
+import com.game.hub.games.cards.blackjack.logic.Dealer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.game.hub.games.cards.blackjack.logic.BlackjackRoom;
+import com.game.hub.games.cards.blackjack.model.BlackjackPlayer;
 import com.game.hub.games.cards.blackjack.service.BlackjackService;
+import com.game.hub.service.AchievementService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -14,6 +17,7 @@ import org.springframework.web.socket.WebSocketSession;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -31,9 +35,11 @@ class BlackjackSocketTest {
     @Test
     void createBetAndCloseShouldBroadcastPlayerTurnAndRemoveRoomWhenEmpty() throws Exception {
         BlackjackService blackjackService = new BlackjackService();
+        AchievementService achievementService = mock(AchievementService.class);
 
         BlackjackSocket socket = new BlackjackSocket();
         ReflectionTestUtils.setField(socket, "blackjackService", blackjackService);
+        ReflectionTestUtils.setField(socket, "achievementService", achievementService);
 
         WebSocketSession session = session("blackjack-session-1", "blackjack-player");
 
@@ -59,9 +65,11 @@ class BlackjackSocketTest {
     @Test
     void spectateUnknownRoomShouldSendError() throws Exception {
         BlackjackService blackjackService = new BlackjackService();
+        AchievementService achievementService = mock(AchievementService.class);
 
         BlackjackSocket socket = new BlackjackSocket();
         ReflectionTestUtils.setField(socket, "blackjackService", blackjackService);
+        ReflectionTestUtils.setField(socket, "achievementService", achievementService);
 
         WebSocketSession session = session("blackjack-session-2", "blackjack-viewer");
 
@@ -70,6 +78,52 @@ class BlackjackSocketTest {
         ArgumentCaptor<TextMessage> messages = ArgumentCaptor.forClass(TextMessage.class);
         verify(session).sendMessage(messages.capture());
         assertTrue(messages.getValue().getPayload().contains("\"error\":\"Room not found\""));
+    }
+
+    @Test
+    void standShouldAwardBlackjackAchievementToRoundWinner() throws Exception {
+        BlackjackService blackjackService = mock(BlackjackService.class);
+        AchievementService achievementService = mock(AchievementService.class);
+        BlackjackRoom room = mock(BlackjackRoom.class);
+
+        BlackjackSocket socket = new BlackjackSocket();
+        ReflectionTestUtils.setField(socket, "blackjackService", blackjackService);
+        ReflectionTestUtils.setField(socket, "achievementService", achievementService);
+
+        WebSocketSession session = session("blackjack-session-3", "blackjack-player");
+        BlackjackPlayer player = new BlackjackPlayer("blackjack-player", 1000);
+
+        when(room.getId()).thenReturn("BJ-WIN");
+        when(room.canPlayerAct("blackjack-player")).thenReturn(true);
+        when(room.getPlayers()).thenReturn(Map.of("blackjack-player", player));
+        when(room.getSpectators()).thenReturn(List.of());
+        when(room.getDealer()).thenReturn(new Dealer());
+        when(room.getGameState()).thenReturn(BlackjackRoom.GameState.WAITING);
+        when(room.getWinningPlayerIds()).thenReturn(List.of("blackjack-player"));
+
+        @SuppressWarnings("unchecked")
+        Map<WebSocketSession, BlackjackRoom> sessionToRoomMap =
+            (Map<WebSocketSession, BlackjackRoom>) ReflectionTestUtils.getField(socket, "sessionToRoomMap");
+        @SuppressWarnings("unchecked")
+        Map<String, Set<WebSocketSession>> roomToSessionsMap =
+            (Map<String, Set<WebSocketSession>>) ReflectionTestUtils.getField(socket, "roomToSessionsMap");
+        @SuppressWarnings("unchecked")
+        Map<WebSocketSession, String> sessionPlayerIds =
+            (Map<WebSocketSession, String>) ReflectionTestUtils.getField(socket, "sessionPlayerIds");
+
+        assertNotNull(sessionToRoomMap);
+        assertNotNull(roomToSessionsMap);
+        assertNotNull(sessionPlayerIds);
+
+        sessionToRoomMap.put(session, room);
+        roomToSessionsMap.put("BJ-WIN", java.util.concurrent.ConcurrentHashMap.newKeySet());
+        roomToSessionsMap.get("BJ-WIN").add(session);
+        sessionPlayerIds.put(session, "blackjack-player");
+
+        socket.handleTextMessage(session, new TextMessage("{\"action\":\"stand\"}"));
+
+        verify(achievementService).checkAndAward("blackjack-player", "Blackjack", true);
+        verify(room).clearRoundOutcomes();
     }
 
     private WebSocketSession session(String sessionId, String principalName) {

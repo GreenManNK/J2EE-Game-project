@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.game.hub.games.typing.logic.TypingRoom;
 import com.game.hub.games.typing.service.TypingService;
+import com.game.hub.service.AchievementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -27,6 +28,9 @@ public class TypingSocket extends TextWebSocketHandler {
 
     @Autowired
     private TypingService typingService;
+
+    @Autowired
+    private AchievementService achievementService;
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -82,6 +86,9 @@ public class TypingSocket extends TextWebSocketHandler {
             String playerId = resolvePlayerId(session);
             room.updateProgress(playerId, typedText);
             broadcastRoom(room);
+            if (room.getGameState() == TypingRoom.GameState.FINISHED) {
+                achievementService.checkAndAward(room.getWinner(), "Typing", true);
+            }
             return;
         }
 

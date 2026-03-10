@@ -6,6 +6,7 @@ import com.game.hub.games.typing.logic.TypingRoom;
 import com.game.hub.games.typing.model.TypingText;
 import com.game.hub.games.typing.repository.TypingTextRepository;
 import com.game.hub.games.typing.service.TypingService;
+import com.game.hub.service.AchievementService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -35,9 +36,11 @@ class TypingSocketTest {
         TypingTextRepository textRepository = mock(TypingTextRepository.class);
         when(textRepository.findRandomText()).thenReturn(new TypingText("abc"));
         TypingService typingService = new TypingService(textRepository);
+        AchievementService achievementService = mock(AchievementService.class);
 
         TypingSocket socket = new TypingSocket();
         ReflectionTestUtils.setField(socket, "typingService", typingService);
+        ReflectionTestUtils.setField(socket, "achievementService", achievementService);
 
         WebSocketSession firstSession = session("typing-session-1", "player-1");
         WebSocketSession secondSession = session("typing-session-2", "player-2");
@@ -74,9 +77,11 @@ class TypingSocketTest {
     void joinUnknownRoomShouldSendError() throws Exception {
         TypingTextRepository textRepository = mock(TypingTextRepository.class);
         TypingService typingService = new TypingService(textRepository);
+        AchievementService achievementService = mock(AchievementService.class);
 
         TypingSocket socket = new TypingSocket();
         ReflectionTestUtils.setField(socket, "typingService", typingService);
+        ReflectionTestUtils.setField(socket, "achievementService", achievementService);
 
         WebSocketSession session = session("typing-session-3", "player-3");
 
@@ -86,6 +91,29 @@ class TypingSocketTest {
         verify(session).sendMessage(messages.capture());
         Map<String, Object> errorPayload = payload(messages.getValue());
         assertEquals("Room not found", errorPayload.get("error"));
+    }
+
+    @Test
+    void progressShouldAwardTypingAchievementToWinner() throws Exception {
+        TypingTextRepository textRepository = mock(TypingTextRepository.class);
+        when(textRepository.findRandomText()).thenReturn(new TypingText("abc"));
+        TypingService typingService = new TypingService(textRepository);
+        AchievementService achievementService = mock(AchievementService.class);
+
+        TypingSocket socket = new TypingSocket();
+        ReflectionTestUtils.setField(socket, "typingService", typingService);
+        ReflectionTestUtils.setField(socket, "achievementService", achievementService);
+
+        WebSocketSession firstSession = session("typing-session-4", "player-4");
+        WebSocketSession secondSession = session("typing-session-5", "player-5");
+
+        socket.handleTextMessage(firstSession, new TextMessage("{\"action\":\"create\"}"));
+        TypingRoom room = typingService.getAvailableRooms().stream().findFirst().orElseThrow();
+        socket.handleTextMessage(secondSession, new TextMessage("{\"action\":\"join\",\"roomId\":\"" + room.getId() + "\"}"));
+
+        socket.handleTextMessage(firstSession, new TextMessage("{\"action\":\"progress\",\"roomId\":\"" + room.getId() + "\",\"typed\":\"abc\"}"));
+
+        verify(achievementService).checkAndAward("player-4", "Typing", true);
     }
 
     private WebSocketSession session(String sessionId, String principalName) {

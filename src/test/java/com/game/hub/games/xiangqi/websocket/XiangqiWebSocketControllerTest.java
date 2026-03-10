@@ -1,6 +1,7 @@
 package com.game.hub.games.xiangqi.websocket;
 
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.AchievementService;
 import com.game.hub.games.xiangqi.service.XiangqiOnlineRoomService;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -21,6 +22,7 @@ class XiangqiWebSocketControllerTest {
         XiangqiOnlineRoomService roomService = mock(XiangqiOnlineRoomService.class);
         SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        AchievementService achievementService = mock(AchievementService.class);
         SimpMessageHeaderAccessor headers = mock(SimpMessageHeaderAccessor.class);
 
         when(headers.getSessionAttributes()).thenReturn(Map.of("AUTH_USER_ID", "blackUser"));
@@ -45,7 +47,7 @@ class XiangqiWebSocketControllerTest {
         when(roomService.move("XQ-FINAL", "blackUser", 0, 4, 9, 4, null))
             .thenReturn(XiangqiOnlineRoomService.ActionResult.ok("MOVE", room));
 
-        XiangqiWebSocketController controller = new XiangqiWebSocketController(roomService, messagingTemplate, userAccountRepository);
+        XiangqiWebSocketController controller = new XiangqiWebSocketController(roomService, messagingTemplate, userAccountRepository, achievementService);
         XiangqiMoveMessage message = new XiangqiMoveMessage();
         message.setRoomId("XQ-FINAL");
         message.setUserId("blackUser");
@@ -64,6 +66,7 @@ class XiangqiWebSocketControllerTest {
             if (!(roomObj instanceof XiangqiOnlineRoomService.RoomSnapshot snapshot)) return false;
             return "GAME_OVER".equals(snapshot.status()) && snapshot.currentTurnUserId() == null;
         }));
+        verify(achievementService).checkAndAward("blackUser", "Xiangqi", true);
     }
 
     @Test
@@ -71,6 +74,7 @@ class XiangqiWebSocketControllerTest {
         XiangqiOnlineRoomService roomService = mock(XiangqiOnlineRoomService.class);
         SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        AchievementService achievementService = mock(AchievementService.class);
         SimpMessageHeaderAccessor headers = mock(SimpMessageHeaderAccessor.class);
 
         when(headers.getSessionAttributes()).thenReturn(Map.of("AUTH_USER_ID", "viewerUser"));
@@ -96,7 +100,7 @@ class XiangqiWebSocketControllerTest {
         when(roomService.joinAsSpectator("XQ-WATCH", "viewerUser"))
             .thenReturn(new XiangqiOnlineRoomService.JoinResult(true, "spectator", room, null));
 
-        XiangqiWebSocketController controller = new XiangqiWebSocketController(roomService, messagingTemplate, userAccountRepository);
+        XiangqiWebSocketController controller = new XiangqiWebSocketController(roomService, messagingTemplate, userAccountRepository, achievementService);
         XiangqiJoinMessage join = new XiangqiJoinMessage();
         join.setRoomId("XQ-WATCH");
         join.setUserId("viewerUser");

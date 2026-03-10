@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.game.hub.games.cards.blackjack.logic.BlackjackRoom;
 import com.game.hub.games.cards.blackjack.model.BlackjackPlayer;
 import com.game.hub.games.cards.blackjack.service.BlackjackService;
+import com.game.hub.service.AchievementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -28,6 +29,9 @@ public class BlackjackSocket extends TextWebSocketHandler {
 
     @Autowired
     private BlackjackService blackjackService;
+
+    @Autowired
+    private AchievementService achievementService;
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -108,6 +112,7 @@ public class BlackjackSocket extends TextWebSocketHandler {
                 return;
             }
             broadcastRoom(room);
+            awardRoundWinners(room);
             return;
         }
 
@@ -118,6 +123,7 @@ public class BlackjackSocket extends TextWebSocketHandler {
             }
             room.playerHit(playerId);
             broadcastRoom(room);
+            awardRoundWinners(room);
             return;
         }
 
@@ -140,6 +146,7 @@ public class BlackjackSocket extends TextWebSocketHandler {
             room.playerHit(playerId);
             room.playerStand(playerId);
             broadcastRoom(room);
+            awardRoundWinners(room);
             return;
         }
 
@@ -150,6 +157,7 @@ public class BlackjackSocket extends TextWebSocketHandler {
             }
             room.playerStand(playerId);
             broadcastRoom(room);
+            awardRoundWinners(room);
         }
     }
 
@@ -266,5 +274,19 @@ public class BlackjackSocket extends TextWebSocketHandler {
                 blackjackService.removeRoom(room.getId());
             }
         }
+    }
+
+    private void awardRoundWinners(BlackjackRoom room) {
+        if (room == null || room.getGameState() != BlackjackRoom.GameState.WAITING) {
+            return;
+        }
+        List<String> winnerIds = room.getWinningPlayerIds();
+        if (winnerIds == null || winnerIds.isEmpty()) {
+            return;
+        }
+        for (String winnerId : winnerIds) {
+            achievementService.checkAndAward(winnerId, "Blackjack", true);
+        }
+        room.clearRoundOutcomes();
     }
 }

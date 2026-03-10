@@ -6,6 +6,7 @@ public class BlackjackPlayer {
     private int balance;
     private int currentBet;
     private int lastBet;
+    private boolean lastRoundWon;
 
     public BlackjackPlayer(String id, int initialBalance) {
         this.id = id;
@@ -30,6 +31,14 @@ public class BlackjackPlayer {
 
     public int getLastBet() {
         return lastBet;
+    }
+
+    public boolean wonLastRound() {
+        return lastRoundWon;
+    }
+
+    public void clearRoundOutcome() {
+        lastRoundWon = false;
     }
 
     public boolean hasActiveBet() {
@@ -59,19 +68,23 @@ public class BlackjackPlayer {
     public void winBet() {
         balance += currentBet * 2;
         currentBet = 0;
+        lastRoundWon = true;
     }
 
     public void blackjackWin() {
         balance += (currentBet * 5) / 2;
         currentBet = 0;
+        lastRoundWon = true;
     }
 
     public void loseBet() {
         currentBet = 0;
+        lastRoundWon = false;
     }
 
     public void push() {
         balance += currentBet;
         currentBet = 0;
+        lastRoundWon = false;
     }
 }

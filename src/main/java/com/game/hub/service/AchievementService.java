@@ -50,8 +50,11 @@ public class AchievementService {
 
     @Transactional
     public void checkAndAward(String userId, String gameName, boolean won) {
+        if (userId == null || userId.isBlank() || gameName == null || gameName.isBlank()) {
+            return;
+        }
         if (won) {
-            grantOnce(userId, "Winner - " + gameName);
+            grantOnce(userId, "Winner - " + gameName.trim());
         }
     }
 

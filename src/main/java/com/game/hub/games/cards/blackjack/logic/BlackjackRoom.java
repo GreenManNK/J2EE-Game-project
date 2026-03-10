@@ -52,6 +52,7 @@ public class BlackjackRoom {
         stoodPlayers.clear();
         dealer.getHand().clear();
         for (BlackjackPlayer player : players.values()) {
+            player.clearRoundOutcome();
             player.getHand().clear();
             if (player.hasActiveBet()) {
                 player.getHand().addCard(deck.deal());
@@ -176,9 +177,20 @@ public class BlackjackRoom {
     public Map<String, BlackjackPlayer> getPlayers() {
         return players;
     }
-    
+
     public List<String> getSpectators() {
         return spectators;
+    }
+
+    public List<String> getWinningPlayerIds() {
+        return players.values().stream()
+            .filter(BlackjackPlayer::wonLastRound)
+            .map(BlackjackPlayer::getId)
+            .toList();
+    }
+
+    public void clearRoundOutcomes() {
+        players.values().forEach(BlackjackPlayer::clearRoundOutcome);
     }
 
     public Dealer getDealer() {

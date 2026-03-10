@@ -89,6 +89,8 @@ public class ProfileStatsService {
             .toList();
 
         List<String> allPossible = List.of(
+            "Winner - Caro", "Winner - Chess", "Winner - Xiangqi", "Winner - Tien Len",
+            "Winner - Typing", "Winner - Blackjack", "Winner - Quiz",
             "Bac", "Vang", "Kim cuong", "Thach dau",
             "Dau tri thang Phat", "Chien thang khong tuong", "Chuoi bat bai", "Ha guc vua",
             "Chuoi thua huyen thoai", "Choi vi dam me", "1 phut lo la",

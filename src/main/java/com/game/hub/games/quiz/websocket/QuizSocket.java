@@ -134,6 +134,7 @@ public class QuizSocket extends TextWebSocketHandler {
     private void broadcastScores(QuizRoom room) throws IOException {
         Map<WebSocketSession, Integer> scores = room.getScores();
         Map<String, Integer> scorePayload = new LinkedHashMap<>();
+        int topScore = scores.values().stream().mapToInt(Integer::intValue).max().orElse(0);
         for (Map.Entry<WebSocketSession, Integer> entry : scores.entrySet()) {
             WebSocketSession scoreSession = entry.getKey();
             int score = entry.getValue();
@@ -143,8 +144,8 @@ public class QuizSocket extends TextWebSocketHandler {
 
             if (scoreSession.getPrincipal() != null && scoreSession.getPrincipal().getName() != null) {
                 String userId = scoreSession.getPrincipal().getName().trim();
-                if (!userId.isEmpty()) {
-                    achievementService.checkAndAward(userId, "Quiz", score > 0);
+                if (!userId.isEmpty() && score > 0 && score == topScore) {
+                    achievementService.checkAndAward(userId, "Quiz", true);
                 }
             }
         }
