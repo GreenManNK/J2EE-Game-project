@@ -31,7 +31,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     -h|--help)
       cat <<'EOF'
-Usage: bash ./scripts/dev-run-local.sh [--profile prod] [--port 8080] [--skip-doctor] [--force-bootstrap] [--no-h2-fallback]
+Usage: bash ./scripts/runtime/dev-run-local.sh [--profile prod] [--port 8080] [--skip-doctor] [--force-bootstrap] [--no-h2-fallback]
 EOF
       exit 0
       ;;
@@ -43,7 +43,7 @@ EOF
 done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 resolve_run_tool() {
   if [[ -f "$REPO_ROOT/mvnw" ]]; then

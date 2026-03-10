@@ -115,60 +115,23 @@
 
   <section class="theme-box rounded p-3 mt-3 gx-section-card"
            th:if="${isOwner}"
-           id="profileOwnerRoot"
-           th:attr="data-user-id=${user.id}">
+           id="profileOwnerRoot">
     <div class="gx-section-card__head">
-      <h2 class="h5 mb-0 theme-text">Cap nhat thong tin</h2>
-      <div class="gx-section-card__meta">Chi chu so huu ho so moi thay doi duoc</div>
+      <h2 class="h5 mb-0 theme-text">Quan ly tai khoan</h2>
+      <div class="gx-section-card__meta">Ho so da duoc gom ve mot noi duy nhat de tranh trung lap thao tac.</div>
     </div>
-    <form id="editProfileForm" class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label" for="displayName">Ten hien thi</label>
-        <input id="displayName" class="form-control" th:value="${user.displayName}">
-      </div>
-      <div class="col-md-6">
-        <label class="form-label" for="email">Email</label>
-        <input id="email" class="form-control" type="email" th:value="${user.email}">
-      </div>
-      <div class="col-lg-4">
-        <label class="form-label d-block" for="avatarPreview">Anh dai dien hien tai</label>
-        <img id="avatarPreview"
-             class="profile-avatar-preview"
-             th:src="@{${user.avatarPath != null and !#strings.isEmpty(user.avatarPath) ? user.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
-             alt="Anh dai dien xem truoc">
-      </div>
-      <div class="col-lg-5">
-        <label class="form-label" for="avatarPath">Duong dan anh dai dien</label>
-        <input id="avatarPath" class="form-control" th:value="${user.avatarPath}">
-        <div class="form-text">Co the dan URL hoac tai anh o khung ben canh.</div>
-      </div>
-      <div class="col-lg-3">
-        <label class="form-label" for="avatarFile">Tai anh dai dien</label>
-        <input id="avatarFile" class="form-control" type="file" accept=".jpg,.jpeg,.png,.gif,.webp,image/*">
-        <button id="uploadAvatarBtn" type="button" class="btn btn-outline-primary btn-sm mt-2 w-100">Tai anh</button>
-        <div class="form-text">Toi da 2MB (JPG/PNG/GIF/WEBP)</div>
-      </div>
-      <div class="col-12">
-        <button type="submit" class="btn btn-primary">Luu thay doi</button>
-      </div>
-    </form>
-
-    <h2 class="h5 mt-4 mb-3 theme-text">Doi mat khau</h2>
-    <form id="changePasswordForm" class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label" for="currentPassword">Mat khau hien tai</label>
-        <input id="currentPassword" class="form-control" type="password" required>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label" for="newPassword">Mat khau moi</label>
-        <input id="newPassword" class="form-control" type="password" required>
-      </div>
-      <div class="col-12">
-        <button type="submit" class="btn btn-outline-primary">Doi mat khau</button>
-      </div>
-    </form>
-
-    <div id="ownerOut" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
+    <p class="mb-3">
+      Cap nhat ten hien thi, email, avatar va doi mat khau hien duoc thuc hien tap trung tai trang cai dat
+      de giao dien va API thong nhat.
+    </p>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-primary" th:href="@{/settings}">
+        <i class="bi bi-gear-fill me-1"></i> Mo cai dat tai khoan
+      </a>
+      <a class="btn theme-outline-btn" th:href="@{/history(userId=${user.id})}">
+        <i class="bi bi-clock-history me-1"></i> Xem lich su
+      </a>
+    </div>
   </section>
 
   <div class="gx-inline-actions">
@@ -177,193 +140,6 @@
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('profile')}"></th:block>
-<script>
-  (function () {
-    const root = document.getElementById('profileOwnerRoot');
-    if (!root) return;
-    const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
-      ? window.CaroUrl.path
-      : (value) => value;
-    const ui = window.CaroUi || {};
-    const userId = root.dataset.userId;
-    const out = document.getElementById('ownerOut');
-    const editForm = document.getElementById('editProfileForm');
-    const pwdForm = document.getElementById('changePasswordForm');
-    const avatarPathInput = document.getElementById('avatarPath');
-    const avatarPreview = document.getElementById('avatarPreview');
-    const avatarFileInput = document.getElementById('avatarFile');
-    const uploadAvatarBtn = document.getElementById('uploadAvatarBtn');
-    const defaultAvatarPath = '/uploads/avatars/default-avatar.jpg';
-    let previewObjectUrl = null;
-
-    function setStatus(message, ok) {
-      if (ui.setStatus) {
-        ui.setStatus(out, message, ok);
-      } else if (out) {
-        out.textContent = String(message || '');
-      }
-    }
-
-    function report(data, successMessage) {
-      if (ui.apiResult) {
-        return ui.apiResult(data, { statusEl: out, successMessage });
-      }
-      const ok = !!(data && data.success);
-      setStatus(ok ? successMessage : String(data?.error || data?.message || 'Thao tac that bai'), ok);
-      return ok;
-    }
-
-    function reportError(err) {
-      const message = String(err?.message || err || 'Yeu cau that bai');
-      setStatus(message, false);
-      ui.toast?.(message, { type: 'danger' });
-    }
-
-    function releasePreviewObjectUrl() {
-      if (previewObjectUrl) {
-        URL.revokeObjectURL(previewObjectUrl);
-        previewObjectUrl = null;
-      }
-    }
-
-    function setAvatarPreview(path) {
-      if (!avatarPreview) return;
-      releasePreviewObjectUrl();
-      const normalizedPath = String(path || '').trim() || defaultAvatarPath;
-      avatarPreview.src = appPath(normalizedPath);
-    }
-
-    function setAvatarPreviewFromFile(file) {
-      if (!avatarPreview || !file) return;
-      releasePreviewObjectUrl();
-      previewObjectUrl = URL.createObjectURL(file);
-      avatarPreview.src = previewObjectUrl;
-    }
-
-    setAvatarPreview(avatarPathInput?.value || defaultAvatarPath);
-
-    avatarPathInput?.addEventListener('input', () => {
-      setAvatarPreview(avatarPathInput.value);
-    });
-
-    avatarFileInput?.addEventListener('change', () => {
-      const file = avatarFileInput.files?.[0];
-      if (!file) {
-        setAvatarPreview(avatarPathInput?.value || defaultAvatarPath);
-        return;
-      }
-      setAvatarPreviewFromFile(file);
-    });
-
-    uploadAvatarBtn?.addEventListener('click', async () => {
-      const file = avatarFileInput?.files?.[0];
-      if (!file) {
-        setStatus('Vui long chon tep anh', false);
-        return;
-      }
-      uploadAvatarBtn.disabled = true;
-      try {
-        const body = new FormData();
-        body.append('avatar', file);
-        const res = await fetch(appPath('/profile/avatar'), {
-          method: 'POST',
-          body
-        });
-        const data = await res.json().catch(() => ({}));
-        const ok = report(data, 'Tai anh dai dien thanh cong');
-        if (!ok) {
-          setAvatarPreview(avatarPathInput?.value || defaultAvatarPath);
-          return;
-        }
-        const updatedPath = data.user?.avatarPath || data.avatarPath || defaultAvatarPath;
-        if (avatarPathInput) {
-          avatarPathInput.value = updatedPath;
-        }
-        if (avatarFileInput) {
-          avatarFileInput.value = '';
-        }
-        setAvatarPreview(updatedPath);
-        if (window.CaroUser) {
-          const current = window.CaroUser.get() || { userId };
-          window.CaroUser.set({
-            userId: userId,
-            displayName: current.displayName || 'Nguoi choi',
-            email: current.email || '',
-            role: current.role || 'User',
-            avatarPath: updatedPath
-          });
-        }
-      } catch (err) {
-        reportError(err);
-        setAvatarPreview(avatarPathInput?.value || defaultAvatarPath);
-      } finally {
-        uploadAvatarBtn.disabled = false;
-      }
-    });
-
-    editForm?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const payload = {
-        userId,
-        displayName: document.getElementById('displayName')?.value || '',
-        email: document.getElementById('email')?.value || '',
-        avatarPath: avatarPathInput?.value || ''
-      };
-      try {
-        const res = await fetch(appPath('/profile'), {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        const ok = report(data, 'Cap nhat ho so thanh cong');
-        if (ok && window.CaroUser) {
-          const current = window.CaroUser.get() || { userId: userId };
-          const resolvedAvatarPath = data.user?.avatarPath || payload.avatarPath || current.avatarPath || defaultAvatarPath;
-          if (avatarPathInput) {
-            avatarPathInput.value = resolvedAvatarPath;
-          }
-          setAvatarPreview(resolvedAvatarPath);
-          window.CaroUser.set({
-            userId: userId,
-            displayName: data.user?.displayName || payload.displayName || current.displayName,
-            email: data.user?.email || payload.email || current.email,
-            role: current.role || 'User',
-            avatarPath: resolvedAvatarPath
-          });
-        }
-      } catch (err) {
-        reportError(err);
-      }
-    });
-
-    pwdForm?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const payload = {
-        userId,
-        currentPassword: document.getElementById('currentPassword')?.value || '',
-        newPassword: document.getElementById('newPassword')?.value || ''
-      };
-      try {
-        const res = await fetch(appPath('/account/change-password'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        const ok = report(data, 'Doi mat khau thanh cong');
-        if (ok) {
-          document.getElementById('currentPassword').value = '';
-          document.getElementById('newPassword').value = '';
-        }
-      } catch (err) {
-        reportError(err);
-      }
-    });
-
-    window.addEventListener('beforeunload', releasePreviewObjectUrl);
-  })();
-</script>
 </body>
 </html>
 

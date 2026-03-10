@@ -1,7 +1,5 @@
 package com.game.hub.controller;
 
-import com.game.hub.service.AccountService;
-import com.game.hub.service.AvatarStorageService;
 import com.game.hub.service.ProfileStatsService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -19,9 +17,7 @@ class ProfileControllerTest {
 
     @Test
     void pageShouldReturnProfileView() {
-        AccountService accountService = mock(AccountService.class);
         ProfileStatsService profileStatsService = mock(ProfileStatsService.class);
-        AvatarStorageService avatarStorageService = mock(AvatarStorageService.class);
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
 
@@ -29,7 +25,7 @@ class ProfileControllerTest {
         when(session.getAttribute("AUTH_USER_ID")).thenReturn("test-user");
         when(profileStatsService.buildProfileStats("test-user", "test-user")).thenReturn(new HashMap<>());
 
-        ProfileController controller = new ProfileController(accountService, profileStatsService, avatarStorageService);
+        ProfileController controller = new ProfileController(profileStatsService);
         ConcurrentModel model = new ConcurrentModel();
         String viewName = controller.page("test-user", model, request);
 
@@ -39,14 +35,12 @@ class ProfileControllerTest {
 
     @Test
     void pageShouldRedirectToLoginWhenNotAuthenticated() {
-        AccountService accountService = mock(AccountService.class);
         ProfileStatsService profileStatsService = mock(ProfileStatsService.class);
-        AvatarStorageService avatarStorageService = mock(AvatarStorageService.class);
         HttpServletRequest request = mock(HttpServletRequest.class);
 
         when(request.getSession(false)).thenReturn(null);
 
-        ProfileController controller = new ProfileController(accountService, profileStatsService, avatarStorageService);
+        ProfileController controller = new ProfileController(profileStatsService);
         ConcurrentModel model = new ConcurrentModel();
         String viewName = controller.page("any-user", model, request);
 

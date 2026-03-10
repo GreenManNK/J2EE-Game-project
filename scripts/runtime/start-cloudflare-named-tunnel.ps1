@@ -7,7 +7,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$scriptsRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent $scriptsRoot
 $toolsDir = Join-Path $repoRoot ".tools"
 $cloudflaredExe = Join-Path $toolsDir "cloudflared.exe"
 $pidFile = Join-Path $repoRoot "cloudflared-named.pid"

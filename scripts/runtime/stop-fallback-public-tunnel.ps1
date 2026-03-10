@@ -1,6 +1,7 @@
 $ErrorActionPreference = "Stop"
 
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$scriptsRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent $scriptsRoot
 $pidFile = Join-Path $repoRoot "public-fallback-tunnel.pid"
 
 if (-not (Test-Path $pidFile)) {

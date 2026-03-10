@@ -395,13 +395,19 @@ if [[ "$DB_KIND" == "postgres" ]]; then
 fi
 
 title "Quick Start"
-echo "Windows (PowerShell): powershell -ExecutionPolicy Bypass -File .\\scripts\\dev-run-local.ps1"
-echo "macOS/Linux (bash):  bash ./scripts/dev-run-local.sh"
+echo "Windows auto launcher: cmd /c scripts\\manual-start.cmd"
+echo "Windows local only:    cmd /c scripts\\manual-start.cmd start --local"
+echo "Windows public only:   cmd /c scripts\\manual-start.cmd start --public"
+echo "Windows docker only:   cmd /c scripts\\manual-start.cmd start --docker"
+echo "Windows status:        cmd /c scripts\\manual-start.cmd status"
+echo "Windows stop all:      cmd /c scripts\\manual-start.cmd stop"
+echo "Windows (PowerShell): .\\scripts\\manual-start.cmd start --local"
+echo "macOS/Linux (bash):  bash ./scripts/runtime/dev-run-local.sh"
 echo "Maven wrapper: .\\mvnw.cmd spring-boot:run (Windows) | ./mvnw spring-boot:run (macOS/Linux)"
 echo "Gradle wrapper: .\\gradlew.bat bootRun (Windows) | ./gradlew bootRun (macOS/Linux)"
-echo "Docker: docker compose up --build -d  (neu muon chay khong phu thuoc JDK local)"
+echo "Docker: .\\scripts\\manual-start.cmd start --docker"
 if [[ "$MODE" == "public" ]]; then
-  echo "Windows public helper: cmd /c scripts\\manual-start-public.cmd"
+  echo "Public mode (Windows): cmd /c scripts\\manual-start.cmd start --public"
 fi
 
 if [[ ${#required_failures[@]} -gt 0 ]]; then

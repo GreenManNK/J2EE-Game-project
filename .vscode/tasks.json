@@ -30,7 +30,9 @@
       "command": "cmd",
       "args": [
         "/c",
-        "scripts\\manual-start-public.cmd",
+        "scripts\\manual-start.cmd",
+        "start",
+        "--public",
         "--no-pause"
       ],
       "options": {
@@ -49,7 +51,10 @@
       "command": "cmd",
       "args": [
         "/c",
-        "scripts\\manual-start-public-mysql.cmd",
+        "scripts\\manual-start.cmd",
+        "start",
+        "--public",
+        "--mysql",
         "--no-pause"
       ],
       "options": {
@@ -68,7 +73,10 @@
       "command": "cmd",
       "args": [
         "/c",
-        "scripts\\manual-start-public-postgres.cmd",
+        "scripts\\manual-start.cmd",
+        "start",
+        "--public",
+        "--postgres",
         "--no-pause"
       ],
       "options": {
@@ -87,7 +95,9 @@
       "command": "cmd",
       "args": [
         "/c",
-        "scripts\\manual-start-local.cmd",
+        "scripts\\manual-start.cmd",
+        "start",
+        "--local",
         "--no-pause"
       ],
       "options": {
@@ -106,7 +116,8 @@
       "command": "cmd",
       "args": [
         "/c",
-        "scripts\\manual-status.cmd",
+        "scripts\\manual-start.cmd",
+        "status",
         "--no-pause"
       ],
       "options": {
@@ -125,7 +136,8 @@
       "command": "cmd",
       "args": [
         "/c",
-        "scripts\\manual-stop-all.cmd",
+        "scripts\\manual-start.cmd",
+        "stop",
         "--no-pause"
       ],
       "options": {
@@ -144,7 +156,9 @@
       "command": "cmd",
       "args": [
         "/c",
-        "scripts\\manual-start-docker.cmd",
+        "scripts\\manual-start.cmd",
+        "start",
+        "--docker",
         "--no-pause"
       ],
       "options": {
@@ -163,7 +177,9 @@
       "command": "cmd",
       "args": [
         "/c",
-        "scripts\\manual-stop-docker.cmd",
+        "scripts\\manual-start.cmd",
+        "stop",
+        "--docker",
         "--no-pause"
       ],
       "options": {
@@ -182,7 +198,8 @@
       "command": "cmd",
       "args": [
         "/c",
-        "scripts\\manual-verify-public-all.cmd",
+        "scripts\\manual-start.cmd",
+        "verify",
         "--no-pause"
       ],
       "options": {

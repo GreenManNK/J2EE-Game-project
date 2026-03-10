@@ -58,20 +58,36 @@
                    th:disabled="${!isAuthenticated}"
                    placeholder="ban@example.com">
           </div>
-          <div class="col-12">
+          <div class="col-lg-4" th:if="${isAuthenticated}">
+            <label class="form-label d-block" for="settingsAvatarPreview">Anh dai dien hien tai</label>
+            <img id="settingsAvatarPreview"
+                 class="profile-avatar-preview"
+                 th:src="@{${settingsUser != null and settingsUser.avatarPath != null and !#strings.isEmpty(settingsUser.avatarPath) ? settingsUser.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
+                 alt="Anh dai dien hien tai">
+          </div>
+          <div class="col-lg-5">
             <label class="form-label" for="settingsAvatarPath">Duong dan anh dai dien</label>
             <input id="settingsAvatarPath"
                    class="form-control"
                    th:value="${settingsUser != null ? settingsUser.avatarPath : '/uploads/avatars/default-avatar.jpg'}"
                    th:disabled="${!isAuthenticated}"
                    placeholder="/uploads/avatars/default-avatar.jpg">
+            <div class="form-text">Co the dan URL hoac tai anh truc tiep o khung ben canh.</div>
           </div>
-          <div class="col-12" th:if="${isAuthenticated}">
-            <label class="form-label d-block" for="settingsAvatarPreview">Anh dai dien hien tai</label>
-            <img id="settingsAvatarPreview"
-                 class="profile-avatar-preview"
-                 th:src="@{${settingsUser != null and settingsUser.avatarPath != null and !#strings.isEmpty(settingsUser.avatarPath) ? settingsUser.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
-                 alt="Anh dai dien hien tai">
+          <div class="col-lg-3">
+            <label class="form-label" for="settingsAvatarFile">Tai anh dai dien</label>
+            <input id="settingsAvatarFile"
+                   class="form-control"
+                   type="file"
+                   accept=".jpg,.jpeg,.png,.gif,.webp,image/*"
+                   th:disabled="${!isAuthenticated}">
+            <button id="settingsUploadAvatarBtn"
+                    type="button"
+                    class="btn btn-outline-primary btn-sm mt-2 w-100"
+                    th:disabled="${!isAuthenticated}">
+              Tai anh
+            </button>
+            <div class="form-text">Toi da 2MB (JPG/PNG/GIF/WEBP)</div>
           </div>
           <div class="col-12 d-flex gap-2">
             <button type="submit" class="btn btn-primary" th:disabled="${!isAuthenticated}">

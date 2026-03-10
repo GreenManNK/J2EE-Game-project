@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-FOREGROUND=0
-if [[ "${1:-}" == "--foreground" ]]; then
-  FOREGROUND=1
-fi
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 compose_exec() {
   if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
@@ -23,11 +18,4 @@ compose_exec() {
 }
 
 cd "$REPO_ROOT"
-
-if [[ "$FOREGROUND" -eq 1 ]]; then
-  compose_exec up --build
-else
-  compose_exec up --build -d
-  echo "[OK] Docker app da chay: http://127.0.0.1:8080/Game"
-  echo "[INFO] Dung app: bash ./scripts/dev-stop-docker.sh"
-fi
+compose_exec down

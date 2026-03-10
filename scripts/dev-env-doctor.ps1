@@ -11,6 +11,11 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $shouldInstall = $InstallMissing.IsPresent -and (-not $CheckOnly.IsPresent)
 $global:AptUpdated = $false
+$dockerHelper = Join-Path $PSScriptRoot "runtime\docker-cli-helper.ps1"
+
+if (Test-Path $dockerHelper) {
+    . $dockerHelper
+}
 
 function Write-Title([string]$Text) { Write-Host "== $Text ==" -ForegroundColor Cyan }
 function Write-Ok([string]$Text) { Write-Host "[OK] $Text" -ForegroundColor Green }
@@ -62,6 +67,9 @@ function Test-ToolAvailable([string]$CommandName) {
     }
     if ($CommandName -eq "cloudflared" -and $env:OS -eq "Windows_NT") {
         return (Test-Path (Get-LocalCloudflaredPath))
+    }
+    if ($CommandName -eq "docker") {
+        return (-not [string]::IsNullOrWhiteSpace((Get-DockerCliCommand)))
     }
     return $false
 }
@@ -135,9 +143,10 @@ function Get-NodeVersionText {
 }
 
 function Get-DockerVersionText {
-    if (-not (Test-CommandExists "docker")) { return $null }
+    $dockerCommand = Get-DockerCliCommand
+    if (-not $dockerCommand) { return $null }
     try {
-        $line = (& docker --version 2>&1 | Select-Object -First 1)
+        $line = (& $dockerCommand --version 2>&1 | Select-Object -First 1)
         $s = [string]$line
         if ($s -match 'version\s+(?<v>\d+(\.\d+){1,3})') {
             return $Matches.v
@@ -581,13 +590,17 @@ if ($Db -eq "postgres") {
 }
 
 Write-Title "Quick Start"
-Write-Host "Windows (PowerShell): powershell -ExecutionPolicy Bypass -File .\scripts\dev-run-local.ps1" -ForegroundColor White
-Write-Host "macOS/Linux (bash):  bash ./scripts/dev-run-local.sh" -ForegroundColor White
+Write-Host "Windows auto launcher: cmd /c scripts\manual-start.cmd" -ForegroundColor White
+Write-Host "Windows local only:    cmd /c scripts\manual-start.cmd --local" -ForegroundColor White
+Write-Host "Windows public only:   cmd /c scripts\manual-start.cmd --public" -ForegroundColor White
+Write-Host "Windows docker only:   cmd /c scripts\manual-start.cmd --docker" -ForegroundColor White
+Write-Host "Windows (PowerShell): .\scripts\manual-start.cmd start --local" -ForegroundColor White
+Write-Host "macOS/Linux (bash):  bash ./scripts/runtime/dev-run-local.sh" -ForegroundColor White
 Write-Host "Maven wrapper: ./mvnw spring-boot:run (macOS/Linux) | .\mvnw.cmd spring-boot:run (Windows)" -ForegroundColor White
 Write-Host "Gradle wrapper: ./gradlew bootRun (macOS/Linux) | .\gradlew.bat bootRun (Windows)" -ForegroundColor White
-Write-Host "Docker: docker compose up --build -d  (neu muon chay khong phu thuoc JDK local)" -ForegroundColor White
+Write-Host "Docker: .\scripts\manual-start.cmd start --docker" -ForegroundColor White
 if ($Mode -eq "public") {
-    Write-Host "Public mode (Windows): cmd /c scripts\manual-start-public.cmd" -ForegroundColor White
+    Write-Host "Public mode (Windows): cmd /c scripts\manual-start.cmd --public" -ForegroundColor White
 }
 
 if ($requiredFailures.Count -gt 0) {

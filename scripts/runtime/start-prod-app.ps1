@@ -9,11 +9,12 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$scriptsRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent $scriptsRoot
 $pidFile = Join-Path $repoRoot "app-prod.pid"
 $outLog = Join-Path $repoRoot "run-prod-public.out.log"
 $errLog = Join-Path $repoRoot "run-prod-public.err.log"
-$buildScript = Join-Path $PSScriptRoot "build-prod.ps1"
+$buildScript = Join-Path $scriptsRoot "build-prod.ps1"
 $statusScript = Join-Path $PSScriptRoot "print-runtime-status.ps1"
 
 function Load-EnvFile([string]$Path) {

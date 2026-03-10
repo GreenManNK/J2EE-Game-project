@@ -40,7 +40,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build-prod.ps1
 ## 3) Chay app production
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\start-prod-app.ps1 -AutoBuild
+.\scripts\manual-start.cmd start --local
 ```
 
 Script se:
@@ -52,7 +52,7 @@ Script se:
 Dung app:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\stop-prod-app.ps1
+.\scripts\manual-start.cmd stop
 ```
 
 ## 4) Chay Cloudflare Named Tunnel (domain co dinh)
@@ -71,7 +71,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start-cloudflare-named-tunnel
 Dung tunnel:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\stop-cloudflare-named-tunnel.ps1
+.\scripts\manual-start.cmd stop
 ```
 
 ## 5) Link gui cho nguoi choi
@@ -109,7 +109,7 @@ Khuyen nghi van hanh:
 Khi da dien `CLOUDFLARE_TUNNEL_TOKEN` + `PUBLIC_BASE_URL` trong `.env.public.local`, chi can:
 
 ```cmd
-cmd /c scripts\manual-start-public.cmd --no-pause
+cmd /c scripts\manual-start.cmd start --public --no-pause
 ```
 
 Script se:
@@ -119,13 +119,7 @@ Script se:
 Neu muon ep dung mode phu hop cho VPN/public on dinh, dung script hien co voi co `--named`:
 
 ```cmd
-cmd /c scripts\manual-start-public.cmd --named --no-pause
-```
-
-hoac wrapper:
-
-```cmd
-cmd /c scripts\entrypoints\RUN_PUBLIC.cmd --named --no-pause
+cmd /c scripts\manual-start.cmd start --public --named --no-pause
 ```
 
 Mode nay chi chap nhan `named tunnel`, khong fallback quick tunnel.

@@ -8,7 +8,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$scriptsRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent $scriptsRoot
 $pidFile = Join-Path $repoRoot "public-fallback-tunnel.pid"
 $outLog = Join-Path $repoRoot "public-fallback-tunnel.out.log"
 $errLog = Join-Path $repoRoot "public-fallback-tunnel.err.log"

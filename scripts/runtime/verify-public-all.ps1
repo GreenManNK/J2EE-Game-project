@@ -4,7 +4,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$scriptsRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent $scriptsRoot
 $failures = New-Object System.Collections.Generic.List[string]
 $passes = New-Object System.Collections.Generic.List[string]
 
@@ -57,6 +58,11 @@ function Assert-FileContains([string]$RelativePath, [string]$Pattern) {
     Assert-True ($text -match $Pattern) ("File '{0}' khong chua mau can thiet: {1}" -f $RelativePath, $Pattern)
 }
 
+function Assert-FileMissing([string]$RelativePath) {
+    $path = Join-Path $repoRoot $RelativePath
+    Assert-True (-not (Test-Path $path)) ("File '{0}' van con ton tai" -f $RelativePath)
+}
+
 function Get-XmlOptionValue($ConfigurationNode, [string]$OptionName) {
     $node = $ConfigurationNode.option | Where-Object { $_.name -eq $OptionName } | Select-Object -First 1
     if (-not $node) {
@@ -65,7 +71,7 @@ function Get-XmlOptionValue($ConfigurationNode, [string]$OptionName) {
     return [string]$node.value
 }
 
-function Assert-IntelliJRunConfig([string]$FileName, [string]$ExpectedScriptPath) {
+function Assert-IntelliJRunConfig([string]$FileName, [string]$ExpectedScriptPath, [string]$ExpectedScriptOptions) {
     $relativePath = Join-Path ".run" $FileName
     $raw = Get-Text $relativePath
     [xml]$xml = $raw
@@ -80,12 +86,13 @@ function Assert-IntelliJRunConfig([string]$FileName, [string]$ExpectedScriptPath
     $interpreterOptions = Get-XmlOptionValue $config "INTERPRETER_OPTIONS"
 
     Assert-True ($scriptPath -eq $ExpectedScriptPath) ("SCRIPT_PATH sai trong $relativePath. Expected: $ExpectedScriptPath ; Actual: $scriptPath")
-    Assert-True ($scriptOptions -eq "--no-pause") ("SCRIPT_OPTIONS sai trong $relativePath")
-    Assert-True ($interpreterPath -eq "cmd.exe") ("INTERPRETER_PATH sai trong $relativePath")
+    Assert-True ($scriptOptions -eq $ExpectedScriptOptions) ("SCRIPT_OPTIONS sai trong $relativePath. Expected: $ExpectedScriptOptions ; Actual: $scriptOptions")
+    $interpreterFileName = [System.IO.Path]::GetFileName($interpreterPath)
+    Assert-True ($interpreterFileName -ieq "cmd.exe") ("INTERPRETER_PATH sai trong $relativePath")
     Assert-True ($interpreterOptions -eq "/c") ("INTERPRETER_OPTIONS sai trong $relativePath")
 }
 
-function Assert-VsCodeTask([pscustomobject[]]$Tasks, [string]$Label, [string]$ExpectedScript) {
+function Assert-VsCodeTask([pscustomobject[]]$Tasks, [string]$Label, [string[]]$ExpectedArgs) {
     $task = $Tasks | Where-Object { $_.label -eq $Label } | Select-Object -First 1
     if (-not $task) {
         throw "Khong tim thay VS Code task '$Label'"
@@ -96,21 +103,26 @@ function Assert-VsCodeTask([pscustomobject[]]$Tasks, [string]$Label, [string]$Ex
         throw "Task '$Label' khong co property 'args'"
     }
     $args = @($argsProperty.Value)
-    Assert-True ($args.Count -ge 3) ("Task '$Label' thieu args")
-    Assert-True ($args[0] -eq "/c") ("Task '$Label' args[0] phai la /c")
-    Assert-True ($args[1] -eq ($ExpectedScript -replace '/', '\\')) ("Task '$Label' args[1] sai. Expected: $ExpectedScript")
-    Assert-True ($args -contains "--no-pause") ("Task '$Label' thieu --no-pause")
+    Assert-True ($args.Count -eq $ExpectedArgs.Count) ("Task '$Label' sai so luong args. Expected: $($ExpectedArgs.Count) ; Actual: $($args.Count)")
+    for ($i = 0; $i -lt $ExpectedArgs.Count; $i++) {
+        Assert-True ($args[$i] -eq $ExpectedArgs[$i]) ("Task '$Label' args[$i] sai. Expected: $($ExpectedArgs[$i]) ; Actual: $($args[$i])")
+    }
 }
 
-function Invoke-CmdScript([string]$RelativePath, [switch]$CaptureOutput) {
+function Invoke-CmdScript([string]$RelativePath, [string[]]$Arguments = @(), [switch]$CaptureOutput) {
     $fullPath = Join-Path $repoRoot $RelativePath
     if (-not (Test-Path $fullPath)) {
         throw "Khong tim thay script: $RelativePath"
     }
 
     Write-Host ""
-    Write-Host ("> cmd /c {0} --no-pause" -f $RelativePath) -ForegroundColor Cyan
-    $cmdArgs = @("/c", $fullPath, "--no-pause")
+    $displayArgs = @($Arguments + @("--no-pause")) -join " "
+    if ([string]::IsNullOrWhiteSpace($displayArgs)) {
+        Write-Host ("> cmd /c {0}" -f $RelativePath) -ForegroundColor Cyan
+    } else {
+        Write-Host ("> cmd /c {0} {1}" -f $RelativePath, $displayArgs) -ForegroundColor Cyan
+    }
+    $cmdArgs = @("/c", $fullPath) + $Arguments + @("--no-pause")
 
     if ($CaptureOutput) {
         $output = & cmd.exe @cmdArgs 2>&1
@@ -215,41 +227,57 @@ function Ensure-StatusValue($StatusMap, [string]$Key, [string]$Expected) {
     }
 }
 
-Write-Step "Kiem tra alias script (entrypoints -> manual)"
-Invoke-Check "scripts/entrypoints/RUN_PUBLIC.cmd goi manual-start-public.cmd" {
-    Assert-FileContains "scripts/entrypoints/RUN_PUBLIC.cmd" '(?i)manual-start-public\.cmd'
+Write-Step "Kiem tra da gom ve 1 file CMD dieu khien"
+Invoke-Check "scripts chi con 1 file CMD dieu khien" {
+    $cmdFiles = @(Get-ChildItem -Path (Join-Path $repoRoot "scripts") -Filter "*.cmd" -File | Select-Object -ExpandProperty Name | Sort-Object)
+    Assert-True ($cmdFiles.Count -eq 1) ("Thu muc scripts con qua nhieu CMD: " + ($cmdFiles -join ", "))
+    Assert-True ($cmdFiles[0] -eq "manual-start.cmd") ("CMD dieu khien chinh khong dung ten manual-start.cmd")
 } | Out-Null
-Invoke-Check "scripts/entrypoints/RUN_PUBLIC_MYSQL.cmd goi manual-start-public-mysql.cmd" {
-    Assert-FileContains "scripts/entrypoints/RUN_PUBLIC_MYSQL.cmd" '(?i)manual-start-public-mysql\.cmd'
+Invoke-Check "scripts/entrypoints khong con file alias runtime" {
+    $entrypointDir = Join-Path $repoRoot "scripts/entrypoints"
+    if (-not (Test-Path $entrypointDir)) {
+        return
+    }
+    $entrypointFiles = @(Get-ChildItem -Path $entrypointDir -File -ErrorAction SilentlyContinue)
+    Assert-True ($entrypointFiles.Count -eq 0) ("Thu muc scripts/entrypoints van con file: " + (($entrypointFiles | Select-Object -ExpandProperty Name) -join ", "))
 } | Out-Null
-Invoke-Check "scripts/entrypoints/RUN_PUBLIC_POSTGRES.cmd goi manual-start-public-postgres.cmd" {
-    Assert-FileContains "scripts/entrypoints/RUN_PUBLIC_POSTGRES.cmd" '(?i)manual-start-public-postgres\.cmd'
-} | Out-Null
-Invoke-Check "scripts/entrypoints/STATUS_PUBLIC.cmd goi manual-status.cmd" {
-    Assert-FileContains "scripts/entrypoints/STATUS_PUBLIC.cmd" '(?i)manual-status\.cmd'
-} | Out-Null
-Invoke-Check "scripts/entrypoints/STOP_PUBLIC.cmd goi manual-stop-all.cmd" {
-    Assert-FileContains "scripts/entrypoints/STOP_PUBLIC.cmd" '(?i)manual-stop-all\.cmd'
+Invoke-Check "Legacy CMD wrappers da duoc go" {
+    Assert-FileMissing "scripts/manual-start-public.cmd"
+    Assert-FileMissing "scripts/manual-start-public-mysql.cmd"
+    Assert-FileMissing "scripts/manual-start-public-postgres.cmd"
+    Assert-FileMissing "scripts/manual-start-local.cmd"
+    Assert-FileMissing "scripts/manual-start-docker.cmd"
+    Assert-FileMissing "scripts/manual-status.cmd"
+    Assert-FileMissing "scripts/manual-stop-all.cmd"
+    Assert-FileMissing "scripts/manual-stop-docker.cmd"
+    Assert-FileMissing "scripts/manual-verify-public-all.cmd"
+    Assert-FileMissing "scripts/entrypoints/RUN.ps1"
 } | Out-Null
 
 Write-Step "Kiem tra nut bam IntelliJ (.run)"
 Invoke-Check "IntelliJ Start (Default Public)" {
-    Assert-IntelliJRunConfig "Start (Default Public).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd'
+    Assert-IntelliJRunConfig "Start (Default Public).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' '--no-pause'
 } | Out-Null
 Invoke-Check "IntelliJ Start Public (Quick Tunnel)" {
-    Assert-IntelliJRunConfig "Start Public (Quick Tunnel).run.xml" '$PROJECT_DIR$/scripts/manual-start-public.cmd'
+    Assert-IntelliJRunConfig "Start Public (Quick Tunnel).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'start --public --no-pause'
 } | Out-Null
 Invoke-Check "IntelliJ Start Public (MySQL Standard)" {
-    Assert-IntelliJRunConfig "Start Public (MySQL Standard).run.xml" '$PROJECT_DIR$/scripts/manual-start-public-mysql.cmd'
+    Assert-IntelliJRunConfig "Start Public (MySQL Standard).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'start --public --mysql --no-pause'
 } | Out-Null
 Invoke-Check "IntelliJ Start Public (PostgreSQL)" {
-    Assert-IntelliJRunConfig "Start Public (PostgreSQL).run.xml" '$PROJECT_DIR$/scripts/manual-start-public-postgres.cmd'
+    Assert-IntelliJRunConfig "Start Public (PostgreSQL).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'start --public --postgres --no-pause'
+} | Out-Null
+Invoke-Check "IntelliJ Start Local (J2EE)" {
+    Assert-IntelliJRunConfig "Start Local (J2EE).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'start --local --no-pause'
 } | Out-Null
 Invoke-Check "IntelliJ Status (App + Tunnel)" {
-    Assert-IntelliJRunConfig "Status (App + Tunnel).run.xml" '$PROJECT_DIR$/scripts/manual-status.cmd'
+    Assert-IntelliJRunConfig "Status (App + Tunnel).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'status --no-pause'
 } | Out-Null
 Invoke-Check "IntelliJ Stop All (App + Tunnel)" {
-    Assert-IntelliJRunConfig "Stop All (App + Tunnel).run.xml" '$PROJECT_DIR$/scripts/manual-stop-all.cmd'
+    Assert-IntelliJRunConfig "Stop All (App + Tunnel).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'stop --no-pause'
+} | Out-Null
+Invoke-Check "IntelliJ Verify Public (All-in-One)" {
+    Assert-IntelliJRunConfig "Verify Public (All-in-One).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'verify --no-pause'
 } | Out-Null
 
 Write-Step "Kiem tra nut bam VS Code tasks"
@@ -259,26 +287,30 @@ Invoke-Check "VS Code tasks.json public task mappings" {
         throw "Khong tim thay .vscode/tasks.json"
     }
     $tasksDoc = Get-Content -Path $tasksPath -Raw | ConvertFrom-Json
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Start (Default Public)" "scripts\manual-start.cmd"
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Start Public (Quick Tunnel)" "scripts\manual-start-public.cmd"
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Start Public (MySQL Standard)" "scripts\manual-start-public-mysql.cmd"
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Start Public (PostgreSQL)" "scripts\manual-start-public-postgres.cmd"
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Status (App + Tunnel)" "scripts\manual-status.cmd"
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Stop All (App + Tunnel)" "scripts\manual-stop-all.cmd"
+    Assert-VsCodeTask $tasksDoc.tasks "Game: Start (Default Public)" @("/c", "scripts\manual-start.cmd", "--no-pause")
+    Assert-VsCodeTask $tasksDoc.tasks "Game: Start Public (Quick Tunnel)" @("/c", "scripts\manual-start.cmd", "start", "--public", "--no-pause")
+    Assert-VsCodeTask $tasksDoc.tasks "Game: Start Public (MySQL Standard)" @("/c", "scripts\manual-start.cmd", "start", "--public", "--mysql", "--no-pause")
+    Assert-VsCodeTask $tasksDoc.tasks "Game: Start Public (PostgreSQL)" @("/c", "scripts\manual-start.cmd", "start", "--public", "--postgres", "--no-pause")
+    Assert-VsCodeTask $tasksDoc.tasks "Game: Start Local (J2EE)" @("/c", "scripts\manual-start.cmd", "start", "--local", "--no-pause")
+    Assert-VsCodeTask $tasksDoc.tasks "Game: Status (App + Tunnel)" @("/c", "scripts\manual-start.cmd", "status", "--no-pause")
+    Assert-VsCodeTask $tasksDoc.tasks "Game: Stop All (App + Tunnel)" @("/c", "scripts\manual-start.cmd", "stop", "--no-pause")
+    Assert-VsCodeTask $tasksDoc.tasks "Game: Start Docker" @("/c", "scripts\manual-start.cmd", "start", "--docker", "--no-pause")
+    Assert-VsCodeTask $tasksDoc.tasks "Game: Stop Docker" @("/c", "scripts\manual-start.cmd", "stop", "--docker", "--no-pause")
+    Assert-VsCodeTask $tasksDoc.tasks "Game: Verify Public (All-in-One)" @("/c", "scripts\manual-start.cmd", "verify", "--no-pause")
 } | Out-Null
 
 if (-not $NoLive) {
     $started = $false
     $stopped = $false
     try {
-        Write-Step "Kiem tra live PUBLIC flow (manual + root wrapper)"
+        Write-Step "Kiem tra live PUBLIC flow (manual-start.cmd)"
 
-        Invoke-Check "Pre-clean stop (manual-stop-all.cmd) khong bi loi" {
-            Invoke-CmdScript "scripts/manual-stop-all.cmd" | Out-Null
+        Invoke-Check "Pre-clean stop (manual-start.cmd stop) khong bi loi" {
+            Invoke-CmdScript "scripts/manual-start.cmd" @("stop") | Out-Null
         } | Out-Null
 
-        $startOk = Invoke-Check "Manual start public (scripts/manual-start-public.cmd)" {
-            Invoke-CmdScript "scripts/manual-start-public.cmd" | Out-Null
+        $startOk = Invoke-Check "Manual start public (scripts/manual-start.cmd start --public)" {
+            Invoke-CmdScript "scripts/manual-start.cmd" @("start", "--public") | Out-Null
             $script:started = $true
         }
 
@@ -310,8 +342,8 @@ if (-not $NoLive) {
                 Assert-True (Test-HttpOk $publicWsUrl 10) ("Khong truy cap duoc public ws/info: $publicWsUrl")
             } | Out-Null
 
-            Invoke-Check "Manual status (scripts/manual-status.cmd) hien thong tin dang chay" {
-                $statusLines = Invoke-CmdScript "scripts/manual-status.cmd" -CaptureOutput
+            Invoke-Check "Manual status (scripts/manual-start.cmd status) hien thong tin dang chay" {
+                $statusLines = Invoke-CmdScript "scripts/manual-start.cmd" @("status") -CaptureOutput
                 $status = Parse-StatusOutput $statusLines
                 Ensure-StatusValue $status "APP_PROCESS_ALIVE" "1"
                 Ensure-StatusValue $status "APP_LISTEN_8080" "1"
@@ -326,36 +358,28 @@ if (-not $NoLive) {
                 Assert-True ($status.ContainsKey("ACTIVE_PUBLIC_GAME_URL")) "Status output thieu ACTIVE_PUBLIC_GAME_URL"
                 Assert-True (-not [string]::IsNullOrWhiteSpace([string]$status["ACTIVE_PUBLIC_GAME_URL"])) "ACTIVE_PUBLIC_GAME_URL rong khi dang chay"
             } | Out-Null
-
-            Invoke-Check "Entrypoint status wrapper (scripts/entrypoints/STATUS_PUBLIC.cmd) chay thanh cong" {
-                $statusLines = Invoke-CmdScript "scripts/entrypoints/STATUS_PUBLIC.cmd" -CaptureOutput
-                $status = Parse-StatusOutput $statusLines
-                Ensure-StatusValue $status "APP_PROCESS_ALIVE" "1"
-                Assert-True ($status.ContainsKey("ACTIVE_TUNNEL_MODE")) "Status output thieu ACTIVE_TUNNEL_MODE"
-                $activeMode = [string]$status["ACTIVE_TUNNEL_MODE"]
-                Assert-True (($activeMode -eq "quick") -or ($activeMode -eq "named")) ("ACTIVE_TUNNEL_MODE khong hop le: " + $activeMode)
-            } | Out-Null
         }
 
-        Invoke-Check "Entrypoint stop wrapper (scripts/entrypoints/STOP_PUBLIC.cmd) dung app + tunnel" {
-            Invoke-CmdScript "scripts/entrypoints/STOP_PUBLIC.cmd" | Out-Null
+        Invoke-Check "Manual stop (scripts/manual-start.cmd stop) dung app + tunnel" {
+            Invoke-CmdScript "scripts/manual-start.cmd" @("stop") | Out-Null
             $script:stopped = $true
-            Assert-True (Wait-ProcessesStopped 25) "App/tunnel chua dung sau scripts/entrypoints/STOP_PUBLIC.cmd"
+            Assert-True (Wait-ProcessesStopped 25) "App/tunnel chua dung sau scripts/manual-start.cmd stop"
         } | Out-Null
 
-        Invoke-Check "Entrypoint status wrapper sau khi stop hien process=0" {
-            $statusLines = Invoke-CmdScript "scripts/entrypoints/STATUS_PUBLIC.cmd" -CaptureOutput
+        Invoke-Check "Manual status sau khi stop hien process=0" {
+            $statusLines = Invoke-CmdScript "scripts/manual-start.cmd" @("status") -CaptureOutput
             $status = Parse-StatusOutput $statusLines
             Ensure-StatusValue $status "APP_PROCESS_ALIVE" "0"
             Ensure-StatusValue $status "QUICK_TUNNEL_PROCESS_ALIVE" "0"
             Ensure-StatusValue $status "NAMED_TUNNEL_PROCESS_ALIVE" "0"
+            Ensure-StatusValue $status "DOCKER_CONTAINER_RUNNING" "0"
         } | Out-Null
     } finally {
         if ($started -and -not $stopped) {
             try {
                 Write-Host ""
-                Write-Host "Dang cleanup (manual-stop-all.cmd)..." -ForegroundColor Yellow
-                Invoke-CmdScript "scripts/manual-stop-all.cmd" | Out-Null
+                Write-Host "Dang cleanup (manual-start.cmd stop)..." -ForegroundColor Yellow
+                Invoke-CmdScript "scripts/manual-start.cmd" @("stop") | Out-Null
             } catch {
                 Write-Host ("Cleanup that bai: {0}" -f $_.Exception.Message) -ForegroundColor Yellow
             }

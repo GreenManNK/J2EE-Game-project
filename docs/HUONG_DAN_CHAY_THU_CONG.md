@@ -54,13 +54,13 @@ Ghi chu:
 Windows (PowerShell):
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-run-local.ps1
+.\scripts\manual-start.cmd start --local
 ```
 
 macOS / Linux (bash):
 
 ```bash
-bash ./scripts/dev-run-local.sh
+bash ./scripts/runtime/dev-run-local.sh
 ```
 
 Neu muon chay truc tiep bang wrapper:
@@ -88,11 +88,11 @@ Script local moi se:
 Vi du ep chay lai bootstrap:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-run-local.ps1 -ForceBootstrap
+.\scripts\manual-start.cmd start --local --force-bootstrap
 ```
 
 ```bash
-bash ./scripts/dev-run-local.sh --force-bootstrap
+bash ./scripts/runtime/dev-run-local.sh --force-bootstrap
 ```
 
 ### 4) Chay bang Docker (khong phu thuoc JDK/Maven/Gradle local)
@@ -102,19 +102,19 @@ Neu may khac version Java/tool hoac khong muon cai moi truong local, co the chay
 Windows (PowerShell):
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-run-docker.ps1
+.\scripts\manual-start.cmd start --docker
 ```
 
 macOS / Linux (bash):
 
 ```bash
-bash ./scripts/dev-run-docker.sh
+bash ./scripts/runtime/dev-run-docker.sh
 ```
 
-Lenh nhanh bang entrypoints (Windows):
+Lenh nhanh bang launcher tong (Windows):
 
-- `scripts\entrypoints\RUN_DOCKER.cmd` (start)
-- `scripts\entrypoints\STOP_DOCKER.cmd` (stop)
+- `scripts\manual-start.cmd start --docker` (start)
+- `scripts\manual-start.cmd stop --docker` (stop)
 
 Link sau khi start:
 
@@ -152,7 +152,7 @@ Tu ban cap nhat hien tai:
 
 Luu y:
 - Neu IntelliJ yeu cau plugin `Shell Script`, hay bat plugin nay (thuong da co san).
-- Cac nut tren chi goi cac file `scripts/manual-*.cmd`, nen van dung cung logic voi cach double-click.
+- Cac nut tren deu goi chung `scripts/manual-start.cmd`, chi khac tham so.
 
 ## Chay bang nut bam trong Visual Studio Code
 
@@ -178,7 +178,7 @@ Cach chay:
 Meo:
 - Co the mo `Command Palette` (`Ctrl+Shift+P`) -> `Tasks: Run Task`
 - Task se mo terminal va hien log/URL public de ban copy gui nguoi choi
-- VS Code tasks cung chi goi cac file `scripts/manual-*.cmd`, nen giong cach chay thu cong
+- VS Code tasks deu goi chung `scripts/manual-start.cmd`, nen giong cach chay thu cong
 - Tuong tu IntelliJ, cac task `Start ...` nay da duoc huong co che bootstrap-moi-truong-lan-dau.
 
 Luu y:
@@ -204,39 +204,30 @@ nhung van chay on dinh theo cach `Open Folder + Terminal`.
 
 ### 3) Chay / Kiem tra / Dung
 
-Da them san script danh rieng cho VS2022 (khong pause terminal):
-
-- `scripts\entrypoints\RUN_VS2022.cmd` (Start public mode mac dinh)
-- `scripts\entrypoints\STATUS_VS2022.cmd` (Xem trang thai app + tunnel)
-- `scripts\entrypoints\STOP_VS2022.cmd` (Dung app + tunnel)
-
-Lenh:
+Dung chung launcher tong (khong pause terminal):
 
 ```powershell
-.\scripts\entrypoints\RUN_VS2022.cmd
-.\scripts\entrypoints\STATUS_VS2022.cmd
-.\scripts\entrypoints\STOP_VS2022.cmd
+.\scripts\manual-start.cmd --public --no-pause
+.\scripts\manual-start.cmd status --no-pause
+.\scripts\manual-start.cmd stop --no-pause
 ```
 
 Neu ban chi muon chay local (khong tunnel):
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-run-local.ps1
+.\scripts\manual-start.cmd start --local
 ```
 
 Ghi chu:
-- Cac script VS2022 tren chi goi lai luong chay chuan cua project (`scripts/entrypoints/*` -> `scripts/manual-*`),
-  nen hanh vi giong IntelliJ/VS Code tasks.
+- Visual Studio 2022 dung chung `scripts/manual-start.cmd`, nen hanh vi giong IntelliJ/VS Code tasks.
 
 ## Cach nhanh nhat (truy cap tu xa moi mang)
 
 Chay file:
 
-- `scripts/entrypoints/RUN.cmd` (alias moi, mac dinh = PUBLIC, khuyen nghi de "bam Run" nhanh)
-- `scripts/entrypoints/RUN_PUBLIC.cmd`
-- `scripts/entrypoints/RUN_DOCKER.cmd` (neu muon chay nhanh theo Docker)
-- `scripts/manual-start.cmd` (mac dinh, khuyen nghi)
-- `scripts/manual-start-public.cmd`
+- `scripts/manual-start.cmd` (file duy nhat, mac dinh auto uu tien PUBLIC)
+- `scripts/manual-start.cmd start --public`
+- `scripts/manual-start.cmd start --docker` (neu muon chay nhanh theo Docker)
 
 Neu dung PowerShell:
 
@@ -266,8 +257,7 @@ Luu y:
    - `.env.public.mysql.example` -> `.env.public.mysql.local`
 2. Dien thong tin MySQL vao `.env.public.mysql.local`
 3. Chay mot trong cac cach:
-   - `scripts/entrypoints/RUN_PUBLIC_MYSQL.cmd`
-   - `scripts/manual-start-public-mysql.cmd`
+   - `scripts/manual-start.cmd start --public --mysql`
    - IntelliJ: `Start Public (MySQL Standard)`
    - VS Code Task: `Game: Start Public (MySQL Standard)`
 
@@ -282,8 +272,7 @@ Ghi chu:
    - `.env.public.postgres.example` -> `.env.public.postgres.local`
 3. Dien thong tin PostgreSQL vao `.env.public.postgres.local`
 4. Chay mot trong cac cach:
-   - `scripts/entrypoints/RUN_PUBLIC_POSTGRES.cmd`
-   - `scripts/manual-start-public-postgres.cmd`
+   - `scripts/manual-start.cmd start --public --postgres`
    - IntelliJ: `Start Public (PostgreSQL)`
    - VS Code Task: `Game: Start Public (PostgreSQL)`
 
@@ -296,16 +285,14 @@ Ghi chu:
 
 Chay file:
 
-- `scripts/entrypoints/STOP_PUBLIC.cmd`
-- `scripts/entrypoints/STOP_DOCKER.cmd` (neu dang chay Docker mode)
-- `scripts/manual-stop-all.cmd`
-- `scripts/manual-stop-docker.cmd`
+- `scripts/manual-start.cmd stop`
+- `scripts/manual-start.cmd stop --docker` (neu chi muon dung Docker mode)
 
 ## Chi test tren may nay / LAN
 
 Chay file:
 
-- `scripts/manual-start-local.cmd`
+- `scripts/manual-start.cmd start --local`
 
 Link local:
 - `http://J2EE/Game`
@@ -315,8 +302,7 @@ Link local:
 
 Chay file:
 
-- `scripts/entrypoints/STATUS_PUBLIC.cmd`
-- `scripts/manual-status.cmd`
+- `scripts/manual-start.cmd status`
 
 Script se hien:
 - PID app
@@ -342,18 +328,13 @@ Script se hien:
 
 ```powershell
 cmd /c scripts\manual-start.cmd
-cmd /c scripts\manual-start-public.cmd
-cmd /c scripts\manual-start-public-mysql.cmd
-cmd /c scripts\manual-start-public-postgres.cmd
-cmd /c scripts\manual-start-docker.cmd
-cmd /c scripts\manual-status.cmd
-cmd /c scripts\manual-stop-all.cmd
-cmd /c scripts\manual-stop-docker.cmd
-cmd /c scripts\entrypoints\RUN_PUBLIC.cmd
-cmd /c scripts\entrypoints\RUN_PUBLIC_MYSQL.cmd
-cmd /c scripts\entrypoints\RUN_PUBLIC_POSTGRES.cmd
-cmd /c scripts\entrypoints\RUN_DOCKER.cmd
-cmd /c scripts\entrypoints\STATUS_PUBLIC.cmd
-cmd /c scripts\entrypoints\STOP_PUBLIC.cmd
-cmd /c scripts\entrypoints\STOP_DOCKER.cmd
+cmd /c scripts\manual-start.cmd start --public
+cmd /c scripts\manual-start.cmd start --public --mysql
+cmd /c scripts\manual-start.cmd start --public --postgres
+cmd /c scripts\manual-start.cmd start --docker
+cmd /c scripts\manual-start.cmd start --local
+cmd /c scripts\manual-start.cmd status
+cmd /c scripts\manual-start.cmd stop
+cmd /c scripts\manual-start.cmd stop --docker
+cmd /c scripts\manual-start.cmd verify
 ```

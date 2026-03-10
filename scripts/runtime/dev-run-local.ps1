@@ -7,7 +7,8 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$scriptsRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent $scriptsRoot
 
 function Set-EnvDefaultIfMissing([string]$Name, [string]$Value) {
     $current = [Environment]::GetEnvironmentVariable($Name, "Process")
@@ -67,7 +68,7 @@ function Resolve-RunTool {
 }
 
 if (-not $SkipDoctor) {
-    $bootstrap = Join-Path $PSScriptRoot "dev-env-bootstrap.ps1"
+    $bootstrap = Join-Path $scriptsRoot "dev-env-bootstrap.ps1"
     if ($ForceBootstrap) {
         & $bootstrap -Mode local -Db auto -Force
     } else {

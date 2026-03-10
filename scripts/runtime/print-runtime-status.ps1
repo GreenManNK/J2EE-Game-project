@@ -6,7 +6,9 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$scriptsRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent $scriptsRoot
+$dockerHelper = Join-Path $PSScriptRoot "docker-cli-helper.ps1"
 $appPidFile = Join-Path $repoRoot "app-prod.pid"
 $quickPidFile = Join-Path $repoRoot "cloudflared.pid"
 $namedPidFile = Join-Path $repoRoot "cloudflared-named.pid"
@@ -19,6 +21,10 @@ $appOutLog = Join-Path $repoRoot "run-prod-public.out.log"
 $appErrLog = Join-Path $repoRoot "run-prod-public.err.log"
 $publicUrlFile = Join-Path $repoRoot "public-game-url.txt"
 $dockerContainerName = "game-hub"
+
+if (Test-Path $dockerHelper) {
+    . $dockerHelper
+}
 
 function Read-FirstLine([string]$Path) {
     if (-not (Test-Path $Path)) {
@@ -82,14 +88,14 @@ function Get-DockerContainerStatus([string]$ContainerName) {
         status = ""
         ports = ""
     }
-    $docker = Get-Command docker -ErrorAction SilentlyContinue
+    $docker = Get-DockerCliCommand
     if (-not $docker) {
         return $result
     }
     $result.available = $true
     try {
         $format = "{{.Names}}|{{.Status}}|{{.Ports}}"
-        $lines = & $docker.Source ps -a --filter "name=$ContainerName" --format $format 2>$null
+        $lines = & $docker ps -a --filter "name=$ContainerName" --format $format 2>$null
         if ($LASTEXITCODE -ne 0) {
             return $result
         }

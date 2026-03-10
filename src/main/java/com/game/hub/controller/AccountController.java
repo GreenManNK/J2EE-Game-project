@@ -1,14 +1,17 @@
 package com.game.hub.controller;
 
 import com.game.hub.service.AccountService;
+import com.game.hub.service.AvatarStorageService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -16,9 +19,11 @@ import java.util.Map;
 @RequestMapping("/account")
 public class AccountController {
     private final AccountService accountService;
+    private final AvatarStorageService avatarStorageService;
 
-    public AccountController(AccountService accountService) {
+    public AccountController(AccountService accountService, AvatarStorageService avatarStorageService) {
         this.accountService = accountService;
+        this.avatarStorageService = avatarStorageService;
     }
 
     @PostMapping("/register")
@@ -117,6 +122,22 @@ public class AccountController {
             request == null ? null : request.email(),
             request == null ? null : request.avatarPath()
         ));
+    }
+
+    @PostMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Object uploadAvatar(@RequestParam("avatar") MultipartFile avatar,
+                               HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest == null ? null : httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+
+        AvatarStorageService.StoreResult storeResult = avatarStorageService.store(avatar);
+        if (!storeResult.success()) {
+            return Map.of("success", false, "error", storeResult.error());
+        }
+        return toResponse(accountService.updateAvatar(sessionUserId, storeResult.avatarPath()));
     }
 
     @GetMapping("/preferences")

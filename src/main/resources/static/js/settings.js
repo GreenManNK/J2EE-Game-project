@@ -150,6 +150,8 @@
     const emailInput = document.getElementById("settingsEmail");
     const avatarPathInput = document.getElementById("settingsAvatarPath");
     const avatarPreview = document.getElementById("settingsAvatarPreview");
+    const avatarFileInput = document.getElementById("settingsAvatarFile");
+    const uploadAvatarBtn = document.getElementById("settingsUploadAvatarBtn");
 
     const currentPasswordInput = document.getElementById("settingsCurrentPassword");
     const newPasswordInput = document.getElementById("settingsNewPassword");
@@ -180,11 +182,30 @@
       return raw || DEFAULT_AVATAR_PATH;
     };
 
+    let previewObjectUrl = null;
+
+    const releasePreviewObjectUrl = () => {
+      if (previewObjectUrl) {
+        window.URL.revokeObjectURL(previewObjectUrl);
+        previewObjectUrl = null;
+      }
+    };
+
     const updateAvatarPreview = (value) => {
       if (!avatarPreview) {
         return;
       }
+      releasePreviewObjectUrl();
       avatarPreview.src = appPath(normalizeAvatarPath(value));
+    };
+
+    const updateAvatarPreviewFromFile = (file) => {
+      if (!avatarPreview || !file) {
+        return;
+      }
+      releasePreviewObjectUrl();
+      previewObjectUrl = window.URL.createObjectURL(file);
+      avatarPreview.src = previewObjectUrl;
     };
 
     const buildPreferencesPayload = () => {
@@ -488,12 +509,79 @@
     avatarPathInput?.addEventListener("input", () => {
       updateAvatarPreview(avatarPathInput.value);
     });
+    avatarFileInput?.addEventListener("change", () => {
+      const file = avatarFileInput.files && avatarFileInput.files[0];
+      if (!file) {
+        updateAvatarPreview(avatarPathInput?.value || DEFAULT_AVATAR_PATH);
+        return;
+      }
+      updateAvatarPreviewFromFile(file);
+    });
     window.addEventListener(USER_CHANGE_EVENT, (event) => {
       const user = event?.detail?.user;
       if (user && user.avatarPath && avatarPathInput && document.activeElement !== avatarPathInput) {
         avatarPathInput.value = user.avatarPath;
       }
       updateAvatarPreview(user?.avatarPath || avatarPathInput?.value || DEFAULT_AVATAR_PATH);
+    });
+    window.addEventListener("beforeunload", releasePreviewObjectUrl);
+
+    uploadAvatarBtn?.addEventListener("click", async () => {
+      if (!isAuthenticated || !authUserId) {
+        setStatus(accountStatus, "Ban can dang nhap de tai avatar.", false);
+        return;
+      }
+      const file = avatarFileInput?.files && avatarFileInput.files[0];
+      if (!file) {
+        setStatus(accountStatus, "Vui long chon tep anh.", false);
+        return;
+      }
+
+      uploadAvatarBtn.disabled = true;
+      try {
+        const body = new FormData();
+        body.append("avatar", file);
+        const res = await fetch(appPath("/account/avatar"), {
+          method: "POST",
+          body
+        });
+        const data = await res.json().catch(() => ({}));
+        const ok = !!(data && data.success);
+        const updated = data?.data || {};
+        const message = ok
+          ? String(updated.message || "Tai anh dai dien thanh cong")
+          : String(data?.error || "Khong the tai anh dai dien");
+        setStatus(accountStatus, message, ok);
+        notify(message, ok ? "success" : "danger");
+        if (!ok) {
+          updateAvatarPreview(avatarPathInput?.value || DEFAULT_AVATAR_PATH);
+          return;
+        }
+
+        const current = window.CaroUser?.get?.() || { userId: authUserId };
+        const resolvedAvatarPath = updated.avatarPath || current.avatarPath || DEFAULT_AVATAR_PATH;
+        if (avatarPathInput) {
+          avatarPathInput.value = resolvedAvatarPath;
+        }
+        if (avatarFileInput) {
+          avatarFileInput.value = "";
+        }
+        updateAvatarPreview(resolvedAvatarPath);
+        window.CaroUser?.set?.({
+          userId: updated.userId || current.userId || authUserId,
+          displayName: updated.displayName || current.displayName || "Nguoi choi",
+          email: updated.email || current.email || "",
+          role: updated.role || current.role || "User",
+          avatarPath: resolvedAvatarPath
+        });
+      } catch (error) {
+        const message = String(error?.message || error || "Khong the tai anh dai dien");
+        setStatus(accountStatus, message, false);
+        notify(message, "danger");
+        updateAvatarPreview(avatarPathInput?.value || DEFAULT_AVATAR_PATH);
+      } finally {
+        uploadAvatarBtn.disabled = false;
+      }
     });
 
     accountForm?.addEventListener("submit", async (event) => {
