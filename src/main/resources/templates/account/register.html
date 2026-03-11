@@ -29,6 +29,21 @@
           </div>
           <button type="submit" class="btn btn-success w-100">Gui ma xac thuc</button>
         </form>
+        <div th:if="${googleLoginEnabled or facebookLoginEnabled}">
+          <div class="d-flex align-items-center gap-2 my-3">
+            <hr class="flex-grow-1 m-0">
+            <span class="small text-muted">hoặc</span>
+            <hr class="flex-grow-1 m-0">
+          </div>
+          <div class="d-grid gap-2">
+            <a th:if="${googleLoginEnabled}" class="btn btn-outline-danger" th:href="@{/oauth2/authorization/google}">
+              <i class="bi bi-google me-2"></i> Dang nhap voi Google
+            </a>
+            <a th:if="${facebookLoginEnabled}" class="btn btn-outline-primary" th:href="@{/oauth2/authorization/facebook}">
+              <i class="bi bi-facebook me-2"></i> Dang nhap voi Facebook
+            </a>
+          </div>
+        </div>
         <div class="text-center mt-2">
           <a th:href="@{/account/verify-email-page}" class="btn btn-link">Da co ma? Xac thuc email</a>
         </div>

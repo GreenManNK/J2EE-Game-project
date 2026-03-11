@@ -26,6 +26,14 @@
     </div>
   </section>
 
+  <div class="alert alert-success py-2 px-3 mt-3" th:if="${socialLinked != null}">
+    Da lien ket thanh cong tai khoan
+    <strong th:text="${#strings.capitalize(socialLinked)}">Facebook</strong>.
+  </div>
+  <div class="alert alert-danger py-2 px-3 mt-3" th:if="${socialError != null}" th:text="${socialError}">
+    Khong the lien ket tai khoan mang xa hoi.
+  </div>
+
   <div class="row g-3 mt-1">
     <div class="col-xl-6">
       <section class="theme-box rounded p-3 gx-section-card">
@@ -102,6 +110,44 @@
           </div>
         </form>
         <div id="accountSettingsStatus" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="theme-box rounded p-3 mt-3 gx-section-card">
+        <div class="gx-section-card__head">
+          <h2 class="h5 mb-0 theme-text">Lien ket mang xa hoi</h2>
+          <div class="gx-section-card__meta">Lien ket Facebook vao tai khoan hien tai de dang nhap nhanh.</div>
+        </div>
+        <div class="alert alert-info py-2 px-3 mb-3" th:if="${!isAuthenticated}">
+          Ban can dang nhap de lien ket tai khoan Facebook.
+          <div class="mt-2" th:if="${facebookLoginEnabled}">
+            <a class="btn btn-outline-primary btn-sm" th:href="@{/oauth2/authorization/facebook}">
+              <i class="bi bi-facebook me-1"></i> Dang nhap voi Facebook
+            </a>
+          </div>
+        </div>
+        <div class="d-flex flex-column gap-2" th:if="${isAuthenticated}">
+          <div class="small theme-text">
+            Facebook:
+            <strong th:text="${facebookLinked} ? 'Da lien ket' : 'Chua lien ket'">Chua lien ket</strong>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary btn-sm"
+               th:if="${facebookLoginEnabled and !facebookLinked}"
+               th:href="@{/account/social/facebook/link}">
+              <i class="bi bi-facebook me-1"></i> Lien ket Facebook
+            </a>
+            <button id="unlinkFacebookBtn"
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    th:if="${facebookLinked}">
+              <i class="bi bi-x-circle me-1"></i> Huy lien ket Facebook
+            </button>
+          </div>
+          <div class="form-text" th:if="${!facebookLoginEnabled}">
+            Facebook OAuth chua duoc cau hinh tren may chu.
+          </div>
+        </div>
+        <div id="socialLinkStatus" class="small mt-2 mb-0 theme-text" role="status" aria-live="polite"></div>
       </section>
 
       <section class="theme-box rounded p-3 mt-3 gx-section-card">

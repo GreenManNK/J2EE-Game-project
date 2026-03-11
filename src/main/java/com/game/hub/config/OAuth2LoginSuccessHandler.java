@@ -25,6 +25,9 @@ import java.util.Map;
 
 @Component
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
+    public static final String SOCIAL_LINK_USER_ID = "SOCIAL_LINK_USER_ID";
+    public static final String SOCIAL_LINK_PROVIDER = "SOCIAL_LINK_PROVIDER";
+
     private final AccountService accountService;
 
     public OAuth2LoginSuccessHandler(AccountService accountService) {
@@ -40,7 +43,42 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             return;
         }
 
-        AccountService.ServiceResult result = accountService.loginWithOAuth2(extractRequest(oauthToken));
+        AccountService.OAuth2LoginRequest oauthRequest = extractRequest(oauthToken);
+        HttpSession session = request.getSession(true);
+        String socialLinkUserId = asString(session.getAttribute(SOCIAL_LINK_USER_ID));
+        String socialLinkProvider = asString(session.getAttribute(SOCIAL_LINK_PROVIDER));
+        clearSocialLinkState(session);
+
+        if (socialLinkUserId != null) {
+            if (socialLinkProvider != null && oauthRequest.provider() != null
+                && !socialLinkProvider.equalsIgnoreCase(oauthRequest.provider())) {
+                redirectToSettingsWithError(request, response, "OAuth provider mismatch for social linking");
+                return;
+            }
+
+            AccountService.ServiceResult linkResult = accountService.linkOAuth2Provider(socialLinkUserId, oauthRequest);
+            if (!linkResult.success()) {
+                redirectToSettingsWithError(request, response, linkResult.error());
+                return;
+            }
+
+            AccountService.ServiceResult summaryResult = accountService.getSessionUserSummary(socialLinkUserId);
+            if (!summaryResult.success() || !(summaryResult.data() instanceof Map<?, ?> summary)) {
+                redirectToSettingsWithError(request, response, summaryResult.error());
+                return;
+            }
+
+            String role = summary.get("role") == null ? "User" : String.valueOf(summary.get("role"));
+            session.setAttribute(RoleGuardInterceptor.AUTH_USER_ID, socialLinkUserId);
+            session.setAttribute(RoleGuardInterceptor.AUTH_ROLE, role);
+            putRoleAuthentication(socialLinkUserId, role, request, session);
+
+            String provider = oauthRequest.provider() == null ? "social" : oauthRequest.provider().toLowerCase(Locale.ROOT);
+            response.sendRedirect(settingsPageUrl(request) + "?socialLinked=" + URLEncoder.encode(provider, StandardCharsets.UTF_8));
+            return;
+        }
+
+        AccountService.ServiceResult result = accountService.loginWithOAuth2(oauthRequest);
         if (!result.success() || !(result.data() instanceof Map<?, ?> data)) {
             redirectToLoginWithError(request, response, result.error());
             return;
@@ -53,7 +91,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
 
         String role = data.get("role") == null ? "User" : String.valueOf(data.get("role"));
-        HttpSession session = request.getSession(true);
         session.setAttribute(RoleGuardInterceptor.AUTH_USER_ID, uid);
         session.setAttribute(RoleGuardInterceptor.AUTH_ROLE, role);
         putRoleAuthentication(uid, role, request, session);
@@ -97,12 +134,30 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         return contextPath + "/account/oauth2-success";
     }
 
+    private void redirectToSettingsWithError(HttpServletRequest request,
+                                             HttpServletResponse response,
+                                             String message) throws IOException {
+        String encoded = URLEncoder.encode(
+            trimToNull(message) == null ? "Social link failed. Please try again." : message.trim(),
+            StandardCharsets.UTF_8
+        );
+        response.sendRedirect(settingsPageUrl(request) + "?socialError=" + encoded);
+    }
+
     private String loginPageUrl(HttpServletRequest request) {
         String contextPath = request == null ? null : request.getContextPath();
         if (contextPath == null || contextPath.isBlank() || "/".equals(contextPath)) {
             return "/account/login-page";
         }
         return contextPath + "/account/login-page";
+    }
+
+    private String settingsPageUrl(HttpServletRequest request) {
+        String contextPath = request == null ? null : request.getContextPath();
+        if (contextPath == null || contextPath.isBlank() || "/".equals(contextPath)) {
+            return "/settings";
+        }
+        return contextPath + "/settings";
     }
 
     private String firstNonBlank(String... values) {
@@ -128,6 +183,14 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private void clearSocialLinkState(HttpSession session) {
+        if (session == null) {
+            return;
+        }
+        session.removeAttribute(SOCIAL_LINK_USER_ID);
+        session.removeAttribute(SOCIAL_LINK_PROVIDER);
     }
 
     private void putRoleAuthentication(String userId, String role, HttpServletRequest request, HttpSession session) {

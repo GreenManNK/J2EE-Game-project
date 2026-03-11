@@ -170,6 +170,27 @@ public class AccountController {
         return responseBuilder.body(avatar.binaryData());
     }
 
+    @GetMapping("/social-links")
+    public Object getSocialLinks(HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        return toResponse(accountService.getSocialLinks(sessionUserId));
+    }
+
+    @PostMapping("/social/{provider}/unlink")
+    public Object unlinkSocialProvider(@PathVariable String provider,
+                                       HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String sessionUserId = session == null ? null : asString(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId == null || sessionUserId.isBlank()) {
+            return Map.of("success", false, "error", "Login required");
+        }
+        return toResponse(accountService.unlinkSocialProvider(sessionUserId, provider));
+    }
+
     @GetMapping("/preferences")
     public Object getPreferences(HttpServletRequest httpRequest) {
         HttpSession session = httpRequest.getSession(false);

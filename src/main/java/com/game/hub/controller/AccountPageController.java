@@ -1,5 +1,6 @@
 package com.game.hub.controller;
 
+import com.game.hub.config.OAuth2LoginSuccessHandler;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.UserAccountRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,12 +9,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/account")
 public class AccountPageController {
+    private static final String SOCIAL_PROVIDER_GOOGLE = "google";
+    private static final String SOCIAL_PROVIDER_FACEBOOK = "facebook";
+
     private final UserAccountRepository userAccountRepository;
     private final String googleClientId;
     private final String facebookClientId;
@@ -38,7 +43,9 @@ public class AccountPageController {
     }
 
     @GetMapping("/register-page")
-    public String registerPage() {
+    public String registerPage(Model model) {
+        model.addAttribute("googleLoginEnabled", hasText(googleClientId));
+        model.addAttribute("facebookLoginEnabled", hasText(facebookClientId));
         return "account/register";
     }
 
@@ -83,6 +90,28 @@ public class AccountPageController {
         return "account/oauth2-success";
     }
 
+    @GetMapping("/social/{provider}/link")
+    public String startSocialLink(@PathVariable String provider, HttpServletRequest request) {
+        HttpSession session = request == null ? null : request.getSession(false);
+        String userId = session == null ? null : toTrimmed(session.getAttribute("AUTH_USER_ID"));
+        if (userId == null) {
+            return "redirect:/account/login-page?socialError=Login+required";
+        }
+
+        String normalizedProvider = normalizeSocialProvider(provider);
+        if (normalizedProvider == null) {
+            return "redirect:/settings?socialError=Unsupported+social+provider";
+        }
+        if (!isSocialProviderConfigured(normalizedProvider)) {
+            return "redirect:/settings?socialError=" + normalizedProvider + "+OAuth+is+not+configured";
+        }
+
+        HttpSession activeSession = request.getSession(true);
+        activeSession.setAttribute(OAuth2LoginSuccessHandler.SOCIAL_LINK_USER_ID, userId);
+        activeSession.setAttribute(OAuth2LoginSuccessHandler.SOCIAL_LINK_PROVIDER, normalizedProvider);
+        return "redirect:/oauth2/authorization/" + normalizedProvider;
+    }
+
     private String toTrimmed(Object value) {
         if (value == null) {
             return null;
@@ -93,5 +122,30 @@ public class AccountPageController {
 
     private boolean hasText(String value) {
         return value != null && !value.trim().isEmpty();
+    }
+
+    private String normalizeSocialProvider(String provider) {
+        String normalized = toTrimmed(provider);
+        if (normalized == null) {
+            return null;
+        }
+        String lowered = normalized.toLowerCase();
+        if (SOCIAL_PROVIDER_GOOGLE.equals(lowered)) {
+            return SOCIAL_PROVIDER_GOOGLE;
+        }
+        if (SOCIAL_PROVIDER_FACEBOOK.equals(lowered) || "fb".equals(lowered)) {
+            return SOCIAL_PROVIDER_FACEBOOK;
+        }
+        return null;
+    }
+
+    private boolean isSocialProviderConfigured(String provider) {
+        if (SOCIAL_PROVIDER_GOOGLE.equals(provider)) {
+            return hasText(googleClientId);
+        }
+        if (SOCIAL_PROVIDER_FACEBOOK.equals(provider)) {
+            return hasText(facebookClientId);
+        }
+        return false;
     }
 }

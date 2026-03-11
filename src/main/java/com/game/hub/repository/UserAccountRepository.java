@@ -9,6 +9,8 @@ import java.util.Optional;
 public interface UserAccountRepository extends JpaRepository<UserAccount, String> {
     Optional<UserAccount> findByEmail(String email);
     Optional<UserAccount> findByUsername(String username);
+    Optional<UserAccount> findByOauthGoogleId(String oauthGoogleId);
+    Optional<UserAccount> findByOauthFacebookId(String oauthFacebookId);
     List<UserAccount> findAllByOrderByScoreDesc();
     Optional<UserAccount> findTopByOrderByScoreDesc();
 }

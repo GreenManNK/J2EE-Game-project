@@ -28,6 +28,12 @@ public class UserAccount {
     private String role = "User";
     private String displayName;
     private String avatarPath;
+    @JsonIgnore
+    @Column(unique = true)
+    private String oauthGoogleId;
+    @JsonIgnore
+    @Column(unique = true)
+    private String oauthFacebookId;
     private int score = 50;
     private int highestScore;
     private boolean isOnline = false;
@@ -94,6 +100,10 @@ public class UserAccount {
     public void setDisplayName(String displayName) { this.displayName = displayName; }
     public String getAvatarPath() { return avatarPath; }
     public void setAvatarPath(String avatarPath) { this.avatarPath = avatarPath; }
+    public String getOauthGoogleId() { return oauthGoogleId; }
+    public void setOauthGoogleId(String oauthGoogleId) { this.oauthGoogleId = oauthGoogleId; }
+    public String getOauthFacebookId() { return oauthFacebookId; }
+    public void setOauthFacebookId(String oauthFacebookId) { this.oauthFacebookId = oauthFacebookId; }
     public int getScore() { return score; }
     public void setScore(int score) { this.score = score; }
     public int getHighestScore() { return highestScore; }

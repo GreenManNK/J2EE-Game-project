@@ -145,6 +145,7 @@
     const passwordStatus = document.getElementById("passwordSettingsStatus");
     const preferencesStatus = document.getElementById("preferencesStatus");
     const securityStatus = document.getElementById("securitySettingsStatus");
+    const socialLinkStatus = document.getElementById("socialLinkStatus");
 
     const displayNameInput = document.getElementById("settingsDisplayName");
     const emailInput = document.getElementById("settingsEmail");
@@ -152,6 +153,7 @@
     const avatarPreview = document.getElementById("settingsAvatarPreview");
     const avatarFileInput = document.getElementById("settingsAvatarFile");
     const uploadAvatarBtn = document.getElementById("settingsUploadAvatarBtn");
+    const unlinkFacebookBtn = document.getElementById("unlinkFacebookBtn");
 
     const currentPasswordInput = document.getElementById("settingsCurrentPassword");
     const newPasswordInput = document.getElementById("settingsNewPassword");
@@ -730,6 +732,38 @@
         notify(message, "danger");
       } finally {
         activateAdminFromSettingsBtn.disabled = false;
+      }
+    });
+
+    unlinkFacebookBtn?.addEventListener("click", async () => {
+      if (!isAuthenticated || !authUserId) {
+        setStatus(socialLinkStatus, "Ban can dang nhap de huy lien ket Facebook.", false);
+        return;
+      }
+
+      unlinkFacebookBtn.disabled = true;
+      try {
+        const response = await fetch(appPath("/account/social/facebook/unlink"), {
+          method: "POST"
+        });
+        const payload = await response.json().catch(() => ({}));
+        const success = !!(payload && payload.success);
+        const message = success
+          ? String(payload?.data?.message || "Da huy lien ket Facebook")
+          : String(payload?.error || "Khong the huy lien ket Facebook");
+
+        setStatus(socialLinkStatus, message, success);
+        notify(message, success ? "success" : "danger");
+
+        if (success) {
+          window.setTimeout(() => window.location.reload(), 300);
+        }
+      } catch (error) {
+        const message = String(error?.message || error || "Khong the huy lien ket Facebook");
+        setStatus(socialLinkStatus, message, false);
+        notify(message, "danger");
+      } finally {
+        unlinkFacebookBtn.disabled = false;
       }
     });
   });

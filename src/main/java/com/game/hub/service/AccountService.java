@@ -40,6 +40,8 @@ public class AccountService {
     private static final int GAMES_BROWSER_RECENT_LIMIT = 20;
     private static final String DEFAULT_AVATAR_PATH = "/uploads/avatars/default-avatar.jpg";
     private static final String DB_AVATAR_PATH_PREFIX = "/account/avatar/";
+    private static final String SOCIAL_PROVIDER_GOOGLE = "google";
+    private static final String SOCIAL_PROVIDER_FACEBOOK = "facebook";
 
     private final UserAccountRepository userAccountRepository;
     private final UserAvatarBinaryRepository userAvatarBinaryRepository;
@@ -194,7 +196,7 @@ public class AccountService {
     }
 
     public ServiceResult loginWithOAuth2(OAuth2LoginRequest request) {
-        String provider = trimToNull(request == null ? null : request.provider());
+        String provider = normalizeSocialProvider(request == null ? null : request.provider());
         String providerUserId = trimToNull(request == null ? null : request.providerUserId());
         String normalizedEmail = normalizeEmail(request == null ? null : request.email());
         String displayName = trimToNull(request == null ? null : request.displayName());
@@ -213,7 +215,12 @@ public class AccountService {
             displayName = defaultDisplayNameFromEmail(normalizedEmail);
         }
 
-        UserAccount user = userAccountRepository.findByEmail(normalizedEmail).orElse(null);
+        UserAccount user = findBySocialProviderId(provider, providerUserId);
+        if (user == null && normalizedEmail != null) {
+            user = userAccountRepository.findByEmail(normalizedEmail).orElse(null);
+        }
+
+        boolean profileUpdated = false;
         if (user == null) {
             user = new UserAccount();
             user.setEmail(normalizedEmail);
@@ -223,23 +230,55 @@ public class AccountService {
             user.setPassword(passwordEncoder.encode(UUID.randomUUID() + ":" + provider + ":" + providerUserId));
             user.setEmailConfirmed(true);
             user.setRole(isDefaultAdminEmail(normalizedEmail) ? "Admin" : "User");
+            profileUpdated = true;
         } else {
+            if (trimToNull(user.getEmail()) == null && normalizedEmail != null) {
+                UserAccount existingByEmail = userAccountRepository.findByEmail(normalizedEmail).orElse(null);
+                if (existingByEmail != null && !user.getId().equals(existingByEmail.getId())) {
+                    return ServiceResult.error("Email already exists");
+                }
+                user.setEmail(normalizedEmail);
+                user.setUsername(normalizedEmail);
+                profileUpdated = true;
+            }
             if (trimToNull(user.getDisplayName()) == null && displayName != null) {
                 user.setDisplayName(displayName);
+                profileUpdated = true;
             }
             if (trimToNull(user.getUsername()) == null) {
-                user.setUsername(normalizedEmail);
+                String fallbackUsername = trimToNull(user.getEmail());
+                if (fallbackUsername == null) {
+                    fallbackUsername = syntheticOauthEmail(provider, providerUserId);
+                }
+                user.setUsername(fallbackUsername);
+                profileUpdated = true;
             }
             if (trimToNull(user.getAvatarPath()) == null) {
                 user.setAvatarPath(DEFAULT_AVATAR_PATH);
+                profileUpdated = true;
             }
             if (user.getPassword() == null || user.getPassword().isBlank()) {
                 user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+                profileUpdated = true;
             }
         }
 
         if (user.isBanned()) {
             return ServiceResult.error("Account banned until " + user.getBannedUntil());
+        }
+
+        if (isSupportedSocialProvider(provider)) {
+            ServiceResult ensureLinkResult = ensureSocialProviderLinked(user, provider, providerUserId, false);
+            if (!ensureLinkResult.success()) {
+                return ensureLinkResult;
+            }
+            if (Boolean.TRUE.equals(ensureLinkResult.data())) {
+                profileUpdated = true;
+            }
+        }
+
+        if (profileUpdated) {
+            userAccountRepository.save(user);
         }
 
         applyPostLoginState(user);
@@ -395,6 +434,101 @@ public class AccountService {
                 avatar.getSizeBytes() > 0L ? avatar.getSizeBytes() : (avatar.getBinaryData() == null ? 0L : avatar.getBinaryData().length)
             ))
             .orElse(null);
+    }
+
+    public ServiceResult getSocialLinks(String userId) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+        return ServiceResult.ok(buildSocialLinksPayload(user, null));
+    }
+
+    @Transactional
+    public ServiceResult linkOAuth2Provider(String userId, OAuth2LoginRequest request) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+
+        String provider = normalizeSocialProvider(request == null ? null : request.provider());
+        String providerUserId = trimToNull(request == null ? null : request.providerUserId());
+        String normalizedEmail = normalizeEmail(request == null ? null : request.email());
+        String displayName = trimToNull(request == null ? null : request.displayName());
+
+        if (!isSupportedSocialProvider(provider)) {
+            return ServiceResult.error("Unsupported social provider");
+        }
+        if (providerUserId == null) {
+            return ServiceResult.error("Cannot read social account id");
+        }
+
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+
+        ServiceResult ensureLinkResult = ensureSocialProviderLinked(user, provider, providerUserId, false);
+        if (!ensureLinkResult.success()) {
+            return ensureLinkResult;
+        }
+
+        boolean profileUpdated = Boolean.TRUE.equals(ensureLinkResult.data());
+        if (trimToNull(user.getDisplayName()) == null && displayName != null) {
+            user.setDisplayName(displayName);
+            profileUpdated = true;
+        }
+        if (trimToNull(user.getEmail()) == null && normalizedEmail != null) {
+            UserAccount existingByEmail = userAccountRepository.findByEmail(normalizedEmail).orElse(null);
+            if (existingByEmail == null || normalizedUserId.equals(existingByEmail.getId())) {
+                user.setEmail(normalizedEmail);
+                user.setUsername(normalizedEmail);
+                profileUpdated = true;
+            }
+        }
+
+        if (profileUpdated) {
+            userAccountRepository.save(user);
+        }
+
+        String providerName = providerDisplayName(provider);
+        String message = Boolean.TRUE.equals(ensureLinkResult.data())
+            ? "Linked " + providerName + " account"
+            : providerName + " account already linked";
+        return ServiceResult.ok(buildSocialLinksPayload(user, message));
+    }
+
+    @Transactional
+    public ServiceResult unlinkSocialProvider(String userId, String provider) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+
+        String normalizedProvider = normalizeSocialProvider(provider);
+        if (!isSupportedSocialProvider(normalizedProvider)) {
+            return ServiceResult.error("Unsupported social provider");
+        }
+
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+
+        boolean changed = clearSocialProviderLink(user, normalizedProvider);
+        if (changed) {
+            userAccountRepository.save(user);
+        }
+
+        String providerName = providerDisplayName(normalizedProvider);
+        String message = changed
+            ? "Unlinked " + providerName + " account"
+            : providerName + " account is not linked";
+        return ServiceResult.ok(buildSocialLinksPayload(user, message));
     }
 
     public ServiceResult getPreferences(String userId) {
@@ -1455,6 +1589,162 @@ public class AccountService {
             "role", user.getRole() == null ? "User" : user.getRole(),
             "avatarPath", user.getAvatarPath() == null ? DEFAULT_AVATAR_PATH : user.getAvatarPath()
         );
+    }
+
+    private Map<String, Object> buildSocialLinksPayload(UserAccount user, String message) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("google", Map.of("linked", trimToNull(user.getOauthGoogleId()) != null));
+        payload.put("facebook", Map.of("linked", trimToNull(user.getOauthFacebookId()) != null));
+        if (message != null) {
+            payload.put("message", message);
+        }
+        return payload;
+    }
+
+    private ServiceResult ensureSocialProviderLinked(UserAccount user,
+                                                     String provider,
+                                                     String providerUserId,
+                                                     boolean allowReplace) {
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+        if (!isSupportedSocialProvider(provider)) {
+            return ServiceResult.error("Unsupported social provider");
+        }
+
+        String normalizedProviderUserId = trimToNull(providerUserId);
+        if (normalizedProviderUserId == null) {
+            return ServiceResult.error("Cannot read social account id");
+        }
+
+        UserAccount owner = findBySocialProviderId(provider, normalizedProviderUserId);
+        if (owner != null && owner.getId() != null && !owner.getId().equals(user.getId())) {
+            return ServiceResult.error(providerDisplayName(provider) + " account is linked to another user");
+        }
+
+        String currentLinkedId = trimToNull(readSocialProviderId(user, provider));
+        if (currentLinkedId != null) {
+            if (currentLinkedId.equals(normalizedProviderUserId)) {
+                return ServiceResult.ok(Boolean.FALSE);
+            }
+            if (!allowReplace) {
+                return ServiceResult.error("This account is linked to another " + providerDisplayName(provider) + " id");
+            }
+        }
+
+        boolean changed = writeSocialProviderId(user, provider, normalizedProviderUserId);
+        return ServiceResult.ok(changed);
+    }
+
+    private UserAccount findBySocialProviderId(String provider, String providerUserId) {
+        String normalizedProvider = normalizeSocialProvider(provider);
+        String normalizedProviderUserId = trimToNull(providerUserId);
+        if (!isSupportedSocialProvider(normalizedProvider) || normalizedProviderUserId == null) {
+            return null;
+        }
+        if (SOCIAL_PROVIDER_GOOGLE.equals(normalizedProvider)) {
+            return userAccountRepository.findByOauthGoogleId(normalizedProviderUserId).orElse(null);
+        }
+        if (SOCIAL_PROVIDER_FACEBOOK.equals(normalizedProvider)) {
+            return userAccountRepository.findByOauthFacebookId(normalizedProviderUserId).orElse(null);
+        }
+        return null;
+    }
+
+    private String readSocialProviderId(UserAccount user, String provider) {
+        if (user == null) {
+            return null;
+        }
+        String normalizedProvider = normalizeSocialProvider(provider);
+        if (SOCIAL_PROVIDER_GOOGLE.equals(normalizedProvider)) {
+            return user.getOauthGoogleId();
+        }
+        if (SOCIAL_PROVIDER_FACEBOOK.equals(normalizedProvider)) {
+            return user.getOauthFacebookId();
+        }
+        return null;
+    }
+
+    private boolean writeSocialProviderId(UserAccount user, String provider, String providerUserId) {
+        if (user == null) {
+            return false;
+        }
+        String normalizedProvider = normalizeSocialProvider(provider);
+        String normalizedProviderUserId = trimToNull(providerUserId);
+        if (!isSupportedSocialProvider(normalizedProvider) || normalizedProviderUserId == null) {
+            return false;
+        }
+
+        if (SOCIAL_PROVIDER_GOOGLE.equals(normalizedProvider)) {
+            String current = trimToNull(user.getOauthGoogleId());
+            if (normalizedProviderUserId.equals(current)) {
+                return false;
+            }
+            user.setOauthGoogleId(normalizedProviderUserId);
+            return true;
+        }
+        if (SOCIAL_PROVIDER_FACEBOOK.equals(normalizedProvider)) {
+            String current = trimToNull(user.getOauthFacebookId());
+            if (normalizedProviderUserId.equals(current)) {
+                return false;
+            }
+            user.setOauthFacebookId(normalizedProviderUserId);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean clearSocialProviderLink(UserAccount user, String provider) {
+        if (user == null) {
+            return false;
+        }
+        String normalizedProvider = normalizeSocialProvider(provider);
+        if (SOCIAL_PROVIDER_GOOGLE.equals(normalizedProvider)) {
+            if (trimToNull(user.getOauthGoogleId()) == null) {
+                return false;
+            }
+            user.setOauthGoogleId(null);
+            return true;
+        }
+        if (SOCIAL_PROVIDER_FACEBOOK.equals(normalizedProvider)) {
+            if (trimToNull(user.getOauthFacebookId()) == null) {
+                return false;
+            }
+            user.setOauthFacebookId(null);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isSupportedSocialProvider(String provider) {
+        String normalizedProvider = normalizeSocialProvider(provider);
+        return SOCIAL_PROVIDER_GOOGLE.equals(normalizedProvider) || SOCIAL_PROVIDER_FACEBOOK.equals(normalizedProvider);
+    }
+
+    private String normalizeSocialProvider(String provider) {
+        String normalized = trimToNull(provider);
+        if (normalized == null) {
+            return null;
+        }
+        String lowered = normalized.toLowerCase();
+        if (SOCIAL_PROVIDER_GOOGLE.equals(lowered)) {
+            return SOCIAL_PROVIDER_GOOGLE;
+        }
+        if (SOCIAL_PROVIDER_FACEBOOK.equals(lowered) || "fb".equals(lowered)) {
+            return SOCIAL_PROVIDER_FACEBOOK;
+        }
+        return lowered;
+    }
+
+    private String providerDisplayName(String provider) {
+        String normalizedProvider = normalizeSocialProvider(provider);
+        if (SOCIAL_PROVIDER_GOOGLE.equals(normalizedProvider)) {
+            return "Google";
+        }
+        if (SOCIAL_PROVIDER_FACEBOOK.equals(normalizedProvider)) {
+            return "Facebook";
+        }
+        return normalizedProvider == null ? "Social" : normalizedProvider;
     }
 
     private String normalizeAvatarContentType(String contentType) {
