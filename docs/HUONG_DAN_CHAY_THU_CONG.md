@@ -181,6 +181,23 @@ Meo:
 - VS Code tasks deu goi chung `scripts/manual-start.cmd`, nen giong cach chay thu cong
 - Tuong tu IntelliJ, cac task `Start ...` nay da duoc huong co che bootstrap-moi-truong-lan-dau.
 
+## Cau hinh dang nhap / dang ky Google-Facebook
+
+1. Mo file `.env.public.local`
+2. Dien cac bien:
+   - `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID`
+   - `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET`
+   - `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID`
+   - `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_SECRET`
+3. Trong Google Cloud Console va Facebook Developer Console, dat callback URL:
+   - `https://<domain>/Game/login/oauth2/code/google`
+   - `https://<domain>/Game/login/oauth2/code/facebook`
+4. Restart app sau khi cap nhat bien moi truong.
+
+Luu y:
+- Trang `Dang nhap` va `Dang ky` da co nut Google/Facebook.
+- Neu chua dien `CLIENT_ID/SECRET`, nut social se o trang thai chua cau hinh.
+
 Luu y:
 - Thu muc `.vscode/` dang bi ignore trong `.gitignore`, nen file nay chu yeu dung local.
 - Neu ban muon chia se task VS Code qua Git cho ca nhom, toi co the sua `.gitignore` de cho phep track `.vscode/tasks.json`.

@@ -29,19 +29,29 @@
           </div>
           <button type="submit" class="btn btn-success w-100">Gui ma xac thuc</button>
         </form>
-        <div th:if="${googleLoginEnabled or facebookLoginEnabled}">
+        <div>
           <div class="d-flex align-items-center gap-2 my-3">
             <hr class="flex-grow-1 m-0">
-            <span class="small text-muted">hoặc</span>
+            <span class="small text-muted">hoac dang ky nhanh voi</span>
             <hr class="flex-grow-1 m-0">
           </div>
           <div class="d-grid gap-2">
             <a th:if="${googleLoginEnabled}" class="btn btn-outline-danger" th:href="@{/oauth2/authorization/google}">
-              <i class="bi bi-google me-2"></i> Dang nhap voi Google
+              <i class="bi bi-google me-2"></i> Dang ky voi Google
             </a>
+            <button th:if="${!googleLoginEnabled}" type="button" class="btn btn-outline-danger" disabled>
+              <i class="bi bi-google me-2"></i> Google (chua cau hinh)
+            </button>
+
             <a th:if="${facebookLoginEnabled}" class="btn btn-outline-primary" th:href="@{/oauth2/authorization/facebook}">
-              <i class="bi bi-facebook me-2"></i> Dang nhap voi Facebook
+              <i class="bi bi-facebook me-2"></i> Dang ky voi Facebook
             </a>
+            <button th:if="${!facebookLoginEnabled}" type="button" class="btn btn-outline-primary" disabled>
+              <i class="bi bi-facebook me-2"></i> Facebook (chua cau hinh)
+            </button>
+          </div>
+          <div class="form-text mt-2" th:if="${!googleLoginEnabled and !facebookLoginEnabled}">
+            Chua cau hinh OAuth2 Google/Facebook tren may chu.
           </div>
         </div>
         <div class="text-center mt-2">

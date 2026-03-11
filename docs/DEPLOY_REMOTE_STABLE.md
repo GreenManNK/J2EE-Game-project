@@ -30,6 +30,14 @@ Luu y:
 - App se tu dong them origin public tu `PUBLIC_BASE_URL`/`PUBLIC_GAME_URL` vao whitelist WebSocket.
 - `WS_ALLOWED_ORIGINS` chi can khi muon override danh sach mac dinh.
 - `APP_WEBSOCKET_EXTRA_ORIGINS` dung khi can bo sung them origin dac biet.
+- Neu dung dang nhap/dang ky Google-Facebook, dien them trong `.env.public.local`:
+  - `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID`
+  - `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET`
+  - `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID`
+  - `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_SECRET`
+- Callback URL tren provider console:
+  - `https://<domain>/Game/login/oauth2/code/google`
+  - `https://<domain>/Game/login/oauth2/code/facebook`
 
 ## 2) Build JAR production
 

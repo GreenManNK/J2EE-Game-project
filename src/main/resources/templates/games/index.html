@@ -73,6 +73,7 @@
     <div class="cg-lane-track" data-lane-track>
       <article class="cg-tile"
                th:each="g,st : ${games}"
+               th:if="${g.code != 'blackjack'}"
                th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' || g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 70 : 35) + (g.supportsOnline ? 18 : 0) + (20 - st.index)}">
         <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
           <span class="cg-tile-badge" th:text="${g.availableNow} ? 'San sang' : 'Sap co'">San sang</span>
@@ -110,7 +111,7 @@
     <div class="cg-lane-track" data-lane-track>
       <article class="cg-tile"
                th:each="g : ${games}"
-               th:if="${g.supportsOnline}"
+               th:if="${g.supportsOnline and g.code != 'blackjack'}"
                th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' || g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 85 : 45)}">
         <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
           <span class="cg-tile-badge">Truc tuyen</span>
@@ -180,13 +181,13 @@
 
   <section class="cg-lane" data-lane-section>
     <header class="cg-lane-head">
-      <h2>Danh bai, Blackjack va game nhanh</h2>
+      <h2>Danh bai va game nhanh</h2>
       <a th:href="@{/games/cards}" class="cg-lane-more">Xem them</a>
     </header>
     <div class="cg-lane-track" data-lane-track>
       <article class="cg-tile"
                th:each="g : ${games}"
-               th:if="${g.code == 'cards' or g.code == 'blackjack' or g.code == 'puzzle' or g.code == 'quiz' or g.code == 'typing' or g.code == 'minesweeper'}"
+               th:if="${g.code == 'cards' or g.code == 'puzzle' or g.code == 'quiz' or g.code == 'typing' or g.code == 'minesweeper'}"
                th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' or g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 65 : 42) + (g.supportsGuest ? 12 : 0)}">
         <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
           <span class="cg-tile-badge">Moi</span>

@@ -558,7 +558,7 @@
     border: 1px solid rgba(31, 38, 46, 0.18);
     border-radius: 12px;
     width: 64px;
-    height: 92px;
+    height: 96px;
     padding: 0;
     background: linear-gradient(145deg, #ffffff, #f3f6fb 55%, #eef2f9);
     color: #172029;
@@ -569,6 +569,22 @@
     box-shadow: 0 10px 16px rgba(6, 19, 24, 0.14), 0 1px 0 rgba(255,255,255,0.85) inset;
     overflow: hidden;
     text-align: left;
+  }
+
+  .tienlen-bot-card-btn.has-sprite {
+    background: #f8fafc;
+  }
+
+  .tienlen-bot-card-btn.has-sprite::before {
+    display: none;
+  }
+
+  .tienlen-bot-card-btn.has-sprite .tl-card-face {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-repeat: no-repeat;
+    background-color: #f8fafc;
   }
 
   .tienlen-bot-card-btn::before {

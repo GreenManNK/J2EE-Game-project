@@ -5,6 +5,22 @@
     : (value) => value;
   const USER_CHANGE_EVENT = (window.CaroUser && window.CaroUser.eventName) || 'caro:user-changed';
   const DEFAULT_AVATAR_PATH = '/uploads/avatars/default-avatar.jpg';
+  const CARD_SPRITE = Object.freeze({
+    url: appPath('/images/cards/deck-sprite.png'),
+    imageWidth: 1920,
+    imageHeight: 870,
+    cardWidth: 135,
+    cardHeight: 203,
+    xStart: 12,
+    yStart: 12,
+    xStep: 146,
+    yStep: 214
+  });
+  const CARD_RANK_TO_COL = Object.freeze({
+    A: 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6,
+    '8': 7, '9': 8, '10': 9, J: 10, Q: 11, K: 12
+  });
+  const CARD_SUIT_TO_ROW = Object.freeze({ S: 0, H: 1, D: 2, C: 3 });
 
   const SUITS = [
     { code: 'S', symbol: '\u2660', red: false, order: 0 },
@@ -1382,6 +1398,18 @@
     el.setAttribute('aria-label', visual.rankText + ' ' + visual.suitNameVi);
     el.dataset.code = card.code;
 
+    const spriteStyle = cardSpriteStyleForCode(card.code);
+    if (spriteStyle) {
+      const face = document.createElement('div');
+      face.className = 'tl-card-face';
+      face.style.backgroundImage = 'url("' + CARD_SPRITE.url + '")';
+      face.style.backgroundSize = spriteStyle.size;
+      face.style.backgroundPosition = spriteStyle.position;
+      el.classList.add('has-sprite');
+      el.appendChild(face);
+      return el;
+    }
+
     const cornerTop = document.createElement('div');
     cornerTop.className = 'tl-card-corner tl-card-corner--top';
     cornerTop.innerHTML = '<span class="tl-card-rank">' + escapeHtml(visual.rankText) + '</span><span class="tl-card-suit">' + escapeHtml(visual.suitSymbol) + '</span>';
@@ -1651,6 +1679,42 @@
       default:
         return { symbol: 'â™ ', nameVi: 'bich', red: false };
     }
+  }
+
+  function cardSpriteStyleForCode(code) {
+    const normalizedCode = String(code || '').trim().toUpperCase();
+    if (normalizedCode.length < 2) {
+      return null;
+    }
+    const suitCode = normalizedCode.slice(-1);
+    const rankCode = normalizeCardRank(normalizedCode.slice(0, -1));
+    const row = CARD_SUIT_TO_ROW[suitCode];
+    const col = CARD_RANK_TO_COL[rankCode];
+    if (!Number.isInteger(row) || !Number.isInteger(col)) {
+      return null;
+    }
+    const compact = Boolean(window.matchMedia && window.matchMedia('(max-width: 575.98px)').matches);
+    const targetWidth = compact ? 52 : 64;
+    const targetHeight = compact ? 78 : 96;
+    const scaleX = targetWidth / CARD_SPRITE.cardWidth;
+    const scaleY = targetHeight / CARD_SPRITE.cardHeight;
+    const x = CARD_SPRITE.xStart + (col * CARD_SPRITE.xStep);
+    const y = CARD_SPRITE.yStart + (row * CARD_SPRITE.yStep);
+    return {
+      size: (CARD_SPRITE.imageWidth * scaleX).toFixed(3) + 'px ' + (CARD_SPRITE.imageHeight * scaleY).toFixed(3) + 'px',
+      position: '-' + (x * scaleX).toFixed(3) + 'px -' + (y * scaleY).toFixed(3) + 'px'
+    };
+  }
+
+  function normalizeCardRank(rankCode) {
+    const value = String(rankCode || '').trim().toUpperCase();
+    if (!value) {
+      return '';
+    }
+    if (value === 'T') {
+      return '10';
+    }
+    return value;
   }
 
   function compareCards(a, b) {
