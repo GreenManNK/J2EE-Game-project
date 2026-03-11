@@ -1592,6 +1592,66 @@ a.btn.btn-lg {
   min-height: 62px;
 }
 
+.btn i {
+  line-height: 1;
+}
+
+.btn i:only-child {
+  margin: 0 !important;
+}
+
+.btn i + span,
+.btn i + strong,
+.btn i + small {
+  margin-left: 2px;
+}
+
+.theme-box .card-body,
+.gx-section-card > .card-body,
+.gx-page-hero > .card-body {
+  padding: clamp(12px, 1.5vw, 18px);
+}
+
+.gx-section-card .table th,
+.gx-section-card .table td,
+.gx-table-card .table th,
+.gx-table-card .table td {
+  padding: 0.65rem 0.7rem;
+}
+
+.gx-section-card .table .btn.btn-sm,
+.gx-table-card .table .btn.btn-sm {
+  min-height: 30px;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+}
+
+.gx-section-card .d-flex.flex-wrap.gap-2 > .form-control,
+.gx-section-card .d-flex.flex-wrap.gap-2 > .form-select,
+.gx-page-hero .d-flex.flex-wrap.gap-2 > .form-control,
+.gx-page-hero .d-flex.flex-wrap.gap-2 > .form-select {
+  flex: 1 1 220px;
+  min-width: min(320px, 100%);
+}
+
+.gx-section-card .d-flex.flex-wrap.gap-2 > .input-group,
+.gx-page-hero .d-flex.flex-wrap.gap-2 > .input-group {
+  flex: 1 1 260px;
+  min-width: min(360px, 100%);
+}
+
+.gx-section-card .d-flex.flex-wrap.gap-2 > .btn,
+.gx-page-hero .d-flex.flex-wrap.gap-2 > .btn {
+  flex: 0 0 auto;
+}
+
+.gx-grid--2 > .theme-box,
+.gx-grid--2 > .card,
+.gx-grid--3 > .theme-box,
+.gx-grid--3 > .card {
+  height: 100%;
+}
+
 @media (max-width: 991.98px) {
   .hub-portal-action-grid {
     grid-template-columns: 1fr 1fr;
@@ -2352,6 +2412,12 @@ body.dark-mode .hub-portal-action--accent {
   .gx-inline-actions > a.btn,
   .hub-portal-inline-actions > .btn,
   .hub-portal-inline-actions > a.btn,
+  .gx-section-card .d-flex.flex-wrap.gap-2 > .form-control,
+  .gx-section-card .d-flex.flex-wrap.gap-2 > .form-select,
+  .gx-section-card .d-flex.flex-wrap.gap-2 > .input-group,
+  .gx-page-hero .d-flex.flex-wrap.gap-2 > .form-control,
+  .gx-page-hero .d-flex.flex-wrap.gap-2 > .form-select,
+  .gx-page-hero .d-flex.flex-wrap.gap-2 > .input-group,
   .gx-section-card .d-flex.flex-wrap.gap-2 > .btn,
   .gx-section-card .d-flex.flex-wrap.gap-2 > a.btn,
   .gx-page-hero .d-flex.flex-wrap.gap-2 > .btn,
