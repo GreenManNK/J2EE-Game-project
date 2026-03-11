@@ -3,6 +3,9 @@ package com.game.hub.controller;
 import com.game.hub.service.ProfileStatsService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,9 +51,7 @@ public class ProfileController {
         if (targetUserId == null || targetUserId.isBlank()) {
             return Map.of("success", false, "error", "Login required");
         }
-        String viewerId = Optional.ofNullable(request.getSession(false))
-            .map(s -> (String) s.getAttribute("AUTH_USER_ID"))
-            .orElse("");
+        String viewerId = Optional.ofNullable(resolveAuthenticatedUserId(request)).orElse("");
         return profileStatsService.buildProfileStats(targetUserId, viewerId);
     }
 
@@ -61,9 +62,7 @@ public class ProfileController {
         if (targetUserId == null || targetUserId.isBlank()) {
             return Map.of("success", false, "error", "Login required");
         }
-        String viewerId = Optional.ofNullable(request.getSession(false))
-            .map(s -> (String) s.getAttribute("AUTH_USER_ID"))
-            .orElse("");
+        String viewerId = Optional.ofNullable(resolveAuthenticatedUserId(request)).orElse("");
         return profileStatsService.buildProfileStats(targetUserId, viewerId);
     }
 
@@ -76,17 +75,15 @@ public class ProfileController {
     }
 
     private String renderProfile(String userId, Model model, HttpServletRequest request) {
-        String viewerId = Optional.ofNullable(request.getSession(false))
-            .map(s -> (String) s.getAttribute("AUTH_USER_ID"))
-            .orElse("");
+        String viewerId = Optional.ofNullable(resolveAuthenticatedUserId(request)).orElse("");
         model.addAllAttributes(profileStatsService.buildProfileStats(userId, viewerId));
         return "profile/index";
     }
 
     private String resolveTargetUserId(String requestedUserId, HttpServletRequest request) {
         String normalizedRequested = toTrimmed(requestedUserId);
+        String sessionUserId = resolveAuthenticatedUserId(request);
         HttpSession session = request == null ? null : request.getSession(false);
-        String sessionUserId = session == null ? null : toTrimmed(session.getAttribute("AUTH_USER_ID"));
         String sessionRole = session == null ? null : toTrimmed(session.getAttribute("AUTH_ROLE"));
 
         if (normalizedRequested == null) {
@@ -103,5 +100,38 @@ public class ProfileController {
             return normalizedRequested;
         }
         return sessionUserId;
+    }
+
+    private String resolveAuthenticatedUserId(HttpServletRequest request) {
+        HttpSession session = request == null ? null : request.getSession(false);
+        String sessionUserId = session == null ? null : toTrimmed(session.getAttribute("AUTH_USER_ID"));
+        if (sessionUserId != null) {
+            return sessionUserId;
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        String authUserId = toTrimmed(authentication.getName());
+        if (authUserId == null || "anonymousUser".equalsIgnoreCase(authUserId)) {
+            return null;
+        }
+
+        if (request != null) {
+            HttpSession activeSession = request.getSession(true);
+            activeSession.setAttribute("AUTH_USER_ID", authUserId);
+            String role = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(value -> value != null && value.startsWith("ROLE_"))
+                .map(value -> value.substring("ROLE_".length()))
+                .findFirst()
+                .orElse(null);
+            if (role != null) {
+                activeSession.setAttribute("AUTH_ROLE", role);
+            }
+        }
+        return authUserId;
     }
 }
