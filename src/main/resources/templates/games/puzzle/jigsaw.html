@@ -55,6 +55,31 @@
             </div>
 
             <p id="jigsaw-status" class="puzzle-note"></p>
+
+            <section class="puzzle-milestone-grid">
+                <article class="hub-portal-card">
+                    <div class="hub-portal-card__head">
+                        <h2>Nhip gameplay Jigsaw</h2>
+                        <span class="hub-portal-tag">Gameplay</span>
+                    </div>
+                    <ul class="hub-portal-bullet-list">
+                        <li>Khoi tao ban moi, tron manh ghep va reset HUD move/time.</li>
+                        <li>Dat manh vao o dung vi tri, theo doi % tien do theo tung nuoc.</li>
+                        <li>Hoan tat anh mau, chot ket qua va vao ban moi ngay.</li>
+                    </ul>
+                </article>
+                <article class="hub-portal-card">
+                    <div class="hub-portal-card__head">
+                        <h2>Thanh tuu Jigsaw</h2>
+                        <span class="hub-portal-tag">Achievement</span>
+                    </div>
+                    <ul class="hub-portal-bullet-list">
+                        <li>Khoi dong hinh anh: hoan thanh man 3x3 dau tien.</li>
+                        <li>Ban tay nhanh: giai xong man 4x4 duoi 3 phut.</li>
+                        <li>Tap trung cao: hoan thanh 3 man lien tiep khong bo dang.</li>
+                    </ul>
+                </article>
+            </section>
         </div>
 
     </section>
@@ -68,6 +93,13 @@
         align-items: center;
         gap: 0.6rem;
         margin-bottom: 0.75rem;
+    }
+
+    .puzzle-milestone-grid {
+        margin-top: 1rem;
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     }
 
     .puzzle-controls .form-select {
@@ -191,6 +223,9 @@
 
     const sizeSelect = document.getElementById('jigsaw-size');
     const newGameBtn = document.getElementById('new-game-btn');
+    const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+        ? window.CaroUrl.path
+        : (value) => value;
 
     const imageUrl = 'data:image/svg+xml;utf8,' + encodeURIComponent(
         `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720">
@@ -213,6 +248,7 @@
     let moveCount = 0;
     let startTime;
     let timerHandle;
+    let winReported = false;
 
     newGameBtn.addEventListener('click', startNewGame);
     sizeSelect.addEventListener('change', startNewGame);
@@ -225,6 +261,7 @@
         selectedPieceId = null;
         moveCount = 0;
         startTime = Date.now();
+        winReported = false;
         resetTimer();
         statusEl.textContent = 'Chon 1 manh trong khay, sau do click vao o tren ban de dat.';
         statusEl.classList.remove('success');
@@ -359,6 +396,15 @@
         clearInterval(timerHandle);
         statusEl.textContent = `Ban da giai xong trong ${moveCount} buoc va ${timeEl.textContent}.`;
         statusEl.classList.add('success');
+        reportWin();
+    }
+
+    function reportWin() {
+        if (winReported) {
+            return;
+        }
+        winReported = true;
+        fetch(appPath('/games/puzzle/jigsaw/win'), { method: 'POST' }).catch(() => {});
     }
 
     function updateHud() {

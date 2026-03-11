@@ -49,6 +49,7 @@
             <div id="room-selection" class="quiz-room-panel">
                 <div class="quiz-lobby-head">
                     <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">Tao phong va vao ngay</button>
+                    <button id="random-room-btn" class="hub-portal-action">Vao nhanh random</button>
                     <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
                 </div>
                 <div class="hub-portal-action quiz-join-row">
@@ -101,6 +102,31 @@
 
     <section class="hub-portal-layout hub-portal-layout--single">
         <div class="hub-portal-main">
+            <section class="hub-portal-card">
+                <div class="hub-portal-card__head">
+                    <h2>Nhip gameplay Quiz</h2>
+                    <span class="hub-portal-tag">Gameplay</span>
+                </div>
+                <ul class="hub-portal-bullet-list">
+                    <li>Chu phong tao room, mo tran va chay bo cau hoi theo tung vong.</li>
+                    <li>Nguoi choi gui 1 dap an/cau, he thong cham diem +2/-1 ngay tren server.</li>
+                    <li>Bang xep hang cap nhat realtime sau tung cau hoi den khi tong ket tran.</li>
+                </ul>
+            </section>
+
+            <section class="hub-portal-card">
+                <div class="hub-portal-card__head">
+                    <h2>Thanh tuu Quiz</h2>
+                    <span class="hub-portal-tag">Achievement</span>
+                </div>
+                <ul class="hub-portal-bullet-list">
+                    <li>Tan thu tranh tai: hoan thanh room quiz dau tien.</li>
+                    <li>Toc do cao: tra loi dung 10 cau lien tiep.</li>
+                    <li>Dau truong ben bi: choi du 5 room lien tiep khong roi tran.</li>
+                    <li>So 1 BXH: dat top 1 voi ti le dung >=80%.</li>
+                </ul>
+            </section>
+
             <section class="hub-portal-card">
                 <div class="hub-portal-card__head">
                     <h2>Bang xep hang quiz</h2>
@@ -536,6 +562,7 @@
 </style>
 <script>
     const createRoomBtn = document.getElementById('create-room-btn');
+    const randomRoomBtn = document.getElementById('random-room-btn');
     const joinRoomBtn = document.getElementById('join-room-btn');
     const spectateRoomBtn = document.getElementById('spectate-room-btn');
     const refreshRoomListBtn = document.getElementById('refresh-room-list-btn');
@@ -586,6 +613,7 @@
     let reconnectAttempts = 0;
     let manualDisconnect = false;
     let reconnectMode = 'join';
+    let cachedRooms = [];
     const MAX_RECONNECT_ATTEMPTS = 5;
     const RECONNECT_BASE_DELAY_MS = 1200;
 
@@ -712,6 +740,28 @@
     createRoomBtn.addEventListener('click', () => {
         isSpectator = false;
         openSocket({ action: 'create' });
+    });
+
+    randomRoomBtn.addEventListener('click', async () => {
+        const rooms = await fetchRoomList(false);
+        const candidates = Array.isArray(rooms) ? rooms : [];
+        if (candidates.length === 0) {
+            isSpectator = false;
+            openSocket({ action: 'create' });
+            setStatus('Khong co phong phu hop. Dang tao phong moi...', '');
+            return;
+        }
+        const selected = candidates[Math.floor(Math.random() * candidates.length)];
+        const selectedRoomId = String(selected.id || '').trim();
+        if (!selectedRoomId) {
+            isSpectator = false;
+            openSocket({ action: 'create' });
+            setStatus('Khong chon duoc phong. Dang tao phong moi...', 'error');
+            return;
+        }
+        roomIdInput.value = selectedRoomId;
+        isSpectator = false;
+        openSocket({ action: 'join', roomId: selectedRoomId });
     });
 
     function joinRoomByInput() {
@@ -1113,11 +1163,16 @@
                 throw new Error('Khong tai duoc danh sach phong');
             }
             const rooms = await response.json();
-            renderRoomList(Array.isArray(rooms) ? rooms : []);
+            const safeRooms = Array.isArray(rooms) ? rooms : [];
+            cachedRooms = safeRooms;
+            renderRoomList(safeRooms);
+            return safeRooms;
         } catch (error) {
+            cachedRooms = [];
             if (showFallbackMessage) {
                 roomListEl.innerHTML = '<div class="quiz-status-note error">Khong tai duoc danh sach phong.</div>';
             }
+            return [];
         }
     }
 

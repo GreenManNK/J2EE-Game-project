@@ -37,6 +37,31 @@
 
             <div id="grid-container" class="sudoku-grid"></div>
             <p id="sudoku-status" class="sudoku-note"></p>
+
+            <section class="puzzle-milestone-grid">
+                <article class="hub-portal-card">
+                    <div class="hub-portal-card__head">
+                        <h2>Nhip gameplay Sudoku</h2>
+                        <span class="hub-portal-tag">Gameplay</span>
+                    </div>
+                    <ul class="hub-portal-bullet-list">
+                        <li>Tao puzzle moi va reset dong ho, mistakes, do kho.</li>
+                        <li>Dien o trong theo hang/cot/o 3x3, he thong danh dau xung dot.</li>
+                        <li>Check tien do hoac ket man khi toan bo o dung dap an.</li>
+                    </ul>
+                </article>
+                <article class="hub-portal-card">
+                    <div class="hub-portal-card__head">
+                        <h2>Thanh tuu Sudoku</h2>
+                        <span class="hub-portal-tag">Achievement</span>
+                    </div>
+                    <ul class="hub-portal-bullet-list">
+                        <li>Khoi dong logic: giai xong puzzle dau tien.</li>
+                        <li>Chinh xac cao: ve dich voi toi da 2 mistakes.</li>
+                        <li>Thu thach ben bi: hoan tat 3 puzzle lien tiep.</li>
+                    </ul>
+                </article>
+            </section>
         </div>
 
     </section>
@@ -49,6 +74,13 @@
         flex-wrap: wrap;
         gap: 0.55rem;
         margin-bottom: 0.75rem;
+    }
+
+    .puzzle-milestone-grid {
+        margin-top: 1rem;
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     }
 
     .sudoku-hud {
@@ -159,6 +191,9 @@
     const timeEl = document.getElementById('sudoku-time');
     const levelEl = document.getElementById('sudoku-level');
     const statusEl = document.getElementById('sudoku-status');
+    const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+        ? window.CaroUrl.path
+        : (value) => value;
 
     const PUZZLES = [
         {
@@ -182,6 +217,7 @@
     let mistakes = 0;
     let timerHandle;
     let startedAt;
+    let winReported = false;
 
     newBtn.addEventListener('click', startPuzzle);
     checkBtn.addEventListener('click', checkProgress);
@@ -190,6 +226,7 @@
     function startPuzzle() {
         currentPuzzle = PUZZLES[Math.floor(Math.random() * PUZZLES.length)];
         mistakes = 0;
+        winReported = false;
         mistakesEl.textContent = '0';
         levelEl.textContent = currentPuzzle.level;
         statusEl.textContent = 'Dien tat ca o trong. O trung lap se duoc to mau.';
@@ -346,6 +383,15 @@
         statusEl.textContent = `Hoan thanh trong ${timeEl.textContent} voi ${mistakes} loi sai.`;
         statusEl.classList.remove('error');
         statusEl.classList.add('success');
+        reportWin();
+    }
+
+    function reportWin() {
+        if (winReported) {
+            return;
+        }
+        winReported = true;
+        fetch(appPath('/games/puzzle/sudoku/win'), { method: 'POST' }).catch(() => {});
     }
 
     function getCells() {

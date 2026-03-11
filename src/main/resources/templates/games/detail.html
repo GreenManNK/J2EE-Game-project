@@ -85,8 +85,8 @@
              class="hub-portal-action hub-portal-action--soft">
           <span class="hub-portal-action__icon"><i class="bi bi-hourglass-split"></i></span>
           <span class="hub-portal-action__text">
-            <strong>Chua co gameplay</strong>
-            <small>Dieu huong da san sang, dang bo sung logic choi</small>
+            <strong>Chua mo man choi</strong>
+            <small>Route da co, man choi se duoc bo sung o ban cap nhat tiep theo</small>
           </span>
           <i class="bi bi-slash-circle"></i>
         </div>
@@ -135,24 +135,24 @@
 
   <section class="hub-portal-highlights">
     <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-info-circle-fill"></i></div>
+      <div class="hub-portal-highlight__icon"><i class="bi bi-controller"></i></div>
       <div>
-        <h2>Thong tin ro rang</h2>
-        <p>Trang nay hien kha nang va duong vao che do choi cho tung game.</p>
+        <h2>Vong lap tran dau ro rang</h2>
+        <p>Moi game deu co nhac choi, trang thai va cach vao van trong mot bo cuc thong nhat.</p>
       </div>
     </article>
     <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-layers-fill"></i></div>
+      <div class="hub-portal-highlight__icon"><i class="bi bi-trophy-fill"></i></div>
       <div>
-        <h2>Khung mo rong</h2>
-        <p>Khi them game moi, chi can bo sung metadata va dieu huong, giao dien co the tai su dung layout nay.</p>
+        <h2>Mo khoa cot moc thanh tuu</h2>
+        <p>Noi dung tap trung vao muc tieu theo van dau, chuoi thang va thanh tuu theo cap.</p>
       </div>
     </article>
     <article class="hub-portal-highlight">
       <div class="hub-portal-highlight__icon"><i class="bi bi-link-45deg"></i></div>
       <div>
-        <h2>Ket noi voi trang che do</h2>
-        <p>Game co trang che do rieng (nhu Caro/Co vua/Co tuong/Danh bai/Do min) de vao van nhanh hon.</p>
+        <h2>Giu dong bo giua cac game</h2>
+        <p>Cung mot co che trinh bay gameplay cho tat ca game, nhung moi game van giu route rieng.</p>
       </div>
     </article>
   </section>
@@ -175,45 +175,120 @@
         </div>
       </section>
 
-      <section class="hub-portal-card" th:if="${game.code == 'chess'}">
+      <section class="hub-portal-card">
         <div class="hub-portal-card__head">
-          <h2>Gioi han phien ban hien tai</h2>
-          <span class="hub-portal-tag">Co vua</span>
+          <h2>Nhip gameplay hien tai</h2>
+          <span class="hub-portal-tag">Gameplay</span>
         </div>
-        <p>
-          Co vua hien da choi duoc 2 nguoi cung may, bot de/kho va phong truc tuyen.
-          Luat co ban va ket thuc van da duoc xu ly o server cho che do truc tuyen.
-        </p>
-        <p>
-          Cac mo rong tiep theo co the la UX lich su nuoc di, replay, va them tuy chon cai dat phong.
-        </p>
-      </section>
-
-      <section class="hub-portal-card" th:if="${game.code == 'cards'}">
-        <div class="hub-portal-card__head">
-          <h2>Tien len Mien Nam</h2>
-          <span class="hub-portal-tag">TLMN</span>
-        </div>
-        <p>
-          Ban Tien Len truc tuyen 4 nguoi + bot da duoc nang cap loi choi TLMN, gom toi trang,
-          tinh phat theo van, phat chat heo/chat hang va giao dien hien thi delta diem.
-        </p>
-        <ul class="hub-portal-bullet-list">
-          <li>Phong truc tuyen 4 nguoi, bat dau khi du nguoi.</li>
-          <li>Bot de/kho tren cung thiet bi.</li>
-          <li>Cac bien the luat co the tiep tuc cau hinh theo phong.</li>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'caro'}">
+          <li>Vao sanh, tao phong, cho du 2 nguoi va bat dau theo luot X/O.</li>
+          <li>Moi nuoc di duoc dong bo thoi gian thuc, co chat va bo cuoc trong tran.</li>
+          <li>Ket thuc van khi co duong 5 quan hop le, cap nhat ket qua ngay.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'chess'}">
+          <li>Chon online, bot hoac cung may; vao ban voi setup quan co day du.</li>
+          <li>Server xac nhan nuoc di, dong bo luot va khoa thao tac trung lap.</li>
+          <li>Ket van theo checkmate/stalemate/dau hang, luu trang thai theo tran.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'xiangqi'}">
+          <li>Vao room Co tuong, cho doi thu san sang va bat dau theo luot.</li>
+          <li>Nuoc di va an quan duoc validate boi server truoc khi phat su kien.</li>
+          <li>Van dau ket thuc khi het nuoc hop le, chieu bi hoac dau hang.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'cards'}">
+          <li>Tao phong Tien Len 4 nguoi, vao ban khi du cho va chia bai tu dong.</li>
+          <li>Vong danh bai theo luot, theo doi bo bai hop le va reset luot theo nhac van.</li>
+          <li>Tong ket van co diem, phat va delta tung nguoi sau moi tran.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'blackjack'}">
+          <li>Tao phong, dat cuoc, vao van va thuc hien hit/stand/double theo luot.</li>
+          <li>Dealer rut bai theo muc 17+, cap nhat tat ca tay bai trong room.</li>
+          <li>Cuoi van tinh tien thang/thua, cho phep dat lai nhanh van tiep theo.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'quiz'}">
+          <li>Chu phong tao room, bat dau bo cau hoi va mo dong ho tung cau.</li>
+          <li>Nguoi choi gui 1 dap an/cau, cham diem realtime va cap nhat BXH tuc thi.</li>
+          <li>Het bo cau hoi se tong ket diem va mo room de cho lan dau tiep theo.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'typing'}">
+          <li>Room bat dau khi du nguoi, dong bo cung 1 doan van ban cho tat ca.</li>
+          <li>Moi nguoi dua theo WPM + accuracy, tien do hiem thi song song tren bang.</li>
+          <li>Ket tran khi nguoi dau tien go dung 100%, sau do mo nut tai dau.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'minesweeper'}">
+          <li>Chon muc do, vao ban va bat dau dem gio ngay tu luot mo dau tien.</li>
+          <li>Flag/chord/tu danh dau hoat dong lien tuc de quet o an toan nhanh hon.</li>
+          <li>Qua man se mo do kho tiep theo, thua se hien vi tri min sai.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'puzzle'}">
+          <li>Tu sanh Puzzle chon game con (Jigsaw, Sliding, Word, Sudoku) theo muc tieu.</li>
+          <li>Moi game co HUD rieng: move, time, progress va chuoi hoan thanh.</li>
+          <li>Nguoi choi co the xoay vong cac mini-game de leo thanh tich tong hop.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list"
+            th:if="${game.code != 'caro' and game.code != 'chess' and game.code != 'xiangqi' and game.code != 'cards' and game.code != 'blackjack' and game.code != 'quiz' and game.code != 'typing' and game.code != 'minesweeper' and game.code != 'puzzle'}">
+          <li>Game nay da co route truy cap va bo cuc gameplay trong game hub.</li>
+          <li>Vong lap mac dinh: vao room/che do, dau 1 tran, tong ket va cho tran moi.</li>
+          <li>Noi dung chi tiet cua tran dau se duoc mo rong tiep theo theo metadata.</li>
         </ul>
       </section>
 
-      <section class="hub-portal-card" th:if="${game.code != 'chess' and game.code != 'cards'}">
+      <section class="hub-portal-card">
         <div class="hub-portal-card__head">
-          <h2>Trang thai hien tai</h2>
-          <span class="hub-portal-tag">Hien tai</span>
+          <h2>Thanh tuu de mo</h2>
+          <span class="hub-portal-tag">Achievement</span>
         </div>
-        <p>
-          Game nay da duoc dua vao he thong menu, dieu huong va trang che do rieng trong toan bo web.
-          Muc tieu la mo rong loi choi ma khong lam anh huong cac game dang hoat dong.
-        </p>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'caro'}">
+          <li>Chuoi 3 tran thang lien tiep trong room online.</li>
+          <li>Ha doi thu trong 20 nuoc tro xuong.</li>
+          <li>Thang 10 tran voi 3 doi thu khac nhau.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'chess'}">
+          <li>Thang bot kho 5 van.</li>
+          <li>Thang online bang checkmate trong 30 nuoc.</li>
+          <li>Hoan thanh chuoi 7 tran khong bo cuoc.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'xiangqi'}">
+          <li>Thang bot kho 3 van lien tiep.</li>
+          <li>Thang online khong mat xe/phao.</li>
+          <li>Ket thuc 10 tran Co tuong online.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'cards'}">
+          <li>Ve nhat 3 van Tien Len lien tiep.</li>
+          <li>Thang van bang toi trang.</li>
+          <li>Dat moc +100 diem tong trong ngay.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'blackjack'}">
+          <li>Dat blackjack tu nhien 3 van.</li>
+          <li>Thang lien tiep 5 van khong chay cuoc.</li>
+          <li>Chot van voi loi nhuan +200 tro len.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'quiz'}">
+          <li>Dat top 1 room voi ti le dung >= 80%.</li>
+          <li>Hoan thanh 5 room lien tiep khong roi giua tran.</li>
+          <li>Tra loi dung 10 cau lien tiep.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'typing'}">
+          <li>Ve dich dau tien 5 tran.</li>
+          <li>Dat 95% accuracy trong 3 tran lien tiep.</li>
+          <li>Cham moc WPM 80 tro len.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'minesweeper'}">
+          <li>Pha dao man De trong 60 giay.</li>
+          <li>Pha dao man Vua khong cam sai co.</li>
+          <li>Thang 3 man lien tiep o che do Kho.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list" th:if="${game.code == 'puzzle'}">
+          <li>Hoan thanh 4 mini-game trong 1 vong choi.</li>
+          <li>Dat tong 20 man giai trong tuan.</li>
+          <li>Chuoi 10 van giai lien tuc khong bo ngang.</li>
+        </ul>
+        <ul class="hub-portal-bullet-list"
+            th:if="${game.code != 'caro' and game.code != 'chess' and game.code != 'xiangqi' and game.code != 'cards' and game.code != 'blackjack' and game.code != 'quiz' and game.code != 'typing' and game.code != 'minesweeper' and game.code != 'puzzle'}">
+          <li>Hoan thanh 1 tran dau dau tien.</li>
+          <li>Dat chuoi 3 tran lien tiep.</li>
+          <li>Thang 10 tran o cung game mode.</li>
+        </ul>
       </section>
     </div>
 

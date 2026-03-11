@@ -11,6 +11,7 @@
     connected: false,
     roomId: '',
     room: null,
+    availableRooms: [],
     myHand: [],
     selectedCodes: new Set(),
     roomSub: null,
@@ -46,6 +47,7 @@
   function bindEls() {
     els.roomInput = document.getElementById('tlRoomIdInput');
     els.joinBtn = document.getElementById('tlJoinBtn');
+    els.randomJoinBtn = document.getElementById('tlRandomJoinBtn');
     els.startBtn = document.getElementById('tlStartBtn');
     els.surrenderBtn = document.getElementById('tlSurrenderBtn');
     els.leaveBtn = document.getElementById('tlLeaveBtn');
@@ -74,6 +76,7 @@
 
   function bindActions() {
     els.joinBtn?.addEventListener('click', () => joinRoomByInput());
+    els.randomJoinBtn?.addEventListener('click', () => joinRandomRoom());
     els.startBtn?.addEventListener('click', () => publish('/app/tienlen.start', { roomId: state.roomId, userId: me.userId }));
     els.surrenderBtn?.addEventListener('click', () => surrenderCurrentRoom());
     els.leaveBtn?.addEventListener('click', () => leaveCurrentRoom());
@@ -179,6 +182,39 @@
       return;
     }
     joinRoom(roomId);
+  }
+
+  function joinRandomRoom() {
+    const candidates = Array.isArray(state.availableRooms)
+      ? state.availableRooms.filter((room) => {
+        const roomId = String(room && room.roomId ? room.roomId : '').trim();
+        if (!roomId) return false;
+        const playerCount = Number(room.playerCount || 0);
+        const playerLimit = Math.max(1, Number(room.playerLimit || 4));
+        return playerCount < playerLimit;
+      })
+      : [];
+
+    if (candidates.length > 0) {
+      const picked = candidates[Math.floor(Math.random() * candidates.length)];
+      const roomId = String(picked.roomId || '').trim();
+      if (!roomId) {
+        setMessage('Khong chon duoc phong random, vui long thu lai');
+        return;
+      }
+      if (els.roomInput) {
+        els.roomInput.value = roomId;
+      }
+      joinRoom(roomId);
+      return;
+    }
+
+    const generatedRoomId = 'TL-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+    if (els.roomInput) {
+      els.roomInput.value = generatedRoomId;
+    }
+    setMessage('Khong co phong cho hop le. Dang tao phong moi...');
+    joinRoom(generatedRoomId);
   }
 
   function joinRoom(roomId) {
@@ -345,6 +381,7 @@
   }
 
   function renderRoomList(rooms) {
+    state.availableRooms = Array.isArray(rooms) ? rooms.slice() : [];
     if (!els.roomList) return;
     if (!rooms || rooms.length === 0) {
       els.roomList.innerHTML = '<div class="text-muted tl-empty-note">Chua co phong dang cho</div>';

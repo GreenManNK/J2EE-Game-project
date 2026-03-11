@@ -151,59 +151,50 @@
     <div class="caro-content-main">
       <section class="caro-article-card">
         <div class="caro-article-card__head">
-          <h2>Cach choi Caro (tom tat nhanh)</h2>
-          <span class="caro-section-tag">Huong dan</span>
+          <h2>Nhip gameplay Caro</h2>
+          <span class="caro-section-tag">Gameplay</span>
         </div>
-        <p>
-          Muc tieu la xep duoc 5 quan lien tiep theo hang ngang, doc hoac cheo truoc doi thu.
-          Moi luot ban dat 1 quan vao o trong. Van dau ket thuc khi co 1 ben tao duoc chuoi 5 quan
-          hop le hoac ban co khong con nuoc thang ro rang (tuy theo luat ban chon).
-        </p>
+        <p>Moi van Caro di theo mot nhac co dinh de giu toc do tran: vao phong, vao ban, ket van va tai dau.</p>
         <div class="caro-rule-grid">
           <div class="caro-rule-item">
             <strong>1.</strong>
-            <span>Chon che do: Truc tuyen / Bot / Cung may.</span>
+            <span>Chon che do: Truc tuyen / Bot / Cung may theo nhu cau tung tran.</span>
           </div>
           <div class="caro-rule-item">
             <strong>2.</strong>
-            <span>Danh luot X va O tren ban 10x10 cua du an.</span>
+            <span>Voi online: vao room, cho du nguoi va bat dau theo luot X/O.</span>
           </div>
           <div class="caro-rule-item">
             <strong>3.</strong>
-            <span>Tao duong 5 quan lien tiep de chien thang.</span>
+            <span>Nuoc di dong bo realtime, co chat va bo cuoc neu can.</span>
           </div>
           <div class="caro-rule-item">
             <strong>4.</strong>
-            <span>Neu truc tuyen, co chat va dau hang trong van.</span>
+            <span>Ket tran cap nhat ngay, mo rematch de vao van moi lien tuc.</span>
           </div>
         </div>
       </section>
 
       <section class="caro-article-card">
         <div class="caro-article-card__head">
-          <h2>Vi sao giao dien duoc doi theo kieu cong game?</h2>
-          <span class="caro-section-tag">UX</span>
+          <h2>Thanh tuu Caro theo moc</h2>
+          <span class="caro-section-tag">Achievement</span>
         </div>
-        <p>
-          Trang tham khao co diem manh la bo cuc huong-hanh-dong: nguoi choi nhin vao la biet bam
-          dau de vao van. Ban cap nhat nay dua y tuong do vao trang Caro cua du an, nhung van giu
-          route va logic hien co de khong anh huong backend / gameplay.
-        </p>
         <ul class="caro-bullet-list">
-          <li>Hero lon + CTA ro rang thay cho danh sach card co ban.</li>
-          <li>Them cac khoi thong tin kieu leaderboard / cong dong de tao "cam giac game portal".</li>
-          <li>Dat huong dan, luat, roadmap va game lien quan trong cung 1 trang.</li>
+          <li>Khoi dong nong may: hoan thanh tran online dau tien.</li>
+          <li>Bam nhip tot: thang 3 tran lien tiep trong room.</li>
+          <li>Nuoc di quyet doan: ha doi thu trong 20 nuoc tro xuong.</li>
+          <li>Ong vua sanh Caro: thang 10 tran voi 3 doi thu khac nhau.</li>
         </ul>
       </section>
 
       <section class="caro-article-card">
         <div class="caro-article-card__head">
-          <h2>Lich su va mo rong (cho module Caro)</h2>
+          <h2>Tien trinh cap nhat Caro</h2>
           <span class="caro-section-tag">Ke hoach</span>
         </div>
         <p class="mb-2">
-          Module Caro hien la game trung tam cua du an va da co truc tuyen/cung may/bot. Giao dien moi se
-          la nen de bo sung them thong ke, xep hang va lich su tran dau trong cac buoc tiep theo.
+          Module Caro dang la game trung tam va duoc bo sung tiep theo huong tang chieu sau tran dau.
         </p>
         <ul class="caro-bullet-list" th:if="${game != null and game.roadmapItems != null}">
           <li th:each="item : ${game.roadmapItems}" th:text="${item}">Muc tieu tiep theo</li>
