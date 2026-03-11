@@ -1,5 +1,11 @@
 (function () {
   const ROOM_AUTO_REFRESH_MS = 10000;
+  const ROOM_TOPIC_MAP = {
+    caro: { topic: '/topic/lobby.rooms', requestDestination: '' },
+    cards: { topic: '/topic/tienlen.rooms', requestDestination: '/app/tienlen.roomList' },
+    chess: { topic: '/topic/chess.rooms', requestDestination: '/app/chess.roomList' },
+    xiangqi: { topic: '/topic/xiangqi.rooms', requestDestination: '/app/xiangqi.roomList' }
+  };
   const boot = window.OnlineHubBoot || {};
   const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
     ? window.CaroUrl.path
@@ -23,6 +29,7 @@
 
   const els = {};
   let roomAutoRefreshTimer = 0;
+  let roomRealtimeClient = null;
 
   document.addEventListener('DOMContentLoaded', () => {
     bindEls();
@@ -31,8 +38,10 @@
       els.roomInput.value = state.roomId;
     }
     syncRoomUi();
+    initRealtimeRoomUpdates();
     loadRooms(false);
     startRoomAutoRefresh();
+    window.addEventListener('beforeunload', stopRealtimeRoomUpdates);
   });
 
   function bindEls() {
@@ -184,6 +193,95 @@
       window.clearInterval(roomAutoRefreshTimer);
       roomAutoRefreshTimer = 0;
     }
+  }
+
+  function initRealtimeRoomUpdates() {
+    const channel = roomTopicChannel(state.gameCode);
+    if (!channel || !window.StompJs || typeof window.SockJS === 'undefined') {
+      return;
+    }
+
+    roomRealtimeClient = new window.StompJs.Client({
+      webSocketFactory: () => new window.SockJS(appPath('/ws'), null, {
+        transports: ['websocket', 'xhr-streaming', 'xhr-polling']
+      }),
+      reconnectDelay: 3000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
+      connectionTimeout: 12000,
+      onConnect: () => {
+        roomRealtimeClient.subscribe(channel.topic, (frame) => {
+          const payload = parseJsonSafe(frame?.body);
+          if (!payload || typeof payload !== 'object') {
+            return;
+          }
+          const rows = normalizeRealtimeRows(state.gameCode, payload.rooms);
+          if (!rows) {
+            return;
+          }
+          cacheRoomRows(rows);
+          renderRoomList(rows);
+          syncRoomUi();
+          setRoomListNote('Nguon du lieu: server realtime');
+        });
+
+        if (channel.requestDestination) {
+          roomRealtimeClient.publish({
+            destination: channel.requestDestination,
+            body: '{}'
+          });
+        }
+      }
+    });
+    roomRealtimeClient.activate();
+  }
+
+  function stopRealtimeRoomUpdates() {
+    try {
+      if (roomRealtimeClient) {
+        roomRealtimeClient.deactivate();
+      }
+    } catch (_) {
+    } finally {
+      roomRealtimeClient = null;
+    }
+  }
+
+  function roomTopicChannel(gameCode) {
+    const key = String(gameCode || '').trim().toLowerCase();
+    return ROOM_TOPIC_MAP[key] || null;
+  }
+
+  function normalizeRealtimeRows(gameCode, roomsPayload) {
+    const key = String(gameCode || '').trim().toLowerCase();
+    if (key === 'caro') {
+      if (!Array.isArray(roomsPayload)) {
+        return null;
+      }
+      return roomsPayload.map((roomId) => ({
+        roomId: String(roomId || '').trim(),
+        playerCount: 1,
+        playerLimit: 2,
+        note: 'Dang cho doi thu'
+      })).filter((row) => row.roomId);
+    }
+
+    if (!Array.isArray(roomsPayload)) {
+      return null;
+    }
+
+    return roomsPayload.map((room) => {
+      const roomId = normalizeRoomId(room?.roomId);
+      const playerCount = Number(room?.playerCount || 0);
+      const playerLimit = Number(room?.playerLimit || 0);
+      const note = String(room?.note || '').trim();
+      return roomId ? {
+        roomId,
+        playerCount: Number.isFinite(playerCount) ? playerCount : 0,
+        playerLimit: Number.isFinite(playerLimit) ? playerLimit : 0,
+        note
+      } : null;
+    }).filter(Boolean);
   }
 
   async function loadRooms(silent) {
@@ -497,6 +595,14 @@
   function normalizeRoomId(value) {
     const text = String(value || '').trim();
     return text || '';
+  }
+
+  function parseJsonSafe(raw) {
+    try {
+      return JSON.parse(raw || '{}');
+    } catch (_) {
+      return null;
+    }
   }
 
   function cacheRoomRows(rooms) {
