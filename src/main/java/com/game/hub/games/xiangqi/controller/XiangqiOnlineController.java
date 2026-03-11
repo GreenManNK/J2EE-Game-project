@@ -37,7 +37,7 @@ public class XiangqiOnlineController {
         if (!normalizedRoomId.isEmpty()) {
             return buildRoomRedirect(normalizedRoomId, Boolean.TRUE.equals(spectate));
         }
-        return renderOnline("", request, model);
+        return "redirect:/online-hub?game=xiangqi";
     }
 
     @GetMapping("/online/room/{roomId}")

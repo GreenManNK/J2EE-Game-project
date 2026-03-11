@@ -48,6 +48,7 @@
     els.roomInput = document.getElementById('onlineHubRoomIdInput');
     els.createBtn = document.getElementById('onlineHubCreateBtn');
     els.joinBtn = document.getElementById('onlineHubJoinBtn');
+    els.quickJoinRandomBtn = document.getElementById('onlineHubQuickJoinRandomBtn');
     els.goPlayBtn = document.getElementById('onlineHubGoPlayBtn');
     els.goSpectateBtn = document.getElementById('onlineHubGoSpectateBtn');
     els.refreshBtn = document.getElementById('onlineHubRefreshBtn');
@@ -107,6 +108,37 @@
       }
       setRoomQueryInUrl(roomId);
       syncRoomUi();
+    });
+
+    els.quickJoinRandomBtn?.addEventListener('click', async () => {
+      const selectedRandomRoomId = pickRandomJoinableRoomId();
+      if (selectedRandomRoomId) {
+        state.roomId = selectedRandomRoomId;
+        if (els.roomInput) {
+          els.roomInput.value = selectedRandomRoomId;
+        }
+        setRoomQueryInUrl(selectedRandomRoomId);
+        syncRoomUi();
+        setStatus('Dang vao nhanh phong random: ' + selectedRandomRoomId + ' ...');
+        enterRoom(selectedRandomRoomId);
+        return;
+      }
+
+      setStatus('Khong co phong trong. Dang tao phong moi...');
+      const created = await createRoomViaApi();
+      const createdRoomId = normalizeRoomId(created?.roomId);
+      if (!createdRoomId) {
+        setStatus('Khong tim thay phong random va khong tao duoc phong moi.');
+        return;
+      }
+      state.roomId = createdRoomId;
+      if (els.roomInput) {
+        els.roomInput.value = createdRoomId;
+      }
+      setRoomQueryInUrl(createdRoomId);
+      syncRoomUi();
+      setStatus('Da tao phong random: ' + createdRoomId + '. Dang vao phong...');
+      enterRoom(createdRoomId);
     });
 
     els.goPlayBtn?.addEventListener('click', () => {
@@ -621,6 +653,25 @@
       return null;
     }
     return state.roomRowsById[state.roomId] || null;
+  }
+
+  function pickRandomJoinableRoomId() {
+    const rooms = Object.values(state.roomRowsById || {});
+    if (!Array.isArray(rooms) || rooms.length === 0) {
+      return '';
+    }
+    const candidates = rooms
+      .filter((room) => {
+        const roomId = normalizeRoomId(room?.roomId);
+        return roomId && !isRoomFull(room);
+      })
+      .map((room) => normalizeRoomId(room?.roomId))
+      .filter(Boolean);
+    if (candidates.length === 0) {
+      return '';
+    }
+    const index = Math.floor(Math.random() * candidates.length);
+    return candidates[index] || '';
   }
 
   function isRoomFull(room) {

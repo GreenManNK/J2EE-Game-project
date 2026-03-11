@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Co tuong - Chon che do')}"></head>
 <body>
@@ -32,7 +32,7 @@
       </div>
 
       <div class="hub-portal-action-grid">
-        <a th:href="@{/xiangqi/online}" class="hub-portal-action hub-portal-action--primary">
+        <a th:href="@{/online-hub(game='xiangqi')}" class="hub-portal-action hub-portal-action--primary">
           <span class="hub-portal-action__icon"><i class="bi bi-globe2"></i></span>
           <span class="hub-portal-action__text">
             <strong>Mo sanh phong</strong>
@@ -41,7 +41,7 @@
           <i class="bi bi-arrow-right"></i>
         </a>
 
-        <a th:href="@{/xiangqi/online}" class="hub-portal-action hub-portal-action--accent">
+        <a th:href="@{/online-hub(game='xiangqi')}" class="hub-portal-action hub-portal-action--accent">
           <span class="hub-portal-action__icon"><i class="bi bi-broadcast-pin"></i></span>
           <span class="hub-portal-action__text">
             <strong>Mo ban truc tuyen</strong>
@@ -174,11 +174,11 @@
       <section class="hub-portal-card">
         <h3>Vao che do nhanh</h3>
         <div class="hub-portal-side-actions">
-          <a th:href="@{/xiangqi/online}" class="hub-portal-side-action">
+          <a th:href="@{/online-hub(game='xiangqi')}" class="hub-portal-side-action">
             <i class="bi bi-globe2"></i>
             <div><strong>Mo sanh phong</strong><small>Tao / tim phong Co tuong</small></div>
           </a>
-          <a th:href="@{/xiangqi/online}" class="hub-portal-side-action">
+          <a th:href="@{/online-hub(game='xiangqi')}" class="hub-portal-side-action">
             <i class="bi bi-broadcast-pin"></i>
             <div><strong>Ban truc tuyen</strong><small>Vao ban truc tiep</small></div>
           </a>
@@ -215,4 +215,6 @@
 <th:block th:replace="~{fragments :: appScripts('games-xiangqi')}"></th:block>
 </body>
 </html>
+
+
 

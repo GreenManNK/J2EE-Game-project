@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Co tuong truc tuyen')}"></head>
 <body>
@@ -39,7 +39,7 @@
           <button id="xiangqiOnlineJoinPlayBtn" type="button" class="btn btn-sm theme-outline-btn d-none" disabled>Tham gia choi</button>
           <button id="xiangqiOnlineSwitchSpectateBtn" type="button" class="btn btn-sm theme-outline-btn d-none" disabled>Vao che do xem</button>
           <button id="xiangqiOnlineLeaveBtn" type="button" class="btn btn-sm btn-outline-danger">Roi phong</button>
-          <a class="btn btn-sm theme-outline-btn" th:href="@{/xiangqi/online}">Mo sanh phong</a>
+          <a class="btn btn-sm theme-outline-btn" th:href="@{/online-hub(game='xiangqi')}">Mo sanh phong</a>
           <a class="btn btn-sm theme-outline-btn" th:href="@{/games/xiangqi}">Ve trang che do</a>
         </div>
       </div>
@@ -236,4 +236,6 @@
 <script th:src="@{/js/xiangqi-online.js}"></script>
 </body>
 </html>
+
+
 

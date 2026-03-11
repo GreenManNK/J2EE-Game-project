@@ -36,7 +36,7 @@ public class TienLenController {
         if (!normalizedRoomId.isEmpty()) {
             return "redirect:/cards/tien-len/room/" + UriUtils.encodePathSegment(normalizedRoomId, StandardCharsets.UTF_8);
         }
-        return renderTienLen("", request, model);
+        return "redirect:/online-hub?game=cards";
     }
 
     @GetMapping("/tien-len/room/{roomId}")

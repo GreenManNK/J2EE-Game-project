@@ -36,7 +36,7 @@ public class QuizController {
             }
             return redirect.toString();
         }
-        return renderQuizPage();
+        return "redirect:/online-hub?game=quiz";
     }
 
     @GetMapping("/room/{roomId}")

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Dua go chu')}"></head>
 <body>
@@ -42,7 +42,7 @@
             </details>
 
             <div class="d-flex flex-wrap gap-2 mb-3">
-                <a th:href="@{/games/typing}" class="btn theme-outline-btn">Mo sanh phong</a>
+                <a th:href="@{/online-hub(game='typing')}" class="btn theme-outline-btn">Mo sanh phong</a>
                 <a th:href="@{/games}" class="btn theme-outline-btn">Ve thu vien</a>
             </div>
 
@@ -952,4 +952,6 @@
 </script>
 </body>
 </html>
+
+
 

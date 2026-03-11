@@ -22,11 +22,11 @@ public class LobbyController {
 
     @GetMapping
     public String index(@RequestParam(required = false) String roomId) {
-        String redirect = "redirect:/game";
+        String redirect = "redirect:/online-hub?game=caro";
         if (roomId == null || roomId.isBlank()) {
             return redirect;
         }
-        return redirect + "?roomId=" + UriUtils.encodeQueryParam(roomId.trim(), StandardCharsets.UTF_8);
+        return redirect + "&roomId=" + UriUtils.encodeQueryParam(roomId.trim(), StandardCharsets.UTF_8);
     }
 
     @ResponseBody

@@ -35,7 +35,7 @@ public class BlackjackController {
             }
             return redirect.toString();
         }
-        return renderBlackjackPage();
+        return "redirect:/online-hub?game=blackjack";
     }
 
     @GetMapping("/room/{roomId}")

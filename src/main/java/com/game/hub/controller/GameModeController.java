@@ -83,28 +83,7 @@ public class GameModeController {
     }
 
     private String onlinePlayUrl(String gameCode) {
-        if ("caro".equalsIgnoreCase(gameCode)) {
-            return "/game";
-        }
-        if ("chess".equalsIgnoreCase(gameCode)) {
-            return "/chess/online";
-        }
-        if ("xiangqi".equalsIgnoreCase(gameCode)) {
-            return "/xiangqi/online";
-        }
-        if ("cards".equalsIgnoreCase(gameCode)) {
-            return "/cards/tien-len";
-        }
-        if ("blackjack".equalsIgnoreCase(gameCode)) {
-            return "/games/cards/blackjack";
-        }
-        if ("typing".equalsIgnoreCase(gameCode)) {
-            return "/games/typing";
-        }
-        if ("quiz".equalsIgnoreCase(gameCode)) {
-            return "/games/quiz";
-        }
-        return "/games/" + gameCode;
+        return "/online-hub?game=" + gameCode;
     }
 
     private String normalizeDifficulty(String difficulty) {

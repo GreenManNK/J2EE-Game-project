@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Ban blackjack')}"></head>
 <body>
@@ -38,7 +38,7 @@
             </details>
 
             <div class="d-flex flex-wrap gap-2 mb-3">
-                <a th:href="@{/games/cards/blackjack}" class="btn theme-outline-btn">Mo sanh phong</a>
+                <a th:href="@{/online-hub(game='blackjack')}" class="btn theme-outline-btn">Mo sanh phong</a>
                 <a th:href="@{/games/cards}" class="btn theme-outline-btn">Ve trang che do</a>
             </div>
 
@@ -1025,5 +1025,7 @@
 </script>
 </body>
 </html>
+
+
 
 

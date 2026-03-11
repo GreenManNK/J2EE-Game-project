@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Caro - Chon che do')}"></head>
 <body>
@@ -40,7 +40,7 @@
       </div>
 
       <div class="caro-cta-grid">
-        <a th:href="@{/game}" class="caro-cta caro-cta--primary">
+        <a th:href="@{/online-hub(game='caro')}" class="caro-cta caro-cta--primary">
           <span class="caro-cta__icon"><i class="bi bi-lightning-charge-fill"></i></span>
           <span class="caro-cta__text">
             <strong>Mo sanh phong</strong>
@@ -215,7 +215,7 @@
       <section class="caro-sidebar-card">
         <h3>Chon che do theo nhu cau</h3>
         <div class="caro-side-action-list">
-          <a th:href="@{/game}" class="caro-side-action">
+          <a th:href="@{/online-hub(game='caro')}" class="caro-side-action">
             <i class="bi bi-globe2"></i>
             <div>
               <strong>Mo sanh phong</strong>
@@ -972,4 +972,6 @@
 <th:block th:replace="~{fragments :: appScripts('games-caro')}"></th:block>
 </body>
 </html>
+
+
 

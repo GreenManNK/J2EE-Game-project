@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Co vua truc tuyen')}"></head>
 <body>
@@ -39,7 +39,7 @@
           <button id="chessOnlineJoinPlayBtn" type="button" class="btn btn-sm theme-outline-btn d-none" disabled>Tham gia choi</button>
           <button id="chessOnlineSwitchSpectateBtn" type="button" class="btn btn-sm theme-outline-btn d-none" disabled>Vao che do xem</button>
           <button id="chessOnlineLeaveBtn" type="button" class="btn btn-sm btn-outline-danger">Roi phong</button>
-          <a class="btn btn-sm theme-outline-btn" th:href="@{/chess/online}">Mo sanh phong</a>
+          <a class="btn btn-sm theme-outline-btn" th:href="@{/online-hub(game='chess')}">Mo sanh phong</a>
           <a class="btn btn-sm theme-outline-btn" th:href="@{/games/chess}">Ve trang che do</a>
         </div>
       </div>
@@ -293,4 +293,6 @@
 <script th:src="@{/js/chess-online.js}"></script>
 </body>
 </html>
+
+
 

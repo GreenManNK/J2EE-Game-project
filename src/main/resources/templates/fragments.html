@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Ôªø<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <body>
 <th:block th:fragment="appHead(title)">
@@ -484,31 +484,31 @@
 
       <form id="cgGlobalSearchForm" class="cg-topbar__search" role="search">
         <i class="bi bi-search"></i>
-        <input id="cgGlobalSearchInput" type="search" placeholder="TÏm game, ch? d?, danh m?c...">
+        <input id="cgGlobalSearchInput" type="search" placeholder="T√¨m game, ch? d?, danh m?c...">
       </form>
 
       <div class="cg-topbar__actions">
         <button id="toggleThemeTopbar" class="cg-topbar__icon-btn" type="button" aria-label="Chuy?n giao di?n" title="Chuy?n giao di?n"><i class="bi bi-circle-half"></i></button>
-        <a class="cg-topbar__icon-btn" th:href="@{/friendship/notifications}" data-require-user-id="true" data-auth-only="true" aria-label="ThÙng b·o"><i class="bi bi-bell"></i></a>
-        <a class="cg-topbar__icon-btn" th:href="@{/games}" aria-label="YÍu thÌch"><i class="bi bi-heart"></i></a>
-        <a class="cg-topbar__icon-btn" th:href="@{/settings}" aria-label="C‡i d?t"><i class="bi bi-gear"></i></a>
+        <a class="cg-topbar__icon-btn" th:href="@{/friendship/notifications}" data-require-user-id="true" data-auth-only="true" aria-label="Th√¥ng b√°o"><i class="bi bi-bell"></i></a>
+        <a class="cg-topbar__icon-btn" th:href="@{/games}" aria-label="Y√™u th√≠ch"><i class="bi bi-heart"></i></a>
+        <a class="cg-topbar__icon-btn" th:href="@{/settings}" aria-label="C√†i d?t"><i class="bi bi-gear"></i></a>
         <a class="cg-topbar__account"
            th:href="@{/profile}"
            data-require-user-id="true"
            data-user-param="userId"
            data-auth-only="true"
-           aria-label="T‡i kho?n">
+           aria-label="T√†i kho?n">
           <img class="cg-topbar__account-avatar"
                data-current-user-avatar="true"
                th:src="@{/uploads/avatars/default-avatar.jpg}"
                src="/uploads/avatars/default-avatar.jpg"
-               alt="?nh d?i di?n t‡i kho?n">
+               alt="?nh d?i di?n t√†i kho?n">
           <span class="cg-topbar__account-text">
             <strong class="cg-topbar__account-name" data-current-user-name="true">Ngu?i choi</strong>
             <small class="cg-topbar__account-meta" data-current-user-meta="true">Tai khoan</small>
           </span>
         </a>
-        <a class="cg-topbar__login-btn" th:href="@{/account/login-page}" data-guest-only="true">–ang nh?p</a>
+        <a class="cg-topbar__login-btn" th:href="@{/account/login-page}" data-guest-only="true">√êang nh?p</a>
       </div>
     </div>
   </header>
@@ -519,35 +519,35 @@
     <a th:href="@{/games/caro}" class="cg-top-rail__item"><i class="bi bi-grid-3x3"></i> Caro</a>
     <a th:href="@{/games/chess}" class="cg-top-rail__item"><i class="bi bi-activity"></i> Chess</a>
     <a th:href="@{/games/xiangqi}" class="cg-top-rail__item"><i class="bi bi-diagram-3-fill"></i> Xiangqi</a>
-    <a th:href="@{/games/cards}" class="cg-top-rail__item"><i class="bi bi-suit-spade-fill"></i> B‡i l·</a>
+    <a th:href="@{/games/cards}" class="cg-top-rail__item"><i class="bi bi-suit-spade-fill"></i> B√†i l√°</a>
     <a th:href="@{/games/cards/blackjack}" class="cg-top-rail__item"><i class="bi bi-suit-club-fill"></i> Blackjack</a>
-    <a th:href="@{/games/minesweeper}" class="cg-top-rail__item"><i class="bi bi-asterisk"></i> DÚ mÏn</a>
+    <a th:href="@{/games/minesweeper}" class="cg-top-rail__item"><i class="bi bi-asterisk"></i> D√≤ m√¨n</a>
     <a th:href="@{/games/quiz}" class="cg-top-rail__item"><i class="bi bi-patch-question-fill"></i> Quiz</a>
-    <a th:href="@{/games/typing}" class="cg-top-rail__item"><i class="bi bi-keyboard-fill"></i> Gı ch?</a>
+    <a th:href="@{/games/typing}" class="cg-top-rail__item"><i class="bi bi-keyboard-fill"></i> G√µ ch?</a>
     <a th:href="@{/games/puzzle}" class="cg-top-rail__item"><i class="bi bi-puzzle-fill"></i> Gi?i d?</a>
-    <a th:href="@{/game}" class="cg-top-rail__item"><i class="bi bi-wifi"></i> Sanh phong</a>
+    <a th:href="@{/online-hub(game='caro')}" class="cg-top-rail__item"><i class="bi bi-wifi"></i> Sanh phong</a>
   </nav>
 
   <div id="friendSidebar" class="theme-text">
     <div class="app-shell-sidebar-scroll d-flex flex-column px-1">
       <div class="app-shell-sidebar-menu">
         <div class="app-shell-menu-group">
-          <div class="app-shell-menu-group__title">–i?u hu?ng</div>
+          <div class="app-shell-menu-group__title">√êi?u hu?ng</div>
           <a class="btn theme-outline-btn w-100 text-start fw-bold theme-text" th:href="@{/}"><i class="bi bi-house-fill me-2"></i> Trang ch?</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-clock-history me-2"></i> G?n d‚y</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-clock-history me-2"></i> G?n d√¢y</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-stars me-2"></i> M?i</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-fire me-2"></i> Xu hu?ng</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-arrow-repeat me-2"></i> C?p nh?t</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-grid-3x3-gap-fill me-2"></i> NguyÍn b?n</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/game}"><i class="bi bi-people-fill me-2"></i> Truc tuyen</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-grid-3x3-gap-fill me-2"></i> Nguy√™n b?n</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/online-hub(game='caro')}"><i class="bi bi-people-fill me-2"></i> Truc tuyen</a>
         </div>
 
         <div class="app-shell-menu-group">
           <div class="app-shell-menu-group__title">Danh m?c</div>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/cards}"><i class="bi bi-suit-spade-fill me-2"></i> –·nh b‡i</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/cards}"><i class="bi bi-suit-spade-fill me-2"></i> √ê√°nh b√†i</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/cards/blackjack}"><i class="bi bi-suit-club-fill me-2"></i> Blackjack</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/chess}"><i class="bi bi-activity me-2"></i> C? vua</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/minesweeper}"><i class="bi bi-asterisk me-2"></i> DÚ mÏn</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/minesweeper}"><i class="bi bi-asterisk me-2"></i> D√≤ m√¨n</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/quiz}"><i class="bi bi-patch-question-fill me-2"></i> Quiz</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/typing}"><i class="bi bi-keyboard-fill me-2"></i> Typing</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/puzzle}"><i class="bi bi-puzzle-fill me-2"></i> Puzzle</a>
@@ -556,7 +556,7 @@
         </div>
 
         <div class="app-shell-menu-group">
-          <div class="app-shell-menu-group__title">T‡i kho?n</div>
+          <div class="app-shell-menu-group__title">T√†i kho?n</div>
           <a class="app-shell-current-user theme-box"
              th:href="@{/profile}"
              data-require-user-id="true"
@@ -567,7 +567,7 @@
                  data-current-user-avatar="true"
                  th:src="@{/uploads/avatars/default-avatar.jpg}"
                  src="/uploads/avatars/default-avatar.jpg"
-                 alt="?nh d?i di?n t‡i kho?n">
+                 alt="?nh d?i di?n t√†i kho?n">
             <span class="app-shell-current-user__text">
               <strong class="app-shell-current-user__name" data-current-user-name="true">Ngu?i choi</strong>
               <small class="app-shell-current-user__meta" data-current-user-meta="true">Tai khoan</small>
@@ -575,9 +575,9 @@
           </a>
           <div class="app-shell-current-user--guest" data-guest-only="true">
             <strong>Chua dang nh?p</strong>
-            <span>–ang nh?p d? xem h? so, b?n bË, l?ch s? d?u v‡ d? li?u t‡i kho?n.</span>
+            <span>√êang nh?p d? xem h? so, b?n b√®, l?ch s? d?u v√† d? li?u t√†i kho?n.</span>
           </div>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/settings}"><i class="bi bi-gear-fill me-2"></i> C‡i d?t</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/settings}"><i class="bi bi-gear-fill me-2"></i> C√†i d?t</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/leaderboard}"><i class="bi bi-bar-chart-fill me-2"></i> B?ng x?p h?ng</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text"
              th:href="@{/history}"
@@ -587,12 +587,12 @@
           <a class="btn theme-outline-btn w-100 text-start theme-text"
              th:href="@{/friendship}"
              data-require-user-id="true"
-             data-auth-only="true"><i class="bi bi-people-fill me-2"></i> B?n bË</a>
+             data-auth-only="true"><i class="bi bi-people-fill me-2"></i> B?n b√®</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text"
              th:href="@{/friendship/notifications}"
              data-require-user-id="true"
-             data-auth-only="true"><i class="bi bi-bell-fill me-2"></i> ThÙng b·o</a>
-          <a id="myProfileLink" class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true"><i class="bi bi-person-circle me-2"></i> H? so c?a tÙi</a>
+             data-auth-only="true"><i class="bi bi-bell-fill me-2"></i> Th√¥ng b√°o</a>
+          <a id="myProfileLink" class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/profile}" data-require-user-id="true" data-user-param="userId" data-auth-only="true"><i class="bi bi-person-circle me-2"></i> H? so c?a t√¥i</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/chat-bot}"><i class="bi bi-robot me-2"></i> Tro ly chat</a>
           <button id="activateAdminBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true">
             <i class="bi bi-key-fill me-2"></i> Kich hoat quan tri
@@ -606,13 +606,13 @@
              data-auth-only="true"
              data-admin-only="true"
              data-role-allowed="Admin"><i class="bi bi-shield-lock me-2"></i> Trung tam quan tri</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/login-page}" data-guest-only="true"><i class="bi bi-box-arrow-in-right me-2"></i> –ang nh?p</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/register-page}" data-guest-only="true"><i class="bi bi-person-plus-fill me-2"></i> –ang k˝</a>
-          <button id="logoutBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true"><i class="bi bi-box-arrow-right me-2"></i> –ang xu?t</button>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/login-page}" data-guest-only="true"><i class="bi bi-box-arrow-in-right me-2"></i> √êang nh?p</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/account/register-page}" data-guest-only="true"><i class="bi bi-person-plus-fill me-2"></i> √êang k√Ω</a>
+          <button id="logoutBtn" class="btn theme-outline-btn w-100 text-start theme-text" type="button" data-auth-only="true"><i class="bi bi-box-arrow-right me-2"></i> √êang xu?t</button>
         </div>
         <form id="friendSearchForm" class="d-flex w-100" data-auth-only="true">
-          <input id="friendSearchInput" class="form-control me-2" placeholder="TÏm b?n...">
-          <button class="btn theme-outline-btn theme-text" type="submit">TÏm</button>
+          <input id="friendSearchInput" class="form-control me-2" placeholder="T√¨m b?n...">
+          <button class="btn theme-outline-btn theme-text" type="submit">T√¨m</button>
         </form>
         <button id="toggle-language" class="btn theme-outline-btn w-100 text-start theme-text" type="button">
           <i class="bi bi-translate me-2"></i><span id="currentLanguageLabel">Ti?ng Vi?t</span>
@@ -624,12 +624,12 @@
         <div id="friendListInlineContainer" class="theme-box">
           <div class="app-shell-friends-head">
             <div>
-              <div class="app-shell-friends-head__title">B?n bË</div>
+              <div class="app-shell-friends-head__title">B?n b√®</div>
               <div class="app-shell-friends-head__meta">Trang thai truc tuyen/ngoai tuyen cap nhat moi 5 giay</div>
             </div>
             <i class="bi bi-people-fill"></i>
           </div>
-          <div id="friendListContainer" class="small text-muted">–ang t?i danh s·ch b?n bË...</div>
+          <div id="friendListContainer" class="small text-muted">√êang t?i danh s√°ch b?n b√®...</div>
         </div>
       </div>
     </div>
@@ -640,11 +640,11 @@
 
 <div th:fragment="nav" class="d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
   <a class="btn btn-sm btn-outline-secondary" th:href="@{/}">Trang ch?</a>
-  <a class="btn btn-sm btn-outline-secondary" th:href="@{/games}">TrÚ choi</a>
-  <a class="btn btn-sm btn-outline-secondary" th:href="@{/lobby}">PhÚng ch?</a>
+  <a class="btn btn-sm btn-outline-secondary" th:href="@{/games}">Tr√≤ choi</a>
+  <a class="btn btn-sm btn-outline-secondary" th:href="@{/lobby}">Ph√≤ng ch?</a>
   <a class="btn btn-sm btn-outline-secondary" th:href="@{/game}">Game</a>
   <a class="btn btn-sm btn-outline-secondary" th:href="@{/leaderboard}">B?ng x?p h?ng</a>
-  <a class="btn btn-sm btn-outline-secondary" th:href="@{/account/login-page}">–ang nh?p</a>
+  <a class="btn btn-sm btn-outline-secondary" th:href="@{/account/login-page}">√êang nh?p</a>
 </div>
 
 <th:block th:fragment="appScripts(pageKey)">
@@ -752,8 +752,8 @@
           }
           sidebarScrim?.setAttribute("aria-hidden", String(!isMobileOpen));
           toggleBtn.setAttribute("aria-expanded", String(isMobileOpen));
-          toggleBtn.setAttribute("aria-label", isMobileOpen ? "–Ûng sidebar" : "M? sidebar");
-          toggleBtn.setAttribute("title", isMobileOpen ? "–Ûng sidebar" : "M? sidebar");
+          toggleBtn.setAttribute("aria-label", isMobileOpen ? "√ê√≥ng sidebar" : "M? sidebar");
+          toggleBtn.setAttribute("title", isMobileOpen ? "√ê√≥ng sidebar" : "M? sidebar");
         };
         syncSidebarToggleUi();
 
@@ -938,7 +938,7 @@
           ? "bi-circle-half"
           : (effectiveTheme === "dark" ? "bi-moon-stars-fill" : "bi-sun-fill");
         const darkLabel = tx("T?i");
-        const lightLabel = tx("S·ng");
+        const lightLabel = tx("S√°ng");
         const autoLabel = tx("T? d?ng");
         const themeLabel = tx("Giao di?n");
         const sidebarLabel = mode === "system"
@@ -988,13 +988,13 @@
           window.CaroUi?.toast?.(tx("B?n c?n dang nh?p"), { type: "warning" });
           return;
         }
-        const enteredCode = window.prompt(tx("Nh?p m„ kÌch ho?t Admin:"));
+        const enteredCode = window.prompt(tx("Nh?p m√£ k√≠ch ho?t Admin:"));
         if (enteredCode === null) {
           return;
         }
         const activationCode = String(enteredCode || "").trim();
         if (!activationCode) {
-          window.CaroUi?.toast?.(tx("M„ kÌch ho?t l‡ b?t bu?c"), { type: "warning" });
+          window.CaroUi?.toast?.(tx("M√£ k√≠ch ho?t l√† b?t bu?c"), { type: "warning" });
           return;
         }
 
@@ -1008,8 +1008,8 @@
           const payload = await response.json();
           const success = !!(payload && payload.success);
           const message = success
-            ? String(payload?.data?.message || tx("–„ kÌch ho?t vai trÚ Admin"))
-            : String(payload?.error || tx("KhÙng th? kÌch ho?t vai trÚ Admin"));
+            ? String(payload?.data?.message || tx("√ê√£ k√≠ch ho?t vai tr√≤ Admin"))
+            : String(payload?.error || tx("Kh√¥ng th? k√≠ch ho?t vai tr√≤ Admin"));
 
           window.CaroUi?.toast?.(message, { type: success ? "success" : "danger" });
           if (!success) {
@@ -1027,7 +1027,7 @@
           }
           window.setTimeout(() => window.location.reload(), 200);
         } catch (error) {
-          const message = String(error?.message || error || tx("KhÙng th? kÌch ho?t vai trÚ Admin"));
+          const message = String(error?.message || error || tx("Kh√¥ng th? k√≠ch ho?t vai tr√≤ Admin"));
           window.CaroUi?.toast?.(message, { type: "danger" });
         } finally {
           activateAdminBtn.disabled = false;
@@ -1046,4 +1046,7 @@
 </th:block>
 </body>
 </html>
+
+
+
 
