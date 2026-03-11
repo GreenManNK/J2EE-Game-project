@@ -1524,6 +1524,80 @@ body.dark-mode .gx-page-badge {
   flex-wrap: wrap;
 }
 
+/* Global action layout normalization */
+:root {
+  --gx-btn-h-sm: 34px;
+  --gx-btn-h-md: 42px;
+  --gx-btn-h-lg: 48px;
+}
+
+.btn.btn-sm {
+  min-height: var(--gx-btn-h-sm);
+  padding-top: 0.38rem;
+  padding-bottom: 0.38rem;
+}
+
+.btn:not(.btn-sm):not(.btn-lg),
+a.btn:not(.btn-sm):not(.btn-lg) {
+  min-height: var(--gx-btn-h-md);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.btn.btn-lg,
+a.btn.btn-lg {
+  min-height: var(--gx-btn-h-lg);
+}
+
+.gx-inline-actions,
+.hub-portal-inline-actions,
+.mode-page-card .mode-menu,
+.gx-section-card .d-flex.flex-wrap.gap-2,
+.gx-page-hero .d-flex.flex-wrap.gap-2 {
+  align-items: stretch;
+  row-gap: 10px !important;
+  column-gap: 10px !important;
+}
+
+.gx-inline-actions > .btn,
+.gx-inline-actions > a.btn,
+.hub-portal-inline-actions > .btn,
+.hub-portal-inline-actions > a.btn,
+.mode-page-card .mode-menu > .btn,
+.gx-section-card .d-flex.flex-wrap.gap-2 > .btn,
+.gx-section-card .d-flex.flex-wrap.gap-2 > a.btn,
+.gx-page-hero .d-flex.flex-wrap.gap-2 > .btn,
+.gx-page-hero .d-flex.flex-wrap.gap-2 > a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.hub-portal-action-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.hub-portal-inline-btn {
+  min-height: 34px;
+  padding: 7px 12px;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hub-portal-action {
+  min-height: 62px;
+}
+
+@media (max-width: 991.98px) {
+  .hub-portal-action-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 /* Auth shells */
 .auth-shell {
   width: min(1100px, 100%);
@@ -2270,6 +2344,22 @@ body.dark-mode .hub-portal-action--accent {
 }
 
 @media (max-width: 767.98px) {
+  .hub-portal-action-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gx-inline-actions > .btn,
+  .gx-inline-actions > a.btn,
+  .hub-portal-inline-actions > .btn,
+  .hub-portal-inline-actions > a.btn,
+  .gx-section-card .d-flex.flex-wrap.gap-2 > .btn,
+  .gx-section-card .d-flex.flex-wrap.gap-2 > a.btn,
+  .gx-page-hero .d-flex.flex-wrap.gap-2 > .btn,
+  .gx-page-hero .d-flex.flex-wrap.gap-2 > a.btn {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
   .theme-box,
   .card,
   .dropdown-menu,
