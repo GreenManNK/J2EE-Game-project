@@ -26,6 +26,7 @@
   --gx-radius-lg: 22px;
   --gx-radius-md: 16px;
   --gx-radius-sm: 12px;
+  --gx-shell-max: 1240px;
 
   --bg: var(--gx-page-bg);
   --card: rgba(255, 255, 255, 0.9);
@@ -73,6 +74,84 @@ body {
     radial-gradient(circle at 88% 10%, rgba(249, 115, 22, 0.12), transparent 46%),
     radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.08), transparent 55%),
     linear-gradient(180deg, var(--gx-page-bg), var(--gx-page-bg-deep));
+}
+
+/* Global layout sizing */
+.home-dashboard,
+.lobby-shell,
+.mode-page-shell,
+.game-online-shell,
+.gx-page-shell,
+.auth-shell,
+.private-chat-shell,
+.board-page-shell,
+.waiting-page-shell,
+.cg-home,
+.cg-browser-page {
+  width: min(var(--gx-shell-max), calc(100% - clamp(16px, 2.4vw, 34px)));
+  margin-inline: auto;
+}
+
+.gx-page-shell,
+.cg-home,
+.cg-browser-page,
+.home-dashboard,
+.lobby-shell,
+.mode-page-shell {
+  padding-bottom: clamp(74px, 9vw, 124px);
+}
+
+.gx-page-hero,
+.gx-section-card,
+.hub-portal-panel,
+.home-dashboard__hero,
+.home-dashboard__composer,
+.home-dashboard__feed {
+  border-radius: clamp(14px, 1.5vw, 22px) !important;
+}
+
+/* Global controls consistency */
+.btn,
+.form-control,
+.form-select,
+.form-check-input {
+  border-radius: 12px;
+}
+
+.btn {
+  min-height: 42px;
+}
+
+.btn.btn-sm {
+  min-height: 34px;
+}
+
+.form-control,
+.form-select {
+  min-height: 42px;
+  border-color: var(--gx-border);
+  box-shadow: none;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: color-mix(in srgb, var(--gx-accent) 52%, #93c5fd);
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--gx-accent) 18%, transparent);
+}
+
+.btn:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--gx-accent) 55%, #93c5fd);
+  outline-offset: 2px;
+}
+
+.btn,
+.theme-box,
+.card {
+  will-change: transform;
 }
 
 body::before {
@@ -2191,6 +2270,19 @@ body.dark-mode .hub-portal-action--accent {
 }
 
 @media (max-width: 767.98px) {
+  .theme-box,
+  .card,
+  .dropdown-menu,
+  .modal-content {
+    backdrop-filter: blur(4px);
+  }
+
+  .btn,
+  .form-control,
+  .form-select {
+    min-height: 40px;
+  }
+
   #friendSidebar {
     padding: 14px 10px 10px !important;
   }
