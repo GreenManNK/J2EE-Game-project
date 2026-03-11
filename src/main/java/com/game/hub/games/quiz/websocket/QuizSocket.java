@@ -14,9 +14,11 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -29,6 +31,7 @@ public class QuizSocket extends TextWebSocketHandler {
     private AchievementService achievementService;
 
     private final Map<WebSocketSession, QuizRoom> sessionToRoomMap = new ConcurrentHashMap<>();
+    private final Map<String, Set<WebSocketSession>> roomToSessionsMap = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -47,41 +50,78 @@ public class QuizSocket extends TextWebSocketHandler {
         if ("create".equals(action)) {
             QuizRoom room = quizService.createRoom();
             room.addPlayer(session);
-            sessionToRoomMap.put(session, room);
+            bindSessionToRoom(session, room);
             broadcastRoomState(room);
-        } else if ("join".equals(action)) {
+            return;
+        }
+
+        if ("join".equals(action)) {
             String roomId = String.valueOf(payload.getOrDefault("roomId", "")).trim();
             QuizRoom room = quizService.getRoom(roomId);
             if (room != null) {
                 room.addPlayer(session);
-                sessionToRoomMap.put(session, room);
+                bindSessionToRoom(session, room);
                 broadcastRoomState(room);
             } else {
                 sendError(session, "Room not found");
             }
-        } else if ("spectate".equals(action)) {
+            return;
+        }
+
+        if ("spectate".equals(action)) {
             String roomId = String.valueOf(payload.getOrDefault("roomId", "")).trim();
             QuizRoom room = quizService.getRoom(roomId);
             if (room != null) {
-                room.addSpectator(session);
-                sessionToRoomMap.put(session, room);
+                if (!room.addSpectator(session)) {
+                    sendError(session, "Spectator limit reached");
+                    return;
+                }
+                bindSessionToRoom(session, room);
                 broadcastRoomState(room);
             } else {
                 sendError(session, "Room not found");
             }
-        } else if ("start".equals(action)) {
-            QuizRoom room = sessionToRoomMap.get(session);
-            if (room != null) {
-                room.startGame();
-                broadcastQuestion(room);
-            } else {
+            return;
+        }
+
+        if ("leave".equals(action)) {
+            unbindSession(session, true);
+            return;
+        }
+
+        if ("start".equals(action)) {
+            QuizRoom room = resolveRoomForSession(session, payload);
+            if (room == null) {
                 sendError(session, "You are not in a room");
+                return;
             }
-        } else if ("answer".equals(action)) {
-            QuizRoom room = sessionToRoomMap.get(session);
+            String playerId = resolvePlayerId(session);
+            String hostPlayerId = room.getHostPlayerId();
+            if (hostPlayerId != null && !hostPlayerId.isBlank() && !hostPlayerId.equals(playerId)) {
+                sendError(session, "Only room host can start game");
+                return;
+            }
+            if (!room.startGame()) {
+                sendError(session, "Room has no players to start");
+                return;
+            }
+            broadcastQuestion(room);
+            return;
+        }
+
+        if ("answer".equals(action)) {
+            QuizRoom room = resolveRoomForSession(session, payload);
             if (room != null) {
                 Object answer = payload.get("answer");
-                room.answerQuestion(session, answer);
+                boolean accepted = room.answerQuestion(session, answer);
+                if (!accepted) {
+                    sendError(session, "Answer not accepted");
+                    return;
+                }
+                if (!room.hasEveryoneAnswered()) {
+                    broadcastRoomState(room);
+                    return;
+                }
                 room.nextQuestion();
                 if (room.isGameOver()) {
                     broadcastScores(room);
@@ -91,30 +131,39 @@ public class QuizSocket extends TextWebSocketHandler {
             } else {
                 sendError(session, "You are not in a room");
             }
+            return;
         }
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        QuizRoom room = sessionToRoomMap.get(session);
-        if (room != null) {
-            room.removePlayer(session);
-            sessionToRoomMap.remove(session);
-            if (room.getPlayers().isEmpty() && room.getSpectators().isEmpty()) {
-                quizService.removeRoom(room.getRoomId());
-            } else {
-                broadcastRoomState(room);
-            }
-        }
+        unbindSession(session, true);
     }
 
     private void broadcastRoomState(QuizRoom room) throws IOException {
+        if (room == null) {
+            return;
+        }
+        int totalQuestions = room.getTotalQuestions();
+        int questionNumber;
+        if (room.isGameOver()) {
+            questionNumber = totalQuestions;
+        } else if (room.isStarted()) {
+            questionNumber = Math.min(room.getCurrentQuestionIndex() + 1, Math.max(totalQuestions, 1));
+        } else {
+            questionNumber = 0;
+        }
+        String gameState = room.isGameOver() ? "FINISHED" : (room.isStarted() ? "PLAYING" : "WAITING");
+
         sendRoomMessage(room, Map.of(
-                "roomId", room.getRoomId(),
-                "players", room.getPlayers().size(),
-                "spectators", room.getSpectators().size(),
-                "questionNumber", room.getCurrentQuestionIndex() + 1,
-                "totalQuestions", room.getTotalQuestions()
+            "roomId", room.getRoomId(),
+            "players", room.getPlayers().size(),
+            "spectators", room.getSpectators().size(),
+            "hostPlayerId", room.getHostPlayerId() == null ? "" : room.getHostPlayerId(),
+            "answeredCount", room.getAnsweredCount(),
+            "questionNumber", questionNumber,
+            "totalQuestions", totalQuestions,
+            "gameState", gameState
         ));
     }
 
@@ -135,7 +184,10 @@ public class QuizSocket extends TextWebSocketHandler {
         Map<WebSocketSession, Integer> scores = room.getScores();
         Map<String, Integer> scorePayload = new LinkedHashMap<>();
         int topScore = scores.values().stream().mapToInt(Integer::intValue).max().orElse(0);
-        for (Map.Entry<WebSocketSession, Integer> entry : scores.entrySet()) {
+        List<Map.Entry<WebSocketSession, Integer>> orderedScores = scores.entrySet().stream()
+            .sorted(Map.Entry.<WebSocketSession, Integer>comparingByValue(Comparator.reverseOrder()))
+            .toList();
+        for (Map.Entry<WebSocketSession, Integer> entry : orderedScores) {
             WebSocketSession scoreSession = entry.getKey();
             int score = entry.getValue();
             String playerName = resolvePlayerName(scoreSession);
@@ -179,8 +231,7 @@ public class QuizSocket extends TextWebSocketHandler {
             }
         }
         for (WebSocketSession disconnected : disconnectedSessions) {
-            room.removePlayer(disconnected);
-            sessionToRoomMap.remove(disconnected);
+            unbindSessionQuietly(disconnected);
         }
         if (room.getPlayers().isEmpty() && room.getSpectators().isEmpty()) {
             quizService.removeRoom(room.getRoomId());
@@ -206,5 +257,72 @@ public class QuizSocket extends TextWebSocketHandler {
             return "guest-" + sessionId.substring(sessionId.length() - 8);
         }
         return "guest-" + sessionId;
+    }
+
+    private String resolvePlayerId(WebSocketSession session) {
+        return resolvePlayerName(session);
+    }
+
+    private QuizRoom resolveRoomForSession(WebSocketSession session, Map<String, Object> payload) {
+        QuizRoom room = sessionToRoomMap.get(session);
+        if (room != null) {
+            return room;
+        }
+        String roomId = String.valueOf(payload.getOrDefault("roomId", "")).trim();
+        if (roomId.isEmpty()) {
+            return null;
+        }
+        return quizService.getRoom(roomId);
+    }
+
+    private void bindSessionToRoom(WebSocketSession session, QuizRoom room) throws IOException {
+        QuizRoom previous = sessionToRoomMap.get(session);
+        if (previous != null && !previous.getRoomId().equals(room.getRoomId())) {
+            unbindSession(session, true);
+        }
+        sessionToRoomMap.put(session, room);
+        roomToSessionsMap.computeIfAbsent(room.getRoomId(), key -> ConcurrentHashMap.newKeySet()).add(session);
+    }
+
+    private void unbindSession(WebSocketSession session, boolean broadcastAfter) throws IOException {
+        QuizRoom room = sessionToRoomMap.remove(session);
+        if (room == null) {
+            return;
+        }
+        room.removePlayer(session);
+
+        Set<WebSocketSession> roomSessions = roomToSessionsMap.get(room.getRoomId());
+        if (roomSessions != null) {
+            roomSessions.remove(session);
+            if (roomSessions.isEmpty()) {
+                roomToSessionsMap.remove(room.getRoomId());
+            }
+        }
+
+        if (room.getPlayers().isEmpty() && room.getSpectators().isEmpty()) {
+            quizService.removeRoom(room.getRoomId());
+            return;
+        }
+
+        if (room.isStarted() && room.hasEveryoneAnswered()) {
+            room.nextQuestion();
+            if (room.isGameOver()) {
+                broadcastScores(room);
+            } else {
+                broadcastQuestion(room);
+            }
+            return;
+        }
+
+        if (broadcastAfter) {
+            broadcastRoomState(room);
+        }
+    }
+
+    private void unbindSessionQuietly(WebSocketSession session) {
+        try {
+            unbindSession(session, false);
+        } catch (Exception ignored) {
+        }
     }
 }

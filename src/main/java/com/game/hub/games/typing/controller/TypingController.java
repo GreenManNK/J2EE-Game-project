@@ -54,6 +54,7 @@ public class TypingController {
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("id", room.getId());
         summary.put("playerCount", room.getPlayerCount());
+        summary.put("playerLimit", room.getPlayerLimit());
         summary.put("gameState", room.getGameState());
         summary.put("textLength", room.getTextToType() == null ? 0 : room.getTextToType().length());
         return summary;

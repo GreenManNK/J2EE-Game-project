@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TypingRoom {
+    private static final int PLAYER_LIMIT = 4;
+    private static final int MIN_PLAYERS_TO_START = 2;
+
     private final String id;
     private String textToType;
     private final Map<String, PlayerProgress> players = new ConcurrentHashMap<>();
@@ -16,22 +19,32 @@ public class TypingRoom {
     }
 
     public boolean addPlayer(String playerId) {
-        if (players.size() < 2) {
-            players.put(playerId, new PlayerProgress());
-            if (players.size() == 2) {
-                gameState = GameState.PLAYING;
-            }
+        if (playerId == null || playerId.isBlank()) {
+            return false;
+        }
+        if (players.containsKey(playerId)) {
             return true;
         }
-        return false;
+        if (players.size() >= PLAYER_LIMIT) {
+            return false;
+        }
+
+        players.put(playerId, new PlayerProgress());
+        if (gameState == GameState.WAITING && players.size() >= MIN_PLAYERS_TO_START) {
+            gameState = GameState.PLAYING;
+        }
+        return true;
     }
 
     public void removePlayer(String playerId) {
-        players.remove(playerId);
+        PlayerProgress removed = players.remove(playerId);
+        if (removed == null) {
+            return;
+        }
         if (playerId != null && playerId.equals(winnerId)) {
             winnerId = null;
         }
-        if (gameState != GameState.FINISHED && players.size() < 2) {
+        if (gameState == GameState.PLAYING && players.size() < MIN_PLAYERS_TO_START) {
             gameState = GameState.WAITING;
         }
     }
@@ -64,7 +77,7 @@ public class TypingRoom {
         this.textToType = nextText;
         players.values().forEach(PlayerProgress::resetForRace);
         winnerId = null;
-        gameState = players.size() >= 2 ? GameState.PLAYING : GameState.WAITING;
+        gameState = players.size() >= MIN_PLAYERS_TO_START ? GameState.PLAYING : GameState.WAITING;
     }
 
     private double calculateAccuracy(String source, String typed) {
@@ -115,6 +128,8 @@ public class TypingRoom {
     public Map<String, PlayerProgress> getPlayers() { return players; }
     public GameState getGameState() { return gameState; }
     public int getPlayerCount() { return players.size(); }
+    public int getPlayerLimit() { return PLAYER_LIMIT; }
+    public boolean hasPlayer(String playerId) { return playerId != null && players.containsKey(playerId); }
 
     public enum GameState { WAITING, PLAYING, FINISHED }
 }

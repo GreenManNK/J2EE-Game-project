@@ -65,7 +65,9 @@ public class BlackjackController {
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("id", room.getId());
         summary.put("playerCount", room.getPlayers().size());
+        summary.put("playerLimit", room.getPlayerLimit());
         summary.put("spectatorCount", room.getSpectators().size());
+        summary.put("spectatorLimit", room.getSpectatorLimit());
         summary.put("gameState", room.getGameState());
         return summary;
     }

@@ -74,10 +74,19 @@ public class QuizController {
         summary.put("playerCount", room.getPlayers().size());
         summary.put("spectatorCount", room.getSpectators().size());
         int totalQuestions = room.getTotalQuestions();
-        int questionNumber = Math.min(room.getCurrentQuestionIndex() + 1, Math.max(totalQuestions, 1));
+        int questionNumber;
+        if (room.isGameOver()) {
+            questionNumber = totalQuestions;
+        } else if (room.isStarted()) {
+            questionNumber = Math.min(room.getCurrentQuestionIndex() + 1, Math.max(totalQuestions, 1));
+        } else {
+            questionNumber = 0;
+        }
         summary.put("questionNumber", questionNumber);
         summary.put("totalQuestions", totalQuestions);
-        summary.put("gameState", room.isGameOver() ? "FINISHED" : (room.getCurrentQuestionIndex() > 0 ? "PLAYING" : "WAITING"));
+        summary.put("answeredCount", room.getAnsweredCount());
+        summary.put("hostPlayerId", room.getHostPlayerId() == null ? "" : room.getHostPlayerId());
+        summary.put("gameState", room.isGameOver() ? "FINISHED" : (room.isStarted() ? "PLAYING" : "WAITING"));
         return summary;
     }
 }

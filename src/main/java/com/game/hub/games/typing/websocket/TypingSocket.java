@@ -61,7 +61,7 @@ public class TypingSocket extends TextWebSocketHandler {
                 return;
             }
             String playerId = resolvePlayerId(session);
-            if (!room.addPlayer(playerId)) {
+            if (!room.hasPlayer(playerId) && !room.addPlayer(playerId)) {
                 sendError(session, "Room is full");
                 return;
             }
@@ -70,20 +70,23 @@ public class TypingSocket extends TextWebSocketHandler {
             return;
         }
 
+        if ("leave".equals(action)) {
+            unbindSession(session, true);
+            return;
+        }
+
         if ("progress".equals(action)) {
-            TypingRoom room = sessionToRoomMap.get(session);
-            if (room == null) {
-                String roomId = String.valueOf(payload.getOrDefault("roomId", "")).trim();
-                if (!roomId.isEmpty()) {
-                    room = typingService.getRoom(roomId);
-                }
-            }
+            TypingRoom room = resolveRoomForSession(session, payload);
             if (room == null) {
                 sendError(session, "Room not found for current session");
                 return;
             }
             String typedText = String.valueOf(payload.getOrDefault("typed", ""));
             String playerId = resolvePlayerId(session);
+            if (!room.hasPlayer(playerId)) {
+                sendError(session, "You are not a player in this room");
+                return;
+            }
             room.updateProgress(playerId, typedText);
             broadcastRoom(room);
             if (room.getGameState() == TypingRoom.GameState.FINISHED) {
@@ -93,15 +96,14 @@ public class TypingSocket extends TextWebSocketHandler {
         }
 
         if ("rematch".equals(action)) {
-            TypingRoom room = sessionToRoomMap.get(session);
-            if (room == null) {
-                String roomId = String.valueOf(payload.getOrDefault("roomId", "")).trim();
-                if (!roomId.isEmpty()) {
-                    room = typingService.getRoom(roomId);
-                }
-            }
+            TypingRoom room = resolveRoomForSession(session, payload);
             if (room == null) {
                 sendError(session, "Room not found for rematch");
+                return;
+            }
+            String playerId = resolvePlayerId(session);
+            if (!room.hasPlayer(playerId)) {
+                sendError(session, "Only players in room can rematch");
                 return;
             }
             TypingRoom resetRoom = typingService.resetRoomRace(room.getId());
@@ -115,31 +117,29 @@ public class TypingSocket extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        TypingRoom room = sessionToRoomMap.remove(session);
-        String playerId = sessionPlayerIds.remove(session);
-        if (room == null) {
-            return;
-        }
-        if (playerId != null && !playerId.isBlank()) {
-            room.removePlayer(playerId);
-        }
-        Set<WebSocketSession> roomSessions = roomToSessionsMap.get(room.getId());
-        if (roomSessions != null) {
-            roomSessions.remove(session);
-            if (roomSessions.isEmpty()) {
-                roomToSessionsMap.remove(room.getId());
-                typingService.removeRoom(room.getId());
-            }
-        }
-        if (typingService.getRoom(room.getId()) != null) {
-            broadcastRoom(room);
-        }
+        unbindSession(session, true);
     }
 
-    private void bindSessionToRoom(WebSocketSession session, TypingRoom room, String playerId) {
+    private void bindSessionToRoom(WebSocketSession session, TypingRoom room, String playerId) throws Exception {
+        TypingRoom previousRoom = sessionToRoomMap.get(session);
+        if (previousRoom != null && !previousRoom.getId().equals(room.getId())) {
+            unbindSession(session, true);
+        }
         sessionToRoomMap.put(session, room);
         sessionPlayerIds.put(session, playerId);
         roomToSessionsMap.computeIfAbsent(room.getId(), key -> ConcurrentHashMap.newKeySet()).add(session);
+    }
+
+    private TypingRoom resolveRoomForSession(WebSocketSession session, Map<String, Object> payload) {
+        TypingRoom room = sessionToRoomMap.get(session);
+        if (room != null) {
+            return room;
+        }
+        String roomId = String.valueOf(payload.getOrDefault("roomId", "")).trim();
+        if (roomId.isEmpty()) {
+            return null;
+        }
+        return typingService.getRoom(roomId);
     }
 
     private void broadcastRoom(TypingRoom room) throws Exception {
@@ -161,6 +161,7 @@ public class TypingSocket extends TextWebSocketHandler {
                 roomPayload.put("winner", room.getWinner());
                 roomPayload.put("yourId", sessionPlayerIds.get(ws));
                 roomPayload.put("playerCount", room.getPlayers().size());
+                roomPayload.put("playerLimit", room.getPlayerLimit());
                 String payload = objectMapper.writeValueAsString(roomPayload);
                 try {
                     ws.sendMessage(new TextMessage(payload));
@@ -172,7 +173,7 @@ public class TypingSocket extends TextWebSocketHandler {
             }
         }
         for (WebSocketSession disconnected : disconnectedSessions) {
-            pruneSession(room, disconnected);
+            pruneSession(disconnected);
         }
     }
 
@@ -201,19 +202,56 @@ public class TypingSocket extends TextWebSocketHandler {
         return "guest-" + sessionId;
     }
 
-    private void pruneSession(TypingRoom room, WebSocketSession session) {
-        sessionToRoomMap.remove(session);
-        String playerId = sessionPlayerIds.remove(session);
-        if (playerId != null && !playerId.isBlank()) {
-            room.removePlayer(playerId);
+    private void pruneSession(WebSocketSession session) {
+        try {
+            unbindSession(session, false);
+        } catch (Exception ignored) {
         }
+    }
+
+    private void unbindSession(WebSocketSession session, boolean broadcastAfter) throws Exception {
+        TypingRoom room = sessionToRoomMap.remove(session);
+        String playerId = sessionPlayerIds.remove(session);
+        if (room == null) {
+            return;
+        }
+
         Set<WebSocketSession> sessions = roomToSessionsMap.get(room.getId());
         if (sessions != null) {
             sessions.remove(session);
             if (sessions.isEmpty()) {
                 roomToSessionsMap.remove(room.getId());
                 typingService.removeRoom(room.getId());
+                return;
             }
         }
+
+        if (playerId != null && !playerId.isBlank() && !hasOtherSessionForPlayer(room.getId(), playerId, session)) {
+            room.removePlayer(playerId);
+        }
+
+        if (broadcastAfter && typingService.getRoom(room.getId()) != null) {
+            broadcastRoom(room);
+        }
+    }
+
+    private boolean hasOtherSessionForPlayer(String roomId, String playerId, WebSocketSession excludingSession) {
+        if (roomId == null || roomId.isBlank() || playerId == null || playerId.isBlank()) {
+            return false;
+        }
+        Set<WebSocketSession> sessions = roomToSessionsMap.get(roomId);
+        if (sessions == null || sessions.isEmpty()) {
+            return false;
+        }
+        for (WebSocketSession session : sessions) {
+            if (session == null || session.equals(excludingSession)) {
+                continue;
+            }
+            String boundPlayerId = sessionPlayerIds.get(session);
+            if (playerId.equals(boundPlayerId)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

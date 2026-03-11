@@ -6,11 +6,11 @@ import com.game.hub.games.quiz.model.SingleCorrectQuestion;
 import com.game.hub.games.quiz.model.TypedAnswerQuestion;
 import org.springframework.web.socket.WebSocketSession;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class QuizRoom {
     private final String roomId;
@@ -19,44 +19,95 @@ public class QuizRoom {
     private final List<WebSocketSession> spectators;
     private final Set<String> answeredPlayerIds;
     private int currentQuestionIndex;
+    private boolean started;
+    private String hostPlayerId;
 
     public QuizRoom(String roomId, List<Question> questions) {
         this.roomId = roomId;
         this.questions = questions;
         this.players = new ConcurrentHashMap<>();
-        this.spectators = new ArrayList<>();
+        this.spectators = new CopyOnWriteArrayList<>();
         this.answeredPlayerIds = ConcurrentHashMap.newKeySet();
         this.currentQuestionIndex = 0;
+        this.started = false;
+        this.hostPlayerId = null;
     }
 
-    public void addPlayer(WebSocketSession session) {
-        players.putIfAbsent(session, 0);
+    public boolean addPlayer(WebSocketSession session) {
+        if (session == null) {
+            return false;
+        }
+        String joiningPlayerId = playerKey(session);
+        WebSocketSession existing = findPlayerSessionByKey(joiningPlayerId);
+        Integer score = 0;
+        if (existing != null) {
+            Integer existingScore = players.remove(existing);
+            answeredPlayerIds.remove(playerKey(existing));
+            if (existingScore != null) {
+                score = existingScore;
+            }
+        }
+        players.put(session, score);
+        spectators.removeIf(spectator -> isSameSession(spectator, session) || isSamePlayer(spectator, session));
+
+        if (hostPlayerId == null || hostPlayerId.isBlank()) {
+            hostPlayerId = joiningPlayerId;
+        }
+        return true;
     }
     
-    public void addSpectator(WebSocketSession session) {
-        if (spectators.size() < 4) {
-            spectators.add(session);
+    public boolean addSpectator(WebSocketSession session) {
+        if (session == null) {
+            return false;
         }
+        if (players.keySet().stream().anyMatch(player -> isSameSession(player, session) || isSamePlayer(player, session))) {
+            return true;
+        }
+        if (spectators.stream().anyMatch(spectator -> isSameSession(spectator, session) || isSamePlayer(spectator, session))) {
+            return true;
+        }
+        if (spectators.size() >= 4) {
+            return false;
+        }
+        spectators.add(session);
+        return true;
     }
 
     public void removePlayer(WebSocketSession session) {
         WebSocketSession playerSession = resolvePlayerSession(session);
         if (playerSession != null) {
+            String removedPlayerId = playerKey(playerSession);
             players.remove(playerSession);
-            answeredPlayerIds.remove(playerKey(playerSession));
+            answeredPlayerIds.remove(removedPlayerId);
+            if (removedPlayerId.equals(hostPlayerId)) {
+                hostPlayerId = players.keySet().stream()
+                    .map(this::playerKey)
+                    .findFirst()
+                    .orElse(null);
+            }
         }
-        spectators.removeIf(spectator -> isSameSession(spectator, session));
+        spectators.removeIf(spectator -> isSameSession(spectator, session) || isSamePlayer(spectator, session));
         answeredPlayerIds.remove(playerKey(session));
+        if (players.isEmpty()) {
+            started = false;
+            currentQuestionIndex = 0;
+            answeredPlayerIds.clear();
+        }
     }
 
-    public void startGame() {
+    public boolean startGame() {
+        if (players.isEmpty()) {
+            return false;
+        }
         currentQuestionIndex = 0;
+        started = true;
         answeredPlayerIds.clear();
         players.replaceAll((session, score) -> 0);
+        return true;
     }
 
     public Question getCurrentQuestion() {
-        if (currentQuestionIndex < questions.size()) {
+        if (started && currentQuestionIndex < questions.size()) {
             return questions.get(currentQuestionIndex);
         }
         return null;
@@ -66,6 +117,9 @@ public class QuizRoom {
         if (session == null) {
             return false;
         }
+        if (!started) {
+            return false;
+        }
         String playerId = playerKey(session);
         if (answeredPlayerIds.contains(playerId)) {
             return false;
@@ -73,11 +127,10 @@ public class QuizRoom {
 
         WebSocketSession playerSession = resolvePlayerSession(session);
         if (playerSession == null) {
-            if (players.size() == 1) {
-                playerSession = players.keySet().iterator().next();
-            } else {
-                return false;
-            }
+            playerSession = findPlayerSessionByKey(playerId);
+        }
+        if (playerSession == null) {
+            return false;
         }
 
         Question currentQuestion = getCurrentQuestion();
@@ -114,11 +167,20 @@ public class QuizRoom {
     }
 
     public void nextQuestion() {
+        if (!started) {
+            return;
+        }
         currentQuestionIndex++;
         answeredPlayerIds.clear();
+        if (currentQuestionIndex >= questions.size()) {
+            started = false;
+        }
     }
 
     public boolean hasEveryoneAnswered() {
+        if (!started || players.isEmpty()) {
+            return false;
+        }
         if (players.isEmpty()) {
             return false;
         }
@@ -134,7 +196,7 @@ public class QuizRoom {
     }
 
     public boolean isGameOver() {
-        return currentQuestionIndex >= questions.size();
+        return !started && currentQuestionIndex >= questions.size() && !questions.isEmpty();
     }
 
     public String getRoomId() {
@@ -157,6 +219,18 @@ public class QuizRoom {
         return questions.size();
     }
 
+    public int getAnsweredCount() {
+        return answeredPlayerIds.size();
+    }
+
+    public boolean isStarted() {
+        return started;
+    }
+
+    public String getHostPlayerId() {
+        return hostPlayerId;
+    }
+
     private WebSocketSession resolvePlayerSession(WebSocketSession session) {
         if (session == null) {
             return null;
@@ -172,6 +246,18 @@ public class QuizRoom {
         return null;
     }
 
+    private WebSocketSession findPlayerSessionByKey(String playerId) {
+        if (playerId == null || playerId.isBlank()) {
+            return null;
+        }
+        for (WebSocketSession session : players.keySet()) {
+            if (playerId.equals(playerKey(session))) {
+                return session;
+            }
+        }
+        return null;
+    }
+
     private boolean isSameSession(WebSocketSession first, WebSocketSession second) {
         if (first == second) {
             return true;
@@ -180,6 +266,13 @@ public class QuizRoom {
             return false;
         }
         return String.valueOf(first.getId()).equals(String.valueOf(second.getId()));
+    }
+
+    private boolean isSamePlayer(WebSocketSession first, WebSocketSession second) {
+        if (first == null || second == null) {
+            return false;
+        }
+        return playerKey(first).equals(playerKey(second));
     }
 
     private String playerKey(WebSocketSession session) {

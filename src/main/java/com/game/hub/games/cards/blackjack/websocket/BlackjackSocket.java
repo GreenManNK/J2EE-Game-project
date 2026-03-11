@@ -58,7 +58,11 @@ public class BlackjackSocket extends TextWebSocketHandler {
                 return;
             }
             String playerId = resolvePlayerId(session);
-            room.addPlayer(playerId);
+            BlackjackRoom.JoinResult joinResult = room.addPlayer(playerId);
+            if (joinResult == BlackjackRoom.JoinResult.ROOM_FULL) {
+                sendError(session, "Room is full");
+                return;
+            }
             bindSessionToRoom(session, room, playerId);
             broadcastRoom(room);
             return;
@@ -72,9 +76,18 @@ public class BlackjackSocket extends TextWebSocketHandler {
                 return;
             }
             String spectatorId = resolvePlayerId(session);
-            room.addSpectator(spectatorId);
+            BlackjackRoom.JoinResult spectateResult = room.addSpectator(spectatorId);
+            if (spectateResult == BlackjackRoom.JoinResult.ROOM_FULL) {
+                sendError(session, "Spectator limit reached");
+                return;
+            }
             bindSessionToRoom(session, room, spectatorId);
             broadcastRoom(room);
+            return;
+        }
+
+        if ("leave".equals(action)) {
+            unbindSession(session, true);
             return;
         }
 
@@ -163,28 +176,14 @@ public class BlackjackSocket extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        BlackjackRoom room = sessionToRoomMap.remove(session);
-        String playerId = sessionPlayerIds.remove(session);
-        if (room == null) {
-            return;
-        }
-        if (playerId != null && !playerId.isBlank()) {
-            room.removePlayer(playerId);
-        }
-        Set<WebSocketSession> sessions = roomToSessionsMap.get(room.getId());
-        if (sessions != null) {
-            sessions.remove(session);
-            if (sessions.isEmpty()) {
-                roomToSessionsMap.remove(room.getId());
-                blackjackService.removeRoom(room.getId());
-            }
-        }
-        if (blackjackService.getRoom(room.getId()) != null) {
-            broadcastRoom(room);
-        }
+        unbindSession(session, true);
     }
 
-    private void bindSessionToRoom(WebSocketSession session, BlackjackRoom room, String playerId) {
+    private void bindSessionToRoom(WebSocketSession session, BlackjackRoom room, String playerId) throws Exception {
+        BlackjackRoom previousRoom = sessionToRoomMap.get(session);
+        if (previousRoom != null && !previousRoom.getId().equals(room.getId())) {
+            unbindSession(session, true);
+        }
         sessionToRoomMap.put(session, room);
         sessionPlayerIds.put(session, playerId);
         roomToSessionsMap.computeIfAbsent(room.getId(), key -> ConcurrentHashMap.newKeySet()).add(session);
@@ -209,6 +208,8 @@ public class BlackjackSocket extends TextWebSocketHandler {
                 payloadMap.put("gameState", room.getGameState());
                 payloadMap.put("yourId", sessionPlayerIds.get(ws));
                 payloadMap.put("playerCount", room.getPlayers().size());
+                payloadMap.put("playerLimit", room.getPlayerLimit());
+                payloadMap.put("spectatorLimit", room.getSpectatorLimit());
                 String payload = objectMapper.writeValueAsString(payloadMap);
                 try {
                     ws.sendMessage(new TextMessage(payload));
@@ -220,7 +221,7 @@ public class BlackjackSocket extends TextWebSocketHandler {
             }
         }
         for (WebSocketSession disconnected : disconnectedSessions) {
-            pruneSession(room, disconnected);
+            pruneSession(disconnected);
         }
     }
 
@@ -260,20 +261,61 @@ public class BlackjackSocket extends TextWebSocketHandler {
         return "guest-" + sessionId;
     }
 
-    private void pruneSession(BlackjackRoom room, WebSocketSession session) {
-        sessionToRoomMap.remove(session);
-        String playerId = sessionPlayerIds.remove(session);
-        if (playerId != null && !playerId.isBlank()) {
-            room.removePlayer(playerId);
+    private void pruneSession(WebSocketSession session) {
+        try {
+            unbindSession(session, false);
+        } catch (Exception ignored) {
         }
+    }
+
+    private void unbindSession(WebSocketSession session, boolean broadcastAfter) throws Exception {
+        BlackjackRoom room = sessionToRoomMap.remove(session);
+        String playerId = sessionPlayerIds.remove(session);
+        if (room == null) {
+            return;
+        }
+
         Set<WebSocketSession> sessions = roomToSessionsMap.get(room.getId());
         if (sessions != null) {
             sessions.remove(session);
             if (sessions.isEmpty()) {
                 roomToSessionsMap.remove(room.getId());
-                blackjackService.removeRoom(room.getId());
             }
         }
+
+        if (playerId != null && !playerId.isBlank() && !hasOtherSessionForParticipant(room.getId(), playerId, session)) {
+            room.removePlayer(playerId);
+            room.removeSpectator(playerId);
+        }
+
+        if (room.getPlayers().isEmpty() && room.getSpectators().isEmpty()) {
+            blackjackService.removeRoom(room.getId());
+            return;
+        }
+
+        if (broadcastAfter && blackjackService.getRoom(room.getId()) != null) {
+            broadcastRoom(room);
+        }
+    }
+
+    private boolean hasOtherSessionForParticipant(String roomId, String participantId, WebSocketSession excludingSession) {
+        if (roomId == null || roomId.isBlank() || participantId == null || participantId.isBlank()) {
+            return false;
+        }
+        Set<WebSocketSession> sessions = roomToSessionsMap.get(roomId);
+        if (sessions == null || sessions.isEmpty()) {
+            return false;
+        }
+        for (WebSocketSession current : sessions) {
+            if (current == null || current.equals(excludingSession)) {
+                continue;
+            }
+            String boundId = sessionPlayerIds.get(current);
+            if (participantId.equals(boundId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void awardRoundWinners(BlackjackRoom room) {

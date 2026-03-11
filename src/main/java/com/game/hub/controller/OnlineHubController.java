@@ -25,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Controller
 @RequestMapping("/online-hub")
@@ -99,27 +100,52 @@ public class OnlineHubController {
         GameCatalogItem item = resolveGameItem(game);
         String gameCode = item.code();
 
+        RoomCreation creation = createRoomForGame(gameCode);
+
+        return Map.of(
+            "game", gameCode,
+            "roomId", creation.roomId(),
+            "serverCreated", creation.serverCreated(),
+            "onlineSupportedNow", onlineGameplayImplemented(gameCode),
+            "playUrlBase", playUrlBase(gameCode),
+            "playRoomParam", playRoomParam(gameCode),
+            "playUrlTemplate", playUrlTemplate(gameCode),
+            "spectateUrlTemplate", spectateUrlTemplate(gameCode),
+            "inviteUrlPathTemplate", invitePathTemplate(gameCode)
+        );
+    }
+
+    @ResponseBody
+    @PostMapping("/api/quick-random")
+    public Map<String, Object> quickRandom(@RequestParam(required = false) String game) {
+        GameCatalogItem item = resolveGameItem(game);
+        String gameCode = item.code();
+
+        List<RoomRow> rows = listRooms(gameCode);
+        List<RoomRow> joinableRooms = rows.stream()
+            .filter(this::isJoinableRoom)
+            .toList();
+
         String roomId;
+        boolean createdNew;
         boolean serverCreated;
-        if ("blackjack".equalsIgnoreCase(gameCode)) {
-            roomId = blackjackService.createRoom().getId();
-            serverCreated = true;
-        } else if ("typing".equalsIgnoreCase(gameCode)) {
-            roomId = typingService.createRoom().getId();
-            serverCreated = true;
-        } else if ("quiz".equalsIgnoreCase(gameCode)) {
-            roomId = quizService.createRoom().getRoomId();
-            serverCreated = true;
-        } else {
-            roomId = generatedRoomId(gameCode);
+        if (!joinableRooms.isEmpty()) {
+            RoomRow picked = joinableRooms.get(ThreadLocalRandom.current().nextInt(joinableRooms.size()));
+            roomId = picked.roomId();
+            createdNew = false;
             serverCreated = false;
+        } else {
+            RoomCreation creation = createRoomForGame(gameCode);
+            roomId = creation.roomId();
+            createdNew = true;
+            serverCreated = creation.serverCreated();
         }
 
         return Map.of(
             "game", gameCode,
             "roomId", roomId,
+            "createdNew", createdNew,
             "serverCreated", serverCreated,
-            "onlineSupportedNow", onlineGameplayImplemented(gameCode),
             "playUrlBase", playUrlBase(gameCode),
             "playRoomParam", playRoomParam(gameCode),
             "playUrlTemplate", playUrlTemplate(gameCode),
@@ -311,7 +337,7 @@ public class OnlineHubController {
             case PLAYING -> "Dang dua";
             case FINISHED -> "Tran vua ket thuc";
         };
-        return new RoomRow(room.getId(), room.getPlayerCount(), 2, note);
+        return new RoomRow(room.getId(), room.getPlayerCount(), room.getPlayerLimit(), note);
     }
 
     private RoomRow quizRoomRow(QuizRoom room) {
@@ -319,8 +345,10 @@ public class OnlineHubController {
         int spectatorCount = room.getSpectators().size();
         int total = room.getTotalQuestions();
         int current = Math.min(room.getCurrentQuestionIndex() + 1, Math.max(1, total));
-        String state = room.isGameOver() ? "FINISHED" : (room.getCurrentQuestionIndex() > 0 ? "PLAYING" : "WAITING");
-        String note = "Quiz " + state + " | Q" + current + "/" + total + " | Spectators " + spectatorCount;
+        String state = room.isGameOver() ? "FINISHED" : (room.isStarted() ? "PLAYING" : "WAITING");
+        String note = "Quiz " + state + " | Q" + current + "/" + total
+            + " | Da tra loi " + room.getAnsweredCount() + "/" + playerCount
+            + " | Spectators " + spectatorCount;
         return new RoomRow(room.getRoomId(), playerCount, 0, note);
     }
 
@@ -332,6 +360,32 @@ public class OnlineHubController {
     }
 
     public record RoomRow(String roomId, int playerCount, int playerLimit, String note) {
+    }
+
+    private record RoomCreation(String roomId, boolean serverCreated) {
+    }
+
+    private RoomCreation createRoomForGame(String gameCode) {
+        if ("blackjack".equalsIgnoreCase(gameCode)) {
+            return new RoomCreation(blackjackService.createRoom().getId(), true);
+        }
+        if ("typing".equalsIgnoreCase(gameCode)) {
+            return new RoomCreation(typingService.createRoom().getId(), true);
+        }
+        if ("quiz".equalsIgnoreCase(gameCode)) {
+            return new RoomCreation(quizService.createRoom().getRoomId(), true);
+        }
+        return new RoomCreation(generatedRoomId(gameCode), false);
+    }
+
+    private boolean isJoinableRoom(RoomRow row) {
+        if (row == null || row.roomId() == null || row.roomId().isBlank()) {
+            return false;
+        }
+        if (row.playerLimit() <= 0) {
+            return true;
+        }
+        return row.playerCount() < row.playerLimit();
     }
 
     private String generatedRoomId(String gameCode) {

@@ -10,9 +10,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BlackjackRoom {
+    private static final int PLAYER_LIMIT = 5;
+    private static final int SPECTATOR_LIMIT = 4;
+
     private final String id;
     private final Map<String, BlackjackPlayer> players = new ConcurrentHashMap<>();
-    private final List<String> spectators = new ArrayList<>();
+    private final Set<String> spectators = ConcurrentHashMap.newKeySet();
     private final Set<String> stoodPlayers = ConcurrentHashMap.newKeySet();
     private final Dealer dealer = new Dealer();
     private final Deck deck = new Deck();
@@ -22,22 +25,43 @@ public class BlackjackRoom {
         this.id = id;
     }
 
-    public void addPlayer(String playerId) {
-        if (players.size() < 5) {
-            players.put(playerId, new BlackjackPlayer(playerId, 1000));
+    public JoinResult addPlayer(String playerId) {
+        if (playerId == null || playerId.isBlank()) {
+            return JoinResult.ROOM_FULL;
         }
+        if (players.containsKey(playerId)) {
+            return JoinResult.ALREADY_IN_ROOM;
+        }
+        if (players.size() >= PLAYER_LIMIT) {
+            return JoinResult.ROOM_FULL;
+        }
+        players.put(playerId, new BlackjackPlayer(playerId, 1000));
+        spectators.remove(playerId);
+        return JoinResult.JOINED;
     }
     
-    public void addSpectator(String spectatorId) {
-        if (spectators.size() < 4) {
-            spectators.add(spectatorId);
+    public JoinResult addSpectator(String spectatorId) {
+        if (spectatorId == null || spectatorId.isBlank()) {
+            return JoinResult.ROOM_FULL;
         }
+        if (players.containsKey(spectatorId) || spectators.contains(spectatorId)) {
+            return JoinResult.ALREADY_IN_ROOM;
+        }
+        if (spectators.size() >= SPECTATOR_LIMIT) {
+            return JoinResult.ROOM_FULL;
+        }
+        spectators.add(spectatorId);
+        return JoinResult.JOINED;
     }
 
     public void removePlayer(String playerId) {
         players.remove(playerId);
         stoodPlayers.remove(playerId);
         spectators.remove(playerId);
+    }
+
+    public void removeSpectator(String spectatorId) {
+        spectators.remove(spectatorId);
     }
 
     public void startRound() {
@@ -179,7 +203,15 @@ public class BlackjackRoom {
     }
 
     public List<String> getSpectators() {
-        return spectators;
+        return new ArrayList<>(spectators);
+    }
+
+    public int getPlayerLimit() {
+        return PLAYER_LIMIT;
+    }
+
+    public int getSpectatorLimit() {
+        return SPECTATOR_LIMIT;
     }
 
     public List<String> getWinningPlayerIds() {
@@ -203,5 +235,11 @@ public class BlackjackRoom {
 
     public enum GameState {
         WAITING, PLAYER_TURN, DEALER_TURN
+    }
+
+    public enum JoinResult {
+        JOINED,
+        ALREADY_IN_ROOM,
+        ROOM_FULL
     }
 }

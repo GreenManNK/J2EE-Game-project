@@ -41,6 +41,17 @@
           <i class="bi bi-arrow-right"></i>
         </a>
 
+        <button type="button"
+                class="hub-portal-action hub-portal-action--accent js-quick-random-room"
+                data-game="xiangqi">
+          <span class="hub-portal-action__icon"><i class="bi bi-shuffle"></i></span>
+          <span class="hub-portal-action__text">
+            <strong>Vao nhanh random</strong>
+            <small>Tu dong vao phong cho hoac tao phong moi</small>
+          </span>
+          <i class="bi bi-arrow-right"></i>
+        </button>
+
         <a th:href="@{/online-hub(game='xiangqi')}" class="hub-portal-action hub-portal-action--accent">
           <span class="hub-portal-action__icon"><i class="bi bi-broadcast-pin"></i></span>
           <span class="hub-portal-action__text">
@@ -226,6 +237,53 @@
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('games-xiangqi')}"></th:block>
+<script>
+  (function () {
+    const quickBtn = document.querySelector('.js-quick-random-room[data-game]');
+    if (!quickBtn) {
+      return;
+    }
+    const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+      ? window.CaroUrl.path
+      : (value) => value;
+    const ui = window.CaroUi || {};
+
+    quickBtn.addEventListener('click', async () => {
+      if (quickBtn.disabled) {
+        return;
+      }
+      const gameCode = String(quickBtn.getAttribute('data-game') || '').trim();
+      if (!gameCode) {
+        return;
+      }
+      quickBtn.disabled = true;
+      try {
+        const url = appPath('/online-hub/api/quick-random?game=' + encodeURIComponent(gameCode));
+        const response = await fetch(url, { method: 'POST' });
+        if (!response.ok) {
+          throw new Error('Khong the chon phong random');
+        }
+        const payload = await response.json();
+        const roomId = String(payload.roomId || '').trim();
+        const template = String(payload.playUrlTemplate || '').trim();
+        if (!roomId || !template.includes('{roomId}')) {
+          throw new Error('Du lieu phong khong hop le');
+        }
+        const targetPath = template.replace('{roomId}', encodeURIComponent(roomId));
+        window.location.href = appPath(targetPath);
+      } catch (error) {
+        const msg = 'Khong the vao phong random. Thu lai sau.';
+        if (ui.toast) {
+          ui.toast(msg, { type: 'warning' });
+        } else {
+          alert(msg);
+        }
+      } finally {
+        quickBtn.disabled = false;
+      }
+    });
+  })();
+</script>
 </body>
 </html>
 
