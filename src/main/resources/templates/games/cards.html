@@ -32,7 +32,7 @@
       </div>
 
       <div class="hub-portal-action-grid">
-        <a th:href="@{/online-hub(game='cards')}" class="hub-portal-action hub-portal-action--primary">
+        <a th:href="@{/cards/tien-len}" class="hub-portal-action hub-portal-action--primary">
           <span class="hub-portal-action__icon"><i class="bi bi-globe2"></i></span>
           <span class="hub-portal-action__text">
             <strong>Mo sanh phong</strong>
@@ -174,7 +174,7 @@
       <section class="hub-portal-card">
         <h3>Vao che do nhanh</h3>
         <div class="hub-portal-side-actions">
-          <a th:href="@{/online-hub(game='cards')}" class="hub-portal-side-action">
+          <a th:href="@{/cards/tien-len}" class="hub-portal-side-action">
             <i class="bi bi-globe2"></i>
             <div><strong>Mo sanh phong</strong><small>Phong Tien Len 4 nguoi</small></div>
           </a>
@@ -215,3 +215,4 @@
 <th:block th:replace="~{fragments :: appScripts('games-cards')}"></th:block>
 </body>
 </html>
+

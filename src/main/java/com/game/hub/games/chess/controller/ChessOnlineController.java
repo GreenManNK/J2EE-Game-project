@@ -37,7 +37,7 @@ public class ChessOnlineController {
         if (!normalizedRoomId.isEmpty()) {
             return buildRoomRedirect(normalizedRoomId, Boolean.TRUE.equals(spectate));
         }
-        return "redirect:/online-hub?game=chess";
+        return renderOnline("", request, model);
     }
 
     @GetMapping("/online/room/{roomId}")

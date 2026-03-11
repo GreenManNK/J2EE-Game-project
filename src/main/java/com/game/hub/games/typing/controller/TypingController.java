@@ -29,7 +29,7 @@ public class TypingController {
         if (!normalizedRoomId.isEmpty()) {
             return "redirect:/games/typing/room/" + UriUtils.encodePathSegment(normalizedRoomId, StandardCharsets.UTF_8);
         }
-        return "redirect:/online-hub?game=typing";
+        return renderTypingPage();
     }
 
     @GetMapping("/room/{roomId}")

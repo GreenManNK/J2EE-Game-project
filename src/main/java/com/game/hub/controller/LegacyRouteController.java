@@ -3,6 +3,9 @@ package com.game.hub.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.util.UriUtils;
+
+import java.nio.charset.StandardCharsets;
 
 @Controller
 public class LegacyRouteController {
@@ -121,9 +124,13 @@ public class LegacyRouteController {
     public String onlineHub(@RequestParam(required = false) String game,
                             @RequestParam(required = false) String roomId) {
         String selectedGame = (game == null || game.isBlank()) ? "caro" : game;
-        StringBuilder redirect = new StringBuilder("redirect:/online-hub?game=").append(selectedGame);
+        String basePath = onlineBasePath(selectedGame);
+        StringBuilder redirect = new StringBuilder("redirect:").append(basePath);
         if (roomId != null && !roomId.isBlank()) {
-            redirect.append("&roomId=").append(roomId);
+            redirect.append("?")
+                .append(onlineRoomParam(selectedGame))
+                .append("=")
+                .append(UriUtils.encodeQueryParam(roomId.trim(), StandardCharsets.UTF_8));
         }
         return redirect.toString();
     }
@@ -141,5 +148,27 @@ public class LegacyRouteController {
     @GetMapping("/Account/Register")
     public String accountRegister() {
         return "redirect:/account/register-page";
+    }
+
+    private String onlineBasePath(String gameCode) {
+        String normalized = gameCode == null ? "" : gameCode.trim().toLowerCase();
+        return switch (normalized) {
+            case "caro" -> "/game";
+            case "cards" -> "/cards/tien-len";
+            case "blackjack" -> "/games/cards/blackjack";
+            case "chess" -> "/chess/online";
+            case "xiangqi" -> "/xiangqi/online";
+            case "typing" -> "/games/typing";
+            case "quiz" -> "/games/quiz";
+            default -> "/games/" + normalized;
+        };
+    }
+
+    private String onlineRoomParam(String gameCode) {
+        String normalized = gameCode == null ? "" : gameCode.trim().toLowerCase();
+        if ("typing".equals(normalized) || "quiz".equals(normalized) || "blackjack".equals(normalized)) {
+            return "room";
+        }
+        return "roomId";
     }
 }

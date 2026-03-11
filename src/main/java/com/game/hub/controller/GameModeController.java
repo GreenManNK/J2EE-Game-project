@@ -27,6 +27,7 @@ public class GameModeController {
         model.addAttribute("hasRealBotNow", hasRealBotNow(item.code()));
         model.addAttribute("easyUrl", botPlayUrl(item.code(), "easy"));
         model.addAttribute("hardUrl", botPlayUrl(item.code(), "hard"));
+        model.addAttribute("onlinePlayUrl", onlinePlayUrl(item.code()));
         return "game-mode/bot-picker";
     }
 
@@ -53,6 +54,7 @@ public class GameModeController {
         model.addAttribute("difficulty", normalizedDifficulty);
         model.addAttribute("difficultyLabel", "hard".equals(normalizedDifficulty) ? "Kho" : "De");
         model.addAttribute("backToPickerUrl", "/game-mode/bot?game=" + item.code());
+        model.addAttribute("onlinePlayUrl", onlinePlayUrl(item.code()));
         return "game-mode/bot-placeholder";
     }
 
@@ -78,6 +80,31 @@ public class GameModeController {
             || "chess".equalsIgnoreCase(gameCode)
             || "xiangqi".equalsIgnoreCase(gameCode)
             || "cards".equalsIgnoreCase(gameCode);
+    }
+
+    private String onlinePlayUrl(String gameCode) {
+        if ("caro".equalsIgnoreCase(gameCode)) {
+            return "/game";
+        }
+        if ("chess".equalsIgnoreCase(gameCode)) {
+            return "/chess/online";
+        }
+        if ("xiangqi".equalsIgnoreCase(gameCode)) {
+            return "/xiangqi/online";
+        }
+        if ("cards".equalsIgnoreCase(gameCode)) {
+            return "/cards/tien-len";
+        }
+        if ("blackjack".equalsIgnoreCase(gameCode)) {
+            return "/games/cards/blackjack";
+        }
+        if ("typing".equalsIgnoreCase(gameCode)) {
+            return "/games/typing";
+        }
+        if ("quiz".equalsIgnoreCase(gameCode)) {
+            return "/games/quiz";
+        }
+        return "/games/" + gameCode;
     }
 
     private String normalizeDifficulty(String difficulty) {

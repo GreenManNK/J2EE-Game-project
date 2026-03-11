@@ -32,7 +32,7 @@
       <div class="d-flex flex-wrap gap-2 mt-3">
         <a th:href="@{/}" class="btn theme-outline-btn">Ve trang chu</a>
         <a th:href="@{'/games/' + ${game.code}}" class="btn theme-outline-btn">Ve trang che do</a>
-        <a th:href="@{'/online-hub?game=' + ${game.code}}" class="btn theme-outline-btn">Mo sanh phong</a>
+        <a th:href="@{${onlinePlayUrl}}" class="btn theme-outline-btn">Mo sanh phong</a>
       </div>
     </div>
   </section>
@@ -41,3 +41,4 @@
 <th:block th:replace="~{fragments :: appScripts('game-mode-bot')}"></th:block>
 </body>
 </html>
+
