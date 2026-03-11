@@ -1,90 +1,67 @@
 package com.game.hub.service;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.Locale;
 
 @Service
 public class AvatarStorageService {
-    private static final long MAX_AVATAR_BYTES = 2L * 1024L * 1024L;
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
-    private static final Map<String, String> CONTENT_TYPE_TO_EXTENSION = Map.of(
-        "image/jpeg", "jpg",
-        "image/png", "png",
-        "image/gif", "gif",
-        "image/webp", "webp"
-    );
-
-    private final Path avatarDirectory;
-
-    public AvatarStorageService(@Value("${app.upload.avatar-dir:uploads/avatars}") String avatarDirectory) {
-        String configuredPath = (avatarDirectory == null || avatarDirectory.isBlank()) ? "uploads/avatars" : avatarDirectory.trim();
-        this.avatarDirectory = Path.of(configuredPath).toAbsolutePath().normalize();
-    }
+    public static final long MAX_AVATAR_BYTES = 406L * 1024L * 1024L;
 
     public StoreResult store(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            return StoreResult.error("Vui long chon file anh");
+            return StoreResult.error("Vui long chon tep avatar");
         }
         if (file.getSize() > MAX_AVATAR_BYTES) {
-            return StoreResult.error("Anh vuot qua gioi han 2MB");
-        }
-
-        String extension = resolveExtension(file);
-        if (extension == null) {
-            return StoreResult.error("Chi ho tro JPG, PNG, GIF, WEBP");
+            return StoreResult.error("Avatar vuot qua gioi han 406MB");
         }
 
         try {
-            Files.createDirectories(avatarDirectory);
-            String fileName = UUID.randomUUID() + "." + extension;
-            Path target = avatarDirectory.resolve(fileName).normalize();
-            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-            return StoreResult.ok("/uploads/avatars/" + fileName);
+            byte[] data = file.getBytes();
+            if (data.length == 0) {
+                return StoreResult.error("Tep avatar trong");
+            }
+            if (data.length > MAX_AVATAR_BYTES) {
+                return StoreResult.error("Avatar vuot qua gioi han 406MB");
+            }
+            String contentType = normalizeContentType(file.getContentType());
+            String originalFileName = trimToNull(file.getOriginalFilename());
+            return StoreResult.ok(data, contentType, originalFileName, data.length);
         } catch (IOException ex) {
-            return StoreResult.error("Khong the luu anh. Vui long thu lai");
+            return StoreResult.error("Khong the doc tep avatar. Vui long thu lai");
         }
     }
 
-    private String resolveExtension(MultipartFile file) {
-        String fromFileName = extensionOf(file.getOriginalFilename());
-        if (fromFileName != null) {
-            return fromFileName;
+    private String normalizeContentType(String contentType) {
+        String normalized = trimToNull(contentType);
+        if (normalized == null) {
+            return "application/octet-stream";
         }
-        String contentType = file.getContentType();
-        if (contentType == null) {
-            return null;
-        }
-        return CONTENT_TYPE_TO_EXTENSION.get(contentType.toLowerCase());
+        return normalized.toLowerCase(Locale.ROOT);
     }
 
-    private String extensionOf(String fileName) {
-        if (fileName == null) {
+    private String trimToNull(String value) {
+        if (value == null) {
             return null;
         }
-        int dot = fileName.lastIndexOf('.');
-        if (dot < 0 || dot == fileName.length() - 1) {
-            return null;
-        }
-        String ext = fileName.substring(dot + 1).trim().toLowerCase();
-        return ALLOWED_EXTENSIONS.contains(ext) ? ext : null;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
-    public record StoreResult(boolean success, String error, String avatarPath) {
-        public static StoreResult ok(String avatarPath) {
-            return new StoreResult(true, null, avatarPath);
+    public record StoreResult(boolean success,
+                              String error,
+                              byte[] binaryData,
+                              String contentType,
+                              String originalFileName,
+                              long sizeBytes) {
+        public static StoreResult ok(byte[] binaryData, String contentType, String originalFileName, long sizeBytes) {
+            return new StoreResult(true, null, binaryData, contentType, originalFileName, sizeBytes);
         }
 
         public static StoreResult error(String error) {
-            return new StoreResult(false, error, null);
+            return new StoreResult(false, error, null, null, null, 0L);
         }
     }
 }

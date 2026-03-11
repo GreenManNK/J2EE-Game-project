@@ -4,8 +4,14 @@ import com.game.hub.service.AccountService;
 import com.game.hub.service.AvatarStorageService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,11 +19,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/account")
 public class AccountController {
+    private static final String DEFAULT_AVATAR_RESOURCE_PATH = "static/uploads/avatars/default-avatar.jpg";
+    private static final MediaType DEFAULT_AVATAR_MEDIA_TYPE = MediaType.IMAGE_JPEG;
+
     private final AccountService accountService;
     private final AvatarStorageService avatarStorageService;
 
@@ -137,7 +147,27 @@ public class AccountController {
         if (!storeResult.success()) {
             return Map.of("success", false, "error", storeResult.error());
         }
-        return toResponse(accountService.updateAvatar(sessionUserId, storeResult.avatarPath()));
+        return toResponse(accountService.updateAvatarBinary(sessionUserId, storeResult));
+    }
+
+    @GetMapping("/avatar/{userId}")
+    public ResponseEntity<byte[]> getAvatarBinary(@PathVariable String userId) {
+        AccountService.AvatarBinaryPayload avatar = accountService.getAvatarBinary(userId);
+        if (avatar == null || avatar.binaryData() == null || avatar.binaryData().length == 0) {
+            return loadDefaultAvatarResponse();
+        }
+
+        MediaType mediaType = parseContentType(avatar.contentType());
+        long size = avatar.sizeBytes() > 0L ? avatar.sizeBytes() : avatar.binaryData().length;
+
+        ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok()
+            .contentType(mediaType)
+            .contentLength(size);
+        String fileName = sanitizeFileName(avatar.originalFileName());
+        if (fileName != null) {
+            responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"");
+        }
+        return responseBuilder.body(avatar.binaryData());
     }
 
     @GetMapping("/preferences")
@@ -394,6 +424,39 @@ public class AccountController {
 
     private String asString(Object value) {
         return value == null ? null : String.valueOf(value);
+    }
+
+    private MediaType parseContentType(String rawContentType) {
+        String normalized = rawContentType == null ? null : rawContentType.trim();
+        if (normalized == null || normalized.isEmpty()) {
+            return MediaType.APPLICATION_OCTET_STREAM;
+        }
+        try {
+            return MediaType.parseMediaType(normalized);
+        } catch (Exception ignored) {
+            return MediaType.APPLICATION_OCTET_STREAM;
+        }
+    }
+
+    private String sanitizeFileName(String rawFileName) {
+        if (rawFileName == null) {
+            return null;
+        }
+        String sanitized = rawFileName.trim().replace("\"", "'").replace("\r", "").replace("\n", "");
+        return sanitized.isEmpty() ? null : sanitized;
+    }
+
+    private ResponseEntity<byte[]> loadDefaultAvatarResponse() {
+        try {
+            ClassPathResource resource = new ClassPathResource(DEFAULT_AVATAR_RESOURCE_PATH);
+            byte[] body = StreamUtils.copyToByteArray(resource.getInputStream());
+            return ResponseEntity.ok()
+                .contentType(DEFAULT_AVATAR_MEDIA_TYPE)
+                .contentLength(body.length)
+                .body(body);
+        } catch (IOException ignored) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     public record RegisterRequest(String email, String displayName, String password, String avatarPath) {

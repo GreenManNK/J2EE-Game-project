@@ -5,6 +5,10 @@ server:
   forward-headers-strategy: framework
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 406MB
+      max-request-size: 406MB
   mail:
     host: ${MAIL_HOST:}
     port: ${MAIL_PORT:587}

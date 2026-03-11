@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.game.hub.entity.EmailVerificationToken;
 import com.game.hub.entity.PasswordResetToken;
 import com.game.hub.entity.UserAccount;
+import com.game.hub.entity.UserAvatarBinary;
 import com.game.hub.repository.EmailVerificationTokenRepository;
 import com.game.hub.repository.PasswordResetTokenRepository;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.repository.UserAvatarBinaryRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,8 +38,11 @@ public class AccountService {
     private static final String GAME_CODE_MINESWEEPER = "minesweeper";
     private static final int PUZZLE_RECENT_LIMIT = 8;
     private static final int GAMES_BROWSER_RECENT_LIMIT = 20;
+    private static final String DEFAULT_AVATAR_PATH = "/uploads/avatars/default-avatar.jpg";
+    private static final String DB_AVATAR_PATH_PREFIX = "/account/avatar/";
 
     private final UserAccountRepository userAccountRepository;
+    private final UserAvatarBinaryRepository userAvatarBinaryRepository;
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
@@ -48,6 +53,7 @@ public class AccountService {
     private final Random random = new Random();
 
     public AccountService(UserAccountRepository userAccountRepository,
+                          UserAvatarBinaryRepository userAvatarBinaryRepository,
                           EmailVerificationTokenRepository emailVerificationTokenRepository,
                           PasswordResetTokenRepository passwordResetTokenRepository,
                           PasswordEncoder passwordEncoder,
@@ -56,6 +62,7 @@ public class AccountService {
                           @Value("${app.admin.default-email:luckhaikiet@gmail.com}") String defaultAdminEmail,
                           @Value("${app.admin.activation-code:j2ee20262027}") String adminActivationCode) {
         this.userAccountRepository = userAccountRepository;
+        this.userAvatarBinaryRepository = userAvatarBinaryRepository;
         this.emailVerificationTokenRepository = emailVerificationTokenRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
@@ -151,7 +158,7 @@ public class AccountService {
         user.setUsername(pending.email());
         user.setDisplayName(pending.displayName());
         user.setAvatarPath(pending.avatarPath() == null || pending.avatarPath().isBlank()
-            ? "/uploads/avatars/default-avatar.jpg" : pending.avatarPath());
+            ? DEFAULT_AVATAR_PATH : pending.avatarPath());
         user.setPassword(passwordEncoder.encode(pending.password()));
         user.setEmailConfirmed(true);
         user.setRole(isDefaultAdminEmail(pending.email()) ? "Admin" : "User");
@@ -212,7 +219,7 @@ public class AccountService {
             user.setEmail(normalizedEmail);
             user.setUsername(normalizedEmail);
             user.setDisplayName(displayName);
-            user.setAvatarPath("/uploads/avatars/default-avatar.jpg");
+            user.setAvatarPath(DEFAULT_AVATAR_PATH);
             user.setPassword(passwordEncoder.encode(UUID.randomUUID() + ":" + provider + ":" + providerUserId));
             user.setEmailConfirmed(true);
             user.setRole(isDefaultAdminEmail(normalizedEmail) ? "Admin" : "User");
@@ -224,7 +231,7 @@ public class AccountService {
                 user.setUsername(normalizedEmail);
             }
             if (trimToNull(user.getAvatarPath()) == null) {
-                user.setAvatarPath("/uploads/avatars/default-avatar.jpg");
+                user.setAvatarPath(DEFAULT_AVATAR_PATH);
             }
             if (user.getPassword() == null || user.getPassword().isBlank()) {
                 user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
@@ -296,7 +303,7 @@ public class AccountService {
         user.setDisplayName(normalizedDisplayName);
         user.setEmail(normalizedEmail);
         user.setUsername(normalizedEmail);
-        user.setAvatarPath(normalizedAvatarPath == null ? "/uploads/avatars/default-avatar.jpg" : normalizedAvatarPath);
+        user.setAvatarPath(normalizedAvatarPath == null ? DEFAULT_AVATAR_PATH : normalizedAvatarPath);
         userAccountRepository.save(user);
 
         return ServiceResult.ok(Map.of(
@@ -304,7 +311,7 @@ public class AccountService {
             "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
             "email", user.getEmail() == null ? "" : user.getEmail(),
             "role", user.getRole() == null ? "User" : user.getRole(),
-            "avatarPath", user.getAvatarPath() == null ? "/uploads/avatars/default-avatar.jpg" : user.getAvatarPath(),
+            "avatarPath", user.getAvatarPath() == null ? DEFAULT_AVATAR_PATH : user.getAvatarPath(),
             "message", "Profile updated"
         ));
     }
@@ -331,8 +338,63 @@ public class AccountService {
             "email", user.getEmail() == null ? "" : user.getEmail(),
             "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
             "role", user.getRole() == null ? "User" : user.getRole(),
-            "avatarPath", user.getAvatarPath() == null ? "/uploads/avatars/default-avatar.jpg" : user.getAvatarPath()
+            "avatarPath", user.getAvatarPath() == null ? DEFAULT_AVATAR_PATH : user.getAvatarPath()
         ));
+    }
+
+    @Transactional
+    public ServiceResult updateAvatarBinary(String userId, AvatarStorageService.StoreResult avatarContent) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return ServiceResult.error("Login required");
+        }
+        if (avatarContent == null || !avatarContent.success() || avatarContent.binaryData() == null || avatarContent.binaryData().length == 0) {
+            return ServiceResult.error("Avatar data is required");
+        }
+        if (avatarContent.sizeBytes() > AvatarStorageService.MAX_AVATAR_BYTES || avatarContent.binaryData().length > AvatarStorageService.MAX_AVATAR_BYTES) {
+            return ServiceResult.error("Avatar vuot qua gioi han 406MB");
+        }
+
+        UserAccount user = userAccountRepository.findById(normalizedUserId).orElse(null);
+        if (user == null) {
+            return ServiceResult.error("User not found");
+        }
+
+        UserAvatarBinary avatarBinary = userAvatarBinaryRepository.findById(normalizedUserId).orElseGet(UserAvatarBinary::new);
+        avatarBinary.setUserId(normalizedUserId);
+        avatarBinary.setBinaryData(avatarContent.binaryData());
+        avatarBinary.setContentType(normalizeAvatarContentType(avatarContent.contentType()));
+        avatarBinary.setOriginalFileName(trimToNull(avatarContent.originalFileName()));
+        long resolvedSizeBytes = avatarContent.sizeBytes() > 0L ? avatarContent.sizeBytes() : avatarContent.binaryData().length;
+        avatarBinary.setSizeBytes(resolvedSizeBytes);
+        userAvatarBinaryRepository.save(avatarBinary);
+
+        user.setAvatarPath(DB_AVATAR_PATH_PREFIX + normalizedUserId);
+        userAccountRepository.save(user);
+
+        return ServiceResult.ok(Map.of(
+            "userId", user.getId(),
+            "email", user.getEmail() == null ? "" : user.getEmail(),
+            "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
+            "role", user.getRole() == null ? "User" : user.getRole(),
+            "avatarPath", user.getAvatarPath() == null ? DEFAULT_AVATAR_PATH : user.getAvatarPath(),
+            "message", "Avatar uploaded"
+        ));
+    }
+
+    public AvatarBinaryPayload getAvatarBinary(String userId) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return null;
+        }
+        return userAvatarBinaryRepository.findById(normalizedUserId)
+            .map(avatar -> new AvatarBinaryPayload(
+                avatar.getBinaryData(),
+                normalizeAvatarContentType(avatar.getContentType()),
+                avatar.getOriginalFileName(),
+                avatar.getSizeBytes() > 0L ? avatar.getSizeBytes() : (avatar.getBinaryData() == null ? 0L : avatar.getBinaryData().length)
+            ))
+            .orElse(null);
     }
 
     public ServiceResult getPreferences(String userId) {
@@ -794,7 +856,7 @@ public class AccountService {
             "role", "Admin",
             "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
             "email", user.getEmail() == null ? "" : user.getEmail(),
-            "avatarPath", user.getAvatarPath() == null ? "/uploads/avatars/default-avatar.jpg" : user.getAvatarPath(),
+            "avatarPath", user.getAvatarPath() == null ? DEFAULT_AVATAR_PATH : user.getAvatarPath(),
             "message", roleChanged ? "Admin role activated" : "Account is already Admin"
         ));
     }
@@ -833,6 +895,9 @@ public class AccountService {
     }
 
     public record OAuth2LoginRequest(String provider, String providerUserId, String email, String displayName) {
+    }
+
+    public record AvatarBinaryPayload(byte[] binaryData, String contentType, String originalFileName, long sizeBytes) {
     }
 
     public record PreferencesRequest(String themeMode,
@@ -1388,8 +1453,13 @@ public class AccountService {
             "email", user.getEmail() == null ? "" : user.getEmail(),
             "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
             "role", user.getRole() == null ? "User" : user.getRole(),
-            "avatarPath", user.getAvatarPath() == null ? "/uploads/avatars/default-avatar.jpg" : user.getAvatarPath()
+            "avatarPath", user.getAvatarPath() == null ? DEFAULT_AVATAR_PATH : user.getAvatarPath()
         );
+    }
+
+    private String normalizeAvatarContentType(String contentType) {
+        String normalized = trimToNull(contentType);
+        return normalized == null ? "application/octet-stream" : normalized;
     }
 
     private String syntheticOauthEmail(String provider, String providerUserId) {

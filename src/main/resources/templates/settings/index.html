@@ -79,7 +79,7 @@
             <input id="settingsAvatarFile"
                    class="form-control"
                    type="file"
-                   accept=".jpg,.jpeg,.png,.gif,.webp,image/*"
+                   accept="*/*"
                    th:disabled="${!isAuthenticated}">
             <button id="settingsUploadAvatarBtn"
                     type="button"
@@ -87,7 +87,7 @@
                     th:disabled="${!isAuthenticated}">
               Tai anh
             </button>
-            <div class="form-text">Toi da 2MB (JPG/PNG/GIF/WEBP)</div>
+            <div class="form-text">Toi da 406MB, chap nhan moi dinh dang (bao gom GIF va MP4).</div>
           </div>
           <div class="col-12 d-flex gap-2">
             <button type="submit" class="btn btn-primary" th:disabled="${!isAuthenticated}">

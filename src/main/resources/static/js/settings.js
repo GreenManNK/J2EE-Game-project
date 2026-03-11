@@ -533,7 +533,7 @@
       }
       const file = avatarFileInput?.files && avatarFileInput.files[0];
       if (!file) {
-        setStatus(accountStatus, "Vui long chon tep anh.", false);
+        setStatus(accountStatus, "Vui long chon tep avatar.", false);
         return;
       }
 
@@ -549,8 +549,8 @@
         const ok = !!(data && data.success);
         const updated = data?.data || {};
         const message = ok
-          ? String(updated.message || "Tai anh dai dien thanh cong")
-          : String(data?.error || "Khong the tai anh dai dien");
+          ? String(updated.message || "Tai avatar thanh cong")
+          : String(data?.error || "Khong the tai avatar");
         setStatus(accountStatus, message, ok);
         notify(message, ok ? "success" : "danger");
         if (!ok) {
@@ -575,7 +575,7 @@
           avatarPath: resolvedAvatarPath
         });
       } catch (error) {
-        const message = String(error?.message || error || "Khong the tai anh dai dien");
+        const message = String(error?.message || error || "Khong the tai avatar");
         setStatus(accountStatus, message, false);
         notify(message, "danger");
         updateAvatarPreview(avatarPathInput?.value || DEFAULT_AVATAR_PATH);
