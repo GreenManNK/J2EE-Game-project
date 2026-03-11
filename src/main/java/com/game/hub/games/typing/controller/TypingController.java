@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.util.UriUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +27,9 @@ public class TypingController {
     public String typingPage(@RequestParam(required = false) String room) {
         String normalizedRoomId = room == null ? "" : room.trim();
         if (!normalizedRoomId.isEmpty()) {
-            return "redirect:/games/typing/room/" + normalizedRoomId;
+            return "redirect:/games/typing/room/" + UriUtils.encodePathSegment(normalizedRoomId, StandardCharsets.UTF_8);
         }
-        return renderTypingPage();
+        return "redirect:/online-hub?game=typing";
     }
 
     @GetMapping("/room/{roomId}")

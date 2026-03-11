@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.util.UriUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,13 +28,14 @@ public class BlackjackController {
                                 @RequestParam(required = false) String mode) {
         String normalizedRoomId = room == null ? "" : room.trim();
         if (!normalizedRoomId.isEmpty()) {
-            StringBuilder redirect = new StringBuilder("redirect:/games/cards/blackjack/room/").append(normalizedRoomId);
+            StringBuilder redirect = new StringBuilder("redirect:/games/cards/blackjack/room/")
+                .append(UriUtils.encodePathSegment(normalizedRoomId, StandardCharsets.UTF_8));
             if ("spectate".equalsIgnoreCase(mode)) {
                 redirect.append("/spectate");
             }
             return redirect.toString();
         }
-        return renderBlackjackPage();
+        return "redirect:/online-hub?game=blackjack";
     }
 
     @GetMapping("/room/{roomId}")

@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.util.UriUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,13 +29,14 @@ public class QuizController {
                            @RequestParam(required = false) String mode) {
         String normalizedRoomId = room == null ? "" : room.trim();
         if (!normalizedRoomId.isEmpty()) {
-            StringBuilder redirect = new StringBuilder("redirect:/games/quiz/room/").append(normalizedRoomId);
+            StringBuilder redirect = new StringBuilder("redirect:/games/quiz/room/")
+                .append(UriUtils.encodePathSegment(normalizedRoomId, StandardCharsets.UTF_8));
             if ("spectate".equalsIgnoreCase(mode)) {
                 redirect.append("/spectate");
             }
             return redirect.toString();
         }
-        return renderQuizPage();
+        return "redirect:/online-hub?game=quiz";
     }
 
     @GetMapping("/room/{roomId}")

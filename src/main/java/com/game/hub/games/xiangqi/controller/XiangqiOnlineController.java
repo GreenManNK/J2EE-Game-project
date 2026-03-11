@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.util.UriUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @Controller
@@ -35,7 +37,7 @@ public class XiangqiOnlineController {
         if (!normalizedRoomId.isEmpty()) {
             return buildRoomRedirect(normalizedRoomId, Boolean.TRUE.equals(spectate));
         }
-        return renderOnline("", request, model);
+        return "redirect:/online-hub?game=xiangqi";
     }
 
     @GetMapping("/online/room/{roomId}")
@@ -120,7 +122,8 @@ public class XiangqiOnlineController {
     }
 
     private String buildRoomRedirect(String roomId, boolean spectate) {
-        StringBuilder redirect = new StringBuilder("redirect:/xiangqi/online/room/").append(roomId);
+        StringBuilder redirect = new StringBuilder("redirect:/xiangqi/online/room/")
+            .append(UriUtils.encodePathSegment(roomId, StandardCharsets.UTF_8));
         if (spectate) {
             redirect.append("/spectate");
         }

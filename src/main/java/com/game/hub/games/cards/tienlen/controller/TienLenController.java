@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.util.UriUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @Controller
@@ -32,9 +34,9 @@ public class TienLenController {
                           Model model) {
         String normalizedRoomId = roomId == null ? "" : roomId.trim();
         if (!normalizedRoomId.isEmpty()) {
-            return "redirect:/cards/tien-len/room/" + normalizedRoomId;
+            return "redirect:/cards/tien-len/room/" + UriUtils.encodePathSegment(normalizedRoomId, StandardCharsets.UTF_8);
         }
-        return renderTienLen("", request, model);
+        return "redirect:/online-hub?game=cards";
     }
 
     @GetMapping("/tien-len/room/{roomId}")
