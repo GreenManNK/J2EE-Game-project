@@ -1,32 +1,40 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Thong bao khoa tai khoan')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('account-ban')}"></div>
 
-<main class="auth-shell">
-  <div class="auth-shell__grid">
-    <section class="theme-box gx-section-card w-100 mx-auto mt-4 auth-card-lg">
-      <div class="home-dashboard__eyebrow">
+<main class="auth-shell auth-onboard">
+  <section class="auth-onboard__card" aria-labelledby="banTitle">
+    <div class="auth-onboard__chrome">
+      <a class="auth-onboard__nav-btn" th:href="@{/account/login-page}" aria-label="Quay lai dang nhap">
+        <i class="bi bi-chevron-left"></i>
+      </a>
+      <div class="auth-onboard__title">Thong bao tai khoan</div>
+      <a class="auth-onboard__close-btn" th:href="@{/}" aria-label="Dong thong bao tai khoan">
+        <i class="bi bi-x-lg"></i>
+      </a>
+    </div>
+
+    <div class="auth-onboard__body">
+      <div class="auth-onboard__eyebrow">
         <i class="bi bi-shield-x"></i>
-        <span>Account Notice</span>
+        <span>Trang thai tai khoan</span>
       </div>
-      <div class="alert alert-danger shadow-sm mt-3 mb-2" role="alert">
+      <h1 id="banTitle" class="auth-onboard__heading">Tai khoan can duoc xem lai</h1>
+      <div class="alert alert-danger shadow-sm mt-1 mb-0" role="alert">
         <h4 class="alert-heading">Thong bao khoa tai khoan</h4>
         <p class="mb-0" th:text="${message}">Tai khoan cua ban da bi khoa tam thoi.</p>
       </div>
-      <a th:href="@{/account/login-page}" class="btn btn-outline-secondary">Ve trang dang nhap</a>
-    </section>
-
-    <aside class="theme-box auth-side-panel">
-      <div class="home-dashboard__eyebrow">
-        <i class="bi bi-info-circle"></i>
-        <span>Support</span>
+      <p class="auth-onboard__copy">
+        Neu thong bao nay xuat hien ngoai du kien, vui long lien he quan tri vien de duoc ho tro.
+      </p>
+      <div class="auth-onboard__support">
+        <a th:href="@{/account/login-page}" class="auth-onboard__link-btn">Ve trang dang nhap</a>
+        <a th:href="@{/chat-bot}" class="auth-onboard__link-btn">Mo ho tro</a>
       </div>
-      <h2 class="theme-text mt-2">Can xem lai trang thai tai khoan</h2>
-      <p>Neu thong bao nay xuat hien ngoai du kien, vui long lien he quan tri vien de duoc ho tro.</p>
-    </aside>
-  </div>
+    </div>
+  </section>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('account-ban')}"></th:block>

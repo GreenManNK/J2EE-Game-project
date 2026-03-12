@@ -47,6 +47,7 @@ build/
 .tools/cloudflared.exe
 *.pid
 cloudflared*.log
+public-fallback-tunnel*.log
 run-*.log
 run.out.log
 run.err.log

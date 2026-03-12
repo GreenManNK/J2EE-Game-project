@@ -1,0 +1,254 @@
+:root {
+  --unified-app-bg:
+    radial-gradient(circle at top left, rgba(122, 72, 255, 0.16), transparent 30%),
+    radial-gradient(circle at 85% 18%, rgba(0, 194, 255, 0.14), transparent 28%),
+    linear-gradient(180deg, #07101f 0%, #0c1528 52%, #0a1323 100%);
+  --unified-surface-bg: linear-gradient(180deg, rgba(17, 25, 47, 0.94), rgba(10, 15, 31, 0.98));
+  --unified-surface-strong: linear-gradient(180deg, rgba(24, 33, 62, 0.96), rgba(11, 17, 34, 0.99));
+  --unified-border: rgba(126, 143, 196, 0.24);
+  --unified-border-strong: rgba(150, 170, 230, 0.38);
+  --unified-shadow: 0 22px 50px rgba(2, 7, 22, 0.34);
+  --unified-text: #eff4ff;
+  --unified-muted: rgba(196, 206, 236, 0.78);
+  --unified-accent-start: #6d4aff;
+  --unified-accent-end: #8a56ff;
+}
+
+body:not(.game-index) {
+  background: var(--unified-app-bg) fixed;
+}
+
+body:not(.game-index) .gx-page-shell,
+body:not(.game-index) .auth-shell,
+body:not(.game-index) .cg-home,
+body:not(.game-index) .cg-market-catalog,
+body:not(.game-index) .hub-page-shell,
+body:not(.game-index) .board-page-shell {
+  position: relative;
+  z-index: 1;
+}
+
+body:not(.game-index) .theme-box,
+body:not(.game-index) .gx-section-card,
+body:not(.game-index) .card.theme-box,
+body:not(.game-index) .home-dashboard__composer,
+body:not(.game-index) .home-dashboard__feed {
+  background: var(--unified-surface-bg);
+  border: 1px solid var(--unified-border);
+  box-shadow: var(--unified-shadow);
+  backdrop-filter: blur(14px);
+}
+
+body:not(.game-index) .gx-page-hero.theme-box,
+body:not(.game-index) .hub-portal-hero.theme-box {
+  background:
+    radial-gradient(circle at top left, rgba(120, 77, 255, 0.24), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(0, 191, 255, 0.14), transparent 28%),
+    var(--unified-surface-strong);
+  border-color: rgba(144, 161, 224, 0.28);
+}
+
+body:not(.game-index) .gx-page-title,
+body:not(.game-index) .hub-portal-hero-title,
+body:not(.game-index) .theme-box h1,
+body:not(.game-index) .theme-box h2,
+body:not(.game-index) .theme-box h3,
+body:not(.game-index) .theme-box h4,
+body:not(.game-index) .theme-box h5 {
+  color: #f4f8ff;
+  letter-spacing: -0.02em;
+}
+
+body:not(.game-index) .gx-page-subtitle,
+body:not(.game-index) .gx-section-card__meta,
+body:not(.game-index) .theme-box p,
+body:not(.game-index) .theme-box small,
+body:not(.game-index) .text-muted {
+  color: var(--unified-muted) !important;
+}
+
+body:not(.game-index) .gx-inline-actions,
+body:not(.game-index) .auth-onboard__support {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+body:not(.game-index) .gx-page-badge,
+body:not(.game-index) .home-dashboard__eyebrow,
+body:not(.game-index) .cg-chip,
+body:not(.game-index) .account-drawer__chip {
+  border: 1px solid rgba(146, 161, 223, 0.24);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body:not(.game-index) .form-control,
+body:not(.game-index) .form-select,
+body:not(.game-index) .input-group-text,
+body:not(.game-index) textarea.form-control {
+  min-height: 50px;
+  border-radius: 16px;
+  border: 1px solid rgba(128, 145, 205, 0.24);
+  background: rgba(5, 10, 24, 0.82);
+  color: #eff4ff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+body:not(.game-index) textarea.form-control {
+  min-height: 120px;
+}
+
+body:not(.game-index) .form-control::placeholder,
+body:not(.game-index) .form-select::placeholder {
+  color: rgba(195, 205, 237, 0.46);
+}
+
+body:not(.game-index) .form-control:focus,
+body:not(.game-index) .form-select:focus,
+body:not(.game-index) textarea.form-control:focus {
+  border-color: rgba(124, 92, 255, 0.88);
+  box-shadow: 0 0 0 4px rgba(123, 92, 255, 0.14);
+  background: rgba(7, 12, 28, 0.92);
+  color: #fff;
+}
+
+body:not(.game-index) .btn,
+body:not(.game-index) a.btn {
+  border-radius: 16px;
+  font-weight: 700;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+body:not(.game-index) .btn:hover,
+body:not(.game-index) a.btn:hover {
+  transform: translateY(-1px);
+}
+
+body:not(.game-index) .btn-primary,
+body:not(.game-index) .btn-success,
+body:not(.game-index) .hub-portal-inline-btn,
+body:not(.game-index) .account-drawer__profile-btn {
+  border-color: transparent;
+  background: linear-gradient(90deg, var(--unified-accent-start) 0%, var(--unified-accent-end) 100%);
+  color: #fff;
+  box-shadow: 0 14px 28px rgba(80, 48, 188, 0.24);
+}
+
+body:not(.game-index) .btn-outline-primary,
+body:not(.game-index) .btn-outline-secondary,
+body:not(.game-index) .btn-outline-danger,
+body:not(.game-index) .btn-outline-warning,
+body:not(.game-index) .btn-outline-light,
+body:not(.game-index) .theme-outline-btn,
+body:not(.game-index) .auth-onboard__link-btn {
+  border-color: rgba(129, 147, 208, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  color: #eef4ff;
+}
+
+body:not(.game-index) .btn-outline-primary:hover,
+body:not(.game-index) .btn-outline-secondary:hover,
+body:not(.game-index) .btn-outline-danger:hover,
+body:not(.game-index) .btn-outline-warning:hover,
+body:not(.game-index) .btn-outline-light:hover,
+body:not(.game-index) .theme-outline-btn:hover,
+body:not(.game-index) .auth-onboard__link-btn:hover {
+  border-color: rgba(161, 178, 234, 0.44);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+body:not(.game-index) .table-responsive {
+  border-radius: 20px;
+  border: 1px solid rgba(126, 143, 196, 0.18);
+  background: rgba(3, 8, 20, 0.5);
+}
+
+body:not(.game-index) .table {
+  color: #eef4ff;
+  margin-bottom: 0;
+}
+
+body:not(.game-index) .table > :not(caption) > * > * {
+  background: transparent;
+  border-color: rgba(120, 138, 191, 0.18);
+  color: inherit;
+}
+
+body:not(.game-index) .table thead th,
+body:not(.game-index) .theme-table-header > th {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f4f8ff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+}
+
+body:not(.game-index) .table tbody tr:hover > * {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+body:not(.game-index) .list-group-item {
+  background: transparent;
+  border-color: rgba(125, 142, 191, 0.16);
+  color: #eef4ff;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+body:not(.game-index) .alert {
+  border-radius: 18px;
+  border: 1px solid rgba(129, 147, 208, 0.22);
+  background: rgba(255, 255, 255, 0.05);
+  color: #eef4ff;
+}
+
+body:not(.game-index) .alert-danger {
+  background: rgba(118, 37, 62, 0.24);
+  border-color: rgba(255, 117, 160, 0.22);
+}
+
+body:not(.game-index) .alert-info {
+  background: rgba(18, 66, 112, 0.24);
+  border-color: rgba(99, 173, 255, 0.22);
+}
+
+body:not(.game-index) .alert-success {
+  background: rgba(23, 98, 80, 0.24);
+  border-color: rgba(90, 229, 189, 0.2);
+}
+
+body:not(.game-index) .badge,
+body:not(.game-index) .text-bg-light,
+body:not(.game-index) .text-bg-secondary,
+body:not(.game-index) .text-bg-success {
+  border-radius: 999px;
+  border: 1px solid rgba(129, 147, 208, 0.18);
+}
+
+body:not(.game-index) .text-bg-light {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #eef4ff !important;
+}
+
+body:not(.game-index) .text-bg-secondary {
+  background: rgba(96, 103, 135, 0.48) !important;
+}
+
+body:not(.game-index) .text-bg-success {
+  background: rgba(24, 122, 96, 0.56) !important;
+}
+
+body:not(.game-index) .profile-avatar-preview,
+body:not(.game-index) .rounded-circle.border {
+  border-color: rgba(167, 185, 236, 0.32) !important;
+  box-shadow: 0 12px 24px rgba(5, 9, 24, 0.28);
+}
+
+@media (max-width: 991.98px) {
+  body:not(.game-index) .gx-inline-actions {
+    justify-content: flex-start;
+  }
+}

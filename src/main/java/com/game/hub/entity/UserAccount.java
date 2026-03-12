@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -28,6 +29,10 @@ public class UserAccount {
     private String role = "User";
     private String displayName;
     private String avatarPath;
+    private String country;
+    private String gender;
+    private LocalDate birthDate;
+    private boolean onboardingCompleted = false;
     @JsonIgnore
     @Column(unique = true)
     private String oauthGoogleId;
@@ -100,6 +105,14 @@ public class UserAccount {
     public void setDisplayName(String displayName) { this.displayName = displayName; }
     public String getAvatarPath() { return avatarPath; }
     public void setAvatarPath(String avatarPath) { this.avatarPath = avatarPath; }
+    public String getCountry() { return country; }
+    public void setCountry(String country) { this.country = country; }
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+    public LocalDate getBirthDate() { return birthDate; }
+    public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
+    public boolean isOnboardingCompleted() { return onboardingCompleted; }
+    public void setOnboardingCompleted(boolean onboardingCompleted) { this.onboardingCompleted = onboardingCompleted; }
     public String getOauthGoogleId() { return oauthGoogleId; }
     public void setOauthGoogleId(String oauthGoogleId) { this.oauthGoogleId = oauthGoogleId; }
     public String getOauthFacebookId() { return oauthFacebookId; }

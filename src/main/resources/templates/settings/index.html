@@ -36,7 +36,7 @@
 
   <div class="row g-3 mt-1">
     <div class="col-xl-6">
-      <section class="theme-box rounded p-3 gx-section-card">
+      <section id="settingsAccountPanel" class="theme-box rounded p-3 gx-section-card">
         <div class="gx-section-card__head">
           <h2 class="h5 mb-0 theme-text">Cai dat tai khoan</h2>
           <div class="gx-section-card__meta">Cap nhat thong tin ca nhan dung cho ho so va cac game truc tuyen.</div>
@@ -49,6 +49,15 @@
 
         <form id="accountSettingsForm" class="row g-3">
           <input type="hidden" id="settingsUserId" th:value="${authUserId}">
+          <div class="col-md-6">
+            <label class="form-label" for="settingsUsername">Ten nguoi dung</label>
+            <input id="settingsUsername"
+                   class="form-control"
+                   th:value="${settingsUser != null ? settingsUser.username : ''}"
+                   th:disabled="${!isAuthenticated}"
+                   placeholder="greenmannk">
+            <div id="settingsUsernameHint" class="form-text">6-20 ky tu, chi dung chu cai, so, dau cham va gach duoi.</div>
+          </div>
           <div class="col-md-6">
             <label class="form-label" for="settingsDisplayName">Ten hien thi</label>
             <input id="settingsDisplayName"
@@ -65,6 +74,40 @@
                    th:value="${settingsUser != null ? settingsUser.email : ''}"
                    th:disabled="${!isAuthenticated}"
                    placeholder="ban@example.com">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="settingsCountry">Quoc gia</label>
+            <select id="settingsCountry" class="form-select" th:disabled="${!isAuthenticated}">
+              <option value="">Chon quoc gia</option>
+              <option value="Vietnam" th:selected="${settingsUser != null and settingsUser.country == 'Vietnam'}">Vietnam</option>
+              <option value="United States" th:selected="${settingsUser != null and settingsUser.country == 'United States'}">United States</option>
+              <option value="Singapore" th:selected="${settingsUser != null and settingsUser.country == 'Singapore'}">Singapore</option>
+              <option value="Japan" th:selected="${settingsUser != null and settingsUser.country == 'Japan'}">Japan</option>
+              <option value="South Korea" th:selected="${settingsUser != null and settingsUser.country == 'South Korea'}">South Korea</option>
+              <option value="Thailand" th:selected="${settingsUser != null and settingsUser.country == 'Thailand'}">Thailand</option>
+              <option value="Indonesia" th:selected="${settingsUser != null and settingsUser.country == 'Indonesia'}">Indonesia</option>
+              <option value="Philippines" th:selected="${settingsUser != null and settingsUser.country == 'Philippines'}">Philippines</option>
+              <option value="Malaysia" th:selected="${settingsUser != null and settingsUser.country == 'Malaysia'}">Malaysia</option>
+              <option value="India" th:selected="${settingsUser != null and settingsUser.country == 'India'}">India</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="settingsGender">Gioi tinh</label>
+            <select id="settingsGender" class="form-select" th:disabled="${!isAuthenticated}">
+              <option value="">Chon gioi tinh</option>
+              <option value="male" th:selected="${settingsUser != null and settingsUser.gender == 'male'}">Nam</option>
+              <option value="female" th:selected="${settingsUser != null and settingsUser.gender == 'female'}">Nu</option>
+              <option value="other" th:selected="${settingsUser != null and settingsUser.gender == 'other'}">Khac</option>
+              <option value="prefer_not_to_say" th:selected="${settingsUser != null and settingsUser.gender == 'prefer_not_to_say'}">Khong muon chia se</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="settingsBirthDate">Ngay sinh</label>
+            <input id="settingsBirthDate"
+                   class="form-control"
+                   type="date"
+                   th:value="${settingsUser != null and settingsUser.birthDate != null ? settingsUser.birthDate : ''}"
+                   th:disabled="${!isAuthenticated}">
           </div>
           <div class="col-lg-4" th:if="${isAuthenticated}">
             <label class="form-label d-block" for="settingsAvatarPreview">Anh dai dien hien tai</label>
@@ -179,7 +222,7 @@
     </div>
 
     <div class="col-xl-6">
-      <section class="theme-box rounded p-3 gx-section-card">
+      <section id="settingsNotificationsPanel" class="theme-box rounded p-3 gx-section-card">
         <div class="gx-section-card__head">
           <h2 class="h5 mb-0 theme-text">Cai dat giao dien va chuc nang</h2>
           <div class="gx-section-card__meta">Ap dung dong bo cho ca sidebar, topbar va cac trang game.</div>
@@ -201,6 +244,10 @@
               <option value="vi">Tieng Viet</option>
               <option value="en">Tieng Anh</option>
             </select>
+          </div>
+
+          <div class="col-12">
+            <div class="gx-section-card__meta fw-semibold text-uppercase small" id="settingsPrivacyPanel">Thong bao va quyen rieng tu</div>
           </div>
 
           <div class="col-12">

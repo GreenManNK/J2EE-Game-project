@@ -1,92 +1,179 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Dang ky')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('account-register')}"></div>
 
-<main class="auth-shell">
-  <div class="auth-shell__grid">
-    <div class="card theme-box mx-auto mt-5 w-100 auth-card-sm">
-      <div class="card-header">
-        <h4 class="mb-0 theme-text">Dang ky tai khoan</h4>
-      </div>
-      <div class="card-body theme-text">
-        <form id="regForm">
-          <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input id="email" class="form-control" type="email" placeholder="Nhap email" required>
-          </div>
-          <div class="mb-3">
-            <label for="password" class="form-label">Mat khau</label>
-            <div class="input-group">
-              <input id="password" class="form-control" type="password" placeholder="Tao mat khau" required>
-              <button class="btn btn-outline-secondary" id="toggleRegPasswordBtn" type="button">👁</button>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label for="displayName" class="form-label">Ten hien thi</label>
-            <input id="displayName" class="form-control" placeholder="Nhap ten hien thi" required>
-          </div>
-          <button type="submit" class="btn btn-success w-100">Gui ma xac thuc</button>
-        </form>
-        <div>
-          <div class="d-flex align-items-center gap-2 my-3">
-            <hr class="flex-grow-1 m-0">
-            <span class="small text-muted">hoac dang ky nhanh voi</span>
-            <hr class="flex-grow-1 m-0">
-          </div>
-          <div class="d-grid gap-2">
-            <a th:if="${googleLoginEnabled}" class="btn btn-outline-danger" th:href="@{/oauth2/authorization/google}">
-              <i class="bi bi-google me-2"></i> Dang ky voi Google
-            </a>
-            <button th:if="${!googleLoginEnabled}" type="button" class="btn btn-outline-danger" disabled>
-              <i class="bi bi-google me-2"></i> Google (chua cau hinh)
-            </button>
-
-            <a th:if="${facebookLoginEnabled}" class="btn btn-outline-primary" th:href="@{/oauth2/authorization/facebook}">
-              <i class="bi bi-facebook me-2"></i> Dang ky voi Facebook
-            </a>
-            <button th:if="${!facebookLoginEnabled}" type="button" class="btn btn-outline-primary" disabled>
-              <i class="bi bi-facebook me-2"></i> Facebook (chua cau hinh)
-            </button>
-          </div>
-          <div class="form-text mt-2" th:if="${!googleLoginEnabled and !facebookLoginEnabled}">
-            Chua cau hinh OAuth2 Google/Facebook tren may chu.
-          </div>
-        </div>
-        <div class="text-center mt-2">
-          <a th:href="@{/account/verify-email-page}" class="btn btn-link">Da co ma? Xac thuc email</a>
-        </div>
-        <div id="out" class="small mt-3" role="status" aria-live="polite"></div>
-      </div>
+<main class="auth-shell auth-onboard">
+  <section class="auth-onboard__card" aria-labelledby="registerStepTitle">
+    <div class="auth-onboard__chrome">
+      <button id="registerBackBtn" class="auth-onboard__nav-btn" type="button" aria-label="Quay lai buoc truoc">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <div class="auth-onboard__title">Dang ky</div>
+      <a class="auth-onboard__close-btn" th:href="@{/}" aria-label="Dong trang dang ky">
+        <i class="bi bi-x-lg"></i>
+      </a>
     </div>
 
-    <aside class="theme-box auth-side-panel">
-      <div class="home-dashboard__eyebrow">
-        <i class="bi bi-person-plus"></i>
-        <span>Tài khoản mới</span>
-      </div>
-      <h2 class="theme-text mt-2">Tao tai khoan moi</h2>
-      <p>Dang ky bang email va xac thuc de mo khoa day du cac tinh nang cua he thong.</p>
-      <ul class="auth-side-list">
-        <li><strong>Buoc 1:</strong> Nhap email, mat khau va ten hien thi.</li>
-        <li><strong>Buoc 2:</strong> Nhan ma xac thuc email.</li>
-        <li><strong>Buoc 3:</strong> Hoan tat xac thuc va dang nhap.</li>
-      </ul>
-    </aside>
-  </div>
+    <div class="auth-onboard__progress" aria-hidden="true">
+      <span data-register-progress="0"></span>
+      <span data-register-progress="1"></span>
+      <span data-register-progress="2"></span>
+    </div>
+
+    <form id="regForm" class="auth-onboard__body">
+      <section class="auth-onboard__step is-active" data-register-step="0">
+        <div class="auth-onboard__eyebrow">
+          <i class="bi bi-stars"></i>
+          <span>Bat dau</span>
+        </div>
+        <h1 id="registerStepTitle" class="auth-onboard__heading">Tao tai khoan cua ban</h1>
+        <p class="auth-onboard__copy">
+          Tao tai khoan moi de dong bo tien trinh choi, cai dat va co the cai web thanh app desktop.
+        </p>
+
+        <div class="auth-onboard__grid">
+          <label class="auth-onboard__label" for="email">
+            <span>Email</span>
+            <input id="email" class="auth-onboard__input" type="email" placeholder="ban@example.com" required autocomplete="email">
+          </label>
+          <label class="auth-onboard__label" for="password">
+            <span>Mat khau</span>
+            <div class="auth-onboard__field">
+              <input id="password" class="auth-onboard__input" type="password" placeholder="Tao mat khau" required autocomplete="new-password">
+              <button class="auth-onboard__field-action" id="toggleRegPasswordBtn" type="button" aria-label="Hien hoac an mat khau">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </label>
+        </div>
+
+        <div class="auth-onboard__actions">
+          <button class="auth-onboard__cta" type="button" data-register-next="0">Tiep tuc</button>
+        </div>
+
+        <div class="auth-onboard__social">
+          <a th:if="${googleLoginEnabled}" class="btn btn-outline-light auth-onboard__social-btn" th:href="@{/oauth2/authorization/google}">
+            <i class="bi bi-google me-2"></i> Dang ky voi Google
+          </a>
+          <button th:if="${!googleLoginEnabled}" type="button" class="btn btn-outline-light auth-onboard__social-btn" disabled>
+            <i class="bi bi-google me-2"></i> Google chua cau hinh
+          </button>
+
+          <a th:if="${facebookLoginEnabled}" class="btn btn-outline-light auth-onboard__social-btn" th:href="@{/oauth2/authorization/facebook}">
+            <i class="bi bi-facebook me-2"></i> Dang ky voi Facebook
+          </a>
+        </div>
+      </section>
+
+      <section class="auth-onboard__step" data-register-step="1">
+        <h2 class="auth-onboard__heading">Dat ten nguoi dung cua ban</h2>
+
+        <div class="auth-onboard__field">
+          <input id="username" class="auth-onboard__input" type="text" placeholder="GreenManNK" autocomplete="username">
+          <button class="auth-onboard__field-action" id="regUsernameShuffleBtn" type="button" aria-label="Goi y ten nguoi dung">
+            <i class="bi bi-shuffle"></i>
+          </button>
+        </div>
+
+        <div class="auth-onboard__rules">
+          <div class="auth-onboard__rule" data-username-rule="length">
+            <i class="bi bi-check2"></i>
+            <span>6 den 20 ky tu</span>
+          </div>
+          <div class="auth-onboard__rule" data-username-rule="charset">
+            <i class="bi bi-check2"></i>
+            <span>Chi co chu cai, so, "." va "_"</span>
+          </div>
+          <div class="auth-onboard__rule" data-username-rule="available">
+            <i class="bi bi-check2"></i>
+            <span>Chua co ai su dung</span>
+          </div>
+        </div>
+
+        <div class="auth-onboard__actions">
+          <button class="auth-onboard__cta" id="regUsernameNextBtn" type="button">Tiep tuc</button>
+        </div>
+
+        <p class="auth-onboard__legal">
+          Chung toi se cam vinh vien cac tai khoan co ten nguoi dung doc hai va khong phu hop ma khong can thong bao truoc.
+        </p>
+      </section>
+
+      <section class="auth-onboard__step" data-register-step="2">
+        <h2 class="auth-onboard__heading">Hay cho chung toi biet them ve ban</h2>
+        <p class="auth-onboard__copy">
+          Ban co the cap nhat thong tin ca nhan cua minh sau trong ho so cua ban.
+        </p>
+
+        <div class="auth-onboard__grid">
+          <label class="auth-onboard__label" for="country">
+            <span>Quoc gia</span>
+            <select id="country" class="auth-onboard__select">
+              <option value="Vietnam" selected>Vietnam</option>
+              <option value="United States">United States</option>
+              <option value="Singapore">Singapore</option>
+              <option value="Japan">Japan</option>
+              <option value="South Korea">South Korea</option>
+              <option value="Thailand">Thailand</option>
+              <option value="Indonesia">Indonesia</option>
+              <option value="Malaysia">Malaysia</option>
+              <option value="Philippines">Philippines</option>
+              <option value="India">India</option>
+            </select>
+          </label>
+
+          <label class="auth-onboard__label" for="gender">
+            <span>Gioi tinh</span>
+            <select id="gender" class="auth-onboard__select">
+              <option value="">Gioi tinh</option>
+              <option value="male">Nam</option>
+              <option value="female">Nu</option>
+              <option value="other">Khac</option>
+              <option value="prefer_not_to_say">Khong muon chia se</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="auth-onboard__grid">
+          <label class="auth-onboard__label">
+            <span>Sinh nhat</span>
+            <div class="auth-onboard__grid auth-onboard__grid--double">
+              <select id="birthMonth" class="auth-onboard__select">
+                <option value="">Thang</option>
+              </select>
+              <select id="birthDay" class="auth-onboard__select">
+                <option value="">Ngay</option>
+              </select>
+            </div>
+          </label>
+
+          <label class="auth-onboard__label" for="birthYear">
+            <span>&nbsp;</span>
+            <select id="birthYear" class="auth-onboard__select">
+              <option value="">Nam</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="auth-onboard__actions">
+          <button class="auth-onboard__cta" id="regSubmitBtn" type="submit">Luu va gui ma</button>
+        </div>
+      </section>
+
+      <div id="out" class="auth-onboard__status small" role="status" aria-live="polite"></div>
+    </form>
+
+    <div class="auth-onboard__footer">
+      <a th:href="@{/account/verify-email-page}">Da co ma? Xac thuc email</a>
+      <span class="mx-2">|</span>
+      <a th:href="@{/account/login-page}">Da co tai khoan? Dang nhap</a>
+    </div>
+  </section>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('account-register')}"></th:block>
 <script th:src="@{/js/account-register.js}"></script>
-<script>
-  document.getElementById('toggleRegPasswordBtn')?.addEventListener('click', function () {
-    const input = document.getElementById('password');
-    if (!input) return;
-    const hidden = input.type === 'password';
-    input.type = hidden ? 'text' : 'password';
-    this.textContent = hidden ? '🙈' : '👁';
-  });
-</script>
 </body>
 </html>

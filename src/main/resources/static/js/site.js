@@ -328,12 +328,18 @@
   }
 
   function normalizeCurrentUser(user) {
+    const rawUsername = String(user?.username || user?.displayName || '').trim().replace(/^@+/, '');
     return {
       userId: String(user?.userId || '').trim(),
-      displayName: String(user?.displayName || 'Nguoi choi').trim() || 'Nguoi choi',
+      username: rawUsername,
+      displayName: String(user?.displayName || rawUsername || 'Nguoi choi').trim() || 'Nguoi choi',
       email: String(user?.email || '').trim(),
       role: String(user?.role || 'User').trim() || 'User',
-      avatarPath: String(user?.avatarPath || DEFAULT_AVATAR_PATH).trim() || DEFAULT_AVATAR_PATH
+      avatarPath: String(user?.avatarPath || DEFAULT_AVATAR_PATH).trim() || DEFAULT_AVATAR_PATH,
+      country: String(user?.country || '').trim(),
+      gender: String(user?.gender || '').trim(),
+      birthDate: String(user?.birthDate || '').trim(),
+      onboardingCompleted: user?.onboardingCompleted === true
     };
   }
 
@@ -347,10 +353,15 @@
     if (legacyUserId) {
       const fromLegacy = normalizeCurrentUser({
         userId: legacyUserId,
+        username: localStorage.getItem('username') || localStorage.getItem('displayName') || '',
         displayName: localStorage.getItem('displayName') || 'Nguoi choi',
         email: localStorage.getItem('email') || '',
         role: localStorage.getItem('role') || 'User',
-        avatarPath: localStorage.getItem('avatarPath') || DEFAULT_AVATAR_PATH
+        avatarPath: localStorage.getItem('avatarPath') || DEFAULT_AVATAR_PATH,
+        country: localStorage.getItem('country') || '',
+        gender: localStorage.getItem('gender') || '',
+        birthDate: localStorage.getItem('birthDate') || '',
+        onboardingCompleted: localStorage.getItem('onboardingCompleted') === 'true'
       });
       setCurrentUser(fromLegacy);
       return fromLegacy;
@@ -368,20 +379,30 @@
 
     localStorage.setItem(USER_KEY, JSON.stringify(normalized));
     localStorage.setItem('userId', normalized.userId);
+    localStorage.setItem('username', normalized.username);
     localStorage.setItem('displayName', normalized.displayName);
     localStorage.setItem('email', normalized.email);
     localStorage.setItem('role', normalized.role);
     localStorage.setItem('avatarPath', normalized.avatarPath);
+    localStorage.setItem('country', normalized.country);
+    localStorage.setItem('gender', normalized.gender);
+    localStorage.setItem('birthDate', normalized.birthDate);
+    localStorage.setItem('onboardingCompleted', normalized.onboardingCompleted ? 'true' : 'false');
     emitCurrentUserChange(normalized, 'set');
   }
 
   function clearCurrentUser() {
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem('userId');
+    localStorage.removeItem('username');
     localStorage.removeItem('displayName');
     localStorage.removeItem('email');
     localStorage.removeItem('role');
     localStorage.removeItem('avatarPath');
+    localStorage.removeItem('country');
+    localStorage.removeItem('gender');
+    localStorage.removeItem('birthDate');
+    localStorage.removeItem('onboardingCompleted');
     emitCurrentUserChange(null, 'clear');
   }
 
@@ -1012,16 +1033,19 @@
     normalizeRootRelativeUrls();
 
     const badges = document.querySelectorAll('[data-current-user-badge]');
+    const userHandles = document.querySelectorAll('[data-current-user-handle]');
     const userNames = document.querySelectorAll('[data-current-user-name]');
+    const userEmails = document.querySelectorAll('[data-current-user-email]');
     const userMetas = document.querySelectorAll('[data-current-user-meta]');
     const userAvatars = document.querySelectorAll('[data-current-user-avatar]');
-    const logoutBtn = document.getElementById('logoutBtn');
+    const logoutButtons = document.querySelectorAll('[data-logout-btn]');
     const authOnly = document.querySelectorAll('[data-auth-only]');
     const guestOnly = document.querySelectorAll('[data-guest-only]');
     const roleOnly = document.querySelectorAll('[data-role-allowed]');
 
     const applyAuthState = (user) => {
       const safeUser = user && user.userId ? normalizeCurrentUser(user) : null;
+      const handle = safeUser ? ('@' + (safeUser.username || safeUser.displayName)) : '@guest';
       badges.forEach((el) => {
         if (safeUser) {
           el.textContent = safeUser.displayName + ' (' + safeUser.userId + ')';
@@ -1029,8 +1053,14 @@
           el.textContent = 'Chua dang nhap';
         }
       });
+      userHandles.forEach((el) => {
+        el.textContent = handle;
+      });
       userNames.forEach((el) => {
         el.textContent = safeUser ? safeUser.displayName : 'Nguoi choi';
+      });
+      userEmails.forEach((el) => {
+        el.textContent = safeUser ? (safeUser.email || '') : '';
       });
       userMetas.forEach((el) => {
         el.textContent = safeUser ? (safeUser.email || safeUser.userId) : 'Dang nhap de xem du lieu tai khoan';
@@ -1096,10 +1126,15 @@
 
         const hasChanged = !user
           || user.userId !== sessionUser.userId
+          || user.username !== sessionUser.username
           || user.displayName !== sessionUser.displayName
           || user.email !== sessionUser.email
           || user.role !== sessionUser.role
-          || user.avatarPath !== sessionUser.avatarPath;
+          || user.avatarPath !== sessionUser.avatarPath
+          || user.country !== sessionUser.country
+          || user.gender !== sessionUser.gender
+          || user.birthDate !== sessionUser.birthDate
+          || user.onboardingCompleted !== sessionUser.onboardingCompleted;
 
         if (hasChanged) {
           setCurrentUser(sessionUser);
@@ -1123,7 +1158,7 @@
       }
     }
 
-    if (logoutBtn) {
+    logoutButtons.forEach((logoutBtn) => {
       logoutBtn.addEventListener('click', async () => {
         const current = getCurrentUser();
         if (!current || !current.userId) {
@@ -1132,7 +1167,7 @@
           return;
         }
         try {
-          await fetch('/account/logout', {
+          await fetch(toAppPath('/account/logout'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: current.userId })
@@ -1143,6 +1178,6 @@
           window.location.href = window.CaroUrl.path('/');
         }
       });
-    }
+    });
   });
 })();

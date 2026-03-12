@@ -1,43 +1,55 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Xac thuc email')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('account-verify')}"></div>
 
-<main class="auth-shell">
-  <div class="auth-shell__grid">
-    <div class="card theme-box mx-auto mt-5 w-100 auth-card-sm">
-      <div class="card-header"><h4 class="mb-0 theme-text">Xac thuc email</h4></div>
-      <div class="card-body theme-text">
-        <form id="verifyForm">
-          <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input id="email" type="email" class="form-control" placeholder="Nhap email" required>
-          </div>
-          <div class="mb-3">
-            <label for="code" class="form-label">Ma xac thuc</label>
-            <input id="code" class="form-control" placeholder="Nhap ma xac thuc" required>
-          </div>
-          <button type="submit" class="btn btn-primary w-100">Xac thuc</button>
-        </form>
-        <button id="resendCodeBtn" type="button" class="btn btn-outline-secondary w-100 mt-2">Gui lai ma</button>
-        <div id="out" class="small mt-3" role="status" aria-live="polite"></div>
-      </div>
+<main class="auth-shell auth-onboard">
+  <section class="auth-onboard__card" aria-labelledby="verifyTitle">
+    <div class="auth-onboard__chrome">
+      <a class="auth-onboard__nav-btn" th:href="@{/account/register-page}" aria-label="Quay lai dang ky">
+        <i class="bi bi-chevron-left"></i>
+      </a>
+      <div class="auth-onboard__title">Xac thuc email</div>
+      <a class="auth-onboard__close-btn" th:href="@{/}" aria-label="Dong trang xac thuc">
+        <i class="bi bi-x-lg"></i>
+      </a>
     </div>
 
-    <aside class="theme-box auth-side-panel">
-      <div class="home-dashboard__eyebrow">
+    <div class="auth-onboard__body">
+      <div class="auth-onboard__eyebrow">
         <i class="bi bi-envelope-check"></i>
-        <span>Xac thuc email</span>
+        <span>Kich hoat tai khoan</span>
       </div>
-      <h2 class="theme-text mt-2">Hoan tat kich hoat tai khoan</h2>
-      <p>Nhap email va ma xac thuc da nhan de kich hoat tai khoan truoc khi dang nhap.</p>
-      <ul class="auth-side-list">
-        <li><strong>Neu chua co ma:</strong> Hay quay lai trang dang ky hoac dung nut gui lai ma.</li>
-        <li><strong>Ma het han:</strong> Yeu cau gui lai ma moi roi xac thuc lai.</li>
-      </ul>
-    </aside>
-  </div>
+      <h1 id="verifyTitle" class="auth-onboard__heading">Hoan tat xac thuc email</h1>
+      <p class="auth-onboard__copy">
+        Nhap email va ma 6 so da nhan de kich hoat tai khoan truoc khi dang nhap.
+      </p>
+
+      <form id="verifyForm" class="auth-onboard__grid">
+        <label class="auth-onboard__label" for="email">
+          <span>Email</span>
+          <input id="email" type="email" class="auth-onboard__input" placeholder="ban@example.com" required autocomplete="email">
+        </label>
+        <label class="auth-onboard__label" for="code">
+          <span>Ma xac thuc</span>
+          <input id="code" class="auth-onboard__input" placeholder="Nhap ma 6 so" required inputmode="numeric">
+        </label>
+        <button type="submit" class="auth-onboard__cta">Xac thuc</button>
+      </form>
+
+      <div class="auth-onboard__support">
+        <button id="resendCodeBtn" type="button" class="auth-onboard__link-btn">Gui lai ma</button>
+        <a class="auth-onboard__link-btn" th:href="@{/account/login-page}">Ve dang nhap</a>
+      </div>
+
+      <div class="auth-onboard__microcopy">
+        Neu ma het han, hay yeu cau gui lai ma moi va thu lai ngay tai day.
+      </div>
+
+      <div id="out" class="auth-onboard__status small" role="status" aria-live="polite"></div>
+    </div>
+  </section>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('account-verify')}"></th:block>

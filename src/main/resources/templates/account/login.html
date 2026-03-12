@@ -1,80 +1,76 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Dang nhap')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('account-login')}"></div>
 
-<main class="auth-shell">
-  <div class="auth-shell__grid">
-    <div class="card theme-box mx-auto mt-5 w-100 auth-card-sm">
-      <div class="card-header">
-        <h4 class="mb-0 theme-text">Dang nhap</h4>
-      </div>
-      <div class="card-body theme-text">
-        <div th:if="${socialError != null}" class="alert alert-danger py-2" role="alert" th:text="${socialError}">
-          Dang nhap mang xa hoi that bai.
-        </div>
-        <form id="loginForm">
-          <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input id="email" class="form-control" type="email" placeholder="Nhap email" required>
-          </div>
-          <div class="mb-3">
-            <label for="password" class="form-label">Mat khau</label>
-            <div class="input-group">
-              <input id="password" class="form-control" type="password" placeholder="Nhap mat khau" required>
-              <button class="btn btn-outline-secondary" id="togglePasswordBtn" type="button">👁</button>
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary w-100">Dang nhap</button>
-          <div class="text-center mt-2">
-            <a th:href="@{/account/reset-page}" class="btn btn-link">Quen mat khau?</a>
-          </div>
-        </form>
-
-        <div>
-          <div class="d-flex align-items-center gap-2 my-3">
-            <hr class="flex-grow-1 m-0">
-            <span class="small text-muted">hoac tiep tuc voi</span>
-            <hr class="flex-grow-1 m-0">
-          </div>
-          <div class="d-grid gap-2">
-            <a th:if="${googleLoginEnabled}" class="btn btn-outline-danger" th:href="@{/oauth2/authorization/google}">
-              <i class="bi bi-google me-2"></i> Dang nhap voi Google
-            </a>
-            <button th:if="${!googleLoginEnabled}" type="button" class="btn btn-outline-danger" disabled>
-              <i class="bi bi-google me-2"></i> Google (chua cau hinh)
-            </button>
-
-            <a th:if="${facebookLoginEnabled}" class="btn btn-outline-primary" th:href="@{/oauth2/authorization/facebook}">
-              <i class="bi bi-facebook me-2"></i> Dang nhap voi Facebook
-            </a>
-            <button th:if="${!facebookLoginEnabled}" type="button" class="btn btn-outline-primary" disabled>
-              <i class="bi bi-facebook me-2"></i> Facebook (chua cau hinh)
-            </button>
-          </div>
-          <div class="form-text mt-2" th:if="${!googleLoginEnabled and !facebookLoginEnabled}">
-            Chua cau hinh OAuth2 Google/Facebook tren may chu.
-          </div>
-        </div>
-        <div id="out" class="small mt-3" role="status" aria-live="polite"></div>
-      </div>
+<main class="auth-shell auth-onboard">
+  <section class="auth-onboard__card" aria-labelledby="loginTitle">
+    <div class="auth-onboard__chrome">
+      <a class="auth-onboard__nav-btn" th:href="@{/}" aria-label="Quay ve trang chu">
+        <i class="bi bi-chevron-left"></i>
+      </a>
+      <div class="auth-onboard__title">Dang nhap</div>
+      <a class="auth-onboard__close-btn" th:href="@{/}" aria-label="Dong trang dang nhap">
+        <i class="bi bi-x-lg"></i>
+      </a>
     </div>
 
-    <aside class="theme-box auth-side-panel">
-      <div class="home-dashboard__eyebrow">
+    <div class="auth-onboard__body">
+      <div class="auth-onboard__eyebrow">
         <i class="bi bi-shield-check"></i>
-        <span>Truy cập tài khoản</span>
+        <span>Truy cap tai khoan</span>
       </div>
-      <h2 class="theme-text mt-2">Dang nhap de mo day du tinh nang</h2>
-      <p>Dong bo ho so, lich su dau, bang xep hang va he thong ban be/tin nhan rieng.</p>
-      <ul class="auth-side-list">
-        <li><strong>Truy cap nhanh:</strong> Vao nhanh cac che do choi va sanh phong truc tuyen.</li>
-        <li><strong>Ket noi xa hoi:</strong> Quan ly ban be, thong bao va tin nhan rieng.</li>
-        <li><strong>Tien trinh:</strong> Luu diem, hang va thanh tich.</li>
-      </ul>
-    </aside>
-  </div>
+      <h1 id="loginTitle" class="auth-onboard__heading">Dang nhap de tiep tuc choi</h1>
+      <p class="auth-onboard__copy">
+        Dong bo ho so, lich su dau, bang xep hang, thong bao va chuc nang cai dat app desktop.
+      </p>
+
+      <div th:if="${socialError != null}" class="alert alert-danger py-2" role="alert" th:text="${socialError}">
+        Dang nhap mang xa hoi that bai.
+      </div>
+
+      <form id="loginForm" class="auth-onboard__grid">
+        <label class="auth-onboard__label" for="email">
+          <span>Email</span>
+          <input id="email" class="auth-onboard__input" type="email" placeholder="ban@example.com" required autocomplete="email">
+        </label>
+        <label class="auth-onboard__label" for="password">
+          <span>Mat khau</span>
+          <div class="auth-onboard__field">
+            <input id="password" class="auth-onboard__input" type="password" placeholder="Nhap mat khau" required autocomplete="current-password">
+            <button class="auth-onboard__field-action" id="togglePasswordBtn" type="button" aria-label="Hien hoac an mat khau">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+        </label>
+        <button type="submit" class="auth-onboard__cta">Dang nhap</button>
+      </form>
+
+      <div class="auth-onboard__support">
+        <a class="auth-onboard__link-btn" th:href="@{/account/reset-page}">Quen mat khau?</a>
+        <a class="auth-onboard__link-btn" th:href="@{/account/register-page}">Tao tai khoan moi</a>
+      </div>
+
+      <div class="auth-onboard__social">
+        <a th:if="${googleLoginEnabled}" class="btn btn-outline-light auth-onboard__social-btn" th:href="@{/oauth2/authorization/google}">
+          <i class="bi bi-google me-2"></i> Dang nhap voi Google
+        </a>
+        <button th:if="${!googleLoginEnabled}" type="button" class="btn btn-outline-light auth-onboard__social-btn" disabled>
+          <i class="bi bi-google me-2"></i> Google chua cau hinh
+        </button>
+
+        <a th:if="${facebookLoginEnabled}" class="btn btn-outline-light auth-onboard__social-btn" th:href="@{/oauth2/authorization/facebook}">
+          <i class="bi bi-facebook me-2"></i> Dang nhap voi Facebook
+        </a>
+        <button th:if="${!facebookLoginEnabled}" type="button" class="btn btn-outline-light auth-onboard__social-btn" disabled>
+          <i class="bi bi-facebook me-2"></i> Facebook chua cau hinh
+        </button>
+      </div>
+
+      <div id="out" class="auth-onboard__status small" role="status" aria-live="polite"></div>
+    </div>
+  </section>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('account-login')}"></th:block>
@@ -82,10 +78,13 @@
 <script>
   document.getElementById('togglePasswordBtn')?.addEventListener('click', function () {
     const input = document.getElementById('password');
+    const icon = this.querySelector('i');
     if (!input) return;
     const hidden = input.type === 'password';
     input.type = hidden ? 'text' : 'password';
-    this.textContent = hidden ? '🙈' : '👁';
+    if (icon) {
+      icon.className = hidden ? 'bi bi-eye-slash' : 'bi bi-eye';
+    }
   });
 </script>
 </body>

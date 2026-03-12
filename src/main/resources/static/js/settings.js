@@ -12,6 +12,7 @@
   const PREFERENCES_CHANGED_EVENT = "caro:preferences-changed";
   const USER_CHANGE_EVENT = "caro:user-changed";
   const DEFAULT_AVATAR_PATH = "/uploads/avatars/default-avatar.jpg";
+  const USERNAME_PATTERN = /^[A-Za-z0-9._]{6,20}$/;
 
   function appPath(url) {
     if (window.CaroUrl && typeof window.CaroUrl.path === "function") {
@@ -147,8 +148,13 @@
     const securityStatus = document.getElementById("securitySettingsStatus");
     const socialLinkStatus = document.getElementById("socialLinkStatus");
 
+    const usernameInput = document.getElementById("settingsUsername");
+    const usernameHint = document.getElementById("settingsUsernameHint");
     const displayNameInput = document.getElementById("settingsDisplayName");
     const emailInput = document.getElementById("settingsEmail");
+    const countryInput = document.getElementById("settingsCountry");
+    const genderInput = document.getElementById("settingsGender");
+    const birthDateInput = document.getElementById("settingsBirthDate");
     const avatarPathInput = document.getElementById("settingsAvatarPath");
     const avatarPreview = document.getElementById("settingsAvatarPreview");
     const avatarFileInput = document.getElementById("settingsAvatarFile");
@@ -185,6 +191,7 @@
     };
 
     let previewObjectUrl = null;
+    let usernameCheckTimer = null;
 
     const releasePreviewObjectUrl = () => {
       if (previewObjectUrl) {
@@ -208,6 +215,52 @@
       releasePreviewObjectUrl();
       previewObjectUrl = window.URL.createObjectURL(file);
       avatarPreview.src = previewObjectUrl;
+    };
+
+    const setUsernameHint = (message, ok) => {
+      if (!usernameHint) {
+        return;
+      }
+      usernameHint.textContent = String(message || "");
+      usernameHint.classList.toggle("text-success", !!ok);
+      usernameHint.classList.toggle("text-danger", ok === false);
+    };
+
+    const normalizeUsername = (value) => String(value || "").trim().replace(/^@+/, "");
+
+    const validateUsername = async (silent) => {
+      const candidate = normalizeUsername(usernameInput?.value || "");
+      if (!candidate) {
+        setUsernameHint("Ten nguoi dung la bat buoc.", false);
+        return false;
+      }
+      if (!USERNAME_PATTERN.test(candidate)) {
+        setUsernameHint("Ten nguoi dung can 6-20 ky tu va chi dung chu cai, so, . hoac _.", false);
+        return false;
+      }
+      if (!silent) {
+        setUsernameHint("Dang kiem tra ten nguoi dung...", null);
+      }
+      try {
+        const query = new URLSearchParams({ username: candidate });
+        if (authUserId) {
+          query.set("userId", authUserId);
+        }
+        const res = await fetch(appPath("/account/username-availability?" + query.toString()), { cache: "no-store" });
+        const data = await res.json().catch(() => ({}));
+        const ok = !!(data && data.success);
+        if (ok) {
+          setUsernameHint("Ten nguoi dung hop le va co san.", true);
+          return true;
+        }
+        setUsernameHint(String(data?.error || "Ten nguoi dung khong hop le"), false);
+        return false;
+      } catch (_) {
+        if (!silent) {
+          setUsernameHint("Khong the kiem tra ten nguoi dung luc nay.", false);
+        }
+        return false;
+      }
     };
 
     const buildPreferencesPayload = () => {
@@ -507,6 +560,10 @@
     });
 
     loadPreferencesFromServer();
+    if (usernameInput?.value) {
+      setUsernameHint("Ten nguoi dung can 6-20 ky tu, chi dung chu cai, so, . va _.", null);
+      void validateUsername(true);
+    }
     updateAvatarPreview(avatarPathInput?.value || DEFAULT_AVATAR_PATH);
     avatarPathInput?.addEventListener("input", () => {
       updateAvatarPreview(avatarPathInput.value);
@@ -519,8 +576,38 @@
       }
       updateAvatarPreviewFromFile(file);
     });
+    usernameInput?.addEventListener("input", () => {
+      if (usernameCheckTimer) {
+        clearTimeout(usernameCheckTimer);
+      }
+      setUsernameHint("Ten nguoi dung can 6-20 ky tu, chi dung chu cai, so, . va _.", null);
+      usernameCheckTimer = window.setTimeout(() => {
+        void validateUsername(true);
+      }, 260);
+    });
+    usernameInput?.addEventListener("blur", () => {
+      void validateUsername(false);
+    });
     window.addEventListener(USER_CHANGE_EVENT, (event) => {
       const user = event?.detail?.user;
+      if (user && usernameInput && document.activeElement !== usernameInput) {
+        usernameInput.value = user.username || user.displayName || "";
+      }
+      if (user && displayNameInput && document.activeElement !== displayNameInput) {
+        displayNameInput.value = user.displayName || usernameInput?.value || "Nguoi choi";
+      }
+      if (user && emailInput && document.activeElement !== emailInput) {
+        emailInput.value = user.email || "";
+      }
+      if (user && countryInput && document.activeElement !== countryInput) {
+        countryInput.value = user.country || "";
+      }
+      if (user && genderInput && document.activeElement !== genderInput) {
+        genderInput.value = user.gender || "";
+      }
+      if (user && birthDateInput && document.activeElement !== birthDateInput) {
+        birthDateInput.value = user.birthDate || "";
+      }
       if (user && user.avatarPath && avatarPathInput && document.activeElement !== avatarPathInput) {
         avatarPathInput.value = user.avatarPath;
       }
@@ -571,10 +658,15 @@
         updateAvatarPreview(resolvedAvatarPath);
         window.CaroUser?.set?.({
           userId: updated.userId || current.userId || authUserId,
+          username: updated.username || current.username || usernameInput?.value || updated.displayName || "Nguoi choi",
           displayName: updated.displayName || current.displayName || "Nguoi choi",
           email: updated.email || current.email || "",
           role: updated.role || current.role || "User",
-          avatarPath: resolvedAvatarPath
+          avatarPath: resolvedAvatarPath,
+          country: updated.country || current.country || countryInput?.value || "",
+          gender: updated.gender || current.gender || genderInput?.value || "",
+          birthDate: updated.birthDate || current.birthDate || birthDateInput?.value || "",
+          onboardingCompleted: updated.onboardingCompleted === true || current.onboardingCompleted === true
         });
       } catch (error) {
         const message = String(error?.message || error || "Khong the tai avatar");
@@ -592,12 +684,21 @@
         setStatus(accountStatus, "Ban can dang nhap de cap nhat tai khoan.", false);
         return;
       }
+      const usernameOk = await validateUsername(false);
+      if (!usernameOk) {
+        setStatus(accountStatus, "Vui long nhap ten nguoi dung hop le.", false);
+        return;
+      }
 
       const payload = {
         userId: authUserId,
+        username: normalizeUsername(usernameInput?.value || ""),
         displayName: String(displayNameInput?.value || "").trim(),
         email: String(emailInput?.value || "").trim(),
-        avatarPath: String(avatarPathInput?.value || "").trim()
+        avatarPath: String(avatarPathInput?.value || "").trim(),
+        country: String(countryInput?.value || "").trim(),
+        gender: String(genderInput?.value || "").trim(),
+        birthDate: String(birthDateInput?.value || "").trim()
       };
 
       try {
@@ -621,10 +722,15 @@
         const updated = data.data || {};
         window.CaroUser?.set?.({
           userId: updated.userId || current.userId || authUserId,
+          username: updated.username || payload.username || current.username || payload.displayName || "Nguoi choi",
           displayName: updated.displayName || payload.displayName || current.displayName || "Nguoi choi",
           email: updated.email || payload.email || current.email || "",
           role: updated.role || current.role || "User",
-          avatarPath: updated.avatarPath || payload.avatarPath || current.avatarPath || DEFAULT_AVATAR_PATH
+          avatarPath: updated.avatarPath || payload.avatarPath || current.avatarPath || DEFAULT_AVATAR_PATH,
+          country: updated.country || payload.country || current.country || "",
+          gender: updated.gender || payload.gender || current.gender || "",
+          birthDate: updated.birthDate || payload.birthDate || current.birthDate || "",
+          onboardingCompleted: updated.onboardingCompleted === true
         });
         updateAvatarPreview(updated.avatarPath || payload.avatarPath || current.avatarPath || DEFAULT_AVATAR_PATH);
       } catch (error) {
@@ -717,10 +823,15 @@
         const current = window.CaroUser?.get?.() || { userId: authUserId };
         window.CaroUser?.set?.({
           userId: current.userId || authUserId,
+          username: payload?.data?.username || current.username || usernameInput?.value || current.displayName || "Nguoi choi",
           displayName: payload?.data?.displayName || current.displayName || "Nguoi choi",
           email: payload?.data?.email || current.email || "",
           role: "Admin",
-          avatarPath: payload?.data?.avatarPath || current.avatarPath || "/uploads/avatars/default-avatar.jpg"
+          avatarPath: payload?.data?.avatarPath || current.avatarPath || "/uploads/avatars/default-avatar.jpg",
+          country: payload?.data?.country || current.country || "",
+          gender: payload?.data?.gender || current.gender || "",
+          birthDate: payload?.data?.birthDate || current.birthDate || "",
+          onboardingCompleted: payload?.data?.onboardingCompleted === true || current.onboardingCompleted === true
         });
 
         if (activateAdminCodeInput) {

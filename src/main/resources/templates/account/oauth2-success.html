@@ -1,35 +1,51 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dang nhap mang xa hoi</title>
-</head>
-<body>
-<p>Dang xu ly dang nhap, vui long cho...</p>
-<script th:src="@{/js/site.js}"></script>
-<script th:inline="javascript">
-  (function () {
-    const user = {
-      userId: /*[[${userId}]]*/ "",
-      displayName: /*[[${displayName}]]*/ "Nguoi choi",
-      email: /*[[${email}]]*/ "",
-      role: /*[[${role}]]*/ "User",
-      avatarPath: /*[[${avatarPath}]]*/ "/uploads/avatars/default-avatar.jpg"
-    };
+<head th:replace="~{fragments :: appHead('Dang nhap mang xa hoi')}"></head>
+<body class="page-account-oauth2">
+<main class="auth-shell auth-onboard">
+  <section class="auth-onboard__card" aria-labelledby="oauth2Title">
+    <div class="auth-onboard__body">
+      <div class="auth-onboard__eyebrow">
+        <i class="bi bi-globe2"></i>
+        <span>Dang nhap mang xa hoi</span>
+      </div>
+      <h1 id="oauth2Title" class="auth-onboard__heading">Dang dong bo tai khoan cua ban</h1>
+      <p class="auth-onboard__copy">
+        He thong dang cap nhat phien dang nhap va chuyen ban ve trang chu.
+      </p>
+      <button type="button" class="auth-onboard__cta" disabled>Dang xu ly...</button>
+    </div>
+  </section>
 
-    if (user.userId) {
-      try {
-        if (window.CaroUser && typeof window.CaroUser.set === "function") {
-          window.CaroUser.set(user);
+  <script th:src="@{/js/site.js}"></script>
+  <script th:inline="javascript">
+    (function () {
+      const user = {
+        userId: /*[[${userId}]]*/ "",
+        username: /*[[${username}]]*/ "",
+        displayName: /*[[${displayName}]]*/ "Nguoi choi",
+        email: /*[[${email}]]*/ "",
+        role: /*[[${role}]]*/ "User",
+        avatarPath: /*[[${avatarPath}]]*/ "/uploads/avatars/default-avatar.jpg",
+        country: /*[[${country}]]*/ "",
+        gender: /*[[${gender}]]*/ "",
+        birthDate: /*[[${birthDate}]]*/ "",
+        onboardingCompleted: /*[[${onboardingCompleted}]]*/ false
+      };
+
+      if (user.userId) {
+        try {
+          if (window.CaroUser && typeof window.CaroUser.set === "function") {
+            window.CaroUser.set(user);
+          }
+          localStorage.setItem("caroGuestMigrationPending.v1", "1");
+        } catch (_) {
         }
-        localStorage.setItem("caroGuestMigrationPending.v1", "1");
-      } catch (_) {
       }
-    }
 
-    window.location.replace(/*[[@{/}]]*/ "/");
-  })();
-</script>
+      window.location.replace(/*[[@{/}]]*/ "/");
+    })();
+  </script>
+</main>
 </body>
 </html>

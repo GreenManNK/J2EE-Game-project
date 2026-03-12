@@ -80,9 +80,14 @@ public class AccountPageController {
         }
 
         model.addAttribute("userId", user.getId());
+        model.addAttribute("username", user.getUsername() == null ? "" : user.getUsername());
         model.addAttribute("displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName());
         model.addAttribute("email", user.getEmail() == null ? "" : user.getEmail());
         model.addAttribute("role", user.getRole() == null ? "User" : user.getRole());
+        model.addAttribute("country", user.getCountry() == null ? "" : user.getCountry());
+        model.addAttribute("gender", user.getGender() == null ? "" : user.getGender());
+        model.addAttribute("birthDate", user.getBirthDate() == null ? "" : user.getBirthDate().toString());
+        model.addAttribute("onboardingCompleted", user.isOnboardingCompleted());
         model.addAttribute(
             "avatarPath",
             user.getAvatarPath() == null ? "/uploads/avatars/default-avatar.jpg" : user.getAvatarPath()

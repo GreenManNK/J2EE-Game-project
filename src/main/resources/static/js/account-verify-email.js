@@ -78,10 +78,15 @@
         if (window.CaroUser && data.data && data.data.userId) {
           window.CaroUser.set({
             userId: data.data.userId,
+            username: data.data.username || data.data.displayName || data.data.email || 'Nguoi choi',
             displayName: data.data.displayName || data.data.email || 'Nguoi choi',
             email: data.data.email || '',
             role: data.data.role || 'User',
-            avatarPath: data.data.avatarPath || '/uploads/avatars/default-avatar.jpg'
+            avatarPath: data.data.avatarPath || '/uploads/avatars/default-avatar.jpg',
+            country: data.data.country || '',
+            gender: data.data.gender || '',
+            birthDate: data.data.birthDate || '',
+            onboardingCompleted: data.data.onboardingCompleted === true
           });
           window.CaroGuestData?.markPendingMigration?.();
           await window.CaroGuestData?.migrateToAccount?.();

@@ -30,13 +30,15 @@
   <div class="game-stage-layout d-flex justify-content-center align-items-start gap-3 w-100">
     <div id="chat-container" class="theme-box d-flex flex-column">
       <div id="chat-box" class="chat-box"></div>
-      <div class="d-flex p-2 border-top">
-        <input id="message-input" type="text" class="form-control me-2" placeholder="Nhan tin...">
+      <div class="game-online-chat-toolbar d-flex p-2 border-top">
+        <input id="message-input" type="text" class="form-control" placeholder="Nhan tin...">
         <button id="sendBtn" class="btn btn-primary rounded-circle"><i class="bi bi-send"></i></button>
       </div>
     </div>
 
-    <div id="game-board-wrapper"></div>
+    <div class="game-online-board-stage theme-box">
+      <div id="game-board-wrapper"></div>
+    </div>
   </div>
 </main>
 
@@ -283,11 +285,15 @@
 
     function appendChat(name, text, isYou) {
       const line = document.createElement('div');
-      line.className = 'chat-message ' + (isYou ? 'chat-you' : 'chat-other');
-      const strong = document.createElement('strong');
-      strong.textContent = (name || 'Khong ro') + ': ';
-      line.appendChild(strong);
-      line.appendChild(document.createTextNode(text || ''));
+      line.className = 'game-online-chat-message ' + (isYou ? 'game-online-chat-message--self' : 'game-online-chat-message--other');
+      const sender = document.createElement('div');
+      sender.className = 'game-online-chat-message__sender';
+      sender.textContent = name || 'Khong ro';
+      line.appendChild(sender);
+      const body = document.createElement('div');
+      body.className = 'game-online-chat-message__body';
+      body.textContent = text || '';
+      line.appendChild(body);
       chatBox.appendChild(line);
       chatBox.scrollTop = chatBox.scrollHeight;
     }

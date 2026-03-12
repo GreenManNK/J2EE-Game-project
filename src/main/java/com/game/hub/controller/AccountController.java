@@ -39,7 +39,16 @@ public class AccountController {
     @PostMapping("/register")
     public Object register(@RequestBody RegisterRequest request) {
         AccountService.ServiceResult result = accountService.register(
-            new AccountService.RegisterRequest(request.email(), request.displayName(), request.password(), request.avatarPath())
+            new AccountService.RegisterRequest(
+                request.email(),
+                request.displayName(),
+                request.username(),
+                request.password(),
+                request.avatarPath(),
+                request.country(),
+                request.gender(),
+                request.birthDate()
+            )
         );
         return toResponse(result);
     }
@@ -128,10 +137,20 @@ public class AccountController {
 
         return toResponse(accountService.updateProfile(
             sessionUserId,
+            request == null ? null : request.username(),
             request == null ? null : request.displayName(),
             request == null ? null : request.email(),
-            request == null ? null : request.avatarPath()
+            request == null ? null : request.avatarPath(),
+            request == null ? null : request.country(),
+            request == null ? null : request.gender(),
+            request == null ? null : request.birthDate()
         ));
+    }
+
+    @GetMapping("/username-availability")
+    public Object checkUsernameAvailability(@RequestParam String username,
+                                           @RequestParam(required = false) String userId) {
+        return toResponse(accountService.checkUsernameAvailability(username, userId));
     }
 
     @PostMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -480,7 +499,14 @@ public class AccountController {
         }
     }
 
-    public record RegisterRequest(String email, String displayName, String password, String avatarPath) {
+    public record RegisterRequest(String email,
+                                  String displayName,
+                                  String username,
+                                  String password,
+                                  String avatarPath,
+                                  String country,
+                                  String gender,
+                                  String birthDate) {
     }
 
     public record VerifyEmailRequest(String email, String code) {
@@ -498,7 +524,14 @@ public class AccountController {
     public record ChangePasswordRequest(String userId, String currentPassword, String newPassword) {
     }
 
-    public record UpdateProfileRequest(String userId, String displayName, String email, String avatarPath) {
+    public record UpdateProfileRequest(String userId,
+                                       String username,
+                                       String displayName,
+                                       String email,
+                                       String avatarPath,
+                                       String country,
+                                       String gender,
+                                       String birthDate) {
     }
 
     public record UpdatePreferencesRequest(String themeMode,

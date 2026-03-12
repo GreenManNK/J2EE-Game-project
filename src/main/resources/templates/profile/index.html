@@ -29,8 +29,24 @@
         <strong th:text="${user.displayName}">Nguoi choi</strong>
       </div>
       <div class="profile-summary-item">
+        <small>Ten nguoi dung</small>
+        <strong th:text="${user.username != null ? '@' + user.username : '-'}">@player</strong>
+      </div>
+      <div class="profile-summary-item">
         <small>Email</small>
         <strong th:text="${user.email}">email@example.com</strong>
+      </div>
+      <div class="profile-summary-item">
+        <small>Quoc gia</small>
+        <strong th:text="${user.country != null ? user.country : '-'}">Vietnam</strong>
+      </div>
+      <div class="profile-summary-item">
+        <small>Gioi tinh</small>
+        <strong th:text="${user.gender == 'male' ? 'Nam' : (user.gender == 'female' ? 'Nu' : (user.gender == 'other' ? 'Khac' : (user.gender == 'prefer_not_to_say' ? 'Khong muon chia se' : '-')))}">-</strong>
+      </div>
+      <div class="profile-summary-item">
+        <small>Ngay sinh</small>
+        <strong th:text="${user.birthDate != null ? user.birthDate : '-'}">-</strong>
       </div>
       <div class="profile-summary-item">
         <small>Diem</small>

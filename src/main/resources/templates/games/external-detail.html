@@ -5,66 +5,115 @@
 <div th:replace="~{fragments :: appShell('games')}"></div>
 
 <main class="hub-portal-shell hub-portal-theme-detail">
-  <section class="hub-portal-hero">
+  <section class="hub-portal-hero hub-portal-hero--feature">
     <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
     <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
 
     <div class="hub-portal-hero__main">
-      <div class="hub-portal-eyebrow">
-        <i class="bi" th:classappend="' ' + ${game.iconClass}"></i>
-        <span>MODULE NGOAI / <span th:text="${#strings.toUpperCase(game.code)}">EXT</span></span>
+      <div class="hub-portal-hero-copy">
+        <div class="hub-portal-eyebrow">
+          <i class="bi" th:classappend="' ' + ${game.iconClass}"></i>
+          <span>MODULE NGOAI / <span th:text="${#strings.toUpperCase(game.code)}">EXT</span></span>
+        </div>
+
+        <h1 class="hub-portal-title" th:text="${game.displayName}">Module game ngoai</h1>
+        <p class="hub-portal-subtitle" th:text="${game.description}">Mo ta module.</p>
+
+        <div class="hub-portal-chip-row">
+          <span class="hub-portal-chip" th:classappend="${game.availableNow} ? ' is-live' : ''">
+            <i class="bi" th:classappend="${game.availableNow} ? ' bi-check-circle-fill' : ' bi-hourglass-split'"></i>
+            <span th:text="${game.availableNow} ? 'San sang ket noi' : 'Dang cau hinh'">San sang ket noi</span>
+          </span>
+          <span class="hub-portal-chip"><i class="bi bi-code-square"></i> Ma: <span th:text="${game.code}">ext</span></span>
+          <span class="hub-portal-chip"><i class="bi bi-box-arrow-in-right"></i> Nguon: <span th:text="${game.sourceType}">external-module</span></span>
+          <span class="hub-portal-chip"><i class="bi bi-terminal"></i> Runtime: <span th:text="${game.runtime}">python</span></span>
+          <span class="hub-portal-chip" th:if="${game.hasExternalApi()}"><i class="bi bi-diagram-3"></i> API gateway</span>
+        </div>
+
+        <div class="hub-portal-action-grid">
+          <a th:if="${game.hasPrimaryAction() and game.primaryActionIsExternal()}"
+             th:href="${game.primaryActionUrl}"
+             target="_blank"
+             rel="noopener"
+             class="hub-portal-action hub-portal-action--primary">
+            <span class="hub-portal-action__icon"><i class="bi bi-box-arrow-up-right"></i></span>
+            <span class="hub-portal-action__text">
+              <strong th:text="${game.primaryActionLabel != null and !#strings.isEmpty(game.primaryActionLabel) ? game.primaryActionLabel : 'Mo module'}">Mo module</strong>
+              <small>Mo module game ngoai trong tab moi</small>
+            </span>
+            <i class="bi bi-arrow-right"></i>
+          </a>
+
+          <button type="button"
+                  class="hub-portal-action hub-portal-action--install"
+                  data-install-app-btn="true"
+                  data-install-source="external-detail">
+            <span class="hub-portal-action__icon"><i class="bi bi-window-desktop"></i></span>
+            <span class="hub-portal-action__text">
+              <strong>Install app desktop</strong>
+              <small>Mo thu vien game nhu app rieng</small>
+            </span>
+            <i class="bi bi-download"></i>
+          </button>
+
+          <a th:if="${game.hasExternalApi()}"
+             th:href="${game.proxyApiBasePath()}"
+             target="_blank"
+             rel="noopener"
+             class="hub-portal-action hub-portal-action--accent">
+            <span class="hub-portal-action__icon"><i class="bi bi-hdd-network-fill"></i></span>
+            <span class="hub-portal-action__text">
+              <strong>Mo gateway API</strong>
+              <small th:text="${game.proxyApiBasePath()}">/games/external/demo/api</small>
+            </span>
+            <i class="bi bi-arrow-right"></i>
+          </a>
+
+          <a th:href="@{/games}" class="hub-portal-action hub-portal-action--soft">
+            <span class="hub-portal-action__icon"><i class="bi bi-grid"></i></span>
+            <span class="hub-portal-action__text">
+              <strong>Ve thu vien game</strong>
+              <small>Xem them game va module khac</small>
+            </span>
+            <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
       </div>
 
-      <h1 class="hub-portal-title" th:text="${game.displayName}">Module game ngoai</h1>
-      <p class="hub-portal-subtitle" th:text="${game.description}">Mo ta module.</p>
+      <section class="hub-portal-stage" aria-label="Preview module">
+        <div class="hub-portal-stage__screen">
+          <div>
+            <div class="hub-portal-stage__screen-icon">
+              <i class="bi" th:classappend="' ' + ${game.iconClass}"></i>
+            </div>
+            <h2 class="hub-portal-stage__screen-title" th:text="${game.displayName}">Module game ngoai</h2>
+            <p class="hub-portal-stage__screen-subtitle">
+              Module duoc goi qua hub, co the mo trong browser va ghim thanh desktop app cung giao dien nay.
+            </p>
+            <div class="hub-portal-stage__grid" aria-hidden="true">
+              <div class="hub-portal-stage__cell is-accent"><i class="bi bi-box-arrow-up-right"></i></div>
+              <div class="hub-portal-stage__cell" th:text="${#strings.toUpperCase(game.runtime)}">PY</div>
+              <div class="hub-portal-stage__cell" th:text="${game.hasExternalApi()} ? 'API' : 'WEB'">API</div>
+              <div class="hub-portal-stage__cell is-accent" th:text="${#strings.toUpperCase(game.detailMode)}">REDIRECT</div>
+            </div>
+          </div>
+        </div>
 
-      <div class="hub-portal-chip-row">
-        <span class="hub-portal-chip" th:classappend="${game.availableNow} ? ' is-live' : ''">
-          <i class="bi" th:classappend="${game.availableNow} ? ' bi-check-circle-fill' : ' bi-hourglass-split'"></i>
-          <span th:text="${game.availableNow} ? 'San sang ket noi' : 'Dang cau hinh'">San sang ket noi</span>
-        </span>
-        <span class="hub-portal-chip"><i class="bi bi-code-square"></i> Ma: <span th:text="${game.code}">ext</span></span>
-        <span class="hub-portal-chip"><i class="bi bi-box-arrow-in-right"></i> Nguon: <span th:text="${game.sourceType}">external-module</span></span>
-        <span class="hub-portal-chip"><i class="bi bi-terminal"></i> Runtime: <span th:text="${game.runtime}">python</span></span>
-        <span class="hub-portal-chip" th:if="${game.hasExternalApi()}"><i class="bi bi-diagram-3"></i> API gateway</span>
-      </div>
-
-      <div class="hub-portal-action-grid">
-        <a th:if="${game.hasPrimaryAction() and game.primaryActionIsExternal()}"
-           th:href="${game.primaryActionUrl}"
-           target="_blank"
-           rel="noopener"
-           class="hub-portal-action hub-portal-action--primary">
-          <span class="hub-portal-action__icon"><i class="bi bi-box-arrow-up-right"></i></span>
-          <span class="hub-portal-action__text">
-            <strong th:text="${game.primaryActionLabel != null and !#strings.isEmpty(game.primaryActionLabel) ? game.primaryActionLabel : 'Mo module'}">Mo module</strong>
-            <small>Mo module game ngoai trong tab moi</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:if="${game.hasExternalApi()}"
-           th:href="${game.proxyApiBasePath()}"
-           target="_blank"
-           rel="noopener"
-           class="hub-portal-action hub-portal-action--accent">
-          <span class="hub-portal-action__icon"><i class="bi bi-hdd-network-fill"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Mo gateway API</strong>
-            <small th:text="${game.proxyApiBasePath()}">/games/external/demo/api</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:href="@{/games}" class="hub-portal-action hub-portal-action--soft">
-          <span class="hub-portal-action__icon"><i class="bi bi-grid"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Ve thu vien game</strong>
-            <small>Xem them game va module khac</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-      </div>
+        <div class="hub-portal-stage__stats">
+          <div class="hub-portal-stage__stat">
+            <span>Source</span>
+            <strong th:text="${game.sourceType}">external-module</strong>
+          </div>
+          <div class="hub-portal-stage__stat">
+            <span>Runtime</span>
+            <strong th:text="${game.runtime}">python</strong>
+          </div>
+          <div class="hub-portal-stage__stat">
+            <span>Detail</span>
+            <strong th:text="${game.detailMode}">redirect</strong>
+          </div>
+        </div>
+      </section>
     </div>
 
     <aside class="hub-portal-hero__side">
@@ -90,6 +139,32 @@
             <span>Gateway path</span>
             <strong th:text="${game.proxyApiBasePath()}">/games/external/demo/api</strong>
           </div>
+        </div>
+      </section>
+
+      <section class="hub-portal-panel">
+        <div class="hub-portal-panel__head">
+          <div>
+            <div class="hub-portal-panel__label">Install desktop</div>
+            <div class="hub-portal-panel__title">Hub + module trong cung 1 cua so</div>
+          </div>
+          <span class="hub-portal-pill">Desktop</span>
+        </div>
+        <p class="hub-portal-subtitle">
+          Cai dat Game Hub de mo module trong cua so rieng, co shortcut desktop va vao lai nhanh hon.
+        </p>
+        <div class="hub-portal-action-grid">
+          <button type="button"
+                  class="hub-portal-action hub-portal-action--install"
+                  data-install-app-btn="true"
+                  data-install-source="external-side-panel">
+            <span class="hub-portal-action__icon"><i class="bi bi-download"></i></span>
+            <span class="hub-portal-action__text">
+              <strong>Install ngay</strong>
+              <small>Chrome / Edge desktop</small>
+            </span>
+            <i class="bi bi-arrow-right"></i>
+          </button>
         </div>
       </section>
     </aside>

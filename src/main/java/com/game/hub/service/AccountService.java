@@ -16,22 +16,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 public class AccountService {
     private static final int VERIFICATION_CODE_TTL_MINUTES = 5;
     private static final long VERIFICATION_RESEND_COOLDOWN_SECONDS = 30;
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[A-Za-z0-9._]{6,20}$");
     private static final Set<String> ALLOWED_THEME_MODES = Set.of("system", "light", "dark");
     private static final Set<String> ALLOWED_LANGUAGES = Set.of("vi", "en");
+    private static final Set<String> ALLOWED_GENDERS = Set.of("male", "female", "other", "prefer_not_to_say");
     private static final Set<Integer> ALLOWED_FRIEND_REFRESH_MS = Set.of(5000, 10000, 15000, 20000, 30000, 60000);
     private static final String GAME_CODE_CHESS_OFFLINE = "chess-offline";
     private static final String GAME_CODE_XIANGQI_OFFLINE = "xiangqi-offline";
@@ -77,17 +83,31 @@ public class AccountService {
     public ServiceResult register(RegisterRequest request) {
         String normalizedEmail = normalizeEmail(request == null ? null : request.email());
         String displayName = trimToNull(request == null ? null : request.displayName());
+        String rawUsername = request == null ? null : request.username();
         String password = request == null ? null : request.password();
         String avatarPath = trimToNull(request == null ? null : request.avatarPath());
+        String country = normalizeCountry(request == null ? null : request.country());
+        String gender = normalizeGender(request == null ? null : request.gender());
+        LocalDate birthDate = parseBirthDate(request == null ? null : request.birthDate());
 
         if (normalizedEmail == null) {
             return ServiceResult.error("Email is required");
         }
-        if (displayName == null) {
-            return ServiceResult.error("Display name is required");
-        }
         if (password == null || password.isBlank()) {
             return ServiceResult.error("Password is required");
+        }
+        ServiceResult usernameValidation = validateUsernameCandidate(rawUsername, null);
+        if (!usernameValidation.success()) {
+            return usernameValidation;
+        }
+        if (country == null) {
+            return ServiceResult.error("Country is required");
+        }
+        if (gender == null) {
+            return ServiceResult.error("Gender is required");
+        }
+        if (birthDate == null) {
+            return ServiceResult.error("Birth date is required");
         }
 
         if (userAccountRepository.findByEmail(normalizedEmail).isPresent()) {
@@ -97,7 +117,18 @@ public class AccountService {
             return ServiceResult.error("Email is waiting for verification");
         }
 
-        RegisterRequest normalizedRequest = new RegisterRequest(normalizedEmail, displayName, password, avatarPath);
+        String username = readUsernameFromPayload(usernameValidation.data(), rawUsername);
+        String effectiveDisplayName = displayName == null ? username : displayName;
+        RegisterRequest normalizedRequest = new RegisterRequest(
+            normalizedEmail,
+            effectiveDisplayName,
+            username,
+            password,
+            avatarPath,
+            country,
+            gender,
+            birthDate == null ? null : birthDate.toString()
+        );
         PendingRegisterStore.put(normalizedEmail, normalizedRequest, LocalDateTime.now().plusMinutes(VERIFICATION_CODE_TTL_MINUTES));
         ServiceResult issueResult = issueVerificationCode(normalizedEmail, false);
         if (!issueResult.success()) {
@@ -154,23 +185,29 @@ public class AccountService {
             emailVerificationTokenRepository.deleteAll(emailVerificationTokenRepository.findByEmail(normalizedEmail));
             return ServiceResult.error("Email already registered");
         }
+        ServiceResult usernameValidation = validateUsernameCandidate(pending.username(), null);
+        if (!usernameValidation.success()) {
+            return usernameValidation;
+        }
 
         UserAccount user = new UserAccount();
         user.setEmail(pending.email());
-        user.setUsername(pending.email());
-        user.setDisplayName(pending.displayName());
+        user.setUsername(readUsernameFromPayload(usernameValidation.data(), pending.username()));
+        user.setDisplayName(resolveDisplayName(pending.displayName(), user.getUsername(), pending.email()));
         user.setAvatarPath(pending.avatarPath() == null || pending.avatarPath().isBlank()
             ? DEFAULT_AVATAR_PATH : pending.avatarPath());
+        user.setCountry(normalizeCountry(pending.country()));
+        user.setGender(normalizeGender(pending.gender()));
+        user.setBirthDate(parseBirthDate(pending.birthDate()));
         user.setPassword(passwordEncoder.encode(pending.password()));
         user.setEmailConfirmed(true);
         user.setRole(isDefaultAdminEmail(pending.email()) ? "Admin" : "User");
+        user.setOnboardingCompleted(isProfileCompleted(user));
         userAccountRepository.save(user);
 
         PendingRegisterStore.remove(normalizedEmail);
         emailVerificationTokenRepository.deleteAll(emailVerificationTokenRepository.findByEmail(normalizedEmail));
-        Map<String, Object> payload = new HashMap<>(toLoginPayload(user));
-        payload.put("message", "Account created");
-        return ServiceResult.ok(payload);
+        return ServiceResult.ok(buildProfilePayload(user, "Account created"));
     }
 
     public ServiceResult login(String email, String password) {
@@ -224,12 +261,13 @@ public class AccountService {
         if (user == null) {
             user = new UserAccount();
             user.setEmail(normalizedEmail);
-            user.setUsername(normalizedEmail);
-            user.setDisplayName(displayName);
+            user.setUsername(generateUniqueUsername(null, displayName, normalizedEmail, provider));
+            user.setDisplayName(resolveDisplayName(displayName, user.getUsername(), normalizedEmail));
             user.setAvatarPath(DEFAULT_AVATAR_PATH);
             user.setPassword(passwordEncoder.encode(UUID.randomUUID() + ":" + provider + ":" + providerUserId));
             user.setEmailConfirmed(true);
             user.setRole(isDefaultAdminEmail(normalizedEmail) ? "Admin" : "User");
+            user.setOnboardingCompleted(isProfileCompleted(user));
             profileUpdated = true;
         } else {
             if (trimToNull(user.getEmail()) == null && normalizedEmail != null) {
@@ -238,19 +276,14 @@ public class AccountService {
                     return ServiceResult.error("Email already exists");
                 }
                 user.setEmail(normalizedEmail);
-                user.setUsername(normalizedEmail);
                 profileUpdated = true;
             }
             if (trimToNull(user.getDisplayName()) == null && displayName != null) {
                 user.setDisplayName(displayName);
                 profileUpdated = true;
             }
-            if (trimToNull(user.getUsername()) == null) {
-                String fallbackUsername = trimToNull(user.getEmail());
-                if (fallbackUsername == null) {
-                    fallbackUsername = syntheticOauthEmail(provider, providerUserId);
-                }
-                user.setUsername(fallbackUsername);
+            if (!isValidUsername(user.getUsername())) {
+                user.setUsername(generateUniqueUsername(user.getId(), displayName, normalizedEmail, provider));
                 profileUpdated = true;
             }
             if (trimToNull(user.getAvatarPath()) == null) {
@@ -261,6 +294,15 @@ public class AccountService {
                 user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
                 profileUpdated = true;
             }
+        }
+        if (!isProfileCompleted(user) && trimToNull(user.getDisplayName()) == null) {
+            user.setDisplayName(resolveDisplayName(displayName, user.getUsername(), normalizedEmail));
+            profileUpdated = true;
+        }
+        boolean onboardingCompleted = isProfileCompleted(user);
+        if (user.isOnboardingCompleted() != onboardingCompleted) {
+            user.setOnboardingCompleted(onboardingCompleted);
+            profileUpdated = true;
         }
 
         if (user.isBanned()) {
@@ -312,7 +354,14 @@ public class AccountService {
         return ServiceResult.ok(Map.of("message", "Password changed"));
     }
 
-    public ServiceResult updateProfile(String userId, String displayName, String email, String avatarPath) {
+    public ServiceResult updateProfile(String userId,
+                                       String username,
+                                       String displayName,
+                                       String email,
+                                       String avatarPath,
+                                       String country,
+                                       String gender,
+                                       String birthDate) {
         String normalizedUserId = trimToNull(userId);
         if (normalizedUserId == null) {
             return ServiceResult.error("Login required");
@@ -323,12 +372,10 @@ public class AccountService {
             return ServiceResult.error("User not found");
         }
 
-        String normalizedDisplayName = trimToNull(displayName);
-        if (normalizedDisplayName == null) {
-            return ServiceResult.error("Display name is required");
-        }
-
         String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail == null) {
+            normalizedEmail = normalizeEmail(user.getEmail());
+        }
         if (normalizedEmail == null) {
             return ServiceResult.error("Email is required");
         }
@@ -338,21 +385,38 @@ public class AccountService {
             return ServiceResult.error("Email already exists");
         }
 
+        String fallbackUsername = normalizeUsername(username);
+        if (fallbackUsername == null) {
+            fallbackUsername = isValidUsername(user.getUsername())
+                ? normalizeUsername(user.getUsername())
+                : generateUniqueUsername(normalizedUserId, displayName, normalizedEmail, "player");
+        }
+        ServiceResult usernameValidation = validateUsernameCandidate(fallbackUsername, normalizedUserId);
+        if (!usernameValidation.success()) {
+            return usernameValidation;
+        }
+
+        String normalizedDisplayName = resolveDisplayName(
+            trimToNull(displayName),
+            readUsernameFromPayload(usernameValidation.data(), fallbackUsername),
+            normalizedEmail
+        );
         String normalizedAvatarPath = trimToNull(avatarPath);
+        String normalizedCountry = normalizeCountry(country);
+        String normalizedGender = normalizeGender(gender);
+        LocalDate normalizedBirthDate = parseBirthDate(birthDate);
+
+        user.setUsername(readUsernameFromPayload(usernameValidation.data(), fallbackUsername));
         user.setDisplayName(normalizedDisplayName);
         user.setEmail(normalizedEmail);
-        user.setUsername(normalizedEmail);
         user.setAvatarPath(normalizedAvatarPath == null ? DEFAULT_AVATAR_PATH : normalizedAvatarPath);
+        user.setCountry(normalizedCountry);
+        user.setGender(normalizedGender);
+        user.setBirthDate(normalizedBirthDate);
+        user.setOnboardingCompleted(isProfileCompleted(user));
         userAccountRepository.save(user);
 
-        return ServiceResult.ok(Map.of(
-            "userId", user.getId(),
-            "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
-            "email", user.getEmail() == null ? "" : user.getEmail(),
-            "role", user.getRole() == null ? "User" : user.getRole(),
-            "avatarPath", user.getAvatarPath() == null ? DEFAULT_AVATAR_PATH : user.getAvatarPath(),
-            "message", "Profile updated"
-        ));
+        return ServiceResult.ok(buildProfilePayload(user, "Profile updated"));
     }
 
     public ServiceResult updateAvatar(String userId, String avatarPath) {
@@ -372,13 +436,7 @@ public class AccountService {
 
         user.setAvatarPath(normalizedAvatarPath);
         userAccountRepository.save(user);
-        return ServiceResult.ok(Map.of(
-            "userId", user.getId(),
-            "email", user.getEmail() == null ? "" : user.getEmail(),
-            "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
-            "role", user.getRole() == null ? "User" : user.getRole(),
-            "avatarPath", user.getAvatarPath() == null ? DEFAULT_AVATAR_PATH : user.getAvatarPath()
-        ));
+        return ServiceResult.ok(buildProfilePayload(user, null));
     }
 
     @Transactional
@@ -411,14 +469,7 @@ public class AccountService {
         user.setAvatarPath(DB_AVATAR_PATH_PREFIX + normalizedUserId);
         userAccountRepository.save(user);
 
-        return ServiceResult.ok(Map.of(
-            "userId", user.getId(),
-            "email", user.getEmail() == null ? "" : user.getEmail(),
-            "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
-            "role", user.getRole() == null ? "User" : user.getRole(),
-            "avatarPath", user.getAvatarPath() == null ? DEFAULT_AVATAR_PATH : user.getAvatarPath(),
-            "message", "Avatar uploaded"
-        ));
+        return ServiceResult.ok(buildProfilePayload(user, "Avatar uploaded"));
     }
 
     public AvatarBinaryPayload getAvatarBinary(String userId) {
@@ -486,9 +537,15 @@ public class AccountService {
             UserAccount existingByEmail = userAccountRepository.findByEmail(normalizedEmail).orElse(null);
             if (existingByEmail == null || normalizedUserId.equals(existingByEmail.getId())) {
                 user.setEmail(normalizedEmail);
-                user.setUsername(normalizedEmail);
+                if (!isValidUsername(user.getUsername())) {
+                    user.setUsername(generateUniqueUsername(normalizedUserId, displayName, normalizedEmail, provider));
+                }
                 profileUpdated = true;
             }
+        }
+        if (user.isOnboardingCompleted() != isProfileCompleted(user)) {
+            user.setOnboardingCompleted(isProfileCompleted(user));
+            profileUpdated = true;
         }
 
         if (profileUpdated) {
@@ -553,6 +610,19 @@ public class AccountService {
             return ServiceResult.error("User not found");
         }
         return ServiceResult.ok(toLoginPayload(user));
+    }
+
+    public ServiceResult checkUsernameAvailability(String username, String excludeUserId) {
+        ServiceResult validation = validateUsernameCandidate(username, excludeUserId);
+        if (!validation.success()) {
+            return validation;
+        }
+        String normalizedUsername = readUsernameFromPayload(validation.data(), username);
+        return ServiceResult.ok(Map.of(
+            "username", normalizedUsername,
+            "available", true,
+            "message", "Username available"
+        ));
     }
 
     public ServiceResult updatePreferences(String userId, PreferencesRequest request) {
@@ -944,6 +1014,7 @@ public class AccountService {
             String lower = searchTerm.toLowerCase();
             users = users.stream().filter(u ->
                 (u.getDisplayName() != null && u.getDisplayName().toLowerCase().contains(lower))
+                    || (u.getUsername() != null && u.getUsername().toLowerCase().contains(lower))
                     || (u.getEmail() != null && u.getEmail().toLowerCase().contains(lower))
             ).toList();
         }
@@ -985,13 +1056,9 @@ public class AccountService {
             userAccountRepository.save(user);
         }
 
-        return ServiceResult.ok(Map.of(
-            "userId", user.getId(),
-            "role", "Admin",
-            "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
-            "email", user.getEmail() == null ? "" : user.getEmail(),
-            "avatarPath", user.getAvatarPath() == null ? DEFAULT_AVATAR_PATH : user.getAvatarPath(),
-            "message", roleChanged ? "Admin role activated" : "Account is already Admin"
+        return ServiceResult.ok(buildProfilePayload(
+            user,
+            roleChanged ? "Admin role activated" : "Account is already Admin"
         ));
     }
 
@@ -1025,7 +1092,14 @@ public class AccountService {
         }
     }
 
-    public record RegisterRequest(String email, String displayName, String password, String avatarPath) {
+    public record RegisterRequest(String email,
+                                  String displayName,
+                                  String username,
+                                  String password,
+                                  String avatarPath,
+                                  String country,
+                                  String gender,
+                                  String birthDate) {
     }
 
     public record OAuth2LoginRequest(String provider, String providerUserId, String email, String displayName) {
@@ -1549,6 +1623,204 @@ public class AccountService {
         );
     }
 
+    private String normalizeUsername(String username) {
+        String normalized = trimToNull(username);
+        if (normalized == null) {
+            return null;
+        }
+        if (normalized.startsWith("@")) {
+            normalized = trimToNull(normalized.substring(1));
+        }
+        return normalized;
+    }
+
+    private boolean isValidUsername(String username) {
+        String normalized = normalizeUsername(username);
+        return normalized != null && USERNAME_PATTERN.matcher(normalized).matches();
+    }
+
+    private ServiceResult validateUsernameCandidate(String username, String excludeUserId) {
+        String normalized = normalizeUsername(username);
+        if (normalized == null) {
+            return ServiceResult.error("Username is required");
+        }
+        if (normalized.length() < 6 || normalized.length() > 20) {
+            return ServiceResult.error("Username must be between 6 and 20 characters");
+        }
+        if (!USERNAME_PATTERN.matcher(normalized).matches()) {
+            return ServiceResult.error("Username may contain only letters, numbers, '.' and '_'");
+        }
+
+        UserAccount existing = userAccountRepository.findByUsernameIgnoreCase(normalized).orElse(null);
+        String normalizedExcludeUserId = trimToNull(excludeUserId);
+        if (existing != null && !Objects.equals(normalizedExcludeUserId, existing.getId())) {
+            return ServiceResult.error("Username already exists");
+        }
+
+        return ServiceResult.ok(Map.of(
+            "username", normalized,
+            "available", true
+        ));
+    }
+
+    private String readUsernameFromPayload(Object data, String fallback) {
+        if (data instanceof Map<?, ?> payload) {
+            Object value = payload.get("username");
+            if (value != null) {
+                String normalized = normalizeUsername(String.valueOf(value));
+                if (normalized != null) {
+                    return normalized;
+                }
+            }
+        }
+        return normalizeUsername(fallback);
+    }
+
+    private String sanitizeUsernameSeed(String value) {
+        String normalized = trimToNull(value);
+        if (normalized == null) {
+            return null;
+        }
+        String cleaned = normalized
+            .replace("@", "")
+            .replaceAll("[^A-Za-z0-9._]+", "");
+        return trimToNull(cleaned);
+    }
+
+    private String prepareUsernameBase(String value) {
+        String cleaned = sanitizeUsernameSeed(value);
+        if (cleaned == null) {
+            return null;
+        }
+        String candidate = cleaned.length() > 20 ? cleaned.substring(0, 20) : cleaned;
+        if (candidate.length() >= 6 && USERNAME_PATTERN.matcher(candidate).matches()) {
+            return candidate;
+        }
+        String padded = (candidate + "playerxx");
+        String resolved = padded.substring(0, Math.min(20, Math.max(6, padded.length())));
+        while (resolved.length() < 6) {
+            resolved += "x";
+        }
+        if (resolved.length() > 20) {
+            resolved = resolved.substring(0, 20);
+        }
+        return USERNAME_PATTERN.matcher(resolved).matches() ? resolved : "playerx";
+    }
+
+    private boolean isUsernameAvailable(String username, String excludeUserId) {
+        if (!isValidUsername(username)) {
+            return false;
+        }
+        UserAccount existing = userAccountRepository.findByUsernameIgnoreCase(username).orElse(null);
+        return existing == null || Objects.equals(trimToNull(excludeUserId), existing.getId());
+    }
+
+    private String generateUniqueUsername(String excludeUserId, String... candidates) {
+        java.util.LinkedHashSet<String> seeds = new java.util.LinkedHashSet<>();
+        if (candidates != null) {
+            for (String candidate : candidates) {
+                String prepared = prepareUsernameBase(candidate);
+                if (prepared != null) {
+                    seeds.add(prepared);
+                }
+            }
+        }
+        seeds.add("playerxx");
+
+        for (String seed : seeds) {
+            if (isUsernameAvailable(seed, excludeUserId)) {
+                return seed;
+            }
+            for (int i = 2; i <= 9999; i++) {
+                String suffix = String.valueOf(i);
+                int baseLength = Math.max(1, 20 - suffix.length());
+                String base = seed.length() > baseLength ? seed.substring(0, baseLength) : seed;
+                String candidate = base + suffix;
+                if (isUsernameAvailable(candidate, excludeUserId)) {
+                    return candidate;
+                }
+            }
+        }
+
+        for (int i = 0; i < 128; i++) {
+            String candidate = "player" + (1000 + random.nextInt(9000));
+            if (isUsernameAvailable(candidate, excludeUserId)) {
+                return candidate;
+            }
+        }
+        return "player" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+    }
+
+    private String resolveDisplayName(String requestedDisplayName, String username, String email) {
+        String normalizedDisplayName = trimToNull(requestedDisplayName);
+        if (normalizedDisplayName != null) {
+            return normalizedDisplayName;
+        }
+        String normalizedUsername = normalizeUsername(username);
+        if (normalizedUsername != null) {
+            return normalizedUsername;
+        }
+        return defaultDisplayNameFromEmail(email);
+    }
+
+    private String normalizeCountry(String country) {
+        String normalized = trimToNull(country);
+        if (normalized == null) {
+            return null;
+        }
+        return normalized.length() > 80 ? normalized.substring(0, 80) : normalized;
+    }
+
+    private String normalizeGender(String gender) {
+        String normalized = trimToNull(gender);
+        if (normalized == null) {
+            return null;
+        }
+        String lowered = normalized
+            .toLowerCase()
+            .replace('-', '_')
+            .replace(' ', '_');
+        if ("nam".equals(lowered)) {
+            lowered = "male";
+        } else if ("nu".equals(lowered)) {
+            lowered = "female";
+        } else if ("khac".equals(lowered)) {
+            lowered = "other";
+        } else if ("prefernot".equals(lowered) || "khongnoi".equals(lowered)) {
+            lowered = "prefer_not_to_say";
+        }
+        return ALLOWED_GENDERS.contains(lowered) ? lowered : null;
+    }
+
+    private LocalDate parseBirthDate(String birthDate) {
+        String normalized = trimToNull(birthDate);
+        if (normalized == null) {
+            return null;
+        }
+        try {
+            LocalDate parsed = LocalDate.parse(normalized);
+            LocalDate now = LocalDate.now();
+            if (parsed.isAfter(now)) {
+                return null;
+            }
+            int years = Period.between(parsed, now).getYears();
+            if (years < 6 || years > 120) {
+                return null;
+            }
+            return parsed;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private boolean isProfileCompleted(UserAccount user) {
+        return user != null
+            && isValidUsername(user.getUsername())
+            && normalizeCountry(user.getCountry()) != null
+            && normalizeGender(user.getGender()) != null
+            && user.getBirthDate() != null;
+    }
+
     private String normalizeEmail(String email) {
         String normalized = trimToNull(email);
         return normalized == null ? null : normalized.toLowerCase();
@@ -1565,6 +1837,14 @@ public class AccountService {
             user.setRole("Admin");
             updated = true;
         }
+        if (!isValidUsername(user.getUsername())) {
+            user.setUsername(generateUniqueUsername(user.getId(), user.getDisplayName(), user.getEmail()));
+            updated = true;
+        }
+        if (trimToNull(user.getDisplayName()) == null) {
+            user.setDisplayName(resolveDisplayName(null, user.getUsername(), user.getEmail()));
+            updated = true;
+        }
 
         if (!user.isEmailConfirmed()) {
             user.setEmailConfirmed(true);
@@ -1575,6 +1855,11 @@ public class AccountService {
             user.setOnline(true);
             updated = true;
         }
+        boolean onboardingCompleted = isProfileCompleted(user);
+        if (user.isOnboardingCompleted() != onboardingCompleted) {
+            user.setOnboardingCompleted(onboardingCompleted);
+            updated = true;
+        }
 
         if (updated || user.getId() == null || user.getId().isBlank()) {
             userAccountRepository.save(user);
@@ -1582,13 +1867,26 @@ public class AccountService {
     }
 
     private Map<String, Object> toLoginPayload(UserAccount user) {
-        return Map.of(
-            "userId", user.getId(),
-            "email", user.getEmail() == null ? "" : user.getEmail(),
-            "displayName", user.getDisplayName() == null ? "Player" : user.getDisplayName(),
-            "role", user.getRole() == null ? "User" : user.getRole(),
-            "avatarPath", user.getAvatarPath() == null ? DEFAULT_AVATAR_PATH : user.getAvatarPath()
-        );
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("userId", user.getId());
+        payload.put("username", normalizeUsername(user.getUsername()) == null ? "" : normalizeUsername(user.getUsername()));
+        payload.put("email", user.getEmail() == null ? "" : user.getEmail());
+        payload.put("displayName", resolveDisplayName(user.getDisplayName(), user.getUsername(), user.getEmail()));
+        payload.put("role", user.getRole() == null ? "User" : user.getRole());
+        payload.put("avatarPath", user.getAvatarPath() == null ? DEFAULT_AVATAR_PATH : user.getAvatarPath());
+        payload.put("country", user.getCountry() == null ? "" : user.getCountry());
+        payload.put("gender", user.getGender() == null ? "" : user.getGender());
+        payload.put("birthDate", user.getBirthDate() == null ? "" : user.getBirthDate().toString());
+        payload.put("onboardingCompleted", user.isOnboardingCompleted());
+        return payload;
+    }
+
+    private Map<String, Object> buildProfilePayload(UserAccount user, String message) {
+        Map<String, Object> payload = new HashMap<>(toLoginPayload(user));
+        if (message != null) {
+            payload.put("message", message);
+        }
+        return payload;
     }
 
     private Map<String, Object> buildSocialLinksPayload(UserAccount user, String message) {

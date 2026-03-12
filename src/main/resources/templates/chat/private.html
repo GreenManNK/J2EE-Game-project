@@ -68,29 +68,30 @@
 
     function appendMessage(sender, text, isMine, sentAt) {
       const row = document.createElement('div');
-      row.className = 'mb-2 p-2 rounded ' + (isMine ? 'bg-primary text-white ms-auto' : 'bg-light text-dark me-auto');
-      row.style.maxWidth = '80%';
+      row.className = 'private-chat-message-row ' + (isMine ? 'private-chat-message-row--mine' : 'private-chat-message-row--other');
+
+      const bubble = document.createElement('div');
+      bubble.className = 'private-chat-message ' + (isMine ? 'private-chat-message--mine' : 'private-chat-message--other');
 
       const senderEl = document.createElement('div');
-      senderEl.className = 'fw-bold small';
+      senderEl.className = 'private-chat-message__sender';
       senderEl.textContent = sender;
-      row.appendChild(senderEl);
+      bubble.appendChild(senderEl);
 
       const textEl = document.createElement('div');
+      textEl.className = 'private-chat-message__body';
       textEl.textContent = text;
-      row.appendChild(textEl);
+      bubble.appendChild(textEl);
 
       if (sentAt) {
         const timeEl = document.createElement('div');
-        timeEl.className = 'small opacity-75';
+        timeEl.className = 'private-chat-message__meta';
         timeEl.textContent = new Date(sentAt).toLocaleTimeString();
-        row.appendChild(timeEl);
+        bubble.appendChild(timeEl);
       }
 
-      const wrapper = document.createElement('div');
-      wrapper.className = 'd-flex ' + (isMine ? 'justify-content-end' : 'justify-content-start');
-      wrapper.appendChild(row);
-      chatBox.appendChild(wrapper);
+      row.appendChild(bubble);
+      chatBox.appendChild(row);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
