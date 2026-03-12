@@ -57,6 +57,10 @@ function Wait-HttpOk([string]$Url, [int]$TimeoutSeconds) {
     return $false
 }
 
+function Test-CommandExists([string]$Name) {
+    return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
+}
+
 function Test-ProcessAliveByPidFile([string]$PidFilePath) {
     if (-not (Test-Path $PidFilePath)) {
         return $false
@@ -70,6 +74,40 @@ function Test-ProcessAliveByPidFile([string]$PidFilePath) {
         return $true
     } catch {
         return $false
+    }
+}
+
+function Test-FallbackTunnelAvailable {
+    return (Test-CommandExists "npx") -or (Test-CommandExists "npx.cmd")
+}
+
+function Start-FallbackTunnelAndResolve([int]$Port, [string]$SelectedProvider) {
+    Write-Output "STEP=START_TUNNEL_FALLBACK"
+    & $stopQuickTunnelScript | Out-Null
+    & $stopNamedTunnelScript | Out-Null
+    $fallbackArgs = @{
+        LocalPort = $Port
+        ContextPath = "/Game"
+    }
+    if (-not [string]::IsNullOrWhiteSpace($SelectedProvider)) {
+        $fallbackArgs.Provider = $SelectedProvider
+    }
+    $fallbackOutput = & $fallbackTunnelStartScript @fallbackArgs 2>&1
+    $fallbackOutput | ForEach-Object { Write-Output ([string]$_) }
+    $fallbackMap = Parse-KeyValueLines -Lines $fallbackOutput
+    if (-not $fallbackMap.ContainsKey("PUBLIC_GAME_URL")) {
+        throw "Fallback provider khong tao duoc PUBLIC_GAME_URL."
+    }
+    $resolvedProvider = if ($fallbackMap.ContainsKey("TUNNEL_MODE")) {
+        [string]$fallbackMap["TUNNEL_MODE"]
+    } else {
+        [string]$SelectedProvider
+    }
+    return @{
+        publicGameUrl = Normalize-GameUrl -Url ([string]$fallbackMap["PUBLIC_GAME_URL"])
+        publicBaseUrl = Normalize-BaseUrl -BaseUrl ([string]$fallbackMap["PUBLIC_BASE_URL"]) -GameUrl ([string]$fallbackMap["PUBLIC_GAME_URL"])
+        tunnelMode = $resolvedProvider
+        tunnelLogErr = $fallbackTunnelErrLog
     }
 }
 
@@ -312,18 +350,11 @@ try {
     $tunnelLogErr = $null
 
     if (($resolvedTunnelMode -eq "runlocal") -or ($resolvedTunnelMode -eq "localtunnel")) {
-        Write-Output "STEP=START_TUNNEL_FALLBACK"
-        & $stopQuickTunnelScript | Out-Null
-        & $stopNamedTunnelScript | Out-Null
-        $fallbackOutput = & $fallbackTunnelStartScript -LocalPort $Port -ContextPath "/Game" -Provider $resolvedTunnelMode 2>&1
-        $fallbackOutput | ForEach-Object { Write-Output ([string]$_) }
-        $fallbackMap = Parse-KeyValueLines -Lines $fallbackOutput
-        if (-not $fallbackMap.ContainsKey("PUBLIC_GAME_URL")) {
-            throw "Fallback provider khong tao duoc PUBLIC_GAME_URL."
-        }
-        $publicGameUrl = Normalize-GameUrl -Url ([string]$fallbackMap["PUBLIC_GAME_URL"])
-        $publicBaseUrl = Normalize-BaseUrl -BaseUrl ([string]$fallbackMap["PUBLIC_BASE_URL"]) -GameUrl $publicGameUrl
-        $tunnelLogErr = $fallbackTunnelErrLog
+        $fallbackResult = Start-FallbackTunnelAndResolve -Port $Port -SelectedProvider $resolvedTunnelMode
+        $publicGameUrl = [string]$fallbackResult.publicGameUrl
+        $publicBaseUrl = [string]$fallbackResult.publicBaseUrl
+        $resolvedTunnelMode = [string]$fallbackResult.tunnelMode
+        $tunnelLogErr = [string]$fallbackResult.tunnelLogErr
     }
 
     if ($resolvedTunnelMode -eq "named") {
@@ -384,7 +415,7 @@ try {
                     Start-Sleep -Seconds 2
                     continue
                 }
-                throw $quickLastError
+                break
             }
             $quickOutput | ForEach-Object { Write-Output ([string]$_) }
 
@@ -410,19 +441,14 @@ try {
 
         if ([string]::IsNullOrWhiteSpace($publicGameUrl)) {
             Write-Warning ("Quick tunnel khong on dinh sau {0} lan thu. Dang thu fallback provider..." -f $quickMaxAttempts)
-            Write-Output "STEP=START_TUNNEL_FALLBACK"
-            $fallbackOutput = & $fallbackTunnelStartScript -LocalPort $Port -ContextPath "/Game" 2>&1
-            $fallbackOutput | ForEach-Object { Write-Output ([string]$_) }
-            $fallbackMap = Parse-KeyValueLines -Lines $fallbackOutput
-            if (-not $fallbackMap.ContainsKey("PUBLIC_GAME_URL")) {
+            if (-not (Test-FallbackTunnelAvailable)) {
                 throw ("Quick tunnel that bai va fallback provider cung khong tao duoc public URL. Loi quick tunnel cuoi: {0}" -f $quickLastError)
             }
-            $publicGameUrl = Normalize-GameUrl -Url ([string]$fallbackMap["PUBLIC_GAME_URL"])
-            $publicBaseUrl = Normalize-BaseUrl -BaseUrl ([string]$fallbackMap["PUBLIC_BASE_URL"]) -GameUrl $publicGameUrl
-            if ($fallbackMap.ContainsKey("TUNNEL_MODE")) {
-                $resolvedTunnelMode = [string]$fallbackMap["TUNNEL_MODE"]
-            }
-            $tunnelLogErr = $fallbackTunnelErrLog
+            $fallbackResult = Start-FallbackTunnelAndResolve -Port $Port -SelectedProvider "auto"
+            $publicGameUrl = [string]$fallbackResult.publicGameUrl
+            $publicBaseUrl = [string]$fallbackResult.publicBaseUrl
+            $resolvedTunnelMode = [string]$fallbackResult.tunnelMode
+            $tunnelLogErr = [string]$fallbackResult.tunnelLogErr
         }
     }
 

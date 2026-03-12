@@ -77,6 +77,20 @@ function Test-DockerComposeV2Available {
     }
 }
 
+function Test-DockerEngineReachable {
+    $dockerCommand = Get-DockerCliCommand
+    if (-not $dockerCommand) {
+        return $false
+    }
+
+    try {
+        & $dockerCommand version --format "{{.Server.Version}}" *> $null
+        return ($LASTEXITCODE -eq 0)
+    } catch {
+        return $false
+    }
+}
+
 function Invoke-DockerCompose {
     param([string[]]$CommandArgs)
 

@@ -349,11 +349,17 @@ if (-not $NoLive) {
                 Ensure-StatusValue $status "APP_LISTEN_8080" "1"
                 Assert-True ($status.ContainsKey("ACTIVE_TUNNEL_MODE")) "Status output thieu ACTIVE_TUNNEL_MODE"
                 $activeMode = [string]$status["ACTIVE_TUNNEL_MODE"]
-                Assert-True (($activeMode -eq "quick") -or ($activeMode -eq "named")) ("ACTIVE_TUNNEL_MODE khong hop le: " + $activeMode)
+                $validActiveMode = ($activeMode -eq "quick") `
+                    -or ($activeMode -eq "named") `
+                    -or ($activeMode -eq "runlocal") `
+                    -or ($activeMode -eq "localtunnel")
+                Assert-True $validActiveMode ("ACTIVE_TUNNEL_MODE khong hop le: " + $activeMode)
                 if ($activeMode -eq "quick") {
                     Ensure-StatusValue $status "QUICK_TUNNEL_PROCESS_ALIVE" "1"
-                } else {
+                } elseif ($activeMode -eq "named") {
                     Ensure-StatusValue $status "NAMED_TUNNEL_PROCESS_ALIVE" "1"
+                } else {
+                    Ensure-StatusValue $status "FALLBACK_TUNNEL_PROCESS_ALIVE" "1"
                 }
                 Assert-True ($status.ContainsKey("ACTIVE_PUBLIC_GAME_URL")) "Status output thieu ACTIVE_PUBLIC_GAME_URL"
                 Assert-True (-not [string]::IsNullOrWhiteSpace([string]$status["ACTIVE_PUBLIC_GAME_URL"])) "ACTIVE_PUBLIC_GAME_URL rong khi dang chay"

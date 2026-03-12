@@ -14,7 +14,12 @@ if (Test-Path $dockerHelper) {
 
 Push-Location $repoRoot
 try {
-    $code = Invoke-DockerCompose @("down")
+    $code = 0
+    if (Test-DockerEngineReachable) {
+        $code = Invoke-DockerCompose @("down")
+    } else {
+        Write-Host "Docker Desktop/Engine khong san sang. Bo qua buoc dung Docker." -ForegroundColor Yellow
+    }
     if ((Test-Path $statusScript) -and (-not $SkipStatus.IsPresent)) {
         Write-Host ""
         & $statusScript -Title "STATUS SAU KHI DUNG DOCKER" | Out-Host

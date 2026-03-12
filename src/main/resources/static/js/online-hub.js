@@ -141,9 +141,11 @@
       enterRoom(createdRoomId);
     });
 
-    els.goPlayBtn?.addEventListener('click', () => {
-      enterRoom(state.roomId);
-    });
+    if (els.goPlayBtn && els.goPlayBtn !== els.joinBtn) {
+      els.goPlayBtn.addEventListener('click', () => {
+        enterRoom(state.roomId);
+      });
+    }
 
     els.goSpectateBtn?.addEventListener('click', () => {
       if (!state.roomId || !state.supportsSpectateNow || !hasSpectateTarget()) {
@@ -451,20 +453,21 @@
       els.openSpectateBtn.classList.toggle('disabled', !spectateInvite || !state.supportsSpectateNow);
       els.openSpectateBtn.setAttribute('aria-disabled', (spectateInvite && state.supportsSpectateNow) ? 'false' : 'true');
     }
-    if (els.goPlayBtn) {
+    const playActionBtn = els.goPlayBtn || els.joinBtn;
+    if (playActionBtn) {
       const canPlay = Boolean(
         state.roomId &&
         state.onlineSupportedNow &&
         hasPlayTarget() &&
         !(selectedRoomFull && state.supportsSpectateNow)
       );
-      els.goPlayBtn.disabled = !canPlay;
+      playActionBtn.disabled = !canPlay;
       if (!state.onlineSupportedNow) {
-        els.goPlayBtn.textContent = 'Ban choi truc tuyen chua san sang';
+        playActionBtn.textContent = 'Ban choi truc tuyen chua san sang';
       } else if (selectedRoomFull && state.supportsSpectateNow) {
-        els.goPlayBtn.textContent = 'Phong day - hay vao xem';
+        playActionBtn.textContent = 'Phong day - hay vao xem';
       } else {
-        els.goPlayBtn.textContent = 'Vao ngay';
+        playActionBtn.textContent = 'Vao ngay';
       }
     }
     if (els.goSpectateBtn) {

@@ -628,7 +628,11 @@
     randomRoomBtn.addEventListener('click', async () => {
         const rooms = await fetchRoomList(false);
         const candidates = Array.isArray(rooms)
-            ? rooms.filter((room) => Number(room.playerCount || 0) < 5)
+            ? rooms.filter((room) => {
+                const playerCount = Number(room.playerCount || 0);
+                const playerLimit = Number(room.playerLimit || 0);
+                return !Number.isFinite(playerLimit) || playerLimit <= 0 || playerCount < playerLimit;
+            })
             : [];
         if (candidates.length === 0) {
             isSpectator = false;

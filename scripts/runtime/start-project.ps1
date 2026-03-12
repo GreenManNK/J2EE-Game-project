@@ -57,8 +57,21 @@ function Test-LocalRuntimeAvailable {
     return (Test-CommandExists "java") -and (Test-BuildToolAvailable)
 }
 
+function Test-FallbackTunnelAvailable {
+    return (Test-CommandExists "npx") -or (Test-CommandExists "npx.cmd")
+}
+
 function Test-PublicRuntimeAvailable {
-    return (Test-LocalRuntimeAvailable) -and (-not [string]::IsNullOrWhiteSpace((Get-CloudflaredCommandPath)))
+    if (-not (Test-LocalRuntimeAvailable)) {
+        return $false
+    }
+    if (-not [string]::IsNullOrWhiteSpace((Get-CloudflaredCommandPath))) {
+        return $true
+    }
+    if (Test-FallbackTunnelAvailable) {
+        return $true
+    }
+    return ($env:OS -eq "Windows_NT")
 }
 
 function Test-DockerRuntimeAvailable {
