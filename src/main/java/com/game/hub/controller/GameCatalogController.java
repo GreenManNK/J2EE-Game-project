@@ -53,6 +53,7 @@ public class GameCatalogController {
             case "quiz" -> "games/quiz";
             case "typing" -> "games/typing";
             case "puzzle" -> "games/puzzle/index";
+            case "monopoly" -> "games/monopoly";
             default -> "games/detail";
         };
     }

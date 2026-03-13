@@ -48,6 +48,7 @@
       }
       root.setAttribute("data-theme", effectiveTheme);
       root.setAttribute("data-theme-mode", mode);
+      root.style.colorScheme = effectiveTheme;
       root.classList.toggle("dark-mode", effectiveTheme === "dark");
       root.classList.toggle("light-mode", effectiveTheme === "light");
     })();

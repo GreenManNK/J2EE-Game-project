@@ -56,6 +56,7 @@ class GameCatalogControllerTest {
         assertEquals("games/quiz", controller.detail("quiz", new ConcurrentModel()));
         assertEquals("games/typing", controller.detail("typing", new ConcurrentModel()));
         assertEquals("games/puzzle/index", controller.detail("puzzle", new ConcurrentModel()));
+        assertEquals("games/monopoly", controller.detail("monopoly", new ConcurrentModel()));
     }
 
     @Test

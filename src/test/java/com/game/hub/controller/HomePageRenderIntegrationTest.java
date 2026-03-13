@@ -77,6 +77,14 @@ class HomePageRenderIntegrationTest {
     }
 
     @Test
+    void monopolyDetailPageShouldRenderWithSharedCatalogModel() throws Exception {
+        mockMvc.perform(get("/games/monopoly"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/monopoly"))
+            .andExpect(model().attributeExists("game", "allGames"));
+    }
+
+    @Test
     void onlineHubShouldRenderWithSelectedGameModel() throws Exception {
         mockMvc.perform(get("/online-hub"))
             .andExpect(status().isOk())

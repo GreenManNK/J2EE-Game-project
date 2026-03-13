@@ -121,12 +121,14 @@
     if (root) {
       root.setAttribute('data-theme', normalized);
       root.setAttribute('data-theme-mode', normalizedMode);
+      root.style.colorScheme = normalized;
       root.classList.toggle('dark-mode', normalized === 'dark');
       root.classList.toggle('light-mode', normalized === 'light');
     }
 
     const body = document.body;
     if (body) {
+      body.style.colorScheme = normalized;
       body.classList.toggle('dark-mode', normalized === 'dark');
       body.classList.toggle('light-mode', normalized === 'light');
       body.dataset.theme = normalized;

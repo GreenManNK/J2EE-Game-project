@@ -213,6 +213,24 @@ public class GameCatalogService {
                     "Sliding puzzle.",
                     "Word puzzle va Sudoku."
                 )
+            ),
+            new GameCatalogItem(
+                "monopoly",
+                "Co ty phu",
+                "Monopoly",
+                "Co ty phu local 2-4 nguoi voi ban co day du, the su kien, nha/hotel, the chap va cuoc dua tai san den luc chot bang xep hang.",
+                "bi-bank",
+                true,
+                false,
+                true,
+                true,
+                "Mo Co ty phu",
+                "/games/monopoly",
+                List.of(
+                    "Them trade giua nguoi choi va de xuat doi tai san.",
+                    "Bo sung save/load local cho van dang choi.",
+                    "Mo rong sang bot va che do online theo luot."
+                )
             )
         );
     }

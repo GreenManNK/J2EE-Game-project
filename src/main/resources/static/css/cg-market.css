@@ -744,6 +744,10 @@ body:not(.sidebar-desktop).sidebar-open #appShellLayer .cg-topbar__menu-toggle {
   background: linear-gradient(135deg, rgba(128, 43, 31, 0.95), rgba(90, 30, 25, 0.95));
 }
 
+.cg-tile-thumb.tone-monopoly {
+  background: linear-gradient(135deg, rgba(180, 83, 9, 0.95), rgba(15, 118, 110, 0.92));
+}
+
 .cg-tile-badge {
   position: absolute;
   left: 8px;
@@ -2361,6 +2365,802 @@ body:not(.dark-mode) .cg-home-showcase__lane-item span {
   .cg-recommended-card.is-feature,
   .cg-recommended-card.is-wide {
     min-height: 172px;
+  }
+}
+
+:root[data-theme="light"] body,
+body.light-mode {
+  color-scheme: light;
+  --cg-bg-1: #dcecff;
+  --cg-bg-2: #ebf4ff;
+  --cg-bg-3: #bdd7f6;
+  --cg-panel: rgba(242, 249, 255, 0.94);
+  --cg-panel-soft: rgba(235, 244, 255, 0.82);
+  --cg-border: rgba(57, 103, 171, 0.3);
+  --cg-ink: #102644;
+  --cg-muted: #4b6c94;
+  --cg-accent: #1f6fe5;
+  --cg-accent-2: #0ea57f;
+  --cg-warn: #b7791f;
+  --cg-danger: #d13a4a;
+}
+
+:root[data-theme="dark"] body,
+body.dark-mode {
+  color-scheme: dark;
+  --cg-bg-1: #061329;
+  --cg-bg-2: #081b38;
+  --cg-bg-3: #0b2450;
+  --cg-panel: rgba(9, 22, 46, 0.86);
+  --cg-panel-soft: rgba(12, 30, 62, 0.72);
+  --cg-border: rgba(118, 163, 231, 0.28);
+  --cg-ink: #eaf2ff;
+  --cg-muted: #9fb5d8;
+  --cg-accent: #27a3ff;
+  --cg-accent-2: #20c38f;
+  --cg-warn: #f59e0b;
+  --cg-danger: #ef4444;
+}
+
+.cg-home,
+.cg-market-catalog,
+.cg-browser-page {
+  gap: clamp(14px, 2vw, 18px);
+}
+
+.cg-home-stage,
+.cg-browser-hero,
+.cg-browser-state-card,
+.cg-home-community-panel,
+.cg-home-stat-card,
+.cg-lane {
+  padding: clamp(14px, 1.6vw, 18px);
+}
+
+.cg-home-stage__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.cg-home-stage__copy {
+  display: grid;
+  gap: 10px;
+}
+
+.cg-home-stage__actions,
+.cg-browser-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-content: start;
+}
+
+.cg-chip-row {
+  gap: 6px;
+  margin-top: 0;
+}
+
+.cg-chip {
+  padding: 5px 9px;
+  font-size: 0.74rem;
+}
+
+.cg-title {
+  max-width: 22ch;
+}
+
+.cg-subtitle {
+  max-width: 60ch;
+  font-size: 0.92rem;
+}
+
+.cg-home-recommended-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.cg-recommended-card,
+.cg-recommended-card.is-feature,
+.cg-recommended-card.is-wide {
+  grid-column: auto;
+  grid-row: auto;
+  min-height: 228px;
+}
+
+.cg-recommended-card {
+  padding: 16px;
+  gap: 14px;
+}
+
+.cg-recommended-card__body p,
+.cg-tile-body p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cg-recommended-card__body p {
+  -webkit-line-clamp: 3;
+}
+
+.cg-tile-body p {
+  -webkit-line-clamp: 3;
+  min-height: 3.3em;
+}
+
+.cg-browser-controls {
+  grid-template-columns: minmax(260px, 1.7fr) repeat(2, minmax(140px, 0.7fr)) auto;
+  align-items: stretch;
+}
+
+.cg-browser-controls .cg-control {
+  min-height: 50px;
+  width: 100%;
+}
+
+.cg-browser-controls .cg-control input,
+.cg-browser-controls .cg-control select {
+  width: 100%;
+}
+
+.cg-browser-controls .btn {
+  min-height: 50px;
+}
+
+.cg-browser-hero {
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+  gap: 16px;
+}
+
+.cg-browser-state-grid {
+  gap: 14px;
+}
+
+.cg-lane {
+  gap: 10px;
+}
+
+.cg-lane-track {
+  grid-auto-columns: minmax(232px, 270px);
+  gap: 12px;
+  padding-bottom: 6px;
+}
+
+.cg-tile {
+  min-width: 232px;
+}
+
+.cg-tile-body {
+  padding: 12px;
+  gap: 8px;
+}
+
+@media (max-width: 1199.98px) {
+  .cg-browser-controls {
+    grid-template-columns: minmax(0, 1fr) repeat(2, minmax(140px, 1fr));
+  }
+
+  .cg-browser-controls > :first-child,
+  .cg-browser-controls > :last-child {
+    grid-column: 1 / -1;
+  }
+
+  .cg-home-stage__header {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .cg-browser-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cg-browser-shortcuts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .cg-title,
+  .cg-subtitle {
+    max-width: none;
+  }
+
+  .cg-browser-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .cg-browser-controls > * {
+    grid-column: auto;
+  }
+
+  .cg-lane-track {
+    grid-auto-columns: minmax(200px, 84vw);
+  }
+
+  .cg-tile {
+    min-width: 200px;
+  }
+}
+
+#homeMain .cg-recommended-card {
+  isolation: isolate;
+}
+
+#homeMain .cg-recommended-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+#homeMain .cg-recommended-card::before {
+  z-index: 1;
+}
+
+#homeMain .cg-recommended-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  background-image:
+    linear-gradient(180deg, rgba(3, 10, 22, 0.14) 0%, rgba(3, 10, 22, 0.44) 46%, rgba(3, 10, 22, 0.88) 100%),
+    var(--cg-home-card-art);
+  background-size: cover;
+  background-position: var(--cg-home-card-position, center);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+#homeMain .cg-recommended-card:hover::after,
+#homeMain .cg-recommended-card:focus-visible::after {
+  transform: scale(1.02);
+}
+
+#homeMain .cg-recommended-card__icon {
+  backdrop-filter: blur(10px);
+}
+
+#homeMain .cg-tile[data-code="caro"] .cg-tile-thumb,
+#homeMain .cg-tile[data-code="xiangqi"] .cg-tile-thumb,
+#homeMain .cg-tile[data-code="monopoly"] .cg-tile-thumb,
+#homeMain .cg-tile[data-code="chess"] .cg-tile-thumb,
+#homeMain .cg-tile[data-code="typing"] .cg-tile-thumb,
+#homeMain .cg-tile[data-code="blackjack"] .cg-tile-thumb,
+#homeMain .cg-tile[data-code="cards"] .cg-tile-thumb,
+#homeMain .cg-tile[data-code="puzzle"] .cg-tile-thumb {
+  background-image:
+    linear-gradient(180deg, rgba(4, 12, 24, 0.12) 0%, rgba(4, 12, 24, 0.54) 100%),
+    var(--cg-home-card-art);
+  background-size: cover;
+  background-position: var(--cg-home-card-position, center);
+}
+
+#homeMain .cg-tile[data-code="caro"] .cg-tile-thumb i,
+#homeMain .cg-tile[data-code="xiangqi"] .cg-tile-thumb i,
+#homeMain .cg-tile[data-code="monopoly"] .cg-tile-thumb i,
+#homeMain .cg-tile[data-code="chess"] .cg-tile-thumb i,
+#homeMain .cg-tile[data-code="typing"] .cg-tile-thumb i,
+#homeMain .cg-tile[data-code="blackjack"] .cg-tile-thumb i,
+#homeMain .cg-tile[data-code="cards"] .cg-tile-thumb i,
+#homeMain .cg-tile[data-code="puzzle"] .cg-tile-thumb i,
+#homeMain .cg-tile[data-code="quiz"] .cg-tile-thumb i,
+#homeMain .cg-tile[data-code="minesweeper"] .cg-tile-thumb i {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #f6f9ff;
+  background: rgba(7, 20, 38, 0.58);
+  border: 1px solid rgba(231, 239, 255, 0.18);
+  box-shadow: 0 10px 18px rgba(2, 10, 25, 0.24);
+  backdrop-filter: blur(8px);
+}
+
+#homeMain .cg-recommended-card[data-code="caro"],
+#homeMain .cg-tile[data-code="caro"] .cg-tile-thumb {
+  --cg-home-card-art: url("../images/games/home/caro.png");
+  --cg-home-card-position: center 46%;
+}
+
+#homeMain .cg-recommended-card[data-code="xiangqi"],
+#homeMain .cg-tile[data-code="xiangqi"] .cg-tile-thumb {
+  --cg-home-card-art: url("../images/games/home/xiangqi.png");
+  --cg-home-card-position: center center;
+}
+
+#homeMain .cg-recommended-card[data-code="monopoly"],
+#homeMain .cg-tile[data-code="monopoly"] .cg-tile-thumb {
+  --cg-home-card-art: url("../images/games/home/monopoly.png");
+  --cg-home-card-position: center center;
+}
+
+#homeMain .cg-recommended-card[data-code="chess"],
+#homeMain .cg-tile[data-code="chess"] .cg-tile-thumb {
+  --cg-home-card-art: url("../images/games/home/chess.png");
+  --cg-home-card-position: center center;
+}
+
+#homeMain .cg-recommended-card[data-code="typing"],
+#homeMain .cg-tile[data-code="typing"] .cg-tile-thumb {
+  --cg-home-card-art: url("../images/games/home/typing.png");
+  --cg-home-card-position: center 34%;
+}
+
+#homeMain .cg-recommended-card[data-code="blackjack"],
+#homeMain .cg-tile[data-code="blackjack"] .cg-tile-thumb {
+  --cg-home-card-art: url("../images/games/home/blackjack.png");
+  --cg-home-card-position: center 44%;
+}
+
+#homeMain .cg-recommended-card[data-code="cards"],
+#homeMain .cg-tile[data-code="cards"] .cg-tile-thumb {
+  --cg-home-card-art: url("../images/games/home/cards.png");
+  --cg-home-card-position: center center;
+}
+
+#homeMain .cg-recommended-card[data-code="puzzle"],
+#homeMain .cg-tile[data-code="puzzle"] .cg-tile-thumb {
+  --cg-home-card-art: url("../images/games/home/puzzle.png");
+  --cg-home-card-position: center center;
+}
+
+#homeMain .cg-recommended-card[data-code="quiz"],
+#homeMain .cg-tile[data-code="quiz"] .cg-tile-thumb {
+  --cg-home-card-art: url("../images/games/home/quiz.png");
+  --cg-home-card-position: center center;
+}
+
+#homeMain .cg-recommended-card[data-code="minesweeper"],
+#homeMain .cg-tile[data-code="minesweeper"] .cg-tile-thumb {
+  --cg-home-card-art: url("../images/games/home/minesweeper.png");
+  --cg-home-card-position: center center;
+}
+
+#homeMain .cg-recommended-card[data-code="caro"]::after,
+#homeMain .cg-recommended-card[data-code="xiangqi"]::after,
+#homeMain .cg-recommended-card[data-code="monopoly"]::after,
+#homeMain .cg-recommended-card[data-code="chess"]::after,
+#homeMain .cg-recommended-card[data-code="typing"]::after,
+#homeMain .cg-recommended-card[data-code="blackjack"]::after,
+#homeMain .cg-recommended-card[data-code="cards"]::after,
+#homeMain .cg-recommended-card[data-code="puzzle"]::after,
+#homeMain .cg-recommended-card[data-code="quiz"]::after,
+#homeMain .cg-recommended-card[data-code="minesweeper"]::after {
+  opacity: 1;
+}
+
+#homeMain .cg-recommended-card[data-code="caro"] .cg-recommended-card__icon,
+#homeMain .cg-recommended-card[data-code="xiangqi"] .cg-recommended-card__icon,
+#homeMain .cg-recommended-card[data-code="monopoly"] .cg-recommended-card__icon,
+#homeMain .cg-recommended-card[data-code="chess"] .cg-recommended-card__icon,
+#homeMain .cg-recommended-card[data-code="typing"] .cg-recommended-card__icon,
+#homeMain .cg-recommended-card[data-code="blackjack"] .cg-recommended-card__icon,
+#homeMain .cg-recommended-card[data-code="cards"] .cg-recommended-card__icon,
+#homeMain .cg-recommended-card[data-code="puzzle"] .cg-recommended-card__icon,
+#homeMain .cg-recommended-card[data-code="quiz"] .cg-recommended-card__icon,
+#homeMain .cg-recommended-card[data-code="minesweeper"] .cg-recommended-card__icon {
+  background: rgba(7, 20, 38, 0.48);
+  border-color: rgba(234, 241, 255, 0.24);
+  color: #f4f8ff;
+}
+
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="caro"] .cg-recommended-card__badge,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="xiangqi"] .cg-recommended-card__badge,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="monopoly"] .cg-recommended-card__badge,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="chess"] .cg-recommended-card__badge,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="typing"] .cg-recommended-card__badge,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="blackjack"] .cg-recommended-card__badge,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="cards"] .cg-recommended-card__badge,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="puzzle"] .cg-recommended-card__badge,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="quiz"] .cg-recommended-card__badge,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="minesweeper"] .cg-recommended-card__badge,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="caro"] .cg-recommended-card__meta span,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="xiangqi"] .cg-recommended-card__meta span,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="monopoly"] .cg-recommended-card__meta span,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="chess"] .cg-recommended-card__meta span,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="typing"] .cg-recommended-card__meta span,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="blackjack"] .cg-recommended-card__meta span,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="cards"] .cg-recommended-card__meta span,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="puzzle"] .cg-recommended-card__meta span,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="quiz"] .cg-recommended-card__meta span,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="minesweeper"] .cg-recommended-card__meta span {
+  background: rgba(7, 20, 38, 0.62);
+  border-color: rgba(234, 241, 255, 0.20);
+  color: #eef5ff;
+}
+
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="caro"] .cg-recommended-card__body small,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="xiangqi"] .cg-recommended-card__body small,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="monopoly"] .cg-recommended-card__body small,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="chess"] .cg-recommended-card__body small,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="typing"] .cg-recommended-card__body small,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="blackjack"] .cg-recommended-card__body small,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="cards"] .cg-recommended-card__body small,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="puzzle"] .cg-recommended-card__body small,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="quiz"] .cg-recommended-card__body small,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="minesweeper"] .cg-recommended-card__body small {
+  color: #d8e8ff;
+}
+
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="caro"] .cg-recommended-card__body h2,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="xiangqi"] .cg-recommended-card__body h2,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="monopoly"] .cg-recommended-card__body h2,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="chess"] .cg-recommended-card__body h2,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="typing"] .cg-recommended-card__body h2,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="blackjack"] .cg-recommended-card__body h2,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="cards"] .cg-recommended-card__body h2,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="puzzle"] .cg-recommended-card__body h2,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="quiz"] .cg-recommended-card__body h2,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="minesweeper"] .cg-recommended-card__body h2 {
+  color: #f6f9ff;
+}
+
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="caro"] .cg-recommended-card__body p,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="xiangqi"] .cg-recommended-card__body p,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="monopoly"] .cg-recommended-card__body p,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="chess"] .cg-recommended-card__body p,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="typing"] .cg-recommended-card__body p,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="blackjack"] .cg-recommended-card__body p,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="cards"] .cg-recommended-card__body p,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="puzzle"] .cg-recommended-card__body p,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="quiz"] .cg-recommended-card__body p,
+body:not(.dark-mode) #homeMain .cg-recommended-card[data-code="minesweeper"] .cg-recommended-card__body p {
+  color: rgba(236, 244, 255, 0.86);
+}
+
+@media (max-width: 640px) {
+  #homeMain .cg-tile[data-code="caro"] .cg-tile-thumb i,
+  #homeMain .cg-tile[data-code="xiangqi"] .cg-tile-thumb i,
+  #homeMain .cg-tile[data-code="monopoly"] .cg-tile-thumb i,
+  #homeMain .cg-tile[data-code="chess"] .cg-tile-thumb i,
+  #homeMain .cg-tile[data-code="typing"] .cg-tile-thumb i,
+  #homeMain .cg-tile[data-code="blackjack"] .cg-tile-thumb i,
+  #homeMain .cg-tile[data-code="cards"] .cg-tile-thumb i,
+  #homeMain .cg-tile[data-code="puzzle"] .cg-tile-thumb i,
+  #homeMain .cg-tile[data-code="quiz"] .cg-tile-thumb i,
+  #homeMain .cg-tile[data-code="minesweeper"] .cg-tile-thumb i {
+    width: 32px;
+    height: 32px;
+    font-size: 0.92rem;
+  }
+}
+
+.cg-browser-page .cg-recommended-card {
+  isolation: isolate;
+}
+
+.cg-browser-page .cg-recommended-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+.cg-browser-page .cg-recommended-card::before {
+  z-index: 1;
+}
+
+.cg-browser-page .cg-recommended-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  background-image:
+    linear-gradient(180deg, rgba(3, 10, 22, 0.14) 0%, rgba(3, 10, 22, 0.44) 46%, rgba(3, 10, 22, 0.88) 100%),
+    var(--cg-home-card-art);
+  background-size: cover;
+  background-position: var(--cg-home-card-position, center);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.cg-browser-page .cg-recommended-card:hover::after,
+.cg-browser-page .cg-recommended-card:focus-visible::after {
+  transform: scale(1.02);
+}
+
+.cg-browser-page .cg-recommended-card__icon {
+  backdrop-filter: blur(10px);
+}
+
+.cg-browser-page .cg-tile[data-code="caro"] .cg-tile-thumb,
+.cg-browser-page .cg-tile[data-code="xiangqi"] .cg-tile-thumb,
+.cg-browser-page .cg-tile[data-code="monopoly"] .cg-tile-thumb,
+.cg-browser-page .cg-tile[data-code="chess"] .cg-tile-thumb,
+.cg-browser-page .cg-tile[data-code="typing"] .cg-tile-thumb,
+.cg-browser-page .cg-tile[data-code="blackjack"] .cg-tile-thumb,
+.cg-browser-page .cg-tile[data-code="cards"] .cg-tile-thumb,
+.cg-browser-page .cg-tile[data-code="puzzle"] .cg-tile-thumb,
+.cg-browser-page .cg-tile[data-code="quiz"] .cg-tile-thumb,
+.cg-browser-page .cg-tile[data-code="minesweeper"] .cg-tile-thumb,
+.cg-browser-shortcut[data-code="caro"],
+.cg-browser-shortcut[data-code="chess"],
+.cg-browser-shortcut[data-code="cards"],
+.cg-browser-shortcut[data-code="puzzle"] {
+  background-image:
+    linear-gradient(180deg, rgba(4, 12, 24, 0.16) 0%, rgba(4, 12, 24, 0.64) 100%),
+    var(--cg-home-card-art);
+  background-size: cover;
+  background-position: var(--cg-home-card-position, center);
+}
+
+.cg-browser-page .cg-tile[data-code="caro"] .cg-tile-thumb i,
+.cg-browser-page .cg-tile[data-code="xiangqi"] .cg-tile-thumb i,
+.cg-browser-page .cg-tile[data-code="monopoly"] .cg-tile-thumb i,
+.cg-browser-page .cg-tile[data-code="chess"] .cg-tile-thumb i,
+.cg-browser-page .cg-tile[data-code="typing"] .cg-tile-thumb i,
+.cg-browser-page .cg-tile[data-code="blackjack"] .cg-tile-thumb i,
+.cg-browser-page .cg-tile[data-code="cards"] .cg-tile-thumb i,
+.cg-browser-page .cg-tile[data-code="puzzle"] .cg-tile-thumb i,
+.cg-browser-page .cg-tile[data-code="quiz"] .cg-tile-thumb i,
+.cg-browser-page .cg-tile[data-code="minesweeper"] .cg-tile-thumb i,
+.cg-browser-shortcut[data-code] i {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #f6f9ff;
+  background: rgba(7, 20, 38, 0.58);
+  border: 1px solid rgba(231, 239, 255, 0.18);
+  box-shadow: 0 10px 18px rgba(2, 10, 25, 0.24);
+  backdrop-filter: blur(8px);
+}
+
+.cg-browser-shortcut[data-code] {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.cg-browser-shortcut[data-code] > * {
+  position: relative;
+  z-index: 1;
+}
+
+.cg-browser-shortcut[data-code] span {
+  color: #f4f8ff;
+  text-shadow: 0 1px 12px rgba(2, 10, 25, 0.34);
+}
+
+.hub-portal-related-item[data-code] {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hub-portal-related-item[data-code] > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hub-portal-related-item[data-code]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  background-image:
+    linear-gradient(180deg, rgba(4, 12, 24, 0.16) 0%, rgba(4, 12, 24, 0.70) 100%),
+    var(--cg-home-card-art);
+  background-size: cover;
+  background-position: var(--cg-home-card-position, center);
+}
+
+.hub-portal-related-item[data-code] > i {
+  background: rgba(7, 20, 38, 0.58);
+  border: 1px solid rgba(231, 239, 255, 0.18);
+  color: #f4f8ff;
+  box-shadow: 0 10px 18px rgba(2, 10, 25, 0.24);
+}
+
+.hub-portal-related-item[data-code] strong {
+  color: #f6f9ff;
+}
+
+.hub-portal-related-item[data-code] small {
+  color: rgba(236, 244, 255, 0.84);
+}
+
+.cg-browser-page .cg-recommended-card[data-code="caro"],
+.cg-browser-page .cg-tile[data-code="caro"] .cg-tile-thumb,
+.cg-browser-shortcut[data-code="caro"],
+.hub-portal-related-item[data-code="caro"] {
+  --cg-home-card-art: url("../images/games/home/caro.png");
+  --cg-home-card-position: center 46%;
+}
+
+.cg-browser-page .cg-recommended-card[data-code="xiangqi"],
+.cg-browser-page .cg-tile[data-code="xiangqi"] .cg-tile-thumb,
+.hub-portal-related-item[data-code="xiangqi"] {
+  --cg-home-card-art: url("../images/games/home/xiangqi.png");
+  --cg-home-card-position: center center;
+}
+
+.cg-browser-page .cg-recommended-card[data-code="monopoly"],
+.cg-browser-page .cg-tile[data-code="monopoly"] .cg-tile-thumb,
+.hub-portal-related-item[data-code="monopoly"] {
+  --cg-home-card-art: url("../images/games/home/monopoly.png");
+  --cg-home-card-position: center center;
+}
+
+.cg-browser-page .cg-recommended-card[data-code="chess"],
+.cg-browser-page .cg-tile[data-code="chess"] .cg-tile-thumb,
+.cg-browser-shortcut[data-code="chess"],
+.hub-portal-related-item[data-code="chess"] {
+  --cg-home-card-art: url("../images/games/home/chess.png");
+  --cg-home-card-position: center center;
+}
+
+.cg-browser-page .cg-recommended-card[data-code="typing"],
+.cg-browser-page .cg-tile[data-code="typing"] .cg-tile-thumb,
+.hub-portal-related-item[data-code="typing"] {
+  --cg-home-card-art: url("../images/games/home/typing.png");
+  --cg-home-card-position: center 34%;
+}
+
+.cg-browser-page .cg-recommended-card[data-code="blackjack"],
+.cg-browser-page .cg-tile[data-code="blackjack"] .cg-tile-thumb,
+.hub-portal-related-item[data-code="blackjack"] {
+  --cg-home-card-art: url("../images/games/home/blackjack.png");
+  --cg-home-card-position: center 44%;
+}
+
+.cg-browser-page .cg-recommended-card[data-code="cards"],
+.cg-browser-page .cg-tile[data-code="cards"] .cg-tile-thumb,
+.cg-browser-shortcut[data-code="cards"],
+.hub-portal-related-item[data-code="cards"] {
+  --cg-home-card-art: url("../images/games/home/cards.png");
+  --cg-home-card-position: center center;
+}
+
+.cg-browser-page .cg-recommended-card[data-code="puzzle"],
+.cg-browser-page .cg-tile[data-code="puzzle"] .cg-tile-thumb,
+.cg-browser-shortcut[data-code="puzzle"],
+.hub-portal-related-item[data-code="puzzle"] {
+  --cg-home-card-art: url("../images/games/home/puzzle.png");
+  --cg-home-card-position: center center;
+}
+
+.cg-browser-page .cg-recommended-card[data-code="quiz"],
+.cg-browser-page .cg-tile[data-code="quiz"] .cg-tile-thumb,
+.hub-portal-related-item[data-code="quiz"] {
+  --cg-home-card-art: url("../images/games/home/quiz.png");
+  --cg-home-card-position: center center;
+}
+
+.cg-browser-page .cg-recommended-card[data-code="minesweeper"],
+.cg-browser-page .cg-tile[data-code="minesweeper"] .cg-tile-thumb,
+.hub-portal-related-item[data-code="minesweeper"] {
+  --cg-home-card-art: url("../images/games/home/minesweeper.png");
+  --cg-home-card-position: center center;
+}
+
+.cg-browser-page .cg-recommended-card[data-code="caro"]::after,
+.cg-browser-page .cg-recommended-card[data-code="xiangqi"]::after,
+.cg-browser-page .cg-recommended-card[data-code="monopoly"]::after,
+.cg-browser-page .cg-recommended-card[data-code="chess"]::after,
+.cg-browser-page .cg-recommended-card[data-code="typing"]::after,
+.cg-browser-page .cg-recommended-card[data-code="blackjack"]::after,
+.cg-browser-page .cg-recommended-card[data-code="cards"]::after,
+.cg-browser-page .cg-recommended-card[data-code="puzzle"]::after,
+.cg-browser-page .cg-recommended-card[data-code="quiz"]::after,
+.cg-browser-page .cg-recommended-card[data-code="minesweeper"]::after,
+.hub-portal-related-item[data-code="caro"]::before,
+.hub-portal-related-item[data-code="xiangqi"]::before,
+.hub-portal-related-item[data-code="monopoly"]::before,
+.hub-portal-related-item[data-code="chess"]::before,
+.hub-portal-related-item[data-code="typing"]::before,
+.hub-portal-related-item[data-code="blackjack"]::before,
+.hub-portal-related-item[data-code="cards"]::before,
+.hub-portal-related-item[data-code="puzzle"]::before,
+.hub-portal-related-item[data-code="quiz"]::before,
+.hub-portal-related-item[data-code="minesweeper"]::before {
+  opacity: 1;
+}
+
+.cg-browser-page .cg-recommended-card[data-code="caro"] .cg-recommended-card__icon,
+.cg-browser-page .cg-recommended-card[data-code="xiangqi"] .cg-recommended-card__icon,
+.cg-browser-page .cg-recommended-card[data-code="monopoly"] .cg-recommended-card__icon,
+.cg-browser-page .cg-recommended-card[data-code="chess"] .cg-recommended-card__icon,
+.cg-browser-page .cg-recommended-card[data-code="typing"] .cg-recommended-card__icon,
+.cg-browser-page .cg-recommended-card[data-code="blackjack"] .cg-recommended-card__icon,
+.cg-browser-page .cg-recommended-card[data-code="cards"] .cg-recommended-card__icon,
+.cg-browser-page .cg-recommended-card[data-code="puzzle"] .cg-recommended-card__icon,
+.cg-browser-page .cg-recommended-card[data-code="quiz"] .cg-recommended-card__icon,
+.cg-browser-page .cg-recommended-card[data-code="minesweeper"] .cg-recommended-card__icon {
+  background: rgba(7, 20, 38, 0.48);
+  border-color: rgba(234, 241, 255, 0.24);
+  color: #f4f8ff;
+}
+
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="caro"] .cg-recommended-card__badge,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="xiangqi"] .cg-recommended-card__badge,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="monopoly"] .cg-recommended-card__badge,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="chess"] .cg-recommended-card__badge,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="typing"] .cg-recommended-card__badge,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="blackjack"] .cg-recommended-card__badge,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="cards"] .cg-recommended-card__badge,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="puzzle"] .cg-recommended-card__badge,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="quiz"] .cg-recommended-card__badge,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="minesweeper"] .cg-recommended-card__badge,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="caro"] .cg-recommended-card__meta span,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="xiangqi"] .cg-recommended-card__meta span,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="monopoly"] .cg-recommended-card__meta span,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="chess"] .cg-recommended-card__meta span,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="typing"] .cg-recommended-card__meta span,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="blackjack"] .cg-recommended-card__meta span,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="cards"] .cg-recommended-card__meta span,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="puzzle"] .cg-recommended-card__meta span,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="quiz"] .cg-recommended-card__meta span,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="minesweeper"] .cg-recommended-card__meta span {
+  background: rgba(7, 20, 38, 0.62);
+  border-color: rgba(234, 241, 255, 0.20);
+  color: #eef5ff;
+}
+
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="caro"] .cg-recommended-card__body small,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="xiangqi"] .cg-recommended-card__body small,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="monopoly"] .cg-recommended-card__body small,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="chess"] .cg-recommended-card__body small,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="typing"] .cg-recommended-card__body small,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="blackjack"] .cg-recommended-card__body small,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="cards"] .cg-recommended-card__body small,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="puzzle"] .cg-recommended-card__body small,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="quiz"] .cg-recommended-card__body small,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="minesweeper"] .cg-recommended-card__body small {
+  color: #d8e8ff;
+}
+
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="caro"] .cg-recommended-card__body h2,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="xiangqi"] .cg-recommended-card__body h2,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="monopoly"] .cg-recommended-card__body h2,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="chess"] .cg-recommended-card__body h2,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="typing"] .cg-recommended-card__body h2,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="blackjack"] .cg-recommended-card__body h2,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="cards"] .cg-recommended-card__body h2,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="puzzle"] .cg-recommended-card__body h2,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="quiz"] .cg-recommended-card__body h2,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="minesweeper"] .cg-recommended-card__body h2 {
+  color: #f6f9ff;
+}
+
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="caro"] .cg-recommended-card__body p,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="xiangqi"] .cg-recommended-card__body p,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="monopoly"] .cg-recommended-card__body p,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="chess"] .cg-recommended-card__body p,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="typing"] .cg-recommended-card__body p,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="blackjack"] .cg-recommended-card__body p,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="cards"] .cg-recommended-card__body p,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="puzzle"] .cg-recommended-card__body p,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="quiz"] .cg-recommended-card__body p,
+body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="minesweeper"] .cg-recommended-card__body p {
+  color: rgba(236, 244, 255, 0.86);
+}
+
+@media (max-width: 640px) {
+  .cg-browser-page .cg-tile[data-code="caro"] .cg-tile-thumb i,
+  .cg-browser-page .cg-tile[data-code="xiangqi"] .cg-tile-thumb i,
+  .cg-browser-page .cg-tile[data-code="monopoly"] .cg-tile-thumb i,
+  .cg-browser-page .cg-tile[data-code="chess"] .cg-tile-thumb i,
+  .cg-browser-page .cg-tile[data-code="typing"] .cg-tile-thumb i,
+  .cg-browser-page .cg-tile[data-code="blackjack"] .cg-tile-thumb i,
+  .cg-browser-page .cg-tile[data-code="cards"] .cg-tile-thumb i,
+  .cg-browser-page .cg-tile[data-code="puzzle"] .cg-tile-thumb i,
+  .cg-browser-page .cg-tile[data-code="quiz"] .cg-tile-thumb i,
+  .cg-browser-page .cg-tile[data-code="minesweeper"] .cg-tile-thumb i,
+  .cg-browser-shortcut[data-code] i {
+    width: 32px;
+    height: 32px;
+    font-size: 0.92rem;
   }
 }
 

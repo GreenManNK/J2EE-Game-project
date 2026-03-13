@@ -138,19 +138,19 @@
         <small class="text-muted">4 lane</small>
       </div>
       <div class="cg-browser-shortcuts">
-        <a th:href="@{/games/caro}" class="cg-browser-shortcut">
+        <a th:href="@{/games/caro}" class="cg-browser-shortcut" data-code="caro">
           <i class="bi bi-grid-3x3-gap-fill"></i>
           <span>Caro</span>
         </a>
-        <a th:href="@{/games/chess}" class="cg-browser-shortcut">
+        <a th:href="@{/games/chess}" class="cg-browser-shortcut" data-code="chess">
           <i class="bi bi-activity"></i>
           <span>Co vua</span>
         </a>
-        <a th:href="@{/games/cards}" class="cg-browser-shortcut">
+        <a th:href="@{/games/cards}" class="cg-browser-shortcut" data-code="cards">
           <i class="bi bi-suit-spade-fill"></i>
           <span>Danh bai</span>
         </a>
-        <a th:href="@{/games/puzzle}" class="cg-browser-shortcut">
+        <a th:href="@{/games/puzzle}" class="cg-browser-shortcut" data-code="puzzle">
           <i class="bi bi-puzzle-fill"></i>
           <span>Puzzle</span>
         </a>
@@ -295,8 +295,8 @@
     <div class="cg-lane-track" data-lane-track>
       <article class="cg-tile"
                th:each="g : ${games}"
-               th:if="${g.code == 'caro' or g.code == 'chess' or g.code == 'xiangqi' or g.code == 'puzzle'}"
-               th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' ? 2026 : 2025},data-popularity=${(g.availableNow ? 74 : 40) + (g.supportsOnline ? 10 : 0)}">
+               th:if="${g.code == 'caro' or g.code == 'chess' or g.code == 'xiangqi' or g.code == 'monopoly' or g.code == 'puzzle'}"
+               th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' or g.code == 'monopoly' ? 2026 : 2025},data-popularity=${(g.availableNow ? 74 : 40) + (g.supportsOnline ? 10 : 0)}">
         <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
           <span class="cg-tile-badge">Noi bat</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>

@@ -179,7 +179,8 @@
                     <a th:each="g : ${allGames}"
                        th:if="${g.code != game.code}"
                        th:href="@{/games/{code}(code=${g.code})}"
-                       class="hub-portal-related-item">
+                       class="hub-portal-related-item"
+                       th:attr="data-code=${g.code}">
                         <i class="bi" th:classappend="${g.iconClass}"></i>
                         <div>
                             <strong th:text="${g.displayName}">Game</strong>

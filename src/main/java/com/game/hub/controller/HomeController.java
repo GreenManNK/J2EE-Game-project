@@ -59,8 +59,8 @@ public class HomeController {
         model.addAttribute("recommendedGames", pickGamesByCodes(games, "caro", "cards", "chess", "typing", "puzzle"));
         model.addAttribute("onlineGames", filterGames(games, game -> game.supportsOnline() && !hasCode(game, "blackjack"), 6));
         model.addAttribute("quickPlayGames", pickGamesByCodes(games, "minesweeper", "quiz", "typing", "puzzle", "cards", "caro"));
-        model.addAttribute("strategyGames", pickGamesByCodes(games, "caro", "chess", "xiangqi", "puzzle", "cards"));
-        model.addAttribute("freshGames", pickGamesByCodes(games, "puzzle", "minesweeper", "typing", "quiz", "blackjack", "cards"));
+        model.addAttribute("strategyGames", pickGamesByCodes(games, "caro", "chess", "xiangqi", "monopoly", "puzzle", "cards"));
+        model.addAttribute("freshGames", pickGamesByCodes(games, "monopoly", "puzzle", "minesweeper", "typing", "quiz", "blackjack"));
         return "home/index";
     }
 

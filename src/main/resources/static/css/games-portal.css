@@ -78,6 +78,12 @@
   --gp-primary-deep: #1e40af;
 }
 
+.hub-portal-theme-monopoly {
+  --gp-primary: #b45309;
+  --gp-secondary: #0f766e;
+  --gp-primary-deep: #92400e;
+}
+
 .hub-portal-shell * {
   box-sizing: border-box;
 }
