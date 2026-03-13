@@ -5,6 +5,7 @@ import com.game.hub.service.AvatarStorageService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.util.Map;
@@ -67,14 +68,22 @@ class AccountControllerTest {
         when(request.getSession(false)).thenReturn(session);
         when(session.getAttribute("AUTH_USER_ID")).thenReturn("u1");
         when(avatarStorageService.store(org.mockito.ArgumentMatchers.any()))
-            .thenReturn(AvatarStorageService.StoreResult.ok("/uploads/avatars/u1.png"));
-        when(accountService.updateAvatar("u1", "/uploads/avatars/u1.png"))
+            .thenReturn(AvatarStorageService.StoreResult.ok(
+                new byte[] {1, 2, 3},
+                "image/png",
+                "avatar.png",
+                3L
+            ));
+        when(accountService.updateAvatarBinary(
+            org.mockito.ArgumentMatchers.eq("u1"),
+            ArgumentMatchers.any(AvatarStorageService.StoreResult.class)
+        ))
             .thenReturn(AccountService.ServiceResult.ok(Map.of(
                 "userId", "u1",
                 "displayName", "Alice",
                 "email", "alice@example.com",
                 "role", "User",
-                "avatarPath", "/uploads/avatars/u1.png"
+                "avatarPath", "/account/avatar/u1"
             )));
 
         AccountController controller = new AccountController(accountService, avatarStorageService);
@@ -87,7 +96,10 @@ class AccountControllerTest {
         Map<?, ?> payload = (Map<?, ?>) result;
         assertTrue((Boolean) payload.get("success"));
         assertTrue(payload.get("data") instanceof Map<?, ?>);
-        assertEquals("/uploads/avatars/u1.png", ((Map<?, ?>) payload.get("data")).get("avatarPath"));
-        verify(accountService).updateAvatar("u1", "/uploads/avatars/u1.png");
+        assertEquals("/account/avatar/u1", ((Map<?, ?>) payload.get("data")).get("avatarPath"));
+        verify(accountService).updateAvatarBinary(
+            org.mockito.ArgumentMatchers.eq("u1"),
+            ArgumentMatchers.any(AvatarStorageService.StoreResult.class)
+        );
     }
 }

@@ -22,6 +22,9 @@ import static org.mockito.Mockito.verify;
 @SpringBootTest
 @ActiveProfiles("test")
 class AccountServiceTest {
+    private static final String DEFAULT_COUNTRY = "VN";
+    private static final String DEFAULT_GENDER = "male";
+    private static final String DEFAULT_BIRTH_DATE = "2000-01-01";
 
     @Autowired
     private AccountService accountService;
@@ -37,10 +40,10 @@ class AccountServiceTest {
         String email = "dup-pending@test.com";
 
         AccountService.ServiceResult first = accountService.register(
-            new AccountService.RegisterRequest(email, "User A", "Pass@123", "")
+            registerRequest(email, "User A", "usera01")
         );
         AccountService.ServiceResult second = accountService.register(
-            new AccountService.RegisterRequest(email, "User B", "Pass@123", "")
+            registerRequest(email, "User B", "userb02")
         );
 
         assertTrue(first.success());
@@ -54,10 +57,10 @@ class AccountServiceTest {
             .sendEmail(org.mockito.ArgumentMatchers.eq(email), org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString());
 
         AccountService.ServiceResult first = accountService.register(
-            new AccountService.RegisterRequest(email, "Mail Fail", "Pass@123", "")
+            registerRequest(email, "Mail Fail", "mailf01")
         );
         AccountService.ServiceResult second = accountService.register(
-            new AccountService.RegisterRequest(email, "Mail Retry", "Pass@123", "")
+            registerRequest(email, "Mail Retry", "mailr02")
         );
 
         assertFalse(first.success());
@@ -71,7 +74,7 @@ class AccountServiceTest {
         String email = "resend-code@test.com";
 
         AccountService.ServiceResult register = accountService.register(
-            new AccountService.RegisterRequest(email, "Resend User", "Pass@123", "")
+            registerRequest(email, "Resend User", "resend01")
         );
         AccountService.ServiceResult resendImmediately = accountService.resendVerificationCode(email);
 
@@ -324,5 +327,18 @@ class AccountServiceTest {
         java.util.List<Map<String, Object>> recentGames = (java.util.List<Map<String, Object>>) payload.get("recentGames");
         assertEquals(1, recentGames.size());
         assertEquals("caro", recentGames.get(0).get("code"));
+    }
+
+    private AccountService.RegisterRequest registerRequest(String email, String displayName, String username) {
+        return new AccountService.RegisterRequest(
+            email,
+            displayName,
+            username,
+            "Pass@123",
+            "",
+            DEFAULT_COUNTRY,
+            DEFAULT_GENDER,
+            DEFAULT_BIRTH_DATE
+        );
     }
 }
