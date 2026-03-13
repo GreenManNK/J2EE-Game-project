@@ -5,19 +5,20 @@
 <div th:replace="~{fragments :: appShell('home')}"></div>
 
 <main role="main" id="homeMain" class="cg-home">
-  <section class="theme-box cg-home-hero cg-home-hero--single">
+  <section class="theme-box cg-home-hero">
     <div class="cg-home-hero-main">
       <div class="cg-chip-row">
         <span class="cg-chip is-live"><i class="bi bi-controller"></i> TRANG CHU / THU VIEN GAME</span>
         <span class="cg-chip"><i class="bi bi-lightning-charge-fill"></i> 1 click vao game</span>
+        <span class="cg-chip"><i class="bi bi-collection-play-fill"></i> Spotlight + lane + quick nav</span>
         <span class="cg-chip"><i class="bi bi-chat-left-dots-fill"></i> Feed cong dong</span>
         <span class="cg-chip"><i class="bi bi-phone-fill"></i> Responsive</span>
       </div>
 
-      <h1 class="cg-title">Vao game nhanh theo kieu CrazyGames, giu mau theme cua ban</h1>
+      <h1 class="cg-title">Portal game discovery-first, vao van nhanh tren moi thiet bi</h1>
       <p class="cg-subtitle">
-        Trang chu da duoc cap nhat lai theo huong discovery-first: game rail tren cung,
-        card game o giua, va feed cong dong tach rieng. Ban co the click vao game ngay tai day.
+        Home duoc day sang mot nhac storefront ro hon: co spotlight stage, quick action, card game,
+        va feed cong dong tach rieng. Nguoi choi co the tim game, vao detail hoac chuyen mode chi trong vai thao tac.
       </p>
 
       <div class="cg-home-quick-nav" role="list" aria-label="Chon nhanh game">
@@ -88,6 +89,62 @@
       </div>
     </div>
 
+    <aside class="cg-home-showcase" aria-label="Spotlight giao dien game">
+      <div class="cg-home-showcase__screen">
+        <div class="cg-home-showcase__topbar">
+          <span class="cg-home-showcase__pill is-live"><i class="bi bi-broadcast"></i> Dang spotlight</span>
+          <span class="cg-home-showcase__pill"><i class="bi bi-grid-3x3-gap-fill"></i> Thu vien</span>
+        </div>
+
+        <div class="cg-home-showcase__body">
+          <div class="cg-home-showcase__badge">Featured shell</div>
+          <h2>Caro Arena</h2>
+          <p>Khung hero mo rong cho game hot: thong tin ngan, call-to-action ro, va cac mode vao tran dat sat nhau.</p>
+
+          <div class="cg-home-showcase__actions">
+            <a th:href="@{/games/caro}" class="hub-portal-inline-btn primary">Mo Caro</a>
+            <a th:href="@{/games}" class="hub-portal-inline-btn">Thu vien</a>
+          </div>
+
+          <div class="cg-home-showcase__lane" aria-hidden="true">
+            <div class="cg-home-showcase__lane-item is-active">
+              <span><i class="bi bi-grid-3x3-gap-fill"></i></span>
+              <strong>Caro</strong>
+              <small>Online / Bot / Local</small>
+            </div>
+            <div class="cg-home-showcase__lane-item">
+              <span><i class="bi bi-activity"></i></span>
+              <strong>Chess</strong>
+              <small>Matchmaking / Bot</small>
+            </div>
+            <div class="cg-home-showcase__lane-item">
+              <span><i class="bi bi-suit-spade-fill"></i></span>
+              <strong>Cards</strong>
+              <small>TLMN / Blackjack</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cg-home-showcase__stats">
+        <article class="cg-home-showcase__stat">
+          <span>Discovery</span>
+          <strong>Quick nav + spotlight</strong>
+          <small>Nguoi choi vao game chinh nhanh hon tu home.</small>
+        </article>
+        <article class="cg-home-showcase__stat">
+          <span>Library</span>
+          <strong>Lane card + detail page</strong>
+          <small>Mot luong dieu huong thong nhat giua home va catalog.</small>
+        </article>
+        <article class="cg-home-showcase__stat">
+          <span>Community</span>
+          <strong>Feed tach rieng</strong>
+          <small>Giu bang tin song song voi khu discovery.</small>
+        </article>
+      </div>
+    </aside>
+
   </section>
 
   <section class="cg-home-content cg-home-content--single">
@@ -96,7 +153,7 @@
         <div class="cg-section-head">
           <div>
             <h2>Game de xuat hom nay</h2>
-            <small>Phong cach card-grid nhu CrazyGames</small>
+            <small>Card-grid storefront cho khu discovery</small>
           </div>
           <a th:href="@{/games}" class="hub-portal-inline-btn">Mo thu vien</a>
         </div>

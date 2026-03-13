@@ -170,18 +170,66 @@
     </aside>
   </section>
 
+  <section class="hub-portal-highlights">
+    <article class="hub-portal-highlight">
+      <div class="hub-portal-highlight__icon"><i class="bi bi-box-arrow-up-right"></i></div>
+      <div>
+        <h2>Launch tu hub</h2>
+        <p>Module ngoai duoc mo thong qua route detail thay vi tach roi khoi thu vien.</p>
+      </div>
+    </article>
+    <article class="hub-portal-highlight">
+      <div class="hub-portal-highlight__icon"><i class="bi bi-diagram-3-fill"></i></div>
+      <div>
+        <h2>Embed hoac gateway</h2>
+        <p>Neu module co iframe hoac API thi thong tin tich hop duoc dat tai cung mot trang.</p>
+      </div>
+    </article>
+    <article class="hub-portal-highlight">
+      <div class="hub-portal-highlight__icon"><i class="bi bi-window-desktop"></i></div>
+      <div>
+        <h2>Desktop-ready</h2>
+        <p>Desktop install van duoc giu nhu mot lua chon bo sung, khong chen vao flow chinh.</p>
+      </div>
+    </article>
+  </section>
+
   <section class="hub-portal-layout">
     <div class="hub-portal-main">
-      <section class="hub-portal-card" th:if="${game.hasEmbedUrl()}">
+      <section class="hub-portal-card">
         <div class="hub-portal-card__head">
-          <h2>Khung module</h2>
-          <span class="hub-portal-tag">Embed</span>
+          <h2>San choi module</h2>
+          <span class="hub-portal-tag" th:text="${game.hasEmbedUrl()} ? 'Embed' : 'Launch'}">Embed</span>
         </div>
-        <div class="ratio ratio-16x9">
+        <div class="ratio ratio-16x9" th:if="${game.hasEmbedUrl()}">
           <iframe th:src="${game.embedUrl}"
                   th:title="'Module ' + ${game.displayName}"
                   loading="lazy"
                   referrerpolicy="no-referrer"></iframe>
+        </div>
+        <div class="cg-detail-launchpad" th:unless="${game.hasEmbedUrl()}">
+          <div class="cg-detail-launchpad__window">
+            <div class="cg-detail-launchpad__bar">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="cg-detail-launchpad__body">
+              <div class="cg-detail-launchpad__icon">
+                <i class="bi" th:classappend="' ' + ${game.iconClass}"></i>
+              </div>
+              <h3 th:text="${game.displayName}">Module game ngoai</h3>
+              <p>Module nay khong embed truc tiep trong trang, nhung van duoc giu trong luong portal chung cua Game Hub.</p>
+              <div class="cg-detail-launchpad__actions">
+                <a th:if="${game.hasPrimaryAction()}"
+                   th:href="${game.primaryActionUrl}"
+                   target="_blank"
+                   rel="noopener"
+                   class="hub-portal-inline-btn primary">Mo module</a>
+                <a th:href="@{/games}" class="hub-portal-inline-btn">Ve thu vien</a>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -215,6 +263,24 @@
     </div>
 
     <aside class="hub-portal-side">
+      <section class="hub-portal-card">
+        <h3>Tom tat luong vao module</h3>
+        <div class="cg-detail-side-stack">
+          <div class="cg-detail-side-stack__item">
+            <span>Entry</span>
+            <strong th:text="${game.hasPrimaryAction() ? 'Launch ngay' : 'Chi tiet + metadata'}">Launch ngay</strong>
+          </div>
+          <div class="cg-detail-side-stack__item">
+            <span>Preview</span>
+            <strong th:text="${game.hasEmbedUrl()} ? 'Embed 16:9' : 'External window'}">Embed 16:9</strong>
+          </div>
+          <div class="cg-detail-side-stack__item">
+            <span>Connectivity</span>
+            <strong th:text="${game.hasExternalApi()} ? 'Gateway san sang' : 'Web shell'}">Gateway san sang</strong>
+          </div>
+        </div>
+      </section>
+
       <section class="hub-portal-card">
         <h3>Module lien quan</h3>
         <div class="hub-portal-related-list">

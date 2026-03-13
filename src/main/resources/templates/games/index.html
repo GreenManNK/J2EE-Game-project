@@ -5,64 +5,157 @@
 <div th:replace="~{fragments :: appShell('games')}"></div>
 
 <main class="cg-browser-page">
-  <section class="hub-portal-panel cg-browser-head">
-    <div class="cg-chip-row">
-      <span class="cg-chip is-live"><i class="bi bi-check-circle-fill"></i> <span th:text="${#lists.size(games)} + ' game san sang'">0 game san sang</span></span>
-      <span class="cg-chip"><i class="bi bi-lightning-charge-fill"></i> Choi ngay tren trinh duyet</span>
-      <span class="cg-chip"><i class="bi bi-phone-fill"></i> Tren moi thiet bi</span>
-      <span class="cg-chip"><i class="bi bi-people-fill"></i> Co che do truc tuyen</span>
+  <section class="hub-portal-panel cg-browser-hero">
+    <div class="cg-browser-hero__main">
+      <div class="cg-chip-row">
+        <span class="cg-chip is-live"><i class="bi bi-check-circle-fill"></i> <span th:text="${#lists.size(games)} + ' game san sang'">0 game san sang</span></span>
+        <span class="cg-chip"><i class="bi bi-lightning-charge-fill"></i> Vao game ngay tren browser</span>
+        <span class="cg-chip"><i class="bi bi-collection-play-fill"></i> Lane ngang + detail page</span>
+        <span class="cg-chip"><i class="bi bi-people-fill"></i> Online / local / bot</span>
+      </div>
+
+      <h1 class="cg-title">Thu vien game theo nhac storefront: tim nhanh, loc nhanh, vao tran ngay</h1>
+      <p class="cg-subtitle">
+        Trang catalog da duoc doi thanh bo cuc portal ro hon: co spotlight stage, quick actions,
+        card yeu thich/gan day, va lane ngang de duyet game giong mot storefront chuyen cho gameplay.
+      </p>
+
+      <div class="cg-browser-controls">
+        <label class="cg-control" aria-label="Tim game">
+          <i class="bi bi-search"></i>
+          <input id="gamesBrowserSearch" type="text" placeholder="Tim kiem tro choi va danh muc">
+        </label>
+
+        <label class="cg-control" aria-label="Sap xep">
+          <span>Sap xep</span>
+          <select id="gamesBrowserSort">
+            <option value="smart">De xuat</option>
+            <option value="popular">Pho bien</option>
+            <option value="new">Moi cap nhat</option>
+            <option value="favorite">Yeu thich truoc</option>
+            <option value="az">Ten A-Z</option>
+          </select>
+        </label>
+
+        <label class="cg-control" aria-label="Bo loc yeu thich">
+          <span>Loc</span>
+          <select id="gamesBrowserFilter">
+            <option value="all">Tat ca</option>
+            <option value="favorite">Chi yeu thich</option>
+          </select>
+        </label>
+
+        <button id="gamesClearRecentBtn" type="button" class="btn theme-outline-btn">Xoa gan day</button>
+      </div>
+
+      <div class="cg-browser-hero__actions">
+        <a th:href="@{/games/caro}" class="hub-portal-inline-btn primary">Spotlight Caro</a>
+        <a th:href="@{/games/chess}" class="hub-portal-inline-btn">Co vua</a>
+        <a th:href="@{/games/cards}" class="hub-portal-inline-btn">Danh bai</a>
+        <a th:href="@{/games/puzzle}" class="hub-portal-inline-btn">Puzzle</a>
+      </div>
     </div>
 
-    <div class="cg-browser-controls">
-      <label class="cg-control" aria-label="Tim game">
-        <i class="bi bi-search"></i>
-        <input id="gamesBrowserSearch" type="text" placeholder="Tim kiem tro choi va danh muc">
-      </label>
+    <aside class="cg-browser-hero__side">
+      <section class="cg-browser-spotlight" aria-label="Spotlight catalog">
+        <div class="cg-browser-spotlight__topbar">
+          <span class="cg-browser-spotlight__pill is-live"><i class="bi bi-broadcast"></i> Featured</span>
+          <span class="cg-browser-spotlight__pill"><i class="bi bi-stars"></i> Discovery</span>
+        </div>
 
-      <label class="cg-control" aria-label="Sap xep">
-        <span>Sap xep</span>
-        <select id="gamesBrowserSort">
-          <option value="smart">De xuat</option>
-          <option value="popular">Pho bien</option>
-          <option value="new">Moi cap nhat</option>
-          <option value="favorite">Yeu thich truoc</option>
-          <option value="az">Ten A-Z</option>
-        </select>
-      </label>
+        <div class="cg-browser-spotlight__screen">
+          <div class="cg-browser-spotlight__eyebrow">Quick launch</div>
+          <h2>Caro Arena</h2>
+          <p>Mo trang mode nhanh cho game chu luc, sau do nhay sang lane ngang de tiep tuc kham pha game khac.</p>
 
-      <label class="cg-control" aria-label="Bo loc yeu thich">
-        <span>Loc</span>
-        <select id="gamesBrowserFilter">
-          <option value="all">Tat ca</option>
-          <option value="favorite">Chi yeu thich</option>
-        </select>
-      </label>
+          <div class="cg-browser-spotlight__mini-grid" aria-hidden="true">
+            <div class="cg-browser-spotlight__mini is-accent">
+              <i class="bi bi-grid-3x3-gap-fill"></i>
+              <span>Caro</span>
+            </div>
+            <div class="cg-browser-spotlight__mini">
+              <i class="bi bi-activity"></i>
+              <span>Chess</span>
+            </div>
+            <div class="cg-browser-spotlight__mini">
+              <i class="bi bi-suit-spade-fill"></i>
+              <span>Cards</span>
+            </div>
+            <div class="cg-browser-spotlight__mini">
+              <i class="bi bi-puzzle-fill"></i>
+              <span>Puzzle</span>
+            </div>
+          </div>
+        </div>
 
-      <button id="gamesClearRecentBtn" type="button" class="btn theme-outline-btn">Xoa gan day</button>
-    </div>
+        <div class="cg-browser-spotlight__stats">
+          <div class="cg-browser-spotlight__stat">
+            <span>Primary flow</span>
+            <strong>Detail -> mode -> play</strong>
+          </div>
+          <div class="cg-browser-spotlight__stat">
+            <span>Signals</span>
+            <strong>Favorite + recent + popularity</strong>
+          </div>
+          <div class="cg-browser-spotlight__stat">
+            <span>Layout</span>
+            <strong>Lane ngang de duyet nhanh</strong>
+          </div>
+        </div>
+      </section>
+    </aside>
   </section>
 
-  <section id="gamesQuickState" class="hub-portal-panel cg-browser-head">
-    <div class="row g-2">
-      <div class="col-lg-6">
-        <div class="theme-box rounded p-3 h-100">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <strong>Yeu thich</strong>
-            <small id="gamesFavoriteCount" class="text-muted">0</small>
-          </div>
-          <div id="gamesFavoriteList" class="d-flex flex-wrap gap-2"></div>
+  <section id="gamesQuickState" class="cg-browser-state-grid">
+    <article class="hub-portal-panel cg-browser-state-card">
+      <div class="cg-browser-state-card__head">
+        <div>
+          <span class="cg-browser-state-card__eyebrow">Library memory</span>
+          <h2>Yeu thich</h2>
         </div>
+        <small id="gamesFavoriteCount" class="text-muted">0</small>
       </div>
-      <div class="col-lg-6">
-        <div class="theme-box rounded p-3 h-100">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <strong>Gan day</strong>
-            <small id="gamesRecentCount" class="text-muted">0</small>
-          </div>
-          <div id="gamesRecentList" class="d-flex flex-wrap gap-2"></div>
+      <div id="gamesFavoriteList" class="cg-browser-pill-list"></div>
+    </article>
+
+    <article class="hub-portal-panel cg-browser-state-card">
+      <div class="cg-browser-state-card__head">
+        <div>
+          <span class="cg-browser-state-card__eyebrow">Continue</span>
+          <h2>Gan day</h2>
         </div>
+        <small id="gamesRecentCount" class="text-muted">0</small>
       </div>
-    </div>
+      <div id="gamesRecentList" class="cg-browser-pill-list"></div>
+    </article>
+
+    <article class="hub-portal-panel cg-browser-state-card">
+      <div class="cg-browser-state-card__head">
+        <div>
+          <span class="cg-browser-state-card__eyebrow">Fast browse</span>
+          <h2>Dieu huong nhanh</h2>
+        </div>
+        <small class="text-muted">4 lane</small>
+      </div>
+      <div class="cg-browser-shortcuts">
+        <a th:href="@{/games/caro}" class="cg-browser-shortcut">
+          <i class="bi bi-grid-3x3-gap-fill"></i>
+          <span>Caro</span>
+        </a>
+        <a th:href="@{/games/chess}" class="cg-browser-shortcut">
+          <i class="bi bi-activity"></i>
+          <span>Co vua</span>
+        </a>
+        <a th:href="@{/games/cards}" class="cg-browser-shortcut">
+          <i class="bi bi-suit-spade-fill"></i>
+          <span>Danh bai</span>
+        </a>
+        <a th:href="@{/games/puzzle}" class="cg-browser-shortcut">
+          <i class="bi bi-puzzle-fill"></i>
+          <span>Puzzle</span>
+        </a>
+      </div>
+    </article>
   </section>
 
   <section class="cg-lane" data-lane-section>

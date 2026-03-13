@@ -232,6 +232,24 @@
     </article>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan game">
+    <article class="hub-portal-panel cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Entry flow</span>
+      <strong th:text="${game.primaryActionLabel != null and !#strings.isEmpty(game.primaryActionLabel) ? game.primaryActionLabel : 'Mo trang game'}">Mo trang game</strong>
+      <p>Route detail gom CTA chinh, thong tin gameplay va game lien quan trong cung mot be mat.</p>
+    </article>
+    <article class="hub-portal-panel cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Session type</span>
+      <strong th:text="${game.supportsOnline and game.supportsOffline} ? 'Online + local' : (game.supportsOnline ? 'Online-first' : 'Local-first')">Online + local</strong>
+      <p>Game duoc nhom lai theo nhip vao tran, giup nguoi choi chon mode nhanh hon.</p>
+    </article>
+    <article class="hub-portal-panel cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Account mode</span>
+      <strong th:text="${game.supportsGuest} ? 'Guest + account' : 'Account-first'">Guest + account</strong>
+      <p>Trang detail hien ro cach truy cap truoc khi nguoi choi vao match hoac bot.</p>
+    </article>
+  </section>
+
   <section class="hub-portal-layout">
     <div class="hub-portal-main">
       <section class="hub-portal-card">
