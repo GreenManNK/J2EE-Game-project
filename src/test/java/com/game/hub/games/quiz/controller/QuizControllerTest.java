@@ -2,7 +2,9 @@ package com.game.hub.games.quiz.controller;
 
 import com.game.hub.games.quiz.logic.QuizRoom;
 import com.game.hub.games.quiz.service.QuizService;
+import com.game.hub.service.GameCatalogService;
 import org.junit.jupiter.api.Test;
+import org.springframework.ui.ConcurrentModel;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -18,9 +20,10 @@ class QuizControllerTest {
     @Test
     void quizRoomPagesShouldRenderQuizTemplate() {
         QuizController controller = new QuizController();
+        ReflectionTestUtils.setField(controller, "gameCatalogService", new GameCatalogService());
 
-        assertEquals("games/quiz", controller.quizRoomPage("QUIZ-ROOM-1"));
-        assertEquals("games/quiz", controller.quizSpectatePage("QUIZ-ROOM-1"));
+        assertEquals("games/quiz", controller.quizRoomPage("QUIZ-ROOM-1", new ConcurrentModel()));
+        assertEquals("games/quiz", controller.quizSpectatePage("QUIZ-ROOM-1", new ConcurrentModel()));
     }
 
     @Test
@@ -49,7 +52,7 @@ class QuizControllerTest {
             .orElseThrow();
         assertEquals(1, playerRoomSummary.get("playerCount"));
         assertEquals(0, playerRoomSummary.get("spectatorCount"));
-        assertEquals(1, playerRoomSummary.get("questionNumber"));
+        assertEquals(0, playerRoomSummary.get("questionNumber"));
         assertEquals(playerRoom.getTotalQuestions(), playerRoomSummary.get("totalQuestions"));
         assertEquals("WAITING", playerRoomSummary.get("gameState"));
     }

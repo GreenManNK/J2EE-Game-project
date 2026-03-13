@@ -26,6 +26,24 @@
     </div>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan cai dat">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Account</span>
+      <strong th:text="${isAuthenticated} ? 'Dang nhap va cho phep cap nhat tai khoan' : 'Guest mode, can dang nhap de chinh sua'}">Trang thai tai khoan</strong>
+      <p>Surface nay gom thong tin ca nhan, avatar va profile routing vao mot noi duy nhat.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Preferences</span>
+      <strong>Theme, language, sidebar, thong bao</strong>
+      <p>Cac tuy chon UI duoc dong bo toan web de giam tinh trang moi trang mot kieu tuong tac.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Security</span>
+      <strong>Social link + doi mat khau</strong>
+      <p>Phan lien ket mang xa hoi va doi mat khau duoc dat cung khu de nhat quan voi account center.</p>
+    </article>
+  </section>
+
   <div class="alert alert-success py-2 px-3 mt-3" th:if="${socialLinked != null}">
     Da lien ket thanh cong tai khoan
     <strong th:text="${#strings.capitalize(socialLinked)}">Facebook</strong>.

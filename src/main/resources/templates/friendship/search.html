@@ -22,6 +22,24 @@
     </div>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan tim kiem ban be">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Query</span>
+      <strong th:text="${#strings.isEmpty(query) ? 'Chua co tu khoa' : query}">query</strong>
+      <p>Search surface uu tien ten hien thi va email de nguoi dung nhay vao ho so dung tai khoan nhanh hon.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Exact match</span>
+      <strong><span th:text="${#lists.size(exactMatches)}">0</span> ket qua khop chinh xac</strong>
+      <p>Ket qua exact duoc day len truoc de giam so thao tac khi tim nguoi dung cu the.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Suggestions</span>
+      <strong><span th:text="${#lists.size(similarMatches)}">0</span> ket qua tuong tu</strong>
+      <p>Ket hop nut ket ban nhanh va dieu huong sang trang chi tiet ngay trong danh sach ket qua.</p>
+    </article>
+  </section>
+
   <section class="theme-box gx-section-card">
     <div class="gx-section-card__head">
       <h2 class="gx-section-card__title theme-text mb-0">Khop chinh xac</h2>

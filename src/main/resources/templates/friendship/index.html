@@ -39,6 +39,24 @@
     </div>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan xa hoi">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Network</span>
+      <strong><span th:text="${#lists.size(friendViews)}">0</span> ban be hien co</strong>
+      <p>Trang tong hop gom danh sach ban, loi moi va thao tac nhan tin trong cung mot bo cuc duy nhat.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Pending</span>
+      <strong><span th:text="${#lists.size(pendingRequestViews)}">0</span> loi moi dang cho</strong>
+      <p>Phe duyet, tu choi va xem chi tiet duoc dat sat feed de xu ly nhanh khi co thong bao moi.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Outreach</span>
+      <strong><span th:text="${#lists.size(sentRequestViews)}">0</span> loi moi da gui</strong>
+      <p>Moi luong ket ban, tu gui email den nhan tin rieng, duoc gom ve mot he surface thong nhat.</p>
+    </article>
+  </section>
+
   <div class="row g-3">
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100 gx-section-card">

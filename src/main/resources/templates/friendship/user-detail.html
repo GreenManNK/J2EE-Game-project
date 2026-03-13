@@ -55,6 +55,28 @@
     </div>
     <div id="friendshipUserDetailOut" class="small mt-3 mb-0 theme-text" role="status" aria-live="polite"></div>
   </section>
+
+  <section class="cg-detail-strip" aria-label="Tong quan chi tiet ban be">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Identity</span>
+      <strong th:text="${user.displayName}">Nguoi choi</strong>
+      <p>Thong tin co ban cua tai khoan duoc dat sat hero de nhan dien va thao tac nhanh hon.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Relation</span>
+      <strong>
+        <span th:if="${isFriend}">Da la ban be</span>
+        <span th:if="${!isFriend and hasPending}">Dang cho xu ly loi moi</span>
+        <span th:if="${!isFriend and !hasPending}">Chua ket ban</span>
+      </strong>
+      <p>Trang thai ket ban duoc nen sat CTA gui loi moi, huy ban hoac mo chat rieng.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Action</span>
+      <strong th:text="${isOwner} ? 'Ho so cua ban, co the mo profile day du' : 'Co the ket ban hoac nhan tin tu day'}">Action</strong>
+      <p>Detail page giu role cua viewer de dieu huong dung sang profile hoac messaging.</p>
+    </article>
+  </section>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('friendship-user-detail')}"></th:block>

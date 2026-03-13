@@ -33,6 +33,24 @@
     </div>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan quan ly tai khoan admin">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Inventory</span>
+      <strong><span th:text="${totalItems}">0</span> tai khoan sau khi loc</strong>
+      <p>Danh sach user duoc nen sat hero de doi giua browse, export va chi tiet nhanh hon.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Flow</span>
+      <strong>Filter -> create -> detail -> export</strong>
+      <p>Trang nay giu toan bo luong quan tri tai khoan ma khong can quay lai dashboard tong.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Exports</span>
+      <strong>CSV / Excel theo page hoac all</strong>
+      <p>Payload xuat du lieu di cung filter hien tai de thao tac van hanh nhat quan hon.</p>
+    </article>
+  </section>
+
   <form method="get" th:action="@{/admin/users}" class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
       <h2 class="gx-section-card__title theme-text mb-0">Loc tai khoan</h2>

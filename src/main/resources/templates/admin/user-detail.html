@@ -30,6 +30,24 @@
     </div>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan chi tiet tai khoan admin">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Identity</span>
+      <strong th:text="${user.displayName}">Nguoi choi</strong>
+      <p>Thong tin cot loi cua tai khoan duoc dat sat hero de admin nhin dung doi tuong dang thao tac.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Privilege</span>
+      <strong th:text="${user.role == 'Admin' ? 'Quan tri' : (user.role == 'Manager' ? 'Quan ly' : 'Nguoi choi')}">Nguoi choi</strong>
+      <p>Vai tro, diem va khoa den duoc giu o lop summary de tranh sua nham tai khoan.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Controls</span>
+      <strong>Quick edit + ban / unban / delete</strong>
+      <p>Admin co mot detail page tach rieng cho viec cap nhat nhanh va thao tac xu ly tai khoan.</p>
+    </article>
+  </section>
+
   <section class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
       <h2 class="gx-section-card__title theme-text mb-0">Cap nhat nhanh</h2>

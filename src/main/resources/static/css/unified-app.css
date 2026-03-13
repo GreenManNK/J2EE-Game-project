@@ -67,6 +67,35 @@ body:not(.game-index) .text-muted {
   color: var(--unified-muted) !important;
 }
 
+body:not(.game-index) .gx-page-shell .cg-detail-strip,
+body:not(.game-index) .private-chat-shell .cg-detail-strip {
+  margin-top: 14px;
+  margin-bottom: 4px;
+}
+
+body:not(.game-index) .gx-page-shell .cg-detail-strip__card,
+body:not(.game-index) .private-chat-shell .cg-detail-strip__card {
+  background: var(--unified-surface-bg);
+  border: 1px solid var(--unified-border);
+  box-shadow: var(--unified-shadow);
+  backdrop-filter: blur(14px);
+}
+
+body:not(.game-index) .gx-page-shell .cg-detail-strip__eyebrow,
+body:not(.game-index) .private-chat-shell .cg-detail-strip__eyebrow {
+  color: rgba(191, 202, 238, 0.74);
+}
+
+body:not(.game-index) .gx-page-shell .cg-detail-strip__card strong,
+body:not(.game-index) .private-chat-shell .cg-detail-strip__card strong {
+  color: #f4f8ff;
+}
+
+body:not(.game-index) .gx-page-shell .cg-detail-strip__card p,
+body:not(.game-index) .private-chat-shell .cg-detail-strip__card p {
+  color: var(--unified-muted);
+}
+
 body:not(.game-index) .gx-inline-actions,
 body:not(.game-index) .auth-onboard__support {
   display: flex;

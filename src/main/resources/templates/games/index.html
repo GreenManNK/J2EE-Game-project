@@ -158,6 +158,59 @@
     </article>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan thu vien">
+    <article class="hub-portal-panel cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Discovery</span>
+      <strong>Feature grid + lane ngang</strong>
+      <p>Catalog giu 2 lop kham pha: nhin nhanh bang card lon va duyet sau bang lane cuon ngang.</p>
+    </article>
+    <article class="hub-portal-panel cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Signals</span>
+      <strong>Favorite + recent + popularity</strong>
+      <p>Trang thu vien luu trang thai cuc bo hoac theo tai khoan de tiep tuc choi o lan sau.</p>
+    </article>
+    <article class="hub-portal-panel cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Entry flow</span>
+      <strong>Detail -> mode -> play</strong>
+      <p>Moi game deu vao detail page rieng truoc khi nhay vao room, bot hoac man choi chinh.</p>
+    </article>
+  </section>
+
+  <section class="hub-portal-panel cg-browser-state-card">
+    <div class="cg-section-head">
+      <div>
+        <h2>Feature grid</h2>
+        <small>Khoi card lon de mo thu vien theo nhac CrazyGames-inspired</small>
+      </div>
+      <a th:href="@{/}" class="hub-portal-inline-btn">Ve home</a>
+    </div>
+
+    <div class="cg-home-recommended-grid">
+      <a th:each="g,st : ${games}"
+         th:if="${g.code != 'blackjack' and st.index < 5}"
+         th:href="@{'/games/' + ${g.code}}"
+         class="cg-recommended-card"
+         th:classappend="${st.index == 0} ? ' is-feature' : (${st.index == 4} ? ' is-wide' : '')"
+         th:attr="data-code=${g.code}">
+        <span class="cg-recommended-card__badge"
+              th:text="${g.supportsOnline} ? 'Online' : (g.supportsGuest ? 'Quick play' : 'Featured')">Featured</span>
+        <div class="cg-recommended-card__icon">
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-recommended-card__body">
+          <small th:text="${g.shortLabel}">Game</small>
+          <h2 th:text="${g.displayName}">Game</h2>
+          <p th:text="${g.description}">Mo ta</p>
+        </div>
+        <div class="cg-recommended-card__meta">
+          <span th:if="${g.supportsOnline}"><i class="bi bi-wifi"></i> Online</span>
+          <span th:if="${g.supportsOffline}"><i class="bi bi-display"></i> Local</span>
+          <span th:if="${g.supportsGuest}"><i class="bi bi-lightning-charge-fill"></i> Guest</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
   <section class="cg-lane" data-lane-section>
     <header class="cg-lane-head">
       <h2>De xuat danh cho ban</h2>

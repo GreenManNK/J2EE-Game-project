@@ -36,6 +36,24 @@
     </div>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan quan ly tai khoan manager">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Inventory</span>
+      <strong><span th:text="${totalItems}">0</span> tai khoan trong pham vi quan ly</strong>
+      <p>Manager duyet, loc va mo chi tiet user tren mot mat bang giong admin nhung thu hep scope thao tac.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Scope</span>
+      <strong>Chi tao tai khoan vai tro Nguoi choi</strong>
+      <p>Bo surface nay giu quyen han manager ro rang, tach biet voi luong doi quyen cap cao cua admin.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Exports</span>
+      <strong>CSV / Excel giu nguyen bo loc</strong>
+      <p>Export du lieu quan ly theo trang hoac all duoc giu thong nhat voi phan paging va filter.</p>
+    </article>
+  </section>
+
   <form method="get" th:action="@{/manager/users}" class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
       <h2 class="gx-section-card__title theme-text mb-0">Loc tai khoan</h2>

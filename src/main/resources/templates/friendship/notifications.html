@@ -24,6 +24,24 @@
     </div>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan thong bao ban be">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Friend requests</span>
+      <strong><span th:text="${#lists.size(friendRequestViews)}">0</span> loi moi ket ban</strong>
+      <p>Phe duyet nhanh duoc dua len cung lane thong bao de giam thoi gian chuyen qua lai giua cac trang.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Achievements</span>
+      <strong><span th:text="${#lists.size(achievementNotifications)}">0</span> thong bao thanh tuu</strong>
+      <p>Achievement va thong diep xa hoi dung chung mot shell de giu mach cap nhat lien tuc.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">System</span>
+      <strong><span th:text="${#lists.size(systemNotifications)}">0</span> thong bao he thong</strong>
+      <p>Thong bao he thong duoc tron vao feed ca nhan thay vi tach sang mot khu rieng le.</p>
+    </article>
+  </section>
+
   <div class="row g-3">
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100 gx-section-card">

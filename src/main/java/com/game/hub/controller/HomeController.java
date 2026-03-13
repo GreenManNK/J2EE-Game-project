@@ -5,8 +5,11 @@ import com.game.hub.entity.Post;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.PostRepository;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.GameCatalogItem;
+import com.game.hub.service.GameCatalogService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,24 +21,46 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.function.Predicate;
 
 @Controller
 @RequestMapping("/")
 public class HomeController {
     private final PostRepository postRepository;
     private final UserAccountRepository userAccountRepository;
+    private final GameCatalogService gameCatalogService;
 
     public HomeController(PostRepository postRepository, UserAccountRepository userAccountRepository) {
+        this(postRepository, userAccountRepository, new GameCatalogService());
+    }
+
+    @Autowired
+    public HomeController(
+        PostRepository postRepository,
+        UserAccountRepository userAccountRepository,
+        GameCatalogService gameCatalogService
+    ) {
         this.postRepository = postRepository;
         this.userAccountRepository = userAccountRepository;
+        this.gameCatalogService = gameCatalogService;
     }
 
     @GetMapping
     public String index(Model model) {
+        List<GameCatalogItem> games = gameCatalogService.findAll();
         model.addAttribute("message", "Caro Java (Thymeleaf) is running");
         model.addAttribute("posts", postRepository.findAll());
+        model.addAttribute("games", games);
+        model.addAttribute("recommendedGames", pickGamesByCodes(games, "caro", "cards", "chess", "typing", "puzzle"));
+        model.addAttribute("onlineGames", filterGames(games, game -> game.supportsOnline() && !hasCode(game, "blackjack"), 6));
+        model.addAttribute("quickPlayGames", pickGamesByCodes(games, "minesweeper", "quiz", "typing", "puzzle", "cards", "caro"));
+        model.addAttribute("strategyGames", pickGamesByCodes(games, "caro", "chess", "xiangqi", "puzzle", "cards"));
+        model.addAttribute("freshGames", pickGamesByCodes(games, "puzzle", "minesweeper", "typing", "quiz", "blackjack", "cards"));
         return "home/index";
     }
 
@@ -192,5 +217,38 @@ public class HomeController {
         if (value == null) return null;
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private List<GameCatalogItem> filterGames(
+        List<GameCatalogItem> games,
+        Predicate<GameCatalogItem> predicate,
+        int limit
+    ) {
+        return games.stream()
+            .filter(predicate)
+            .limit(limit)
+            .toList();
+    }
+
+    private List<GameCatalogItem> pickGamesByCodes(List<GameCatalogItem> games, String... codes) {
+        Map<String, GameCatalogItem> byCode = new LinkedHashMap<>();
+        games.forEach(game -> byCode.put(normalizeCode(game.code()), game));
+
+        List<GameCatalogItem> ordered = new ArrayList<>();
+        for (String code : codes) {
+            GameCatalogItem item = byCode.get(normalizeCode(code));
+            if (item != null) {
+                ordered.add(item);
+            }
+        }
+        return ordered;
+    }
+
+    private boolean hasCode(GameCatalogItem game, String code) {
+        return normalizeCode(game == null ? null : game.code()).equals(normalizeCode(code));
+    }
+
+    private String normalizeCode(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 }

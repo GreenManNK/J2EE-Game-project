@@ -3,8 +3,11 @@ package com.game.hub.games.quiz.controller;
 import com.game.hub.games.quiz.entity.HighScore;
 import com.game.hub.games.quiz.logic.QuizRoom;
 import com.game.hub.games.quiz.service.QuizService;
+import com.game.hub.service.GameCatalogItem;
+import com.game.hub.service.GameCatalogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,13 +23,18 @@ import java.util.Map;
 @Controller
 @RequestMapping("/games/quiz")
 public class QuizController {
+    private static final String GAME_CODE = "quiz";
 
     @Autowired
     private QuizService quizService;
 
+    @Autowired
+    private GameCatalogService gameCatalogService;
+
     @GetMapping
     public String quizPage(@RequestParam(required = false) String room,
-                           @RequestParam(required = false) String mode) {
+                           @RequestParam(required = false) String mode,
+                           Model model) {
         String normalizedRoomId = room == null ? "" : room.trim();
         if (!normalizedRoomId.isEmpty()) {
             StringBuilder redirect = new StringBuilder("redirect:/games/quiz/room/")
@@ -36,21 +44,28 @@ public class QuizController {
             }
             return redirect.toString();
         }
-        return "redirect:/online-hub?game=quiz";
+        return renderQuizPage(model);
     }
 
     @GetMapping("/room/{roomId}")
-    public String quizRoomPage(@PathVariable String roomId) {
-        return renderQuizPage();
+    public String quizRoomPage(@PathVariable String roomId, Model model) {
+        return renderQuizPage(model);
     }
 
     @GetMapping("/room/{roomId}/spectate")
-    public String quizSpectatePage(@PathVariable String roomId) {
-        return renderQuizPage();
+    public String quizSpectatePage(@PathVariable String roomId, Model model) {
+        return renderQuizPage(model);
     }
 
-    private String renderQuizPage() {
+    private String renderQuizPage(Model model) {
+        populateCatalogModel(model);
         return "games/quiz";
+    }
+
+    private void populateCatalogModel(Model model) {
+        GameCatalogItem game = gameCatalogService.findByCode(GAME_CODE).orElse(null);
+        model.addAttribute("game", game);
+        model.addAttribute("allGames", gameCatalogService.findAll());
     }
 
     @GetMapping("/highscores")

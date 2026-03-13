@@ -60,6 +60,24 @@
     </div>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan bang xep hang">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Ranking pool</span>
+      <strong><span th:text="${totalItems}">0</span> tai khoan trong bang xep hang</strong>
+      <p>BXH giu mot danh muc diem tong hop de nguoi choi tim nhanh vi tri cua minh va doi thu.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Filters</span>
+      <strong>Search + score floor + page size</strong>
+      <p>Bo loc giup cat nhanh theo ten, ma tai khoan va nguong diem toi thieu truoc khi export.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Export</span>
+      <strong>CSV / Excel theo trang hoac toan bo</strong>
+      <p>Data leaderboard duoc giu cung mot luong voi giao dien de chuyen tu browse sang bao cao nhanh hon.</p>
+    </article>
+  </section>
+
   <div class="gx-empty-state" th:if="${#lists.isEmpty(players)}">Khong co nguoi choi phu hop bo loc hien tai.</div>
 
   <section class="gx-section-card theme-box gx-table-card" th:if="${!#lists.isEmpty(players)}">

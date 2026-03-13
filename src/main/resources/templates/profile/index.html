@@ -79,6 +79,24 @@
     </div>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan ho so">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Rank</span>
+      <strong th:text="${'Hang ' + rank}">Hang 0</strong>
+      <p>Ho so dat thu hang, diem va streak vao cung mot strip de nguoi choi nhin nhanh gia tri tai khoan.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Matches</span>
+      <strong><span th:text="${totalGames}">0</span> tran, <span th:text="${winRate}">0</span>% thang</strong>
+      <p>Thong ke thi dau duoc nen sat hero de ho so giong mot player card trong game portal.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Ownership</span>
+      <strong th:text="${isOwner} ? 'Ban dang xem ho so cua minh' : 'Ho so dang duoc xem tu vai tro viewer'}">Ho so</strong>
+      <p>Neu la chu tai khoan, cac thao tac cap nhat va dieu huong sang settings duoc mo sat ben duoi.</p>
+    </article>
+  </section>
+
   <div class="row g-3">
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100 gx-section-card">

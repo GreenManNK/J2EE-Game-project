@@ -59,7 +59,7 @@ class DedicatedRoomRedirectControllerTest {
     void typingQueryRoomShouldRedirectToDedicatedRoomPage() {
         TypingController controller = new TypingController();
 
-        String view = controller.typingPage("TYP-1");
+        String view = controller.typingPage("TYP-1", new ConcurrentModel());
 
         assertEquals("redirect:/games/typing/room/TYP-1", view);
     }
@@ -68,7 +68,7 @@ class DedicatedRoomRedirectControllerTest {
     void quizSpectateQueryShouldRedirectToDedicatedSpectatePage() {
         QuizController controller = new QuizController();
 
-        String view = controller.quizPage("QUIZ-1", "spectate");
+        String view = controller.quizPage("QUIZ-1", "spectate", new ConcurrentModel());
 
         assertEquals("redirect:/games/quiz/room/QUIZ-1/spectate", view);
     }

@@ -100,7 +100,25 @@
 
     </section>
 
-    <section class="hub-portal-layout hub-portal-layout--single">
+    <section class="cg-detail-strip" aria-label="Tong quan Quiz">
+        <article class="hub-portal-panel cg-detail-strip__card">
+            <span class="cg-detail-strip__eyebrow">Room flow</span>
+            <strong>Create / join / spectate</strong>
+            <p>Quiz dat lobby, spectate va room invite ngay tren cung mot be mat de giam thao tac truoc tran.</p>
+        </article>
+        <article class="hub-portal-panel cg-detail-strip__card">
+            <span class="cg-detail-strip__eyebrow">Scoring</span>
+            <strong>+2 dung, -1 sai</strong>
+            <p>He thong tinh diem theo tung cau va cap nhat BXH realtime de giong mot dau truong quiz nhip nhanh.</p>
+        </article>
+        <article class="hub-portal-panel cg-detail-strip__card">
+            <span class="cg-detail-strip__eyebrow">Access</span>
+            <strong>Player + spectator</strong>
+            <p>Trang nay duoc dong bo voi he storefront chung nhung van giu du mode choi va mode xem tran.</p>
+        </article>
+    </section>
+
+    <section class="hub-portal-layout">
         <div class="hub-portal-main">
             <section class="hub-portal-card">
                 <div class="hub-portal-card__head">
@@ -135,6 +153,42 @@
                 <ol id="high-scores-list" class="hub-portal-bullet-list"></ol>
             </section>
         </div>
+
+        <aside class="hub-portal-side">
+            <section class="hub-portal-card">
+                <h3>Thao tac nhanh</h3>
+                <div class="hub-portal-side-actions">
+                    <a th:href="@{/online-hub(game='quiz')}" class="hub-portal-side-action">
+                        <i class="bi bi-globe2"></i>
+                        <div><strong>Mo sanh phong</strong><small>Xem danh sach room quiz va vao nhanh</small></div>
+                    </a>
+                    <a th:href="@{/games}" class="hub-portal-side-action">
+                        <i class="bi bi-grid"></i>
+                        <div><strong>Ve thu vien</strong><small>Mo lai directory game chinh</small></div>
+                    </a>
+                    <a th:href="@{/games/typing}" class="hub-portal-side-action">
+                        <i class="bi bi-keyboard-fill"></i>
+                        <div><strong>Qua Typing</strong><small>Chuyen sang mode dau toc do realtime</small></div>
+                    </a>
+                </div>
+            </section>
+
+            <section class="hub-portal-card">
+                <h3>Game lien quan</h3>
+                <div class="hub-portal-related-list">
+                    <a th:each="g : ${allGames}"
+                       th:if="${g.code != game.code}"
+                       th:href="@{/games/{code}(code=${g.code})}"
+                       class="hub-portal-related-item">
+                        <i class="bi" th:classappend="${g.iconClass}"></i>
+                        <div>
+                            <strong th:text="${g.displayName}">Game</strong>
+                            <small th:text="${g.description}">Mo ta</small>
+                        </div>
+                    </a>
+                </div>
+            </section>
+        </aside>
     </section>
 </main>
 

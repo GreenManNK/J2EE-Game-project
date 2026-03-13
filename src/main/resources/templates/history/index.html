@@ -82,6 +82,24 @@
     </div>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan lich su">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Owner</span>
+      <strong th:text="${userId}">user</strong>
+      <p>Lich su duoc khoa theo tai khoan dang xem de luu mot luong tra cuu rieng cho tung nguoi choi.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Filters</span>
+      <strong>Game code + result + date range</strong>
+      <p>Ban ghi co the loc theo ma game, ket qua va khoang ngay truoc khi duyet bang du lieu chi tiet.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Records</span>
+      <strong><span th:text="${totalItems}">0</span> tran phu hop bo loc</strong>
+      <p>Export CSV/Excel va phan trang duoc giu sat bang du lieu de phu hop luong tra cuu nhanh.</p>
+    </article>
+  </section>
+
   <div class="gx-empty-state" th:if="${#lists.isEmpty(histories)}">Khong co du lieu lich su phu hop bo loc.</div>
 
   <section class="gx-section-card theme-box gx-table-card" th:if="${!#lists.isEmpty(histories)}">

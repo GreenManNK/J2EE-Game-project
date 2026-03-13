@@ -1,305 +1,347 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Trang chinh')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('home')}"></div>
 
-<main role="main" id="homeMain" class="cg-home">
-  <section class="theme-box cg-home-hero">
-    <div class="cg-home-hero-main">
-      <div class="cg-chip-row">
-        <span class="cg-chip is-live"><i class="bi bi-controller"></i> TRANG CHU / THU VIEN GAME</span>
-        <span class="cg-chip"><i class="bi bi-lightning-charge-fill"></i> 1 click vao game</span>
-        <span class="cg-chip"><i class="bi bi-collection-play-fill"></i> Spotlight + lane + quick nav</span>
-        <span class="cg-chip"><i class="bi bi-chat-left-dots-fill"></i> Feed cong dong</span>
-        <span class="cg-chip"><i class="bi bi-phone-fill"></i> Responsive</span>
+<main role="main" id="homeMain" class="cg-home cg-home-portal">
+  <section class="theme-box cg-home-stage">
+    <div class="cg-home-stage__header">
+      <div class="cg-home-stage__copy">
+        <div class="cg-chip-row">
+          <span class="cg-chip is-live">
+            <i class="bi bi-controller"></i>
+            <span th:text="${#lists.size(games)} + ' game dang san sang'">0 game dang san sang</span>
+          </span>
+          <span class="cg-chip"><i class="bi bi-search"></i> Directory-style browse</span>
+          <span class="cg-chip"><i class="bi bi-collection-play-fill"></i> Lane ngang + card lon</span>
+          <span class="cg-chip"><i class="bi bi-lightning-charge-fill"></i> 1 click vao detail</span>
+        </div>
+
+        <h1 class="cg-title">Game Hub theo phong cach arcade directory, toi uu cho viec tim game va vao tran nhanh</h1>
+        <p class="cg-subtitle">
+          Toan bo home duoc day sang giao dien card-first: mot recommended strip dau trang,
+          cac lane ngang cho tung nhom game, va khu cong dong day xuong phia duoi de khong lam loan luong kham pha.
+        </p>
       </div>
 
-      <h1 class="cg-title">Portal game discovery-first, vao van nhanh tren moi thiet bi</h1>
-      <p class="cg-subtitle">
-        Home duoc day sang mot nhac storefront ro hon: co spotlight stage, quick action, card game,
-        va feed cong dong tach rieng. Nguoi choi co the tim game, vao detail hoac chuyen mode chi trong vai thao tac.
-      </p>
-
-      <div class="cg-home-quick-nav" role="list" aria-label="Chon nhanh game">
-        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="caro" data-game-name="Caro">
-          <span class="cg-home-access-icon"><i class="bi bi-grid-3x3-gap-fill"></i></span>
-          <span class="cg-home-access-content">
-            <strong>Caro</strong>
-            <small>Truc tuyen / Bot / Cung may</small>
-          </span>
-          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
-        </button>
-        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="chess" data-game-name="Co vua">
-          <span class="cg-home-access-icon"><i class="bi bi-activity"></i></span>
-          <span class="cg-home-access-content">
-            <strong>Co vua</strong>
-            <small>Chien thuat co dien</small>
-          </span>
-          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
-        </button>
-        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="xiangqi" data-game-name="Co tuong">
-          <span class="cg-home-access-icon"><i class="bi bi-diagram-3-fill"></i></span>
-          <span class="cg-home-access-content">
-            <strong>Co tuong</strong>
-            <small>Ban co 9x10</small>
-          </span>
-          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
-        </button>
-        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="cards" data-game-name="Danh bai">
-          <span class="cg-home-access-icon"><i class="bi bi-suit-spade-fill"></i></span>
-          <span class="cg-home-access-content">
-            <strong>Danh bai</strong>
-            <small>Tien len thoi gian thuc</small>
-          </span>
-          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
-        </button>
-        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="minesweeper" data-game-name="Minesweeper">
-          <span class="cg-home-access-icon"><i class="bi bi-asterisk"></i></span>
-          <span class="cg-home-access-content">
-            <strong>Minesweeper</strong>
-            <small>Do min nhieu cap</small>
-          </span>
-          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
-        </button>
-        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="quiz" data-game-name="Quiz">
-          <span class="cg-home-access-icon"><i class="bi bi-patch-question-fill"></i></span>
-          <span class="cg-home-access-content">
-            <strong>Quiz</strong>
-            <small>Hoi dap theo chu de</small>
-          </span>
-          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
-        </button>
-        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="typing" data-game-name="Typing">
-          <span class="cg-home-access-icon"><i class="bi bi-keyboard-fill"></i></span>
-          <span class="cg-home-access-content">
-            <strong>Typing</strong>
-            <small>Luyen toc do go</small>
-          </span>
-          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
-        </button>
-        <button type="button" class="cg-home-access-card js-game-picker" data-game-code="puzzle" data-game-name="Puzzle">
-          <span class="cg-home-access-icon"><i class="bi bi-puzzle-fill"></i></span>
-          <span class="cg-home-access-content">
-            <strong>Puzzle</strong>
-            <small>Sudoku/Tu ngu/Xep hinh</small>
-          </span>
-          <span class="cg-home-access-arrow"><i class="bi bi-arrow-right-short"></i></span>
-        </button>
+      <div class="cg-home-stage__actions">
+        <a th:href="@{/games}" class="hub-portal-inline-btn primary">Mo thu vien</a>
+        <a th:href="@{/online-hub(game='caro')}" class="hub-portal-inline-btn">Sanh online</a>
       </div>
     </div>
 
-    <aside class="cg-home-showcase" aria-label="Spotlight giao dien game">
-      <div class="cg-home-showcase__screen">
-        <div class="cg-home-showcase__topbar">
-          <span class="cg-home-showcase__pill is-live"><i class="bi bi-broadcast"></i> Dang spotlight</span>
-          <span class="cg-home-showcase__pill"><i class="bi bi-grid-3x3-gap-fill"></i> Thu vien</span>
-        </div>
-
-        <div class="cg-home-showcase__body">
-          <div class="cg-home-showcase__badge">Featured shell</div>
-          <h2>Caro Arena</h2>
-          <p>Khung hero mo rong cho game hot: thong tin ngan, call-to-action ro, va cac mode vao tran dat sat nhau.</p>
-
-          <div class="cg-home-showcase__actions">
-            <a th:href="@{/games/caro}" class="hub-portal-inline-btn primary">Mo Caro</a>
-            <a th:href="@{/games}" class="hub-portal-inline-btn">Thu vien</a>
-          </div>
-
-          <div class="cg-home-showcase__lane" aria-hidden="true">
-            <div class="cg-home-showcase__lane-item is-active">
-              <span><i class="bi bi-grid-3x3-gap-fill"></i></span>
-              <strong>Caro</strong>
-              <small>Online / Bot / Local</small>
-            </div>
-            <div class="cg-home-showcase__lane-item">
-              <span><i class="bi bi-activity"></i></span>
-              <strong>Chess</strong>
-              <small>Matchmaking / Bot</small>
-            </div>
-            <div class="cg-home-showcase__lane-item">
-              <span><i class="bi bi-suit-spade-fill"></i></span>
-              <strong>Cards</strong>
-              <small>TLMN / Blackjack</small>
-            </div>
-          </div>
-        </div>
+    <div class="cg-section-head cg-section-head--compact">
+      <div>
+        <h2>Lua chon hang dau danh cho ban</h2>
+        <small>Bo cuc card lon + tile nho lay cam hung tu home cua game portal</small>
       </div>
+      <a th:href="@{/games}" class="cg-lane-more">Xem them</a>
+    </div>
 
-      <div class="cg-home-showcase__stats">
-        <article class="cg-home-showcase__stat">
-          <span>Discovery</span>
-          <strong>Quick nav + spotlight</strong>
-          <small>Nguoi choi vao game chinh nhanh hon tu home.</small>
-        </article>
-        <article class="cg-home-showcase__stat">
-          <span>Library</span>
-          <strong>Lane card + detail page</strong>
-          <small>Mot luong dieu huong thong nhat giua home va catalog.</small>
-        </article>
-        <article class="cg-home-showcase__stat">
-          <span>Community</span>
-          <strong>Feed tach rieng</strong>
-          <small>Giu bang tin song song voi khu discovery.</small>
-        </article>
-      </div>
-    </aside>
-
+    <div class="cg-home-recommended-grid">
+      <a th:each="g,st : ${recommendedGames}"
+         th:href="@{'/games/' + ${g.code}}"
+         class="cg-recommended-card"
+         th:classappend="${st.index == 0} ? ' is-feature' : (${st.index == 4} ? ' is-wide' : '')"
+         th:attr="data-code=${g.code}">
+        <span class="cg-recommended-card__badge"
+              th:text="${st.index == 0} ? 'Top pick' : (${g.supportsOnline} ? 'Online' : 'Quick play')">Top pick</span>
+        <div class="cg-recommended-card__icon">
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-recommended-card__body">
+          <small th:text="${g.shortLabel}">Game</small>
+          <h2 th:text="${g.displayName}">Game</h2>
+          <p th:text="${g.description}">Mo ta game</p>
+        </div>
+        <div class="cg-recommended-card__meta">
+          <span th:if="${g.supportsOnline}"><i class="bi bi-wifi"></i> Online</span>
+          <span th:if="${g.supportsOffline}"><i class="bi bi-display"></i> Local</span>
+          <span th:if="${g.supportsGuest}"><i class="bi bi-lightning-charge-fill"></i> Guest</span>
+        </div>
+      </a>
+    </div>
   </section>
 
-  <section class="cg-home-content cg-home-content--single">
-    <section class="cg-home-main">
-      <section class="theme-box">
-        <div class="cg-section-head">
-          <div>
-            <h2>Game de xuat hom nay</h2>
-            <small>Card-grid storefront cho khu discovery</small>
+  <section class="cg-home-stat-band">
+    <article class="theme-box cg-home-stat-card">
+      <span class="cg-home-stat-card__eyebrow">Library</span>
+      <strong th:text="${#lists.size(games)}">0</strong>
+      <small>game native dang hien thi trong hub</small>
+    </article>
+    <article class="theme-box cg-home-stat-card">
+      <span class="cg-home-stat-card__eyebrow">Multiplayer</span>
+      <strong th:text="${#lists.size(onlineGames)}">0</strong>
+      <small>tua game co phong online realtime</small>
+    </article>
+    <article class="theme-box cg-home-stat-card">
+      <span class="cg-home-stat-card__eyebrow">Quick Play</span>
+      <strong th:text="${#lists.size(quickPlayGames)}">0</strong>
+      <small>vao nhanh duoc voi guest/local</small>
+    </article>
+    <article class="theme-box cg-home-stat-card">
+      <span class="cg-home-stat-card__eyebrow">Community</span>
+      <strong th:text="${(posts != null ? #lists.size(posts) : 0)}">0</strong>
+      <small>bai viet moi tu nguoi choi trong hub</small>
+    </article>
+  </section>
+
+  <section class="cg-lane" data-lane-section>
+    <header class="cg-lane-head">
+      <h2>Tro choi noi bat</h2>
+      <a th:href="@{/games}" class="cg-lane-more">Xem them</a>
+    </header>
+    <div class="cg-lane-track" data-lane-track>
+      <article class="cg-tile"
+               th:each="g : ${recommendedGames}"
+               th:attr="data-name=${g.displayName},data-code=${g.code}">
+        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+          <span class="cg-tile-badge" th:text="${g.supportsOnline} ? 'Hot online' : 'Recommended'">Recommended</span>
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-tile-body">
+          <h3 th:text="${g.displayName}">Game</h3>
+          <p th:text="${g.description}">Mo ta game</p>
+          <div class="cg-tile-actions">
+            <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
+            <a th:if="${g.hasPrimaryAction() and !g.primaryActionIsExternal()}"
+               th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary"
+               th:text="${g.primaryActionLabel}">Choi</a>
+            <a th:if="${g.hasPrimaryAction() and g.primaryActionIsExternal()}"
+               th:href="${g.primaryActionUrl}"
+               target="_blank"
+               rel="noopener"
+               class="hub-portal-inline-btn primary"
+               th:text="${g.primaryActionLabel}">Choi</a>
           </div>
-          <a th:href="@{/games}" class="hub-portal-inline-btn">Mo thu vien</a>
         </div>
+      </article>
+    </div>
+  </section>
 
-        <div class="cg-home-game-grid">
-          <article class="cg-home-game-card">
-            <div class="cg-home-game-thumb" data-tone="accent">
-              <span class="cg-home-game-badge">Hot</span>
-              <i class="bi bi-grid-3x3-gap-fill"></i>
-            </div>
-            <div class="cg-home-game-body">
-              <h3>Caro</h3>
-              <p>Choi truc tuyen, bot hoac cung may voi bo giao dien dong nhat.</p>
-              <div class="cg-home-game-foot">
-                <small><i class="bi bi-graph-up-arrow"></i> Pho bien</small>
-                <button type="button" class="btn hub-portal-inline-btn js-game-picker" data-game-code="caro" data-game-name="Caro">Choi</button>
-              </div>
-            </div>
-          </article>
-
-          <article class="cg-home-game-card">
-            <div class="cg-home-game-thumb">
-              <span class="cg-home-game-badge">Co dien</span>
-              <i class="bi bi-activity"></i>
-            </div>
-            <div class="cg-home-game-body">
-              <h3>Co vua</h3>
-              <p>Bo ban responsive, co che do truc tuyen va dau voi bot.</p>
-              <div class="cg-home-game-foot">
-                <small><i class="bi bi-graph-up-arrow"></i> Xep hang</small>
-                <button type="button" class="btn hub-portal-inline-btn js-game-picker" data-game-code="chess" data-game-name="Co vua">Choi</button>
-              </div>
-            </div>
-          </article>
-
-          <article class="cg-home-game-card">
-            <div class="cg-home-game-thumb" data-tone="warm">
-              <span class="cg-home-game-badge">Danh bai</span>
-              <i class="bi bi-suit-spade-fill"></i>
-            </div>
-            <div class="cg-home-game-body">
-              <h3>Danh bai</h3>
-              <p>Tien len va blackjack cung phong cach giao dien moi.</p>
-              <div class="cg-home-game-foot">
-                <small><i class="bi bi-graph-up-arrow"></i> 1 click</small>
-                <button type="button" class="btn hub-portal-inline-btn js-game-picker" data-game-code="cards" data-game-name="Danh bai">Choi</button>
-              </div>
-            </div>
-          </article>
-
-          <article class="cg-home-game-card">
-            <div class="cg-home-game-thumb" data-tone="accent">
-              <span class="cg-home-game-badge">Puzzle</span>
-              <i class="bi bi-puzzle-fill"></i>
-            </div>
-            <div class="cg-home-game-body">
-              <h3>Khu puzzle</h3>
-              <p>Co tim kiem, loc, yeu thich, danh gia va choi gan day.</p>
-              <div class="cg-home-game-foot">
-                <small><i class="bi bi-graph-up-arrow"></i> Moi cap nhat</small>
-                <button type="button" class="btn hub-portal-inline-btn js-game-picker" data-game-code="puzzle" data-game-name="Puzzle">Choi</button>
-              </div>
-            </div>
-          </article>
+  <section class="cg-lane" data-lane-section>
+    <header class="cg-lane-head">
+      <h2>Choi online cung ban be</h2>
+      <a th:href="@{/online-hub(game='caro')}" class="cg-lane-more">Mo sanh</a>
+    </header>
+    <div class="cg-lane-track" data-lane-track>
+      <article class="cg-tile"
+               th:each="g : ${onlineGames}"
+               th:attr="data-name=${g.displayName},data-code=${g.code}">
+        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+          <span class="cg-tile-badge">Online</span>
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
+        <div class="cg-tile-body">
+          <h3 th:text="${g.displayName}">Game</h3>
+          <p th:text="${g.description}">Mo ta game</p>
+          <div class="cg-tile-actions">
+            <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
+            <a th:if="${g.hasPrimaryAction() and !g.primaryActionIsExternal()}"
+               th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary"
+               th:text="${g.primaryActionLabel}">Choi</a>
+            <a th:if="${g.hasPrimaryAction() and g.primaryActionIsExternal()}"
+               th:href="${g.primaryActionUrl}"
+               target="_blank"
+               rel="noopener"
+               class="hub-portal-inline-btn primary"
+               th:text="${g.primaryActionLabel}">Choi</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="cg-lane" data-lane-section>
+    <header class="cg-lane-head">
+      <h2>Quick play va casual</h2>
+      <a th:href="@{/games}" class="cg-lane-more">Xem them</a>
+    </header>
+    <div class="cg-lane-track" data-lane-track>
+      <article class="cg-tile"
+               th:each="g : ${quickPlayGames}"
+               th:attr="data-name=${g.displayName},data-code=${g.code}">
+        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+          <span class="cg-tile-badge" th:text="${g.supportsGuest} ? 'Guest' : 'Local'">Guest</span>
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-tile-body">
+          <h3 th:text="${g.displayName}">Game</h3>
+          <p th:text="${g.description}">Mo ta game</p>
+          <div class="cg-tile-actions">
+            <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
+            <a th:if="${g.hasPrimaryAction() and !g.primaryActionIsExternal()}"
+               th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary"
+               th:text="${g.primaryActionLabel}">Choi</a>
+            <a th:if="${g.hasPrimaryAction() and g.primaryActionIsExternal()}"
+               th:href="${g.primaryActionUrl}"
+               target="_blank"
+               rel="noopener"
+               class="hub-portal-inline-btn primary"
+               th:text="${g.primaryActionLabel}">Choi</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="cg-lane" data-lane-section>
+    <header class="cg-lane-head">
+      <h2>Board, chien thuat va arcade</h2>
+      <a th:href="@{/games/chess}" class="cg-lane-more">Xem them</a>
+    </header>
+    <div class="cg-lane-track" data-lane-track>
+      <article class="cg-tile"
+               th:each="g : ${strategyGames}"
+               th:attr="data-name=${g.displayName},data-code=${g.code}">
+        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+          <span class="cg-tile-badge">Strategy</span>
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-tile-body">
+          <h3 th:text="${g.displayName}">Game</h3>
+          <p th:text="${g.description}">Mo ta game</p>
+          <div class="cg-tile-actions">
+            <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
+            <a th:if="${g.hasPrimaryAction() and !g.primaryActionIsExternal()}"
+               th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary"
+               th:text="${g.primaryActionLabel}">Choi</a>
+            <a th:if="${g.hasPrimaryAction() and g.primaryActionIsExternal()}"
+               th:href="${g.primaryActionUrl}"
+               target="_blank"
+               rel="noopener"
+               class="hub-portal-inline-btn primary"
+               th:text="${g.primaryActionLabel}">Choi</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="cg-lane" data-lane-section>
+    <header class="cg-lane-head">
+      <h2>Moi cap nhat trong hub</h2>
+      <a th:href="@{/games}" class="cg-lane-more">Xem tat ca</a>
+    </header>
+    <div class="cg-lane-track" data-lane-track>
+      <article class="cg-tile"
+               th:each="g : ${freshGames}"
+               th:attr="data-name=${g.displayName},data-code=${g.code}">
+        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+          <span class="cg-tile-badge">Fresh</span>
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-tile-body">
+          <h3 th:text="${g.displayName}">Game</h3>
+          <p th:text="${g.description}">Mo ta game</p>
+          <div class="cg-tile-actions">
+            <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
+            <a th:if="${g.hasPrimaryAction() and !g.primaryActionIsExternal()}"
+               th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary"
+               th:text="${g.primaryActionLabel}">Choi</a>
+            <a th:if="${g.hasPrimaryAction() and g.primaryActionIsExternal()}"
+               th:href="${g.primaryActionUrl}"
+               target="_blank"
+               rel="noopener"
+               class="hub-portal-inline-btn primary"
+               th:text="${g.primaryActionLabel}">Choi</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="cg-home-community">
+    <div class="cg-section-head">
+      <div>
+        <h2>Cong dong Game Hub</h2>
+        <small>Feed duoc day xuong duoi de home uu tien discovery truoc</small>
+      </div>
+    </div>
+
+    <div class="cg-home-community-grid">
+      <section class="theme-box cg-home-community-panel">
+        <div class="cg-section-head cg-section-head--compact">
+          <div>
+            <h2>Dang bai viet moi</h2>
+            <small>Cap nhat nhanh cho cong dong</small>
+          </div>
+        </div>
+        <form id="postForm" class="home-composer-form">
+          <textarea id="postContent" class="form-control mb-2" rows="4" placeholder="Ban dang nghi gi?" required></textarea>
+          <div class="home-composer-meta">
+            <small class="text-muted">Tac gia: <span id="postAuthorLabel">Can dang nhap</span></small>
+            <button type="submit" class="btn theme-outline-btn btn-sm">Dang bai</button>
+          </div>
+        </form>
       </section>
 
-      <section class="cg-home-feed-grid">
-        <section class="home-dashboard__composer theme-box">
-          <div class="cg-section-head">
-            <div>
-              <h2>Dang bai viet moi</h2>
-              <small>Cap nhat nhanh cho cong dong</small>
-            </div>
+      <section class="theme-box cg-home-community-panel">
+        <div class="cg-section-head cg-section-head--compact">
+          <div>
+            <h2>Bang tin</h2>
+            <small th:text="${(posts != null ? #lists.size(posts) : 0)} + ' bai viet'">0 bai viet</small>
           </div>
-          <form id="postForm" class="home-composer-form">
-            <textarea id="postContent" class="form-control mb-2" rows="3" placeholder="Ban dang nghi gi?" required></textarea>
-            <div class="home-composer-meta">
-              <small class="text-muted">Tac gia: <span id="postAuthorLabel">Can dang nhap</span></small>
-              <button type="submit" class="btn theme-outline-btn btn-sm">Dang bai</button>
-            </div>
-          </form>
-        </section>
+        </div>
 
-        <section class="home-dashboard__feed theme-box">
-          <div class="cg-section-head">
-            <div>
-              <h2>Bang tin</h2>
-              <small th:text="${(posts != null ? #lists.size(posts) : 0)} + ' bai viet'">0 bai viet</small>
-            </div>
-          </div>
-
-          <div class="home-feed-panel">
-            <div class="scroll-posts">
-              <p class="text-muted" th:if="${#lists.isEmpty(posts)}">Chua co bai dang nao.</p>
-              <div class="card mb-3 shadow-sm home-post-card"
-                   th:each="p : ${posts}"
-                   th:attr="data-post-id=${p.id},data-author-id=${p.authorUserId},data-author-name=${p.author}">
-                <div class="card-body py-2 px-3 text-start">
-                  <div class="d-none post-id" th:text="${p.id}">0</div>
-                  <div class="mb-1 d-flex justify-content-between align-items-start gap-2">
-                    <div>
-                      <strong class="theme-text" th:text="${p.author}">author</strong><br>
-                      <small class="text-muted" th:text="${p.createdAt}">time</small>
-                    </div>
-                    <button type="button"
-                            class="btn btn-sm btn-outline-danger js-delete-post"
-                            th:attr="data-post-id=${p.id},data-author-id=${p.authorUserId},data-author-name=${p.author}"
-                            title="Xoa bai viet">
-                      <i class="bi bi-trash"></i>
-                    </button>
+        <div class="home-feed-panel">
+          <div class="scroll-posts">
+            <p class="text-muted" th:if="${#lists.isEmpty(posts)}">Chua co bai dang nao.</p>
+            <div class="card mb-3 shadow-sm home-post-card"
+                 th:each="p : ${posts}"
+                 th:attr="data-post-id=${p.id},data-author-id=${p.authorUserId},data-author-name=${p.author}">
+              <div class="card-body py-2 px-3 text-start">
+                <div class="d-none post-id" th:text="${p.id}">0</div>
+                <div class="mb-1 d-flex justify-content-between align-items-start gap-2">
+                  <div>
+                    <strong class="theme-text" th:text="${p.author}">author</strong><br>
+                    <small class="text-muted" th:text="${p.createdAt}">time</small>
                   </div>
-                  <p class="theme-text mb-2" th:text="${p.content}">content</p>
-                  <img th:if="${p.imagePath != null and !#strings.isEmpty(p.imagePath)}"
-                       th:src="${p.imagePath}"
-                       class="img-fluid mb-2 home-post-image"
-                       alt="Anh bai viet">
+                  <button type="button"
+                          class="btn btn-sm btn-outline-danger js-delete-post"
+                          th:attr="data-post-id=${p.id},data-author-id=${p.authorUserId},data-author-name=${p.author}"
+                          title="Xoa bai viet">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+                <p class="theme-text mb-2" th:text="${p.content}">content</p>
+                <img th:if="${p.imagePath != null and !#strings.isEmpty(p.imagePath)}"
+                     th:src="${p.imagePath}"
+                     class="img-fluid mb-2 home-post-image"
+                     alt="Anh bai viet">
 
-                  <div class="mt-2">
-                    <div class="small fw-bold theme-text mb-1">Binh luan</div>
-                    <div class="ps-2 border-start" th:if="${#lists.isEmpty(p.comments)}">
-                      <small class="text-muted">Chua co binh luan</small>
-                    </div>
-                    <div class="ps-2 border-start d-flex flex-column gap-1" th:if="${!#lists.isEmpty(p.comments)}">
-                      <div th:each="c : ${p.comments}">
-                        <small>
-                          <strong th:text="${c.author}">author</strong>:
-                          <span th:text="${c.content}">comment</span>
-                        </small>
-                      </div>
-                    </div>
-
-                    <form class="commentForm mt-2 d-flex gap-2">
-                      <input type="hidden" class="commentPostId" th:value="${p.id}">
-                      <input type="text" class="form-control form-control-sm commentContent" placeholder="Viet binh luan..." maxlength="500">
-                      <button type="submit" class="btn btn-sm btn-outline-secondary">Gui</button>
-                    </form>
+                <div class="mt-2">
+                  <div class="small fw-bold theme-text mb-1">Binh luan</div>
+                  <div class="ps-2 border-start" th:if="${#lists.isEmpty(p.comments)}">
+                    <small class="text-muted">Chua co binh luan</small>
                   </div>
+                  <div class="ps-2 border-start d-flex flex-column gap-1" th:if="${!#lists.isEmpty(p.comments)}">
+                    <div th:each="c : ${p.comments}">
+                      <small>
+                        <strong th:text="${c.author}">author</strong>:
+                        <span th:text="${c.content}">comment</span>
+                      </small>
+                    </div>
+                  </div>
+
+                  <form class="commentForm mt-2 d-flex gap-2">
+                    <input type="hidden" class="commentPostId" th:value="${p.id}">
+                    <input type="text" class="form-control form-control-sm commentContent" placeholder="Viet binh luan..." maxlength="500">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">Gui</button>
+                  </form>
                 </div>
               </div>
             </div>
           </div>
-        </section>
+        </div>
       </section>
-    </section>
-
+    </div>
   </section>
 </main>
 
@@ -319,18 +361,7 @@
     const siteMusic = document.getElementById('siteMusic');
     const siteToggleBtn = document.getElementById('siteMusicToggleBtn');
     const currentUser = window.CaroUser?.get?.() || null;
-    const gamePickerButtons = Array.from(document.querySelectorAll('.js-game-picker'));
-
-    const gameConfigs = {
-      caro: { detailHref: '/games/caro' },
-      chess: { detailHref: '/games/chess' },
-      xiangqi: { detailHref: '/games/xiangqi' },
-      cards: { detailHref: '/games/cards' },
-      minesweeper: { detailHref: '/games/minesweeper' },
-      quiz: { detailHref: '/games/quiz' },
-      typing: { detailHref: '/games/typing' },
-      puzzle: { detailHref: '/games/puzzle' }
-    };
+    const laneTracks = Array.from(document.querySelectorAll('#homeMain [data-lane-track]'));
 
     function toast(message, type) {
       if (ui.toast) {
@@ -340,25 +371,19 @@
       }
     }
 
-    function openGameModeModal(gameCode) {
-      const config = gameConfigs[gameCode];
-      if (!config) {
-        window.location.href = appPath('/games');
-        return;
-      }
-      window.location.href = appPath(config.detailHref);
-    }
-
-    gamePickerButtons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const code = btn.getAttribute('data-game-code') || '';
-        openGameModeModal(code);
-      });
-    });
-
     if (authorLabel) {
       authorLabel.textContent = currentUser?.displayName || currentUser?.userId || 'Can dang nhap';
     }
+
+    laneTracks.forEach((track) => {
+      track.addEventListener('wheel', (event) => {
+        if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
+          return;
+        }
+        event.preventDefault();
+        track.scrollBy({ left: event.deltaY, behavior: 'smooth' });
+      }, { passive: false });
+    });
 
     if (siteMusic) {
       siteMusic.volume = 0.3;

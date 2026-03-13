@@ -1,197 +1,222 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Caro - Chon che do')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('games-caro')}"></div>
 
-<main class="caro-page-shell">
-  <section class="caro-hero theme-box">
-    <div class="caro-hero__glow caro-hero__glow--a" aria-hidden="true"></div>
-    <div class="caro-hero__glow caro-hero__glow--b" aria-hidden="true"></div>
+<main class="hub-portal-shell hub-portal-theme-caro">
+  <section class="hub-portal-hero">
+    <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
+    <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
 
-    <div class="caro-hero__main">
-      <div class="caro-eyebrow">
+    <div class="hub-portal-hero__main">
+      <div class="hub-portal-eyebrow">
         <i class="bi bi-grid-3x3-gap-fill"></i>
         <span>CARO / CHON CHE DO</span>
       </div>
 
-      <h1 class="caro-title">
+      <h1 class="hub-portal-title">
         <span th:text="${game != null ? game.displayName : 'Caro'}">Caro</span>
-        Truc tuyen, cung may va bot
+        online, bot va local trong mot entry flow thong nhat
       </h1>
 
-      <p class="caro-subtitle">
-        Vao van Caro trong 1 cham: truc tuyen, bot, hoac cung may 2 nguoi.
+      <p class="hub-portal-subtitle">
+        Trang Caro duoc dua ve cung he voi cac game khac: hero ro CTA, preview ban co,
+        thong tin mode va lane thao tac nhanh de vao tran chi sau vai nhap.
       </p>
 
-      <div class="caro-chip-row">
-        <span class="caro-chip is-live" th:if="${game != null and game.availableNow}">
+      <div class="hub-portal-chip-row">
+        <span class="hub-portal-chip is-live" th:if="${game != null and game.availableNow}">
           <i class="bi bi-broadcast"></i> San sang
         </span>
-        <span class="caro-chip" th:if="${game != null and game.supportsOnline}">
+        <span class="hub-portal-chip" th:if="${game != null and game.supportsOnline}">
           <i class="bi bi-wifi"></i> Phong truc tuyen
         </span>
-        <span class="caro-chip" th:if="${game != null and game.supportsOffline}">
-          <i class="bi bi-laptop"></i> Cung may
+        <span class="hub-portal-chip" th:if="${game != null and game.supportsOffline}">
+          <i class="bi bi-display"></i> Cung may
         </span>
-        <span class="caro-chip" th:if="${game != null and game.supportsGuest}">
-          <i class="bi bi-person-check"></i> Khach duoc choi
+        <span class="hub-portal-chip" th:if="${game != null and game.supportsGuest}">
+          <i class="bi bi-person-check"></i> Guest duoc choi
         </span>
       </div>
 
-      <div class="caro-cta-grid">
-        <a th:href="@{/online-hub(game='caro')}" class="caro-cta caro-cta--primary">
-          <span class="caro-cta__icon"><i class="bi bi-lightning-charge-fill"></i></span>
-          <span class="caro-cta__text">
+      <div class="hub-portal-action-grid">
+        <a th:href="@{/online-hub(game='caro')}" class="hub-portal-action hub-portal-action--primary">
+          <span class="hub-portal-action__icon"><i class="bi bi-globe2"></i></span>
+          <span class="hub-portal-action__text">
             <strong>Mo sanh phong</strong>
-            <small>Tao / tim phong Caro truc tuyen</small>
+            <small>Tao phong, moi ban va vao match realtime</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
 
         <button type="button"
-                class="caro-cta caro-cta--accent js-quick-random-room"
+                class="hub-portal-action hub-portal-action--accent js-quick-random-room"
                 data-game="caro">
-          <span class="caro-cta__icon"><i class="bi bi-shuffle"></i></span>
-          <span class="caro-cta__text">
+          <span class="hub-portal-action__icon"><i class="bi bi-shuffle"></i></span>
+          <span class="hub-portal-action__text">
             <strong>Vao nhanh random</strong>
-            <small>Tu dong vao phong cho hoac tao phong moi</small>
+            <small>Tu dong vao phong cho phu hop hoac tao phong moi</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </button>
 
-        <a th:href="@{/game-mode/bot(game='caro')}" class="caro-cta caro-cta--accent">
-          <span class="caro-cta__icon"><i class="bi bi-cpu-fill"></i></span>
-          <span class="caro-cta__text">
+        <a th:href="@{/game-mode/bot(game='caro')}" class="hub-portal-action hub-portal-action--accent">
+          <span class="hub-portal-action__icon"><i class="bi bi-cpu-fill"></i></span>
+          <span class="hub-portal-action__text">
             <strong>Choi voi bot</strong>
-            <small>Chon do kho va luyen tap</small>
+            <small>Chon do kho Easy/Hard va luyen tap nhanh</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
 
-        <a th:href="@{/game/offline}" class="caro-cta caro-cta--soft">
-          <span class="caro-cta__icon"><i class="bi bi-people-fill"></i></span>
-          <span class="caro-cta__text">
+        <a th:href="@{/game/offline}" class="hub-portal-action hub-portal-action--soft">
+          <span class="hub-portal-action__icon"><i class="bi bi-people-fill"></i></span>
+          <span class="hub-portal-action__text">
             <strong>Cung may 2 nguoi</strong>
-            <small>Choi chung tren cung thiet bi</small>
+            <small>Choi chung tren cung thiet bi, khong can room</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
 
-        <a th:href="@{/lobby}" class="caro-cta caro-cta--soft">
-          <span class="caro-cta__icon"><i class="bi bi-door-open-fill"></i></span>
-          <span class="caro-cta__text">
-            <strong>Vao sanh Caro</strong>
-            <small>Mo luong sanh nhanh cho Caro</small>
+        <a th:href="@{/lobby}" class="hub-portal-action hub-portal-action--soft">
+          <span class="hub-portal-action__icon"><i class="bi bi-door-open-fill"></i></span>
+          <span class="hub-portal-action__text">
+            <strong>Ve sanh Caro</strong>
+            <small>Mo luong sanh nhanh de quan ly phong choi</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
       </div>
     </div>
 
-    <aside class="caro-hero__side">
-      <div class="caro-preview-card">
-        <div class="caro-preview-card__head">
+    <aside class="hub-portal-hero__side">
+      <section class="hub-portal-panel">
+        <div class="hub-portal-panel__head">
           <div>
-            <div class="caro-preview-card__label">Ban co xem nhanh</div>
-            <div class="caro-preview-card__title">Caro 10x10</div>
+            <div class="hub-portal-panel__label">Preview gameplay</div>
+            <div class="hub-portal-panel__title">Ban co Caro 10x10</div>
           </div>
-          <span class="caro-preview-card__pill">Thoi gian thuc</span>
+          <span class="hub-portal-pill">1v1 realtime</span>
         </div>
 
-        <div class="caro-board-preview" aria-hidden="true">
-          <div class="stone stone-x" style="--x:1; --y:1;">X</div>
-          <div class="stone stone-o" style="--x:2; --y:2;">O</div>
-          <div class="stone stone-x" style="--x:3; --y:3;">X</div>
-          <div class="stone stone-o" style="--x:4; --y:3;">O</div>
-          <div class="stone stone-x" style="--x:4; --y:4;">X</div>
-          <div class="stone stone-o" style="--x:5; --y:4;">O</div>
-          <div class="stone stone-x is-glow" style="--x:5; --y:5;">X</div>
-          <div class="stone stone-o" style="--x:6; --y:5;">O</div>
-          <div class="stone stone-x" style="--x:6; --y:6;">X</div>
-          <div class="stone stone-o" style="--x:7; --y:6;">O</div>
-          <div class="stone stone-x" style="--x:7; --y:7;">X</div>
-        </div>
-
-        <div class="caro-preview-meta">
-          <div class="caro-preview-meta__item">
-            <span>Che do de xuat</span>
-            <strong>Truc tuyen 1v1</strong>
-          </div>
-          <div class="caro-preview-meta__item">
-            <span>Truy cap nhanh</span>
-            <strong>Khach / Tai khoan</strong>
-          </div>
-          <div class="caro-preview-meta__item">
-            <span>Phu hop</span>
-            <strong>Choi nhanh 3-10 phut</strong>
+        <div class="hub-portal-preview hub-portal-preview--board">
+          <div class="hub-portal-board-preview" aria-hidden="true">
+            <div class="hub-portal-board-stone hub-portal-board-stone--x" style="--x:1; --y:1;">X</div>
+            <div class="hub-portal-board-stone hub-portal-board-stone--o" style="--x:2; --y:2;">O</div>
+            <div class="hub-portal-board-stone hub-portal-board-stone--x" style="--x:3; --y:3;">X</div>
+            <div class="hub-portal-board-stone hub-portal-board-stone--o" style="--x:4; --y:3;">O</div>
+            <div class="hub-portal-board-stone hub-portal-board-stone--x" style="--x:4; --y:4;">X</div>
+            <div class="hub-portal-board-stone hub-portal-board-stone--o" style="--x:5; --y:4;">O</div>
+            <div class="hub-portal-board-stone hub-portal-board-stone--x is-glow" style="--x:5; --y:5;">X</div>
+            <div class="hub-portal-board-stone hub-portal-board-stone--o" style="--x:6; --y:5;">O</div>
+            <div class="hub-portal-board-stone hub-portal-board-stone--x" style="--x:6; --y:6;">X</div>
+            <div class="hub-portal-board-stone hub-portal-board-stone--o" style="--x:7; --y:6;">O</div>
+            <div class="hub-portal-board-stone hub-portal-board-stone--x" style="--x:7; --y:7;">X</div>
           </div>
         </div>
-      </div>
 
-    </aside>
-  </section>
-
-  <section class="caro-highlights">
-    <article class="caro-surface-card">
-      <div class="caro-surface-card__icon"><i class="bi bi-lightning-charge-fill"></i></div>
-      <div>
-        <h2>Vao van nhanh</h2>
-        <p>Chon mode va vao ban ngay lap tuc.</p>
-      </div>
-    </article>
-
-    <article class="caro-surface-card">
-      <div class="caro-surface-card__icon"><i class="bi bi-people-fill"></i></div>
-      <div>
-        <h2>Phu hop nhieu kieu nguoi choi</h2>
-        <p>Khach va tai khoan deu vao phong duoc.</p>
-      </div>
-    </article>
-
-    <article class="caro-surface-card">
-      <div class="caro-surface-card__icon"><i class="bi bi-shield-check"></i></div>
-      <div>
-        <h2>Dieu huong dong nhat</h2>
-        <p>Cac loi vao Caro da duoc gom ve cung mot trang che do.</p>
-      </div>
-    </article>
-  </section>
-
-  <section class="caro-content-grid">
-    <div class="caro-content-main">
-      <section class="caro-article-card">
-        <div class="caro-article-card__head">
-          <h2>Nhip gameplay Caro</h2>
-          <span class="caro-section-tag">Gameplay</span>
-        </div>
-        <p>Moi van Caro di theo mot nhac co dinh de giu toc do tran: vao phong, vao ban, ket van va tai dau.</p>
-        <div class="caro-rule-grid">
-          <div class="caro-rule-item">
-            <strong>1.</strong>
-            <span>Chon che do: Truc tuyen / Bot / Cung may theo nhu cau tung tran.</span>
-          </div>
-          <div class="caro-rule-item">
-            <strong>2.</strong>
-            <span>Voi online: vao room, cho du nguoi va bat dau theo luot X/O.</span>
-          </div>
-          <div class="caro-rule-item">
-            <strong>3.</strong>
-            <span>Nuoc di dong bo realtime, co chat va bo cuoc neu can.</span>
-          </div>
-          <div class="caro-rule-item">
-            <strong>4.</strong>
-            <span>Ket tran cap nhat ngay, mo rematch de vao van moi lien tuc.</span>
-          </div>
+        <div class="hub-portal-meta-list">
+          <div class="hub-portal-meta-item"><span>Recommended</span><strong>Online 1v1</strong></div>
+          <div class="hub-portal-meta-item"><span>Access</span><strong>Guest + account</strong></div>
+          <div class="hub-portal-meta-item"><span>Tempo</span><strong>3-10 phut / tran</strong></div>
         </div>
       </section>
 
-      <section class="caro-article-card">
-        <div class="caro-article-card__head">
-          <h2>Thanh tuu Caro theo moc</h2>
-          <span class="caro-section-tag">Achievement</span>
+      <section class="hub-portal-panel">
+        <div class="hub-portal-panel__head">
+          <div>
+            <div class="hub-portal-panel__label">Quick read</div>
+            <div class="hub-portal-panel__title">Flow vao tran</div>
+          </div>
+          <span class="hub-portal-pill">Mode-first</span>
         </div>
-        <ul class="caro-bullet-list">
+        <ol class="hub-portal-inline-list">
+          <li><span>1. Chon mode</span><strong>Online / Bot / Local</strong></li>
+          <li><span>2. Vao room</span><strong>Random hoac room rieng</strong></li>
+          <li><span>3. Bat dau</span><strong>X/O luan phien</strong></li>
+          <li><span>4. Tong ket</span><strong>Rematch ngay</strong></li>
+        </ol>
+      </section>
+    </aside>
+  </section>
+
+  <section class="hub-portal-highlights">
+    <article class="hub-portal-highlight">
+      <div class="hub-portal-highlight__icon"><i class="bi bi-lightning-charge-fill"></i></div>
+      <div>
+        <h2>Entry flow ngan hon</h2>
+        <p>CTA vao random room, sanh phong va bot duoc dat cung mot hang de vao tran nhanh.</p>
+      </div>
+    </article>
+    <article class="hub-portal-highlight">
+      <div class="hub-portal-highlight__icon"><i class="bi bi-controller"></i></div>
+      <div>
+        <h2>Dong bo voi catalog</h2>
+        <p>Trang mode Caro dung cung visual language voi Chess, Xiangqi, Cards va detail page khac.</p>
+      </div>
+    </article>
+    <article class="hub-portal-highlight">
+      <div class="hub-portal-highlight__icon"><i class="bi bi-chat-dots-fill"></i></div>
+      <div>
+        <h2>Hop cho online va local</h2>
+        <p>Nguoi choi co the doi nhanh giua room online, bot va local 2 nguoi ma khong lac luong.</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="cg-detail-strip" aria-label="Tong quan Caro">
+    <article class="hub-portal-panel cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Core loop</span>
+      <strong>Join room -> play -> rematch</strong>
+      <p>Khung vao tran, choi va tai dau duoc gom lai de phu hop nhip game board nhanh.</p>
+    </article>
+    <article class="hub-portal-panel cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Session type</span>
+      <strong>Online + bot + local</strong>
+      <p>Mot trang mode phuc vu ca nguoi choi solo, duo local va match online.</p>
+    </article>
+    <article class="hub-portal-panel cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Access</span>
+      <strong>Guest + account</strong>
+      <p>Khach van co the vao choi nhanh, trong khi tai khoan co them lich su va profile.</p>
+    </article>
+  </section>
+
+  <section class="hub-portal-layout">
+    <div class="hub-portal-main">
+      <section class="hub-portal-card">
+        <div class="hub-portal-card__head">
+          <h2>Cac che do choi Caro</h2>
+          <span class="hub-portal-tag">Mode</span>
+        </div>
+        <div class="hub-portal-rule-grid">
+          <div class="hub-portal-rule-item"><strong>1.</strong><span>Mo sanh phong de tao room, moi ban va quan ly tran online.</span></div>
+          <div class="hub-portal-rule-item"><strong>2.</strong><span>Vao nhanh random de nhay vao room cho phu hop trong it thao tac nhat.</span></div>
+          <div class="hub-portal-rule-item"><strong>3.</strong><span>Chon bot Easy/Hard khi can luyen tap nuoc di va phan ung nhanh.</span></div>
+          <div class="hub-portal-rule-item"><strong>4.</strong><span>Choi local 2 nguoi tren cung may khi muon bat dau ngay lap tuc.</span></div>
+        </div>
+      </section>
+
+      <section class="hub-portal-card">
+        <div class="hub-portal-card__head">
+          <h2>Nhip gameplay Caro</h2>
+          <span class="hub-portal-tag">Gameplay</span>
+        </div>
+        <ul class="hub-portal-bullet-list">
+          <li>Online: vao room, cho du nguoi va bat dau theo luot X/O voi dong bo realtime.</li>
+          <li>Bot/local: vao board ngay, luu nhip choi ngan gon de phu hop quick session.</li>
+          <li>Chat, bo cuoc va rematch duoc dat sat nhau de giu nhiet do cua tran.</li>
+          <li>Ket tran cap nhat ngay va mo lua chon vao van moi ma khong doi huong long vong.</li>
+        </ul>
+      </section>
+
+      <section class="hub-portal-card">
+        <div class="hub-portal-card__head">
+          <h2>Thanh tuu Caro</h2>
+          <span class="hub-portal-tag">Achievement</span>
+        </div>
+        <ul class="hub-portal-bullet-list">
           <li>Khoi dong nong may: hoan thanh tran online dau tien.</li>
           <li>Bam nhip tot: thang 3 tran lien tiep trong room.</li>
           <li>Nuoc di quyet doan: ha doi thu trong 20 nuoc tro xuong.</li>
@@ -199,55 +224,43 @@
         </ul>
       </section>
 
-      <section class="caro-article-card">
-        <div class="caro-article-card__head">
+      <section class="hub-portal-card" th:if="${game != null and game.roadmapItems != null}">
+        <div class="hub-portal-card__head">
           <h2>Tien trinh cap nhat Caro</h2>
-          <span class="caro-section-tag">Ke hoach</span>
+          <span class="hub-portal-tag">Roadmap</span>
         </div>
-        <p class="mb-2">
-          Module Caro dang la game trung tam va duoc bo sung tiep theo huong tang chieu sau tran dau.
-        </p>
-        <ul class="caro-bullet-list" th:if="${game != null and game.roadmapItems != null}">
+        <ul class="hub-portal-bullet-list">
           <li th:each="item : ${game.roadmapItems}" th:text="${item}">Muc tieu tiep theo</li>
         </ul>
       </section>
     </div>
 
-    <aside class="caro-content-side">
-      <section class="caro-sidebar-card">
-        <h3>Chon che do theo nhu cau</h3>
-        <div class="caro-side-action-list">
-          <a th:href="@{/online-hub(game='caro')}" class="caro-side-action">
+    <aside class="hub-portal-side">
+      <section class="hub-portal-card">
+        <h3>Vao che do nhanh</h3>
+        <div class="hub-portal-side-actions">
+          <a th:href="@{/online-hub(game='caro')}" class="hub-portal-side-action">
             <i class="bi bi-globe2"></i>
-            <div>
-              <strong>Mo sanh phong</strong>
-              <small>Tao phong, moi ban, choi thoi gian thuc</small>
-            </div>
+            <div><strong>Mo sanh phong</strong><small>Tao room, moi ban va vao tran realtime</small></div>
           </a>
-          <a th:href="@{/game-mode/bot(game='caro')}" class="caro-side-action">
+          <a th:href="@{/game-mode/bot(game='caro')}" class="hub-portal-side-action">
             <i class="bi bi-cpu"></i>
-            <div>
-              <strong>Chon bot</strong>
-              <small>Tap luyen, chon do kho</small>
-            </div>
+            <div><strong>Chon bot</strong><small>Tap luyen voi 2 muc do kho</small></div>
           </a>
-          <a th:href="@{/game/offline}" class="caro-side-action">
+          <a th:href="@{/game/offline}" class="hub-portal-side-action">
             <i class="bi bi-grid"></i>
-            <div>
-              <strong>Cung may 2 nguoi</strong>
-              <small>2 nguoi choi tren cung may</small>
-            </div>
+            <div><strong>Cung may 2 nguoi</strong><small>Choi nhanh local tren cung may</small></div>
           </a>
         </div>
       </section>
 
-      <section class="caro-sidebar-card">
+      <section class="hub-portal-card">
         <h3>Game lien quan</h3>
-        <div class="caro-related-list">
+        <div class="hub-portal-related-list">
           <a th:each="g : ${allGames}"
              th:if="${g.code != game.code}"
              th:href="@{/games/{code}(code=${g.code})}"
-             class="caro-related-item">
+             class="hub-portal-related-item">
             <i class="bi" th:classappend="${g.iconClass}"></i>
             <div>
               <strong th:text="${g.displayName}">Game</strong>
@@ -259,717 +272,6 @@
     </aside>
   </section>
 </main>
-
-<style>
-  .caro-page-shell {
-    --caro-primary: #0b6fd8;
-    --caro-primary-deep: #094ba3;
-    --caro-accent: #00c2a8;
-    --caro-ink: #0f172a;
-    --caro-muted: #58657a;
-    --caro-soft: #eef4ff;
-    --caro-border: rgba(15, 23, 42, 0.08);
-    width: min(1200px, calc(100% - 24px));
-    margin: 0 auto;
-    padding: 20px 0 96px;
-    color: var(--caro-ink);
-  }
-
-  .caro-hero {
-    position: relative;
-    overflow: hidden;
-    border-radius: 24px;
-    border: 1px solid var(--caro-border);
-    padding: 22px;
-    display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.85fr);
-    gap: 18px;
-    background:
-      radial-gradient(circle at 12% 14%, rgba(11, 111, 216, 0.18), transparent 45%),
-      radial-gradient(circle at 88% 10%, rgba(0, 194, 168, 0.16), transparent 45%),
-      linear-gradient(180deg, rgba(255,255,255,0.96), rgba(250,252,255,0.95));
-    box-shadow: 0 18px 60px rgba(11, 31, 62, 0.10);
-  }
-
-  .caro-hero__glow {
-    position: absolute;
-    border-radius: 999px;
-    filter: blur(18px);
-    pointer-events: none;
-    opacity: 0.8;
-  }
-  .caro-hero__glow--a {
-    width: 140px;
-    height: 140px;
-    background: rgba(11, 111, 216, 0.18);
-    top: -28px;
-    right: 24%;
-  }
-  .caro-hero__glow--b {
-    width: 160px;
-    height: 160px;
-    background: rgba(0, 194, 168, 0.16);
-    bottom: -38px;
-    left: -10px;
-  }
-
-  .caro-hero__main,
-  .caro-hero__side {
-    position: relative;
-    z-index: 1;
-  }
-
-  .caro-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--caro-primary-deep);
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    background: rgba(11, 111, 216, 0.09);
-    border: 1px solid rgba(11, 111, 216, 0.14);
-    border-radius: 999px;
-    padding: 6px 10px;
-  }
-
-  .caro-title {
-    margin: 14px 0 10px;
-    font-size: clamp(1.65rem, 3.2vw, 2.45rem);
-    line-height: 1.06;
-    font-weight: 800;
-    color: #0d1322;
-    letter-spacing: -0.02em;
-  }
-
-  .caro-subtitle {
-    margin: 0;
-    color: var(--caro-muted);
-    font-size: 0.98rem;
-    line-height: 1.55;
-    max-width: 60ch;
-  }
-
-  .caro-chip-row {
-    margin-top: 14px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .caro-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border-radius: 999px;
-    padding: 7px 10px;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    background: rgba(255, 255, 255, 0.8);
-    color: #243247;
-    font-size: 0.8rem;
-    font-weight: 600;
-  }
-  .caro-chip.is-live {
-    background: rgba(0, 194, 168, 0.12);
-    border-color: rgba(0, 194, 168, 0.2);
-    color: #0f6f61;
-  }
-
-  .caro-cta-grid {
-    margin-top: 18px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .caro-cta {
-    border-radius: 16px;
-    padding: 14px 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    color: #111827;
-    background: #fff;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
-  }
-  .caro-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 26px rgba(15, 23, 42, 0.09);
-    border-color: rgba(11, 111, 216, 0.25);
-    color: #111827;
-  }
-
-  .caro-cta--primary {
-    background: linear-gradient(135deg, #0b6fd8, #0f85ff);
-    color: #fff;
-    border-color: rgba(11, 111, 216, 0.35);
-  }
-  .caro-cta--primary:hover { color: #fff; }
-
-  .caro-cta--accent {
-    background: linear-gradient(135deg, #00b89c, #20d7bd);
-    color: #062f2a;
-    border-color: rgba(0, 184, 156, 0.28);
-  }
-  .caro-cta--accent:hover { color: #062f2a; }
-
-  .caro-cta__icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.16);
-    flex: 0 0 auto;
-  }
-  .caro-cta--soft .caro-cta__icon {
-    background: rgba(11, 111, 216, 0.08);
-    border-color: rgba(11, 111, 216, 0.14);
-    color: var(--caro-primary-deep);
-  }
-  .caro-cta__text {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    min-width: 0;
-    flex: 1 1 auto;
-  }
-  .caro-cta__text strong {
-    font-size: 0.95rem;
-    line-height: 1.15;
-  }
-  .caro-cta__text small {
-    opacity: .85;
-    font-size: 0.78rem;
-    line-height: 1.2;
-  }
-
-  .caro-hero__side {
-    display: grid;
-    grid-template-rows: auto auto;
-    gap: 12px;
-    align-content: start;
-  }
-
-  .caro-preview-card {
-    border-radius: 18px;
-    background: rgba(255,255,255,0.86);
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-  }
-
-  .caro-preview-card {
-    padding: 14px;
-  }
-
-  .caro-preview-card__head {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    align-items: start;
-    margin-bottom: 10px;
-  }
-  .caro-preview-card__label {
-    color: var(--caro-muted);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 700;
-  }
-  .caro-preview-card__title {
-    font-size: 1rem;
-    font-weight: 800;
-    color: #0f172a;
-    margin-top: 2px;
-  }
-  .caro-preview-card__pill {
-    border-radius: 999px;
-    padding: 5px 9px;
-    background: rgba(11,111,216,.1);
-    color: var(--caro-primary-deep);
-    font-size: 0.75rem;
-    font-weight: 700;
-  }
-
-  .caro-board-preview {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    border-radius: 14px;
-    background:
-      repeating-linear-gradient(to right, transparent 0, transparent calc(10% - 1px), rgba(96, 108, 134, 0.18) calc(10% - 1px), rgba(96, 108, 134, 0.18) 10%),
-      repeating-linear-gradient(to bottom, transparent 0, transparent calc(10% - 1px), rgba(96, 108, 134, 0.18) calc(10% - 1px), rgba(96, 108, 134, 0.18) 10%),
-      radial-gradient(circle at 30% 20%, rgba(11,111,216,.08), transparent 50%),
-      linear-gradient(180deg, #fffef8, #f6f1df);
-    border: 1px solid rgba(0,0,0,0.06);
-    overflow: hidden;
-  }
-  .caro-board-preview::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 80% 82%, rgba(0,194,168,.10), transparent 34%);
-    pointer-events: none;
-  }
-
-  .stone {
-    position: absolute;
-    width: 8.8%;
-    height: 8.8%;
-    left: calc(var(--x) * 10% + 0.6%);
-    top: calc(var(--y) * 10% + 0.6%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.78rem;
-    font-weight: 800;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.18);
-    user-select: none;
-  }
-  .stone-x {
-    background: radial-gradient(circle at 30% 30%, #5db0ff, #0b6fd8 65%, #07448a);
-    color: #fff;
-  }
-  .stone-o {
-    background: radial-gradient(circle at 30% 30%, #ffd7de, #f26786 62%, #c83d62);
-    color: #fff;
-  }
-  .stone.is-glow {
-    box-shadow: 0 0 0 3px rgba(11,111,216,.18), 0 0 24px rgba(11,111,216,.36);
-  }
-
-  .caro-preview-meta {
-    margin-top: 10px;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
-  .caro-preview-meta__item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 8px 10px;
-    border-radius: 12px;
-    background: rgba(247, 250, 255, 0.92);
-    border: 1px solid rgba(15, 23, 42, 0.06);
-  }
-  .caro-preview-meta__item span {
-    color: var(--caro-muted);
-    font-size: 0.78rem;
-  }
-  .caro-preview-meta__item strong {
-    font-size: 0.8rem;
-    color: #0f172a;
-  }
-
-  .caro-highlights {
-    margin-top: 16px;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .caro-surface-card {
-    border-radius: 18px;
-    background: #fff;
-    border: 1px solid rgba(15,23,42,.08);
-    box-shadow: 0 8px 20px rgba(15,23,42,.04);
-    padding: 14px;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 12px;
-    align-items: start;
-  }
-  .caro-surface-card__icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, rgba(11,111,216,.12), rgba(0,194,168,.12));
-    color: var(--caro-primary-deep);
-    font-size: 1.1rem;
-  }
-  .caro-surface-card h2 {
-    margin: 0 0 5px;
-    font-size: 1rem;
-    color: #0f172a;
-    font-weight: 800;
-  }
-  .caro-surface-card p {
-    margin: 0;
-    color: var(--caro-muted);
-    font-size: 0.87rem;
-    line-height: 1.45;
-  }
-
-  .caro-content-grid {
-    margin-top: 16px;
-    display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr);
-    gap: 14px;
-    align-items: start;
-  }
-
-  .caro-content-main,
-  .caro-content-side {
-    display: grid;
-    gap: 12px;
-  }
-
-  .caro-article-card,
-  .caro-sidebar-card {
-    border-radius: 20px;
-    background: #fff;
-    border: 1px solid rgba(15,23,42,.08);
-    box-shadow: 0 12px 24px rgba(15,23,42,.05);
-    padding: 16px;
-  }
-
-  .caro-article-card__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-  .caro-article-card__head h2 {
-    margin: 0;
-    font-size: 1.06rem;
-    color: #0f172a;
-    font-weight: 800;
-  }
-  .caro-section-tag {
-    border-radius: 999px;
-    padding: 5px 9px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: .05em;
-    color: var(--caro-primary-deep);
-    background: rgba(11,111,216,.08);
-    border: 1px solid rgba(11,111,216,.14);
-    text-transform: uppercase;
-  }
-
-  .caro-article-card p {
-    color: var(--caro-muted);
-    line-height: 1.6;
-    margin-bottom: 0;
-  }
-
-  .caro-rule-grid {
-    margin-top: 12px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .caro-rule-item {
-    border-radius: 14px;
-    background: linear-gradient(180deg, #f7faff, #f2f7ff);
-    border: 1px solid rgba(11,111,216,.08);
-    padding: 10px;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 8px;
-    align-items: start;
-    color: #1f2b3d;
-    font-size: .88rem;
-  }
-  .caro-rule-item strong {
-    color: var(--caro-primary-deep);
-  }
-
-  .caro-bullet-list {
-    margin: 10px 0 0 0;
-    padding-left: 1rem;
-    color: var(--caro-muted);
-  }
-  .caro-bullet-list li {
-    margin-bottom: 6px;
-    line-height: 1.45;
-  }
-
-  .caro-sidebar-card h3 {
-    margin: 0 0 10px;
-    font-size: 0.98rem;
-    color: #0f172a;
-    font-weight: 800;
-  }
-
-  .caro-side-action-list {
-    display: grid;
-    gap: 8px;
-  }
-  .caro-side-action {
-    display: grid;
-    grid-template-columns: 34px 1fr;
-    gap: 10px;
-    text-decoration: none;
-    color: inherit;
-    border-radius: 14px;
-    padding: 10px;
-    border: 1px solid rgba(15,23,42,.06);
-    background: rgba(248, 251, 255, 0.9);
-    transition: background .15s ease, border-color .15s ease, transform .15s ease;
-  }
-  .caro-side-action:hover {
-    color: inherit;
-    background: rgba(241, 247, 255, 1);
-    border-color: rgba(11,111,216,.18);
-    transform: translateY(-1px);
-  }
-  .caro-side-action i {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(11,111,216,.08);
-    color: var(--caro-primary-deep);
-  }
-  .caro-side-action strong {
-    display: block;
-    font-size: 0.86rem;
-    color: #0f172a;
-  }
-  .caro-side-action small {
-    display: block;
-    color: var(--caro-muted);
-    font-size: 0.75rem;
-    line-height: 1.35;
-  }
-
-  .caro-check-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    gap: 8px;
-  }
-  .caro-check-list li {
-    display: grid;
-    grid-template-columns: 18px 1fr;
-    gap: 8px;
-    align-items: start;
-    color: #223045;
-    font-size: 0.84rem;
-  }
-  .caro-check-list i {
-    color: #00a889;
-    margin-top: 1px;
-  }
-
-  .caro-related-list {
-    display: grid;
-    gap: 8px;
-  }
-  .caro-related-item {
-    display: grid;
-    grid-template-columns: 34px 1fr;
-    gap: 10px;
-    border-radius: 14px;
-    padding: 10px;
-    border: 1px solid rgba(15,23,42,.06);
-    background: rgba(255,255,255,.95);
-    color: inherit;
-    text-decoration: none;
-  }
-  .caro-related-item:hover {
-    color: inherit;
-    border-color: rgba(11,111,216,.16);
-    background: #f8fbff;
-  }
-  .caro-related-item > i {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(11,111,216,.07);
-    color: var(--caro-primary-deep);
-    font-size: 1rem;
-  }
-  .caro-related-item strong {
-    display: block;
-    color: #0f172a;
-    font-size: .85rem;
-    line-height: 1.2;
-  }
-  .caro-related-item small {
-    display: block;
-    color: var(--caro-muted);
-    font-size: .72rem;
-    line-height: 1.35;
-    margin-top: 2px;
-  }
-
-  body.dark-mode .caro-page-shell {
-    --caro-primary: #3b82f6;
-    --caro-primary-deep: #93c5fd;
-    --caro-accent: #14b8a6;
-    --caro-ink: #e8f0ff;
-    --caro-muted: #96a9ca;
-    --caro-soft: #101b31;
-    --caro-border: rgba(148, 163, 184, 0.18);
-  }
-
-  body.dark-mode .caro-hero {
-    background:
-      radial-gradient(circle at 12% 14%, rgba(59, 130, 246, 0.18), transparent 45%),
-      radial-gradient(circle at 88% 10%, rgba(20, 184, 166, 0.16), transparent 45%),
-      linear-gradient(180deg, rgba(9, 15, 28, 0.94), rgba(8, 13, 24, 0.88));
-    border-color: rgba(148, 163, 184, 0.18);
-    box-shadow: 0 18px 60px rgba(2, 6, 23, 0.38);
-  }
-
-  body.dark-mode .caro-title,
-  body.dark-mode .caro-preview-card__title,
-  body.dark-mode .caro-surface-card h2,
-  body.dark-mode .caro-article-card__head h2,
-  body.dark-mode .caro-sidebar-card h3,
-  body.dark-mode .caro-side-action strong,
-  body.dark-mode .caro-related-item strong,
-  body.dark-mode .caro-preview-meta__item strong {
-    color: #eef4ff;
-  }
-
-  body.dark-mode .caro-chip,
-  body.dark-mode .caro-preview-card,
-  body.dark-mode .caro-surface-card,
-  body.dark-mode .caro-article-card,
-  body.dark-mode .caro-sidebar-card,
-  body.dark-mode .caro-preview-meta__item,
-  body.dark-mode .caro-side-action,
-  body.dark-mode .caro-related-item {
-    background: rgba(12, 19, 35, 0.84);
-    border-color: rgba(148, 163, 184, 0.14);
-    box-shadow: 0 10px 24px rgba(2, 6, 23, 0.26);
-    color: #e5edff;
-  }
-
-  body.dark-mode .caro-chip {
-    color: #dce8ff;
-    background: rgba(11, 18, 34, 0.74);
-  }
-
-  body.dark-mode .caro-chip.is-live {
-    background: rgba(20, 184, 166, 0.16);
-    border-color: rgba(20, 184, 166, 0.28);
-    color: #7df2e3;
-  }
-
-  body.dark-mode .caro-eyebrow,
-  body.dark-mode .caro-preview-card__pill,
-  body.dark-mode .caro-section-tag {
-    color: #bfe0ff;
-    background: rgba(59, 130, 246, 0.12);
-    border-color: rgba(96, 165, 250, 0.22);
-  }
-
-  body.dark-mode .caro-cta {
-    box-shadow: 0 12px 26px rgba(2, 6, 23, 0.22);
-  }
-
-  body.dark-mode .caro-cta--soft {
-    background: rgba(11, 18, 34, 0.82);
-    border-color: rgba(148, 163, 184, 0.16);
-    color: #e7efff;
-  }
-
-  body.dark-mode .caro-cta--soft:hover {
-    color: #eef4ff;
-    border-color: rgba(96, 165, 250, 0.28);
-    background: rgba(14, 22, 42, 0.92);
-  }
-
-  body.dark-mode .caro-cta--soft .caro-cta__icon,
-  body.dark-mode .caro-side-action i,
-  body.dark-mode .caro-related-item > i {
-    background: rgba(59, 130, 246, 0.14);
-    border-color: rgba(96, 165, 250, 0.2);
-    color: #bfe0ff;
-  }
-
-  body.dark-mode .caro-rule-item {
-    background: linear-gradient(180deg, rgba(13, 21, 39, 0.92), rgba(9, 16, 30, 0.92));
-    border-color: rgba(96, 165, 250, 0.12);
-    color: #dde8ff;
-  }
-
-  body.dark-mode .caro-check-list li {
-    color: #dbe7ff;
-  }
-
-  body.dark-mode .caro-check-list i {
-    color: #34d399;
-  }
-
-  body.dark-mode .caro-board-preview {
-    border-color: rgba(148, 163, 184, 0.18);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-  }
-
-  body.dark-mode .stone {
-    box-shadow: 0 4px 10px rgba(2, 6, 23, 0.4);
-  }
-
-  @media (max-width: 1100px) {
-    .caro-hero {
-      grid-template-columns: 1fr;
-    }
-    .caro-hero__side {
-      grid-template-columns: 1.2fr .8fr;
-      grid-template-rows: auto;
-    }
-    .caro-content-grid {
-      grid-template-columns: 1fr;
-    }
-    .caro-content-side {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      align-items: start;
-    }
-  }
-
-  @media (max-width: 820px) {
-    .caro-page-shell {
-      width: min(100%, calc(100% - 14px));
-      padding-top: 12px;
-      padding-bottom: 92px;
-    }
-    .caro-hero {
-      border-radius: 18px;
-      padding: 14px;
-    }
-    .caro-cta-grid,
-    .caro-highlights,
-    .caro-content-side {
-      grid-template-columns: 1fr;
-    }
-    .caro-hero__side {
-      grid-template-columns: 1fr;
-    }
-    .caro-rule-grid {
-      grid-template-columns: 1fr;
-    }
-    .caro-title {
-      font-size: 1.65rem;
-    }
-    .caro-subtitle {
-      font-size: 0.92rem;
-    }
-  }
-</style>
 
 <th:block th:replace="~{fragments :: appScripts('games-caro')}"></th:block>
 <script>
@@ -1021,6 +323,3 @@
 </script>
 </body>
 </html>
-
-
-

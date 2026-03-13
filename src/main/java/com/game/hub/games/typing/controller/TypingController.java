@@ -2,8 +2,11 @@ package com.game.hub.games.typing.controller;
 
 import com.game.hub.games.typing.logic.TypingRoom;
 import com.game.hub.games.typing.service.TypingService;
+import com.game.hub.service.GameCatalogItem;
+import com.game.hub.service.GameCatalogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,26 +22,37 @@ import java.util.Map;
 @Controller
 @RequestMapping("/games/typing")
 public class TypingController {
+    private static final String GAME_CODE = "typing";
 
     @Autowired
     private TypingService typingService;
 
+    @Autowired
+    private GameCatalogService gameCatalogService;
+
     @GetMapping
-    public String typingPage(@RequestParam(required = false) String room) {
+    public String typingPage(@RequestParam(required = false) String room, Model model) {
         String normalizedRoomId = room == null ? "" : room.trim();
         if (!normalizedRoomId.isEmpty()) {
             return "redirect:/games/typing/room/" + UriUtils.encodePathSegment(normalizedRoomId, StandardCharsets.UTF_8);
         }
-        return "redirect:/online-hub?game=typing";
+        return renderTypingPage(model);
     }
 
     @GetMapping("/room/{roomId}")
-    public String typingRoomPage(@PathVariable String roomId) {
-        return renderTypingPage();
+    public String typingRoomPage(@PathVariable String roomId, Model model) {
+        return renderTypingPage(model);
     }
 
-    private String renderTypingPage() {
+    private String renderTypingPage(Model model) {
+        populateCatalogModel(model);
         return "games/typing";
+    }
+
+    private void populateCatalogModel(Model model) {
+        GameCatalogItem game = gameCatalogService.findByCode(GAME_CODE).orElse(null);
+        model.addAttribute("game", game);
+        model.addAttribute("allGames", gameCatalogService.findAll());
     }
 
     @GetMapping("/rooms")

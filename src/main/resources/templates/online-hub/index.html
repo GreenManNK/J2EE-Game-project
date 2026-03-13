@@ -29,6 +29,24 @@
     </div>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan sanh phong">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Room feed</span>
+      <strong><span th:text="${roomRows != null ? #lists.size(roomRows) : 0}">0</span> phong trong danh sach</strong>
+      <p>Danh sach phong cap nhat tu server de random join, tao room moi hoac vao dung room da co.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Flow</span>
+      <strong>Create / join / spectate</strong>
+      <p>Sanh phong giu toan bo thao tac truoc tran tren cung mot route de giam viec doi trang long vong.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Coverage</span>
+      <strong th:text="${selectedGameName} + ' trong he online hub chung'">Game trong he online hub chung</strong>
+      <p th:text="${onlineSupportedNow} ? 'Game nay da vao thang ban choi online tu sanh phong.' : 'Game nay dang dung sanh phong chung trong luc luong choi online tiep tuc hoan thien.'">Trang thai sanh phong.</p>
+    </article>
+  </section>
+
   <section class="row g-3 mt-1">
     <div class="col-12 col-lg-7">
       <div class="card shadow-sm theme-box h-100 gx-section-card">

@@ -33,6 +33,24 @@
     </div>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan nhat ky truy cap">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Audit volume</span>
+      <strong><span th:text="${totalItems}">0</span> log sau khi loc</strong>
+      <p>Audit feed duoc dua len gan hero de admin nhin nhanh quy mo request dang xem.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Filters</span>
+      <strong>Path, account, method, date range</strong>
+      <p>Loc log giu nguyen tren cung surface voi bang va thong ke de de so sanh sau khi doi dieu kien.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Exports</span>
+      <strong>CSV / Excel cho audit nhanh</strong>
+      <p>Ban page va ban all cung bo loc hien tai de tranh xuat nham tap du lieu ngoai y muon.</p>
+    </article>
+  </section>
+
   <form method="get" th:action="@{/admin/access-logs}" class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
       <h2 class="gx-section-card__title theme-text mb-0">Loc log</h2>

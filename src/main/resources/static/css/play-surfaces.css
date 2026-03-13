@@ -23,6 +23,10 @@ body.page-xiangqi-offline,
 body.page-xiangqi-online,
 body.page-tien-len,
 body.page-tien-len-bot,
+body.page-game-offline,
+body.page-bot-play,
+body.page-game-waiting,
+body.page-minesweeper,
 body.page-lobby {
   background: var(--unified-app-bg) fixed;
   color: var(--unified-text);
@@ -30,6 +34,10 @@ body.page-lobby {
 
 body.page-game-index #gameMain,
 body.page-chat-private .private-chat-shell,
+body.page-game-offline .board-page-shell,
+body.page-bot-play .board-page-shell,
+body.page-game-waiting .waiting-page-shell,
+body.page-minesweeper .ms-classic-page,
 body.page-lobby .lobby-shell,
 body.page-chess-offline main.container,
 body.page-chess-online main.container,
@@ -45,6 +53,9 @@ body.page-tien-len-bot main.container {
 body.page-game-index .theme-box,
 body.page-game-index .game-online-board-stage,
 body.page-chat-private .theme-box,
+body.page-game-offline .theme-box,
+body.page-bot-play .theme-box,
+body.page-game-waiting .theme-box,
 body.page-chess-offline .theme-box,
 body.page-chess-online .theme-box,
 body.page-xiangqi-offline .theme-box,
@@ -60,9 +71,62 @@ body.page-lobby .theme-box {
 
 body.page-game-index .game-online-shell,
 body.page-chat-private .private-chat-shell,
+body.page-game-offline .board-page-shell,
+body.page-bot-play .board-page-shell,
+body.page-game-waiting .waiting-page-shell,
+body.page-minesweeper .ms-classic-page,
 body.page-lobby .lobby-shell {
   position: relative;
   z-index: 1;
+}
+
+body.page-game-offline .board-page-shell,
+body.page-bot-play .board-page-shell,
+body.page-game-waiting .waiting-page-shell {
+  padding: 12px 0 88px;
+  display: grid;
+  gap: 16px;
+}
+
+body.page-game-offline .board-page-stage,
+body.page-bot-play .board-page-stage {
+  border-radius: 32px;
+  border: 1px solid var(--play-surface-border);
+  background: var(--play-surface-bg-strong);
+  box-shadow: var(--play-surface-shadow);
+}
+
+body.page-game-offline .board-page-stage__inner,
+body.page-bot-play .board-page-stage__inner {
+  padding: 18px;
+}
+
+body.page-game-offline #game-board,
+body.page-bot-play .bot-board {
+  margin-top: 0;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 20px 40px rgba(2, 8, 24, 0.3);
+}
+
+body.page-game-waiting .waiting-request-card {
+  border-radius: 30px;
+  border: 1px solid var(--play-surface-border);
+  background: var(--play-surface-bg);
+  box-shadow: var(--play-surface-shadow);
+}
+
+body.page-game-waiting .waiting-progress {
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(146, 163, 223, 0.14);
+}
+
+body.page-game-waiting .waiting-progress .progress-bar {
+  background: linear-gradient(90deg, var(--play-accent), var(--play-accent-2));
 }
 
 body.page-game-index #gameMain {

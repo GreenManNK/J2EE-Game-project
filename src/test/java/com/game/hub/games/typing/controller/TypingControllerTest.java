@@ -3,7 +3,9 @@ package com.game.hub.games.typing.controller;
 import com.game.hub.games.typing.logic.TypingRoom;
 import com.game.hub.games.typing.repository.TypingTextRepository;
 import com.game.hub.games.typing.service.TypingService;
+import com.game.hub.service.GameCatalogService;
 import org.junit.jupiter.api.Test;
+import org.springframework.ui.ConcurrentModel;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -19,8 +21,9 @@ class TypingControllerTest {
     @Test
     void typingRoomPageShouldRenderTypingTemplate() {
         TypingController controller = new TypingController();
+        ReflectionTestUtils.setField(controller, "gameCatalogService", new GameCatalogService());
 
-        String view = controller.typingRoomPage("TYP-ROOM-1");
+        String view = controller.typingRoomPage("TYP-ROOM-1", new ConcurrentModel());
 
         assertEquals("games/typing", view);
     }

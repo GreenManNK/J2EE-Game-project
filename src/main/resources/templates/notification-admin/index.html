@@ -22,6 +22,24 @@
     </div>
   </section>
 
+  <section class="cg-detail-strip" aria-label="Tong quan thong bao he thong">
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Active notices</span>
+      <strong><span th:text="${notifications != null ? #lists.size(notifications) : 0}">0</span> thong bao dang luu</strong>
+      <p>Danh sach thong bao duoc giu sat form tao de admin tao va don dep nhanh trong mot view ngan.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Flow</span>
+      <strong>Create / review / remove</strong>
+      <p>Notice center duoc rut gon thanh mot surface thao tac nhanh theo nhac storefront utilitarian.</p>
+    </article>
+    <article class="theme-box rounded cg-detail-strip__card">
+      <span class="cg-detail-strip__eyebrow">Reach</span>
+      <strong>Thong bao hien thi tren toan bo web</strong>
+      <p>Moi notice tai day duoc day vao app shell chung de nguoi dung nhan thong tin tu mot nguon duy nhat.</p>
+    </article>
+  </section>
+
   <section class="theme-box rounded p-3 mb-3 gx-section-card">
     <div class="gx-section-card__head">
       <h2 class="gx-section-card__title theme-text mb-0">Tao thong bao</h2>
