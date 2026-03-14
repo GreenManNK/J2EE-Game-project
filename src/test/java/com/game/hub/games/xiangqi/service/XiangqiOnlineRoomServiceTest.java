@@ -84,6 +84,24 @@ class XiangqiOnlineRoomServiceTest {
     }
 
     @Test
+    void noLegalMoveWithoutCheckShouldStillLoseForSideToMove() {
+        XiangqiOnlineRoomService service = new XiangqiOnlineRoomService();
+        service.joinRoom("XQ-BIBO", "redUser", "Red", "");
+        service.joinRoom("XQ-BIBO", "blackUser", "Black", "");
+        forceBiBoBoard(service, "XQ-BIBO", "redUser");
+
+        XiangqiOnlineRoomService.ActionResult win = service.move("XQ-BIBO", "redUser", 3, 5, 2, 5, null);
+
+        assertTrue(win.ok());
+        assertNotNull(win.room());
+        assertEquals("GAME_OVER", win.room().status());
+        assertNull(win.room().currentTurnUserId());
+        assertEquals("r", win.room().currentTurnColor());
+        assertEquals("redUser", win.room().getWinnerId());
+        assertTrue(win.room().statusMessage().contains("bi bo"));
+    }
+
+    @Test
     void leaveRoomShouldKeepRoomWaitingForNewOpponent() {
         XiangqiOnlineRoomService service = new XiangqiOnlineRoomService();
         service.joinRoom("XQ-3", "u2", "U2", "");
@@ -191,6 +209,61 @@ class XiangqiOnlineRoomServiceTest {
             Field currentTurnColorField = roomState.getClass().getDeclaredField("currentTurnColor");
             currentTurnColorField.setAccessible(true);
             currentTurnColorField.set(roomState, "b");
+
+            Field moveHistoryField = roomState.getClass().getDeclaredField("moveHistory");
+            moveHistoryField.setAccessible(true);
+            Object moveHistory = moveHistoryField.get(roomState);
+            if (moveHistory instanceof List<?> list) {
+                ((List) list).clear();
+            }
+
+            Field lastMoveField = roomState.getClass().getDeclaredField("lastMove");
+            lastMoveField.setAccessible(true);
+            lastMoveField.set(roomState, null);
+        } catch (ReflectiveOperationException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void forceBiBoBoard(XiangqiOnlineRoomService service,
+                                       String roomId,
+                                       String currentTurnUserId) {
+        try {
+            Field roomsField = XiangqiOnlineRoomService.class.getDeclaredField("rooms");
+            roomsField.setAccessible(true);
+            Map rooms = (Map) roomsField.get(service);
+            Object roomState = rooms.get(roomId);
+            if (roomState == null) {
+                throw new IllegalStateException("Room not found: " + roomId);
+            }
+
+            String[][] board = new String[10][9];
+            board[0][4] = "bG";
+            board[2][3] = "rR";
+            board[2][4] = "rP";
+            board[3][5] = "rR";
+            board[9][3] = "rG";
+
+            Field boardField = roomState.getClass().getDeclaredField("board");
+            boardField.setAccessible(true);
+            boardField.set(roomState, board);
+
+            Field statusField = roomState.getClass().getDeclaredField("status");
+            statusField.setAccessible(true);
+            statusField.set(roomState, "PLAYING");
+
+            Field statusMessageField = roomState.getClass().getDeclaredField("statusMessage");
+            statusMessageField.setAccessible(true);
+            statusMessageField.set(roomState, "Test setup");
+
+            Field currentTurnUserIdField = roomState.getClass().getDeclaredField("currentTurnUserId");
+            currentTurnUserIdField.setAccessible(true);
+            currentTurnUserIdField.set(roomState, currentTurnUserId);
+
+            Field currentTurnColorField = roomState.getClass().getDeclaredField("currentTurnColor");
+            currentTurnColorField.setAccessible(true);
+            currentTurnColorField.set(roomState, "r");
 
             Field moveHistoryField = roomState.getClass().getDeclaredField("moveHistory");
             moveHistoryField.setAccessible(true);

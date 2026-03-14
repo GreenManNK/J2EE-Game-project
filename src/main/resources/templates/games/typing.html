@@ -21,7 +21,7 @@
             </p>
 
             <div class="hub-portal-chip-row">
-                <span class="hub-portal-chip is-live"><i class="bi bi-people-fill"></i> 2+ nguoi la bat dau</span>
+                <span class="hub-portal-chip is-live"><i class="bi bi-people-fill"></i> 2+ nguoi vao countdown 3s</span>
                 <span class="hub-portal-chip"><i class="bi bi-check2-circle"></i> Chi thang khi go dung 100%</span>
                 <span class="hub-portal-chip"><i class="bi bi-speedometer2"></i> Theo doi WPM + do chinh xac</span>
                 <span class="hub-portal-chip"><i class="bi bi-arrow-repeat"></i> Co tai dau sau tran</span>
@@ -34,7 +34,7 @@
             <details class="game-rules">
                 <summary>Luat nhanh</summary>
                 <ul>
-                    <li>Phong bat dau khi co it nhat 2 nguoi choi.</li>
+                    <li>Phong vao countdown 3 giay khi co it nhat 2 nguoi choi.</li>
                     <li>Chi duoc tinh ve dich khi go chinh xac toan bo cau.</li>
                     <li>Nguoi hoan thanh dung dau tien la nguoi thang.</li>
                     <li>Sau tran co the bam Tai dau de choi tiep ngay.</li>
@@ -78,6 +78,7 @@
                 <div class="typing-hud">
                     <div class="typing-hud__item"><span>Phong</span><strong id="room-id-display">-</strong></div>
                     <div class="typing-hud__item"><span>Trang thai</span><strong id="race-status">Dang cho</strong></div>
+                    <div class="typing-hud__item"><span>Dong ho</span><strong id="timer-value">--:--</strong></div>
                     <div class="typing-hud__item"><span>WPM</span><strong id="wpm-value">0</strong></div>
                     <div class="typing-hud__item"><span>Do chinh xac</span><strong id="accuracy-value">0%</strong></div>
                 </div>
@@ -123,7 +124,7 @@
                     <span class="hub-portal-tag">Gameplay</span>
                 </div>
                 <ul class="hub-portal-bullet-list">
-                    <li>Tao/join room, cho du nguoi va bat dau cung mot cau mau.</li>
+                    <li>Tao/join room, cho du nguoi, countdown ngan roi bat dau cung mot cau mau.</li>
                     <li>Tien do tung nguoi cap nhat theo WPM va do chinh xac realtime.</li>
                     <li>Chi ve dich khi go dung 100%, ket tran mo rematch ngay.</li>
                 </ul>
@@ -492,6 +493,7 @@
 
     const roomIdDisplay = document.getElementById('room-id-display');
     const raceStatusEl = document.getElementById('race-status');
+    const timerValueEl = document.getElementById('timer-value');
     const wpmValueEl = document.getElementById('wpm-value');
     const accuracyValueEl = document.getElementById('accuracy-value');
     const statusNoteEl = document.getElementById('typing-status-note');
@@ -520,10 +522,12 @@
     let latestRoom;
     let raceStartedAt;
     let progressSendThrottle;
+    let clockTimer;
     let roomListTimer;
     let reconnectTimer;
     let reconnectAttempts = 0;
     let manualDisconnect = false;
+    let lastAutoSyncAt = 0;
     let cachedRooms = [];
     const MAX_RECONNECT_ATTEMPTS = 5;
     const RECONNECT_BASE_DELAY_MS = 1200;
@@ -555,6 +559,8 @@
         switch (normalized) {
             case 'WAITING':
                 return 'Dang cho';
+            case 'COUNTDOWN':
+                return 'Sap bat dau';
             case 'PLAYING':
                 return 'Dang dua';
             case 'FINISHED':
@@ -567,6 +573,99 @@
                 return pretty.charAt(0).toUpperCase() + pretty.slice(1);
             }
         }
+    }
+
+    function effectiveGameState(room) {
+        if (!room) {
+            return 'WAITING';
+        }
+        const normalized = String(room.gameState || '').trim().toUpperCase();
+        const now = Date.now();
+        const countdownEndsAt = Number(room.countdownEndsAtEpochMs || 0);
+        const raceEndsAt = Number(room.raceEndsAtEpochMs || 0);
+
+        if (normalized === 'COUNTDOWN' && countdownEndsAt > 0 && now >= countdownEndsAt) {
+            return raceEndsAt > 0 && now >= raceEndsAt ? 'FINISHED' : 'PLAYING';
+        }
+        if (normalized === 'PLAYING' && raceEndsAt > 0 && now >= raceEndsAt) {
+            return 'FINISHED';
+        }
+        return normalized || 'WAITING';
+    }
+
+    function formatDuration(totalSeconds) {
+        const safeSeconds = Math.max(0, Math.ceil(totalSeconds));
+        const minutes = Math.floor(safeSeconds / 60);
+        const seconds = safeSeconds % 60;
+        return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+    }
+
+    function timerLabel(room, state) {
+        if (!room) {
+            return '--:--';
+        }
+        const now = Date.now();
+        const countdownEndsAt = Number(room.countdownEndsAtEpochMs || 0);
+        const raceEndsAt = Number(room.raceEndsAtEpochMs || 0);
+        if (state === 'COUNTDOWN' && countdownEndsAt > 0) {
+            return 'T-' + Math.max(1, Math.ceil((countdownEndsAt - now) / 1000)) + 's';
+        }
+        if (state === 'PLAYING' && raceEndsAt > 0) {
+            return formatDuration((raceEndsAt - now) / 1000);
+        }
+        return '--:--';
+    }
+
+    function applyLiveRaceState(room) {
+        const effectiveState = effectiveGameState(room);
+        raceStatusEl.textContent = formatGameStateLabel(effectiveState);
+        timerValueEl.textContent = timerLabel(room, effectiveState);
+
+        if (effectiveState === 'PLAYING') {
+            if (!raceStartedAt) {
+                raceStartedAt = Number(room.raceStartedAtEpochMs || room.countdownEndsAtEpochMs || Date.now());
+            }
+            typingInput.disabled = false;
+            typingInput.placeholder = 'Go tai day...';
+            return effectiveState;
+        }
+
+        typingInput.disabled = true;
+        if (effectiveState === 'COUNTDOWN') {
+            typingInput.placeholder = 'Dang countdown truoc khi bat dau...';
+        } else if (effectiveState === 'WAITING') {
+            typingInput.placeholder = 'Dang cho them nguoi choi...';
+            raceStartedAt = null;
+        } else if (effectiveState === 'FINISHED') {
+            typingInput.placeholder = 'Tran da ket thuc.';
+        }
+        return effectiveState;
+    }
+
+    function ensureClockTicker() {
+        if (clockTimer) {
+            return;
+        }
+        clockTimer = window.setInterval(() => {
+            if (!latestRoom || gameContainer.hidden) {
+                return;
+            }
+            const now = Date.now();
+            const effectiveState = applyLiveRaceState(latestRoom);
+            const myTyped = getMyTypedText(latestRoom);
+            updateLocalStats(myTyped, latestRoom.textToType || '');
+            const serverState = String(latestRoom.gameState || '').trim().toUpperCase();
+            if ((effectiveState === 'PLAYING' && serverState === 'COUNTDOWN')
+                || (effectiveState === 'FINISHED' && serverState === 'PLAYING')) {
+                if (roomId && now - lastAutoSyncAt > 900) {
+                    lastAutoSyncAt = now;
+                    safeSend({ action: 'progress', roomId, typed: typingInput.value || myTyped });
+                }
+            }
+            if (effectiveState === 'FINISHED' && latestRoom.gameState !== 'FINISHED') {
+                setStatus('Da het gio race. Dang doi dong bo ket qua...', '');
+            }
+        }, 250);
     }
 
     function clearReconnectTimer() {
@@ -744,7 +843,7 @@
     });
 
     typingInput.addEventListener('input', () => {
-        if (!latestRoom || latestRoom.gameState !== 'PLAYING') {
+        if (!latestRoom || effectiveGameState(latestRoom) !== 'PLAYING') {
             return;
         }
         renderTargetText(latestRoom.textToType || '', typingInput.value);
@@ -761,6 +860,7 @@
     function setupSocket(activeSocket) {
         roomSelection.hidden = true;
         gameContainer.hidden = false;
+        ensureClockTicker();
 
         activeSocket.onmessage = (event) => {
             const room = JSON.parse(event.data);
@@ -772,28 +872,24 @@
             latestRoom = room;
             roomId = room.id;
             myPlayerId = room.yourId || myPlayerId;
+            raceStartedAt = Number(room.raceStartedAtEpochMs || raceStartedAt || 0) || null;
 
             roomIdDisplay.textContent = roomId || '-';
             roomIdInput.value = roomId || '';
             replaceRoomUrl(roomId);
-            raceStatusEl.textContent = formatGameStateLabel(room.gameState);
 
             const text = room.textToType || '';
             const myTyped = getMyTypedText(room);
             renderTargetText(text, myTyped);
             updateLocalStats(myTyped, text);
 
-            if (room.gameState === 'PLAYING') {
-                typingInput.disabled = false;
-                typingInput.placeholder = 'Go tai day...';
-                if (!raceStartedAt) {
-                    raceStartedAt = Date.now();
-                }
+            const effectiveState = applyLiveRaceState(room);
+
+            if (effectiveState === 'PLAYING') {
                 setStatus('Tran dang dien ra. Tiep tuc go!', '');
-            } else if (room.gameState === 'WAITING') {
-                typingInput.disabled = true;
-                typingInput.placeholder = 'Dang cho them nguoi choi...';
-                raceStartedAt = null;
+            } else if (effectiveState === 'COUNTDOWN') {
+                setStatus('Dang countdown. Chuan bi go ngay khi race bat dau.', '');
+            } else if (effectiveState === 'WAITING') {
                 setStatus('Can it nhat 2 nguoi de bat dau.', '');
             }
 
@@ -808,7 +904,7 @@
                 setStatus('Tran da ket thuc. Bam tai dau de choi tiep.', 'success');
             } else {
                 winnerDisplay.hidden = true;
-                rematchBtn.disabled = room.gameState !== 'PLAYING' && room.gameState !== 'WAITING';
+                rematchBtn.disabled = room.gameState !== 'PLAYING' && room.gameState !== 'WAITING' && room.gameState !== 'COUNTDOWN';
             }
         };
 
@@ -934,6 +1030,7 @@
         roomId = '';
         myPlayerId = null;
         raceStartedAt = null;
+        lastAutoSyncAt = 0;
 
         typingInput.value = '';
         typingInput.disabled = true;
@@ -1003,6 +1100,7 @@
         if (roomListTimer) {
             window.clearInterval(roomListTimer);
         }
+        ensureClockTicker();
         roomListTimer = window.setInterval(() => {
             if (!roomSelection.hidden) {
                 fetchRoomList(false);

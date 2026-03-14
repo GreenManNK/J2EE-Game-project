@@ -113,10 +113,22 @@ public class MonopolyRoomApiController {
     @PostMapping("/{roomId}/action")
     public ResponseEntity<Map<String, Object>> performAction(@PathVariable String roomId,
                                                              @RequestBody(required = false) RoomActionRequest request) {
-        RoomActionRequest payload = request == null ? new RoomActionRequest(null, null) : request;
+        RoomActionRequest payload = request == null
+            ? new RoomActionRequest(null, null, null, null, null, null, null, null, null)
+            : request;
         MonopolyRoomService.RoomActionResult result = monopolyRoomService.performAction(
             roomId,
-            new MonopolyRoomService.RoomGameActionCommand(payload.playerId(), payload.action())
+            new MonopolyRoomService.RoomGameActionCommand(
+                payload.playerId(),
+                payload.action(),
+                payload.tileIndex(),
+                payload.amount(),
+                payload.targetPlayerId(),
+                payload.offeredCash(),
+                payload.requestedCash(),
+                payload.offeredTileIndices(),
+                payload.requestedTileIndices()
+            )
         );
         return toResponse(result);
     }
@@ -178,6 +190,16 @@ public class MonopolyRoomApiController {
     public record SyncRoomRequest(String playerId, int baseVersion, Map<String, Object> gameState) {
     }
 
-    public record RoomActionRequest(String playerId, String action) {
+    public record RoomActionRequest(
+        String playerId,
+        String action,
+        Integer tileIndex,
+        Integer amount,
+        String targetPlayerId,
+        java.util.List<Integer> offeredTileIndices,
+        java.util.List<Integer> requestedTileIndices,
+        Integer offeredCash,
+        Integer requestedCash
+    ) {
     }
 }

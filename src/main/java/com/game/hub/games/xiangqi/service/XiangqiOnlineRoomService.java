@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -196,7 +197,8 @@ public class XiangqiOnlineRoomService {
         if (!opponentHasMove) {
             room.status = STATUS_GAME_OVER;
             room.currentTurnUserId = null;
-            room.statusMessage = "Het nuoc di hop le - hoa.";
+            room.currentTurnColor = winnerColor;
+            room.statusMessage = colorLabel(nextColor) + " bi bo. " + colorLabel(winnerColor) + " thang.";
             return ActionResult.ok("MOVE", snapshotOf(room));
         }
 
@@ -498,6 +500,23 @@ public class XiangqiOnlineRoomService {
                                List<String> moveHistory,
                                LastMoveSnapshot lastMove,
                                List<PlayerSnapshot> players) {
+        public boolean isGameOver() {
+            return STATUS_GAME_OVER.equals(status);
+        }
+
+        public String getWinnerId() {
+            if (!isGameOver()) {
+                return null;
+            }
+            if (statusMessage != null && statusMessage.toLowerCase(Locale.ROOT).contains("hoa")) {
+                return null;
+            }
+            return players.stream()
+                .filter(player -> player != null && player.color() != null && player.color().equals(currentTurnColor))
+                .map(PlayerSnapshot::userId)
+                .findFirst()
+                .orElse(null);
+        }
     }
 
     public record PlayerSnapshot(String userId, String displayName, String avatarPath, String color) {

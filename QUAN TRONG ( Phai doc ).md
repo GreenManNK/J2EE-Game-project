@@ -456,6 +456,7 @@ Ben duoi la timeline commit de de truy vet theo hash:
 
 ## 15. Tai lieu lien quan
 
+- [docs/GAMEPLAY_IMPLEMENTATION_PLAN.md](docs/GAMEPLAY_IMPLEMENTATION_PLAN.md)
 - [docs/HUONG_DAN_CHAY_THU_CONG.md](docs/HUONG_DAN_CHAY_THU_CONG.md)
 - [docs/DEPLOY_REMOTE_STABLE.md](docs/DEPLOY_REMOTE_STABLE.md)
 - [docs/ACCOUNT_SYNC_API.md](docs/ACCOUNT_SYNC_API.md)

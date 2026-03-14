@@ -68,6 +68,7 @@
                 <div class="blackjack-hud">
                     <div class="blackjack-hud__item"><span>Phong</span><strong id="room-id-label">-</strong></div>
                     <div class="blackjack-hud__item"><span>Trang thai</span><strong id="table-state-label">Dang cho</strong></div>
+                    <div class="blackjack-hud__item"><span>Luot hien tai</span><strong id="current-turn-label">-</strong></div>
                     <div class="blackjack-hud__item"><span>So du cua ban</span><strong id="my-balance-label">-</strong></div>
                     <div class="blackjack-hud__item"><span>Muc cuoc</span><strong id="my-bet-label">-</strong></div>
                 </div>
@@ -91,6 +92,7 @@
                         <button id="hit-btn" class="hub-portal-action" disabled>Rut bai</button>
                         <button id="stand-btn" class="hub-portal-action" disabled>Dung bai</button>
                         <button id="double-btn" class="hub-portal-action" disabled>Gap doi</button>
+                        <button id="surrender-btn" class="hub-portal-action" disabled>Bo bai</button>
                     </div>
                 </div>
 
@@ -105,7 +107,7 @@
                     </div>
                     <ul class="hub-portal-bullet-list">
                         <li>Tao/join room, dat cuoc moi van va vao luot cung dealer.</li>
-                        <li>Round choi chay theo nhac hit/stand/double, cap nhat tay bai realtime.</li>
+                        <li>Round choi chay theo nhac hit/stand/double/surrender, cap nhat tay bai realtime.</li>
                         <li>Ket van chia tien thang/thua, mo dat lai de vao van tiep theo ngay.</li>
                     </ul>
                 </article>
@@ -346,6 +348,11 @@
         box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.45) inset;
     }
 
+    .blackjack-player-card.active-turn {
+        border-color: rgba(250, 204, 21, 0.95);
+        box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.42) inset;
+    }
+
     .blackjack-player-meta {
         display: flex;
         justify-content: space-between;
@@ -432,6 +439,7 @@
 
     const roomIdLabel = document.getElementById('room-id-label');
     const tableStateLabel = document.getElementById('table-state-label');
+    const currentTurnLabel = document.getElementById('current-turn-label');
     const myBalanceLabel = document.getElementById('my-balance-label');
     const myBetLabel = document.getElementById('my-bet-label');
     const dealerValueLabel = document.getElementById('dealer-value-label');
@@ -442,6 +450,7 @@
     const hitBtn = document.getElementById('hit-btn');
     const standBtn = document.getElementById('stand-btn');
     const doubleBtn = document.getElementById('double-btn');
+    const surrenderBtn = document.getElementById('surrender-btn');
 
     const dealerCardsEl = document.getElementById('dealer-cards');
     const playerHands = document.getElementById('player-hands');
@@ -472,6 +481,7 @@
     let manualDisconnect = false;
     let reconnectMode = 'join';
     let cachedRooms = [];
+    let previousRoundResult = 'NONE';
     const MAX_RECONNECT_ATTEMPTS = 5;
     const RECONNECT_BASE_DELAY_MS = 1200;
     const CARD_SPRITE = Object.freeze({
@@ -769,6 +779,12 @@
         }
     });
 
+    surrenderBtn.addEventListener('click', () => {
+        if (safeSend({ action: 'surrender', roomId })) {
+            setStatus('Ban da chon bo bai va nhan lai nua cuoc.', '');
+        }
+    });
+
     function setupSocket(activeSocket) {
         roomSelection.hidden = true;
         gameBoard.hidden = false;
@@ -809,17 +825,21 @@
     function updateUI(room) {
         roomIdLabel.textContent = room.id || '-';
         tableStateLabel.textContent = formatGameStateLabel(room.gameState);
+        currentTurnLabel.textContent = room.currentTurnPlayerId
+            ? (room.currentTurnPlayerId === myPlayerId ? 'Ban' : room.currentTurnPlayerId)
+            : '-';
 
         const myPlayer = getCurrentPlayer();
         myBalanceLabel.textContent = myPlayer ? String(myPlayer.balance) : (isSpectator ? 'Nguoi xem' : '-');
         myBetLabel.textContent = myPlayer ? String(myPlayer.currentBet) : (isSpectator ? '-' : '-');
 
         renderDealer(room.dealer);
-        renderPlayers(room.players || {});
+        renderPlayers(room.players || {}, room.currentTurnPlayerId || '');
         updateControls(room, myPlayer);
         detectRoundResult(room, myPlayer);
 
         previousState = room.gameState;
+        previousRoundResult = myPlayer ? String(myPlayer.lastRoundResult || 'NONE').trim().toUpperCase() : 'NONE';
     }
 
     function getCurrentPlayer() {
@@ -838,29 +858,52 @@
         dealerValueLabel.textContent = hand.length > 0 ? `(${dealer.hand.value})` : '';
     }
 
-    function renderPlayers(players) {
+    function renderPlayers(players, currentTurnPlayerId) {
         playerHands.innerHTML = '';
         Object.entries(players).forEach(([playerId, player]) => {
             const playerEl = document.createElement('div');
-            playerEl.className = 'blackjack-player-card' + (playerId === myPlayerId ? ' me' : '');
+            playerEl.className = 'blackjack-player-card'
+                + (playerId === myPlayerId ? ' me' : '')
+                + (playerId === currentTurnPlayerId ? ' active-turn' : '');
 
             const handValue = player.hand && typeof player.hand.value === 'number' ? player.hand.value : 0;
             const cards = player.hand && Array.isArray(player.hand.cards) ? player.hand.cards : [];
+            const turnLabel = playerId === currentTurnPlayerId ? ' | Dang toi luot' : '';
 
             const cardsHtml = cards.map((card) => buildCardElement(card).outerHTML).join('');
             playerEl.innerHTML = `
                 <div class="blackjack-player-meta">
-                    <strong>${escapeHtml(playerId)}</strong>
+                    <strong>${escapeHtml(playerId)}${escapeHtml(turnLabel)}</strong>
                     <span>Diem: ${handValue}</span>
                 </div>
                 <div class="blackjack-player-meta">
                     <span>So du: ${player.balance}</span>
                     <span>Cuoc: ${player.currentBet} (Lan truoc: ${player.lastBet || 0})</span>
                 </div>
+                <div class="blackjack-player-meta">
+                    <span>Ket qua van truoc: ${escapeHtml(formatRoundResultLabel(player.lastRoundResult))}</span>
+                </div>
                 <div class="blackjack-cards">${cardsHtml}</div>
             `;
             playerHands.appendChild(playerEl);
         });
+    }
+
+    function formatRoundResultLabel(result) {
+        switch (String(result || '').trim().toUpperCase()) {
+            case 'BLACKJACK':
+                return 'Blackjack';
+            case 'WIN':
+                return 'Thang';
+            case 'LOSE':
+                return 'Thua';
+            case 'PUSH':
+                return 'Hoa';
+            case 'SURRENDER':
+                return 'Bo bai';
+            default:
+                return 'Dang cho';
+        }
     }
 
     function updateControls(room, myPlayer) {
@@ -871,9 +914,11 @@
             return;
         }
 
-        const playerTurn = room.gameState === 'PLAYER_TURN';
+        const playerTurn = room.gameState === 'PLAYER_TURN' && room.currentTurnPlayerId === myPlayerId;
         const canBet = room.gameState === 'WAITING';
         const canDouble = playerTurn && myPlayer.currentBet > 0 && myPlayer.balance >= myPlayer.currentBet;
+        const canSurrender = playerTurn && myPlayer.currentBet > 0 && myPlayer.hand
+            && Array.isArray(myPlayer.hand.cards) && myPlayer.hand.cards.length === 2;
         const canRebet = canBet && (myPlayer.lastBet || 0) > 0 && myPlayer.balance >= myPlayer.lastBet;
 
         betBtn.disabled = !canBet;
@@ -881,6 +926,7 @@
         hitBtn.disabled = !playerTurn;
         standBtn.disabled = !playerTurn;
         doubleBtn.disabled = !canDouble;
+        surrenderBtn.disabled = !canSurrender;
     }
 
     function disableActionButtons(disabled) {
@@ -889,10 +935,36 @@
         hitBtn.disabled = disabled;
         standBtn.disabled = disabled;
         doubleBtn.disabled = disabled;
+        surrenderBtn.disabled = disabled;
     }
 
     function detectRoundResult(room, myPlayer) {
         if (!myPlayer || isSpectator) {
+            return;
+        }
+
+        const currentRoundResult = String(myPlayer.lastRoundResult || 'NONE').trim().toUpperCase();
+
+        if (room.gameState === 'WAITING' && currentRoundResult !== 'NONE' && currentRoundResult !== previousRoundResult) {
+            switch (currentRoundResult) {
+                case 'BLACKJACK':
+                    setStatus('Het van: Blackjack tu nhien, ban an 3:2.', 'success');
+                    break;
+                case 'WIN':
+                    setStatus('Het van: Ban da thang!', 'success');
+                    break;
+                case 'LOSE':
+                    setStatus('Het van: Nha cai thang van nay.', 'error');
+                    break;
+                case 'PUSH':
+                    setStatus('Het van: Hoa (push).', '');
+                    break;
+                case 'SURRENDER':
+                    setStatus('Het van: Ban bo bai va nhan lai nua cuoc.', '');
+                    break;
+                default:
+                    break;
+            }
             return;
         }
 
@@ -919,7 +991,11 @@
         if (room.gameState === 'WAITING') {
             setStatus('Dat cuoc de bat dau van moi.', '');
         } else if (room.gameState === 'PLAYER_TURN') {
-            setStatus('Den luot ban: rut bai, dung bai hoac gap doi.', '');
+            if (room.currentTurnPlayerId === myPlayerId) {
+                setStatus('Den luot ban: rut bai, dung bai, gap doi hoac bo bai.', '');
+            } else {
+                setStatus('Dang cho ' + (room.currentTurnPlayerId || 'nguoi choi khac') + ' hanh dong.', '');
+            }
         } else if (room.gameState === 'DEALER_TURN') {
             setStatus('Nha cai dang choi...', '');
         }
@@ -1019,6 +1095,7 @@
         roomId = '';
         myPlayerId = null;
         previousState = null;
+        previousRoundResult = 'NONE';
         isSpectator = false;
         reconnectMode = 'join';
 

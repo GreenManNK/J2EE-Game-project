@@ -111,6 +111,7 @@ final class MonopolyGameEngine {
             player.token = seed.token();
             player.turnOrder = seed.turnOrder();
             player.money = startingCash;
+            player.isDisconnected = false;
             state.players.add(player);
         }
 
@@ -120,8 +121,50 @@ final class MonopolyGameEngine {
         return toMap(state);
     }
 
-    ActionResult applyAction(Map<String, Object> rawState, String actorId, String action, Random random) {
+    ActionResult applyAction(
+        Map<String, Object> rawState,
+        String actorId,
+        String action,
+        Integer tileIndex,
+        Integer amount,
+        String targetPlayerId,
+        Integer offeredCash,
+        Integer requestedCash,
+        List<Integer> offeredTileIndices,
+        List<Integer> requestedTileIndices,
+        Random random
+    ) {
         EngineState state = toState(rawState);
+        String normalizedAction = normalize(action);
+        if (normalizedAction == null) {
+            return ActionResult.error("Action khong hop le");
+        }
+
+        if (isAuctionAction(normalizedAction)) {
+            return switch (normalizedAction) {
+                case "auctionbid" -> run(state, () -> handleAuctionBid(state, actorId, amount));
+                case "auctionpass" -> run(state, () -> handleAuctionPass(state, actorId));
+                default -> ActionResult.error("Action khong hop le");
+            };
+        }
+
+        if (isTradeAction(normalizedAction)) {
+            return switch (normalizedAction) {
+                case "tradeoffer" -> run(state, () -> handleTradeOffer(
+                    state,
+                    actorId,
+                    targetPlayerId,
+                    offeredCash,
+                    requestedCash,
+                    offeredTileIndices,
+                    requestedTileIndices
+                ));
+                case "tradeaccept" -> run(state, () -> handleTradeAccept(state, actorId));
+                case "tradereject" -> run(state, () -> handleTradeReject(state, actorId));
+                default -> ActionResult.error("Action khong hop le");
+            };
+        }
+
         EnginePlayer current = currentPlayer(state);
         if (current == null) {
             return ActionResult.error("Khong tim thay nguoi choi hien tai");
@@ -130,15 +173,14 @@ final class MonopolyGameEngine {
             return ActionResult.error("Chua den luot cua ban");
         }
 
-        String normalizedAction = normalize(action);
-        if (normalizedAction == null) {
-            return ActionResult.error("Action khong hop le");
-        }
-
         return switch (normalizedAction) {
             case "roll" -> run(state, () -> handleRoll(state, random));
             case "buy" -> run(state, () -> handleBuy(state));
             case "skippurchase" -> run(state, () -> handleSkipPurchase(state));
+            case "build" -> run(state, () -> handleBuild(state, tileIndex));
+            case "sellhouse" -> run(state, () -> handleSellHouse(state, tileIndex));
+            case "mortgage" -> run(state, () -> handleMortgage(state, tileIndex));
+            case "unmortgage" -> run(state, () -> handleUnmortgage(state, tileIndex));
             case "endturn" -> run(state, () -> handleEndTurn(state));
             case "paybail" -> run(state, () -> handlePayBail(state));
             case "useescapecard" -> run(state, () -> handleUseEscapeCard(state));
@@ -232,9 +274,311 @@ final class MonopolyGameEngine {
         }
         EnginePlayer player = currentPlayer(state);
         EngineSpace tile = board(state, state.pendingPurchase.tileIndex);
-        logAction(state, "Bo qua", player.name + " bo qua quyen mua " + (tile == null ? "tai san" : tile.name) + ".");
         state.pendingPurchase = null;
-        finishStep(state);
+        if (tile == null || !startAuction(state, player, tile)) {
+            logAction(state, "Bo qua", player.name + " bo qua quyen mua " + (tile == null ? "tai san" : tile.name) + ".");
+            finishStep(state);
+        }
+        return null;
+    }
+
+    private boolean startAuction(EngineState state, EnginePlayer actor, EngineSpace tile) {
+        List<String> participants = state.players.stream()
+            .filter(player -> !player.bankrupt && player.money > 0)
+            .map(player -> player.id)
+            .toList();
+        if (tile == null || participants.size() < 2) {
+            return false;
+        }
+        AuctionState auction = new AuctionState();
+        auction.tileIndex = tile.index;
+        auction.currentBid = 0;
+        auction.leaderId = null;
+        auction.participantIds = new ArrayList<>(participants);
+        auction.passedPlayerIds = new ArrayList<>();
+        auction.activePlayerId = actor == null ? participants.get(0) : actor.id;
+        auction.minIncrement = 10;
+        state.auction = auction;
+        state.phase = "auction";
+        state.selectedTileIndex = tile.index;
+        logAction(state, "Mo dau gia", (actor == null ? "Nguoi choi hien tai" : actor.name) + " bo qua " + tile.name + ". Phien dau gia da duoc mo.");
+        return true;
+    }
+
+    private String handleAuctionBid(EngineState state, String actorId, Integer amount) {
+        AuctionState auction = state.auction;
+        if (auction == null || !"auction".equals(state.phase)) {
+            return "Khong co phien dau gia nao dang mo";
+        }
+        if (!Objects.equals(normalize(actorId), normalize(auction.activePlayerId))) {
+            return "Chua den luot dat gia cua ban";
+        }
+        EnginePlayer bidder = player(state, actorId);
+        if (bidder == null || bidder.bankrupt) {
+            return "Nguoi choi dat gia khong hop le";
+        }
+        int minimumBid = Math.max(1, auction.currentBid + (auction.minIncrement == null ? 10 : auction.minIncrement));
+        if (amount == null || amount < minimumBid) {
+            return "Gia dat phai lon hon gia hien tai it nhat " + money(minimumBid) + ".";
+        }
+        if (bidder.money < amount) {
+            return "Khong du tien de dat gia muc nay";
+        }
+        auction.currentBid = amount;
+        auction.leaderId = bidder.id;
+        logAction(state, "Dat gia", bidder.name + " nang gia " + board(state, auction.tileIndex).name + " len " + money(amount) + ".");
+        String nextBidder = nextAuctionResponder(state, bidder.id);
+        if (nextBidder == null) {
+            completeAuction(state);
+        } else {
+            auction.activePlayerId = nextBidder;
+        }
+        return null;
+    }
+
+    private String handleAuctionPass(EngineState state, String actorId) {
+        AuctionState auction = state.auction;
+        if (auction == null || !"auction".equals(state.phase)) {
+            return "Khong co phien dau gia nao dang mo";
+        }
+        if (!Objects.equals(normalize(actorId), normalize(auction.activePlayerId))) {
+            return "Chua den luot bo gia cua ban";
+        }
+        EnginePlayer passer = player(state, actorId);
+        if (passer == null) {
+            return "Nguoi choi dau gia khong hop le";
+        }
+        if (!auction.passedPlayerIds.contains(passer.id)) {
+            auction.passedPlayerIds.add(passer.id);
+        }
+        logAction(state, "Bo luot dau gia", (passer == null ? "Nguoi choi" : passer.name) + " bo luot dau gia.");
+        String nextBidder = nextAuctionResponder(state, passer.id);
+        if (auction.leaderId != null && nextBidder == null) {
+            completeAuction(state);
+            return null;
+        }
+        if (auction.leaderId == null && nextBidder == null) {
+            cancelAuction(state);
+            return null;
+        }
+        auction.activePlayerId = nextBidder;
+        return null;
+    }
+
+    private String handleTradeOffer(
+        EngineState state,
+        String actorId,
+        String targetPlayerId,
+        Integer offeredCash,
+        Integer requestedCash,
+        List<Integer> offeredTileIndices,
+        List<Integer> requestedTileIndices
+    ) {
+        EnginePlayer proposer = currentPlayer(state);
+        if (proposer == null || !Objects.equals(normalize(proposer.id), normalize(actorId))) {
+            return "Chi nguoi dang den luot moi duoc gui trade";
+        }
+        if (!List.of("await_roll", "await_end_turn", "jail").contains(state.phase)) {
+            return "Khong the trade o trang thai hien tai";
+        }
+        if (state.pendingPurchase != null || state.debt != null || state.auction != null || state.tradeOffer != null) {
+            return "Khong the mo trade luc nay";
+        }
+
+        EnginePlayer target = player(state, targetPlayerId);
+        if (target == null || target.bankrupt || Objects.equals(target.id, proposer.id)) {
+            return "Nguoi nhan trade khong hop le";
+        }
+
+        int normalizedOfferedCash = Math.max(0, offeredCash == null ? 0 : offeredCash);
+        int normalizedRequestedCash = Math.max(0, requestedCash == null ? 0 : requestedCash);
+        List<Integer> offeredIndices = normalizeTileIndices(offeredTileIndices);
+        List<Integer> requestedIndices = normalizeTileIndices(requestedTileIndices);
+
+        if (normalizedOfferedCash <= 0 && normalizedRequestedCash <= 0 && offeredIndices.isEmpty() && requestedIndices.isEmpty()) {
+            return "De nghi trade dang rong";
+        }
+        if (proposer.money < normalizedOfferedCash) {
+            return "Ban khong du tien mat de dua vao trade";
+        }
+        if (target.money < normalizedRequestedCash) {
+            return "Doi thu khong du tien mat theo de nghi";
+        }
+
+        String validationError = validateTradeTiles(state, proposer.id, offeredIndices, true);
+        if (validationError != null) {
+            return validationError;
+        }
+        validationError = validateTradeTiles(state, target.id, requestedIndices, false);
+        if (validationError != null) {
+            return validationError;
+        }
+
+        TradeOfferState tradeOffer = new TradeOfferState();
+        tradeOffer.fromPlayerId = proposer.id;
+        tradeOffer.toPlayerId = target.id;
+        tradeOffer.offeredCash = normalizedOfferedCash;
+        tradeOffer.requestedCash = normalizedRequestedCash;
+        tradeOffer.offeredTileIndices = new ArrayList<>(offeredIndices);
+        tradeOffer.requestedTileIndices = new ArrayList<>(requestedIndices);
+        tradeOffer.resumePhase = state.phase;
+        state.tradeOffer = tradeOffer;
+        state.phase = "trade";
+        logAction(state, "De nghi trade", proposer.name + " gui de nghi trao doi cho " + target.name + ".");
+        return null;
+    }
+
+    private String handleTradeAccept(EngineState state, String actorId) {
+        TradeOfferState tradeOffer = state.tradeOffer;
+        if (tradeOffer == null || !"trade".equals(state.phase)) {
+            return "Khong co de nghi trade nao dang mo";
+        }
+        if (!Objects.equals(normalize(actorId), normalize(tradeOffer.toPlayerId))) {
+            return "Chi nguoi nhan moi duoc chap nhan trade";
+        }
+        EnginePlayer proposer = player(state, tradeOffer.fromPlayerId);
+        EnginePlayer target = player(state, tradeOffer.toPlayerId);
+        if (proposer == null || target == null || proposer.bankrupt || target.bankrupt) {
+            return "De nghi trade khong con hop le";
+        }
+        if (proposer.money < tradeOffer.offeredCash || target.money < tradeOffer.requestedCash) {
+            return "Mot trong hai ben khong con du tien de hoan tat trade";
+        }
+        String validationError = validateTradeTiles(state, proposer.id, tradeOffer.offeredTileIndices, true);
+        if (validationError != null) {
+            return validationError;
+        }
+        validationError = validateTradeTiles(state, target.id, tradeOffer.requestedTileIndices, false);
+        if (validationError != null) {
+            return validationError;
+        }
+
+        proposer.money -= tradeOffer.offeredCash;
+        target.money += tradeOffer.offeredCash;
+        target.money -= tradeOffer.requestedCash;
+        proposer.money += tradeOffer.requestedCash;
+
+        transferTiles(state, tradeOffer.offeredTileIndices, proposer.id, target.id);
+        transferTiles(state, tradeOffer.requestedTileIndices, target.id, proposer.id);
+
+        logAction(state, "Trade thanh cong", proposer.name + " va " + target.name + " da thong qua mot giao dich.");
+        state.tradeOffer = null;
+        state.phase = tradeOffer.resumePhase == null ? "await_end_turn" : tradeOffer.resumePhase;
+        return null;
+    }
+
+    private String handleTradeReject(EngineState state, String actorId) {
+        TradeOfferState tradeOffer = state.tradeOffer;
+        if (tradeOffer == null || !"trade".equals(state.phase)) {
+            return "Khong co de nghi trade nao dang mo";
+        }
+        boolean proposerCancel = Objects.equals(normalize(actorId), normalize(tradeOffer.fromPlayerId));
+        boolean targetReject = Objects.equals(normalize(actorId), normalize(tradeOffer.toPlayerId));
+        if (!proposerCancel && !targetReject) {
+            return "Ban khong nam trong de nghi trade nay";
+        }
+        EnginePlayer proposer = player(state, tradeOffer.fromPlayerId);
+        EnginePlayer target = player(state, tradeOffer.toPlayerId);
+        logAction(
+            state,
+            proposerCancel ? "Huy trade" : "Tu choi trade",
+            (proposerCancel ? (proposer == null ? "Nguoi choi" : proposer.name) + " huy de nghi trade." : (target == null ? "Nguoi choi" : target.name) + " tu choi de nghi trade.")
+        );
+        state.tradeOffer = null;
+        state.phase = tradeOffer.resumePhase == null ? "await_end_turn" : tradeOffer.resumePhase;
+        return null;
+    }
+
+    private String handleBuild(EngineState state, Integer tileIndex) {
+        EnginePlayer player = currentPlayer(state);
+        EngineSpace tile = board(state, tileIndex);
+        if (!canManageAssets(state, player) || state.debt != null || tile == null || !"property".equals(tile.type)) {
+            return "Khong the xay nha tai o nay";
+        }
+        if (!Objects.equals(tile.ownerId, player.id) || Boolean.TRUE.equals(tile.mortgaged) || tile.houses >= 5) {
+            return "Khong the xay nha tai o nay";
+        }
+        if (tile.houseCost == null || player.money < tile.houseCost) {
+            return "Khong du tien de xay nha";
+        }
+        if (!ownsFullSet(state, player.id, tile.group)) {
+            return "Can so huu tron nhom mau moi duoc xay nha";
+        }
+        List<EngineSpace> groupTiles = groupTiles(state, tile.group);
+        if (groupTiles.stream().anyMatch(space -> Boolean.TRUE.equals(space.mortgaged))) {
+            return "Khong the xay khi trong nhom co tai san dang the chap";
+        }
+        int minimumHouses = groupTiles.stream().mapToInt(space -> space.houses).min().orElse(0);
+        if (tile.houses != minimumHouses) {
+            return "Phai xay deu giua cac o cung nhom mau";
+        }
+        player.money -= tile.houseCost;
+        tile.houses += 1;
+        logAction(state, "Xay dung", player.name + " nang cap " + tile.name + " len muc " + tile.houses + ".");
+        return null;
+    }
+
+    private String handleSellHouse(EngineState state, Integer tileIndex) {
+        EnginePlayer player = currentPlayer(state);
+        EngineSpace tile = board(state, tileIndex);
+        if (!canManageAssets(state, player) || tile == null || !"property".equals(tile.type)) {
+            return "Khong the ban nha tai o nay";
+        }
+        if (!Objects.equals(tile.ownerId, player.id) || tile.houses <= 0 || tile.houseCost == null) {
+            return "Khong the ban nha tai o nay";
+        }
+        int maximumHouses = groupTiles(state, tile.group).stream().mapToInt(space -> space.houses).max().orElse(0);
+        if (tile.houses != maximumHouses) {
+            return "Phai ban deu giua cac o cung nhom mau";
+        }
+        tile.houses -= 1;
+        int refund = Math.max(1, tile.houseCost / 2);
+        player.money += refund;
+        logAction(state, "Ban nha", player.name + " ban 1 cap nha tai " + tile.name + " de thu ve " + money(refund) + ".");
+        settleDebt(state);
+        return null;
+    }
+
+    private String handleMortgage(EngineState state, Integer tileIndex) {
+        EnginePlayer player = currentPlayer(state);
+        EngineSpace tile = board(state, tileIndex);
+        if (!canManageAssets(state, player) || tile == null) {
+            return "Khong the the chap tai san nay";
+        }
+        if (!Objects.equals(tile.ownerId, player.id) || Boolean.TRUE.equals(tile.mortgaged) || tile.mortgage == null) {
+            return "Khong the the chap tai san nay";
+        }
+        if ("property".equals(tile.type)) {
+            if (tile.houses > 0) {
+                return "Phai ban het nha/hotel truoc khi the chap";
+            }
+            if (groupTiles(state, tile.group).stream().anyMatch(space -> space.houses > 0)) {
+                return "Phai ban het nha/hotel trong nhom truoc khi the chap";
+            }
+        }
+        tile.mortgaged = true;
+        player.money += tile.mortgage;
+        logAction(state, "The chap", player.name + " the chap " + tile.name + " de nhan " + money(tile.mortgage) + ".");
+        settleDebt(state);
+        return null;
+    }
+
+    private String handleUnmortgage(EngineState state, Integer tileIndex) {
+        EnginePlayer player = currentPlayer(state);
+        EngineSpace tile = board(state, tileIndex);
+        if (!canManageAssets(state, player) || state.debt != null || tile == null) {
+            return "Khong the giai chap tai san nay";
+        }
+        if (!Objects.equals(tile.ownerId, player.id) || !Boolean.TRUE.equals(tile.mortgaged) || tile.mortgage == null) {
+            return "Khong the giai chap tai san nay";
+        }
+        int cost = (int) Math.ceil(tile.mortgage * 1.1d);
+        if (player.money < cost) {
+            return "Khong du tien de giai chap";
+        }
+        player.money -= cost;
+        tile.mortgaged = false;
+        logAction(state, "Giai chap", player.name + " giai chap " + tile.name + " voi chi phi " + money(cost) + ".");
         return null;
     }
 
@@ -289,6 +633,8 @@ final class MonopolyGameEngine {
         ranked.sort((left, right) -> Integer.compare(netWorth(state, right), netWorth(state, left)));
         state.phase = "ended";
         state.pendingPurchase = null;
+        state.auction = null;
+        state.tradeOffer = null;
         state.pendingExtraRoll = false;
         state.debt = null;
         state.winnerId = ranked.isEmpty() ? null : ranked.get(0).id;
@@ -526,6 +872,8 @@ final class MonopolyGameEngine {
         player.consecutiveDoubles = 0;
         state.pendingExtraRoll = false;
         state.pendingPurchase = null;
+        state.auction = null;
+        state.tradeOffer = null;
         state.phase = "await_end_turn";
         state.selectedTileIndex = 10;
         logAction(state, "Vao tu", player.name + " bi dua vao tu. " + reason);
@@ -554,6 +902,8 @@ final class MonopolyGameEngine {
         debtor.escapeCards = 0;
         state.debt = null;
         state.pendingPurchase = null;
+        state.auction = null;
+        state.tradeOffer = null;
         state.pendingExtraRoll = false;
         logAction(state, "Pha san", debtor.name + " pha san. " + reason);
         if (active(state) <= 1) {
@@ -591,10 +941,116 @@ final class MonopolyGameEngine {
         state.lastDice = null;
         state.lastCard = null;
         state.pendingPurchase = null;
+        state.auction = null;
+        state.tradeOffer = null;
         state.specialRent = null;
         state.selectedTileIndex = state.players.get(next).position;
         state.phase = state.players.get(next).inJail ? "jail" : "await_roll";
         logAction(state, "Chuyen luot", state.players.get(next).name + " den luot.");
+    }
+
+    private List<Integer> normalizeTileIndices(List<Integer> indices) {
+        if (indices == null || indices.isEmpty()) {
+            return List.of();
+        }
+        List<Integer> normalized = new ArrayList<>();
+        for (Integer index : indices) {
+            if (index == null || normalized.contains(index)) {
+                continue;
+            }
+            normalized.add(index);
+        }
+        return normalized;
+    }
+
+    private String validateTradeTiles(EngineState state, String ownerId, List<Integer> tileIndices, boolean proposerSide) {
+        for (Integer tileIndex : tileIndices) {
+            EngineSpace tile = board(state, tileIndex);
+            if (tile == null || !Objects.equals(tile.ownerId, ownerId)) {
+                return proposerSide ? "Ban khong so huu day du cac tai san da chon" : "Doi thu khong so huu day du cac tai san duoc yeu cau";
+            }
+            if ("property".equals(tile.type)) {
+                if (tile.houses > 0) {
+                    return "Khong the trade tai san dang co nha/hotel";
+                }
+                if (groupTiles(state, tile.group).stream().anyMatch(space -> space.houses > 0)) {
+                    return "Phai ban het nha/hotel trong nhom truoc khi trade";
+                }
+            }
+        }
+        return null;
+    }
+
+    private void transferTiles(EngineState state, List<Integer> tileIndices, String fromPlayerId, String toPlayerId) {
+        for (Integer tileIndex : tileIndices) {
+            EngineSpace tile = board(state, tileIndex);
+            if (tile == null || !Objects.equals(tile.ownerId, fromPlayerId)) {
+                continue;
+            }
+            tile.ownerId = toPlayerId;
+        }
+    }
+
+    private void completeAuction(EngineState state) {
+        AuctionState auction = state.auction;
+        EngineSpace tile = auction == null ? null : board(state, auction.tileIndex);
+        EnginePlayer leader = auction == null ? null : player(state, auction.leaderId);
+        if (auction == null || tile == null || leader == null || auction.currentBid <= 0 || leader.money < auction.currentBid) {
+            cancelAuction(state);
+            return;
+        }
+        leader.money -= auction.currentBid;
+        tile.ownerId = leader.id;
+        tile.houses = 0;
+        tile.mortgaged = false;
+        logAction(state, "Ket qua dau gia", leader.name + " thang dau gia " + tile.name + " voi gia " + money(auction.currentBid) + ".");
+        state.auction = null;
+        finishStep(state);
+    }
+
+    private void cancelAuction(EngineState state) {
+        AuctionState auction = state.auction;
+        EngineSpace tile = auction == null ? null : board(state, auction.tileIndex);
+        logAction(state, "Dau gia ket thuc", (tile == null ? "Tai san" : tile.name) + " khong co nguoi mua trong phien dau gia.");
+        state.auction = null;
+        finishStep(state);
+    }
+
+    private String nextAuctionResponder(EngineState state, String afterPlayerId) {
+        AuctionState auction = state.auction;
+        if (auction == null || auction.participantIds == null || auction.participantIds.isEmpty()) {
+            return null;
+        }
+        int startIndex = auction.participantIds.indexOf(afterPlayerId);
+        for (int step = 1; step <= auction.participantIds.size(); step += 1) {
+            int index = startIndex < 0 ? step - 1 : (startIndex + step) % auction.participantIds.size();
+            String candidateId = auction.participantIds.get(index);
+            if (candidateId == null) {
+                continue;
+            }
+            if (Objects.equals(candidateId, auction.leaderId)) {
+                continue;
+            }
+            if (auction.passedPlayerIds != null && auction.passedPlayerIds.contains(candidateId)) {
+                continue;
+            }
+            EnginePlayer candidate = player(state, candidateId);
+            if (candidate == null || candidate.bankrupt) {
+                continue;
+            }
+            return candidate.id;
+        }
+        return null;
+    }
+
+    private boolean isAuctionAction(String normalizedAction) {
+        return "auctionbid".equals(normalizedAction) || "auctionpass".equals(normalizedAction);
+    }
+
+    private boolean isTradeAction(String normalizedAction) {
+        return "tradeoffer".equals(normalizedAction)
+            || "tradeaccept".equals(normalizedAction)
+            || "tradereject".equals(normalizedAction);
     }
 
     private int nearest(EngineState state, int start, String type) {
@@ -638,8 +1094,18 @@ final class MonopolyGameEngine {
         return 0;
     }
 
+    private boolean canManageAssets(EngineState state, EnginePlayer player) {
+        return player != null && !player.bankrupt && !"ended".equals(state.phase);
+    }
+
+    private List<EngineSpace> groupTiles(EngineState state, String group) {
+        return state.board.stream()
+            .filter(space -> Objects.equals(space.group, group) && "property".equals(space.type))
+            .toList();
+    }
+
     private boolean ownsFullSet(EngineState state, String ownerId, String group) {
-        List<EngineSpace> groupTiles = state.board.stream().filter(space -> Objects.equals(space.group, group) && "property".equals(space.type)).toList();
+        List<EngineSpace> groupTiles = groupTiles(state, group);
         return !groupTiles.isEmpty() && groupTiles.stream().allMatch(space -> Objects.equals(space.ownerId, ownerId));
     }
 
@@ -661,7 +1127,11 @@ final class MonopolyGameEngine {
     }
 
     private EnginePlayer player(EngineState state, String playerId) {
-        return state.players.stream().filter(item -> Objects.equals(item.id, playerId)).findFirst().orElse(null);
+        String normalizedPlayerId = normalize(playerId);
+        return state.players.stream()
+            .filter(item -> Objects.equals(normalize(item.id), normalizedPlayerId))
+            .findFirst()
+            .orElse(null);
     }
 
     private EnginePlayer owner(EngineState state, EngineSpace tile) {
@@ -844,11 +1314,13 @@ final class MonopolyGameEngine {
         }
     }
 
-    public static final class EngineState { public List<EnginePlayer> players; public List<EngineSpace> board; public List<EngineCard> chanceDeck; public List<EngineCard> chestDeck; public int currentPlayerIndex; public int selectedTileIndex; public PendingPurchase pendingPurchase; public DebtState debt; public String phase; public List<LogEntry> log; public DiceResult lastDice; public LastCard lastCard; public boolean pendingExtraRoll; public SpecialRent specialRent; public int freeParkingPot; public int round; public int turnNumber; public String winnerId; public EngineSettings settings; }
-    public static final class EnginePlayer { public String id; public String name; public String color; public String token; public int turnOrder; public int money; public int position; public boolean bankrupt; public boolean inJail; public int jailTurns; public int escapeCards; public int consecutiveDoubles; }
+    public static final class EngineState { public List<EnginePlayer> players; public List<EngineSpace> board; public List<EngineCard> chanceDeck; public List<EngineCard> chestDeck; public int currentPlayerIndex; public int selectedTileIndex; public PendingPurchase pendingPurchase; public AuctionState auction; public TradeOfferState tradeOffer; public DebtState debt; public String phase; public List<LogEntry> log; public DiceResult lastDice; public LastCard lastCard; public boolean pendingExtraRoll; public SpecialRent specialRent; public int freeParkingPot; public int round; public int turnNumber; public String winnerId; public EngineSettings settings; }
+    public static final class EnginePlayer { public String id; public String name; public String color; public String token; public int turnOrder; public int money; public int position; public boolean bankrupt; public boolean inJail; public int jailTurns; public int escapeCards; public int consecutiveDoubles; public boolean isDisconnected; }
     public static final class EngineSpace { public int index; public String key; public String type; public String name; public String group; public String text; public Integer price; public Integer mortgage; public Integer houseCost; public Integer amount; public List<Integer> rent; public String ownerId; public int houses; public Boolean mortgaged; }
     public static final class EngineCard { public String id; public String kind; public Integer target; public Boolean collectGo; public String label; public Integer steps; public Integer amount; public Boolean toPot; public Integer houseFee; public Integer hotelFee; }
     public static final class PendingPurchase { public Integer tileIndex; }
+    public static final class AuctionState { public Integer tileIndex; public int currentBid; public String leaderId; public String activePlayerId; public List<String> participantIds; public List<String> passedPlayerIds; public Integer minIncrement; }
+    public static final class TradeOfferState { public String fromPlayerId; public String toPlayerId; public List<Integer> offeredTileIndices; public List<Integer> requestedTileIndices; public int offeredCash; public int requestedCash; public String resumePhase; }
     public static final class DebtState { public String playerId; public String creditorId; public int amount; public String reason; public boolean toPot; }
     public static final class LogEntry { public String title; public String message; public String stamp; }
     public static final class DiceResult { public int a; public int b; public int total; public boolean doubles; }

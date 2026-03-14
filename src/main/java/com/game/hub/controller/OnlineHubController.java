@@ -334,6 +334,7 @@ public class OnlineHubController {
     private RoomRow typingRoomRow(TypingRoom room) {
         String note = switch (room.getGameState()) {
             case WAITING -> "Dang cho them nguoi choi";
+            case COUNTDOWN -> "Sap bat dau";
             case PLAYING -> "Dang dua";
             case FINISHED -> "Tran vua ket thuc";
         };

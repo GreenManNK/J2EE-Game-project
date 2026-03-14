@@ -69,6 +69,7 @@ public class BlackjackController {
         summary.put("spectatorCount", room.getSpectators().size());
         summary.put("spectatorLimit", room.getSpectatorLimit());
         summary.put("gameState", room.getGameState());
+        summary.put("currentTurnPlayerId", room.getCurrentTurnPlayerId());
         return summary;
     }
 }

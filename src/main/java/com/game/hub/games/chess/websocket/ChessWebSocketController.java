@@ -129,10 +129,7 @@ public class ChessWebSocketController {
         }
 
         if (result.room() != null && result.room().isGameOver()) {
-            String winnerId = result.room().getWinnerId();
-            String loserId = result.room().getLoserId(winnerId);
-            achievementService.checkAndAward(winnerId, "Chess", true);
-            achievementService.checkAndAward(loserId, "Chess", false);
+            awardFinishedMatch(result.room());
         }
 
         broadcastRoomState(roomId, "MOVE", result.room(), result.room() == null ? null : result.room().statusMessage());
@@ -181,10 +178,7 @@ public class ChessWebSocketController {
         }
 
         if (result.room() != null && result.room().isGameOver()) {
-            String winnerId = result.room().getWinnerId();
-            String loserId = result.room().getLoserId(winnerId);
-            achievementService.checkAndAward(winnerId, "Chess", true);
-            achievementService.checkAndAward(loserId, "Chess", false);
+            awardFinishedMatch(result.room());
         }
 
         broadcastRoomState(roomId, "SURRENDER", result.room(), result.room() == null ? "Nguoi choi da dau hang" : result.room().statusMessage());
@@ -267,6 +261,20 @@ public class ChessWebSocketController {
             payload.put("message", message);
         }
         messagingTemplate.convertAndSend("/topic/chess.room." + roomId, payload);
+    }
+
+    private void awardFinishedMatch(ChessOnlineRoomService.RoomSnapshot room) {
+        if (room == null || !room.isGameOver()) {
+            return;
+        }
+        String winnerId = room.getWinnerId();
+        String loserId = room.getLoserId(winnerId);
+        if (winnerId != null && !winnerId.isBlank()) {
+            achievementService.checkAndAward(winnerId, "Chess", true);
+        }
+        if (loserId != null && !loserId.isBlank()) {
+            achievementService.checkAndAward(loserId, "Chess", false);
+        }
     }
 
     private void sendUserError(String roomId, String userId, String error) {

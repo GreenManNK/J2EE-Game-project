@@ -7,6 +7,7 @@ public class BlackjackPlayer {
     private int currentBet;
     private int lastBet;
     private boolean lastRoundWon;
+    private RoundResult lastRoundResult = RoundResult.NONE;
 
     public BlackjackPlayer(String id, int initialBalance) {
         this.id = id;
@@ -37,8 +38,13 @@ public class BlackjackPlayer {
         return lastRoundWon;
     }
 
+    public RoundResult getLastRoundResult() {
+        return lastRoundResult;
+    }
+
     public void clearRoundOutcome() {
         lastRoundWon = false;
+        lastRoundResult = RoundResult.NONE;
     }
 
     public boolean hasActiveBet() {
@@ -52,6 +58,8 @@ public class BlackjackPlayer {
         currentBet = amount;
         lastBet = amount;
         balance -= amount;
+        lastRoundWon = false;
+        lastRoundResult = RoundResult.NONE;
     }
 
     public void placeAdditionalBet(int amount) {
@@ -69,22 +77,42 @@ public class BlackjackPlayer {
         balance += currentBet * 2;
         currentBet = 0;
         lastRoundWon = true;
+        lastRoundResult = RoundResult.WIN;
     }
 
     public void blackjackWin() {
         balance += (currentBet * 5) / 2;
         currentBet = 0;
         lastRoundWon = true;
+        lastRoundResult = RoundResult.BLACKJACK;
     }
 
     public void loseBet() {
         currentBet = 0;
         lastRoundWon = false;
+        lastRoundResult = RoundResult.LOSE;
     }
 
     public void push() {
         balance += currentBet;
         currentBet = 0;
         lastRoundWon = false;
+        lastRoundResult = RoundResult.PUSH;
+    }
+
+    public void surrender() {
+        balance += currentBet / 2;
+        currentBet = 0;
+        lastRoundWon = false;
+        lastRoundResult = RoundResult.SURRENDER;
+    }
+
+    public enum RoundResult {
+        NONE,
+        WIN,
+        BLACKJACK,
+        LOSE,
+        PUSH,
+        SURRENDER
     }
 }

@@ -272,24 +272,10 @@ public class XiangqiWebSocketController {
     }
 
     private void awardWinnerAchievement(XiangqiOnlineRoomService.RoomSnapshot room) {
-        String winnerUserId = winnerUserId(room);
+        String winnerUserId = room == null ? null : room.getWinnerId();
         if (winnerUserId != null) {
             achievementService.checkAndAward(winnerUserId, "Xiangqi", true);
         }
-    }
-
-    private String winnerUserId(XiangqiOnlineRoomService.RoomSnapshot room) {
-        if (room == null || !"GAME_OVER".equals(room.status()) || room.currentTurnColor() == null || room.players() == null) {
-            return null;
-        }
-        return room.players().stream()
-            .filter(Objects::nonNull)
-            .filter(player -> Objects.equals(player.color(), room.currentTurnColor()))
-            .map(XiangqiOnlineRoomService.PlayerSnapshot::userId)
-            .filter(Objects::nonNull)
-            .filter(userId -> !userId.isBlank())
-            .findFirst()
-            .orElse(null);
     }
 
     private void rememberRoomPresence(SimpMessageHeaderAccessor headers, String roomId, String userId) {

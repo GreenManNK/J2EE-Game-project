@@ -660,7 +660,8 @@
     let questionNumber = 0;
     let totalQuestions = 0;
     let hasSubmittedCurrent = false;
-    let countdown = QUESTION_SECONDS;
+    let currentQuestionDeadlineEpochMs = 0;
+    let currentQuestionDurationSeconds = QUESTION_SECONDS;
     let countdownTimer;
     let currentRoomId = '';
     let roomListTimer;
@@ -987,12 +988,27 @@
         if (Number.isFinite(data.totalQuestions)) {
             totalQuestions = data.totalQuestions;
         }
+        if (Number.isFinite(data.questionDeadlineEpochMs)) {
+            currentQuestionDeadlineEpochMs = data.questionDeadlineEpochMs;
+        }
+        if (Number.isFinite(data.questionDurationSeconds)) {
+            currentQuestionDurationSeconds = data.questionDurationSeconds;
+        }
 
         updateProgressHud();
 
         startGameBtn.style.display = isSpectator ? 'none' : 'inline-flex';
         submitAnswerBtn.style.display = isSpectator ? 'none' : 'inline-flex';
         submitAnswerBtn.disabled = true;
+
+        const normalizedState = String(data.gameState || '').trim().toUpperCase();
+        if (normalizedState === 'WAITING') {
+            stopCountdown();
+            timerEl.textContent = `${currentQuestionDurationSeconds}s`;
+        } else if (normalizedState === 'FINISHED') {
+            stopCountdown();
+            timerEl.textContent = '0s';
+        }
 
         fetchRoomList(false);
     }
@@ -1001,6 +1017,8 @@
         currentQuestionType = data.type;
         questionNumber = Number.isFinite(data.questionNumber) ? data.questionNumber : (questionNumber + 1);
         totalQuestions = Number.isFinite(data.totalQuestions) ? data.totalQuestions : Math.max(totalQuestions, questionNumber);
+        currentQuestionDeadlineEpochMs = Number.isFinite(data.questionDeadlineEpochMs) ? data.questionDeadlineEpochMs : 0;
+        currentQuestionDurationSeconds = Number.isFinite(data.questionDurationSeconds) ? data.questionDurationSeconds : QUESTION_SECONDS;
         hasSubmittedCurrent = false;
 
         questionEl.textContent = data.question || 'Cau hoi';
@@ -1060,7 +1078,10 @@
 
     function renderScores(scorePayload) {
         stopCountdown();
+        currentQuestionDeadlineEpochMs = 0;
         submitAnswerBtn.disabled = true;
+        timerEl.textContent = '0s';
+        startGameBtn.style.display = isSpectator ? 'none' : 'inline-flex';
 
         const sorted = Object.entries(scorePayload)
             .filter((entry) => typeof entry[1] === 'number')
@@ -1090,7 +1111,9 @@
         }
         const reserved = new Set([
             'roomId', 'players', 'spectators', 'question', 'options', 'type',
-            'questionType', 'correctAnswer', 'correctAnswers', 'questionNumber', 'totalQuestions', 'error'
+            'questionType', 'correctAnswer', 'correctAnswers', 'questionNumber', 'totalQuestions', 'error',
+            'answeredCount', 'hostPlayerId', 'gameState', 'questionStartedAtEpochMs',
+            'questionDeadlineEpochMs', 'questionDurationSeconds'
         ]);
         const keys = Object.keys(data);
         if (keys.length === 0) {
@@ -1111,21 +1134,25 @@
 
     function startCountdown() {
         stopCountdown();
-        countdown = QUESTION_SECONDS;
-        timerEl.textContent = `${countdown}s`;
+        if (!currentQuestionDeadlineEpochMs) {
+            currentQuestionDeadlineEpochMs = Date.now() + (currentQuestionDurationSeconds * 1000);
+        }
+        updateTimer();
 
         countdownTimer = window.setInterval(() => {
-            countdown -= 1;
-            timerEl.textContent = `${Math.max(countdown, 0)}s`;
-
-            if (countdown <= 0) {
+            updateTimer();
+            if (Date.now() >= currentQuestionDeadlineEpochMs) {
                 stopCountdown();
-                if (!isSpectator && !hasSubmittedCurrent) {
-                    submitCurrentAnswer(false);
-                    setQuestionFeedback('Het gio. He thong da tu dong gui dap an.', 'error');
+                timerEl.textContent = '0s';
+                submitAnswerBtn.disabled = true;
+                if (!isSpectator) {
+                    if (!hasSubmittedCurrent) {
+                        setQuestionFeedback('Het gio. Dang dong bo ket qua voi server...', 'error');
+                    }
+                    safeSend({ action: 'tick', roomId: currentRoomId });
                 }
             }
-        }, 1000);
+        }, 250);
     }
 
     function stopCountdown() {
@@ -1133,6 +1160,12 @@
             window.clearInterval(countdownTimer);
             countdownTimer = null;
         }
+    }
+
+    function updateTimer() {
+        const remainingMs = currentQuestionDeadlineEpochMs - Date.now();
+        const remainingSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+        timerEl.textContent = `${remainingSeconds}s`;
     }
 
     function submitCurrentAnswer(isManualSubmit) {
@@ -1168,7 +1201,7 @@
             }
         }
 
-        if (safeSend({ action: 'answer', answer })) {
+        if (safeSend({ action: 'answer', answer, questionNumber })) {
             hasSubmittedCurrent = true;
             submitAnswerBtn.disabled = true;
             setQuestionFeedback('Da gui dap an.', 'success');
@@ -1189,6 +1222,8 @@
         questionNumber = 0;
         totalQuestions = 0;
         hasSubmittedCurrent = false;
+        currentQuestionDeadlineEpochMs = 0;
+        currentQuestionDurationSeconds = QUESTION_SECONDS;
         isSpectator = false;
         reconnectMode = 'join';
 

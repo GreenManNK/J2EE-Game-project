@@ -1,6 +1,9 @@
 package com.game.hub.games.chess.service;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -154,5 +157,97 @@ class ChessOnlineRoomServiceTest {
         assertEquals("wP", snapshot.board()[4][4]);
         assertNull(snapshot.board()[6][4]);
         assertEquals(0, snapshot.spectatorCount());
+    }
+
+    @Test
+    void kingSideCastlingShouldMoveKingAndRookTogether() {
+        ChessOnlineRoomService service = new ChessOnlineRoomService();
+        service.joinRoom("CHESS-CASTLE", "whiteUser", "White", "");
+        service.joinRoom("CHESS-CASTLE", "blackUser", "Black", "");
+
+        assertTrue(service.move("CHESS-CASTLE", "whiteUser", 7, 6, 5, 5, null).ok()); // Ng1-f3
+        assertTrue(service.move("CHESS-CASTLE", "blackUser", 0, 6, 2, 5, null).ok()); // Ng8-f6
+        assertTrue(service.move("CHESS-CASTLE", "whiteUser", 6, 4, 5, 4, null).ok()); // e2-e3
+        assertTrue(service.move("CHESS-CASTLE", "blackUser", 1, 4, 2, 4, null).ok()); // e7-e6
+        assertTrue(service.move("CHESS-CASTLE", "whiteUser", 7, 5, 6, 4, null).ok()); // Bf1-e2
+        assertTrue(service.move("CHESS-CASTLE", "blackUser", 0, 5, 1, 4, null).ok()); // Bf8-e7
+
+        ChessOnlineRoomService.ActionResult castle = service.move("CHESS-CASTLE", "whiteUser", 7, 4, 7, 6, null);
+
+        assertTrue(castle.ok());
+        assertNotNull(castle.room());
+        assertEquals("wK", castle.room().board()[7][6]);
+        assertEquals("wR", castle.room().board()[7][5]);
+        assertNull(castle.room().board()[7][4]);
+        assertNull(castle.room().board()[7][7]);
+        assertTrue(castle.room().moveHistory().get(castle.room().moveHistory().size() - 1).contains("nhap thanh ngan"));
+    }
+
+    @Test
+    void enPassantShouldCapturePawnPassedTwoSquares() {
+        ChessOnlineRoomService service = new ChessOnlineRoomService();
+        service.joinRoom("CHESS-ENPASSANT", "whiteUser", "White", "");
+        service.joinRoom("CHESS-ENPASSANT", "blackUser", "Black", "");
+
+        assertTrue(service.move("CHESS-ENPASSANT", "whiteUser", 6, 4, 4, 4, null).ok()); // e2-e4
+        assertTrue(service.move("CHESS-ENPASSANT", "blackUser", 1, 0, 2, 0, null).ok()); // a7-a6
+        assertTrue(service.move("CHESS-ENPASSANT", "whiteUser", 4, 4, 3, 4, null).ok()); // e4-e5
+        assertTrue(service.move("CHESS-ENPASSANT", "blackUser", 1, 3, 3, 3, null).ok()); // d7-d5
+
+        ChessOnlineRoomService.ActionResult enPassant = service.move("CHESS-ENPASSANT", "whiteUser", 3, 4, 2, 3, null);
+
+        assertTrue(enPassant.ok());
+        assertNotNull(enPassant.room());
+        assertEquals("wP", enPassant.room().board()[2][3]);
+        assertNull(enPassant.room().board()[3][3]);
+        assertTrue(enPassant.room().moveHistory().get(enPassant.room().moveHistory().size() - 1).contains("qua duong"));
+        assertEquals("bP", enPassant.room().lastMove().capturedPiece());
+    }
+
+    @Test
+    void repeatedPositionThreeTimesShouldEndAsDraw() {
+        ChessOnlineRoomService service = new ChessOnlineRoomService();
+        service.joinRoom("CHESS-THREEFOLD", "whiteUser", "White", "");
+        service.joinRoom("CHESS-THREEFOLD", "blackUser", "Black", "");
+
+        for (int i = 0; i < 2; i++) {
+            assertTrue(service.move("CHESS-THREEFOLD", "whiteUser", 7, 6, 5, 5, null).ok()); // Ng1-f3
+            assertTrue(service.move("CHESS-THREEFOLD", "blackUser", 0, 6, 2, 5, null).ok()); // Ng8-f6
+            assertTrue(service.move("CHESS-THREEFOLD", "whiteUser", 5, 5, 7, 6, null).ok()); // Nf3-g1
+            ChessOnlineRoomService.ActionResult repeat = service.move("CHESS-THREEFOLD", "blackUser", 2, 5, 0, 6, null); // Nf6-g8
+            if (i == 1) {
+                assertTrue(repeat.ok());
+                assertNotNull(repeat.room());
+                assertEquals("GAME_OVER", repeat.room().status());
+                assertNull(repeat.room().currentTurnUserId());
+                assertNull(repeat.room().getWinnerId());
+                assertTrue(repeat.room().statusMessage().contains("lap lai vi tri 3 lan"));
+            } else {
+                assertTrue(repeat.ok());
+                assertEquals("PLAYING", repeat.room().status());
+            }
+        }
+    }
+
+    @Test
+    void fiftyMoveRuleShouldEndGameWhenHalfmoveClockReachesHundred() {
+        ChessOnlineRoomService service = new ChessOnlineRoomService();
+        service.joinRoom("CHESS-50MOVE", "whiteUser", "White", "");
+        service.joinRoom("CHESS-50MOVE", "blackUser", "Black", "");
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> rooms = (Map<String, Object>) ReflectionTestUtils.getField(service, "rooms");
+        assertNotNull(rooms);
+        Object roomState = rooms.get("CHESS-50MOVE");
+        assertNotNull(roomState);
+        ReflectionTestUtils.setField(roomState, "halfmoveClock", 99);
+
+        ChessOnlineRoomService.ActionResult draw = service.move("CHESS-50MOVE", "whiteUser", 7, 6, 5, 5, null);
+
+        assertTrue(draw.ok());
+        assertNotNull(draw.room());
+        assertEquals("GAME_OVER", draw.room().status());
+        assertNull(draw.room().getWinnerId());
+        assertTrue(draw.room().statusMessage().contains("50 nuoc"));
     }
 }

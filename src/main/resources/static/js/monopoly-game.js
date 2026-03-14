@@ -45,6 +45,12 @@ document.addEventListener("DOMContentLoaded", () => {
     instruction: document.getElementById("monopolyInstruction"),
     debtNotice: document.getElementById("monopolyDebtNotice"),
     lastCard: document.getElementById("monopolyLastCard"),
+    auctionPanel: document.getElementById("monopolyAuctionPanel"),
+    auctionSummary: document.getElementById("monopolyAuctionSummary"),
+    auctionBidInput: document.getElementById("monopolyAuctionBidInput"),
+    auctionBidBtn: document.getElementById("monopolyAuctionBidBtn"),
+    auctionPassBtn: document.getElementById("monopolyAuctionPassBtn"),
+    tradePanel: document.getElementById("monopolyTradePanel"),
     selectedTile: document.getElementById("monopolySelectedTile"),
     standings: document.getElementById("monopolyStandings"),
     players: document.getElementById("monopolyPlayers"),
@@ -154,6 +160,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let state = createEmptyState();
   const roomSession = createRoomSession();
+  const tradeDraft = {
+    targetPlayerId: "",
+    offeredCash: 0,
+    requestedCash: 0,
+    offeredTileIndices: [],
+    requestedTileIndices: []
+  };
 
   bindStaticEvents();
   bindRoomEvents();
@@ -176,6 +189,8 @@ document.addEventListener("DOMContentLoaded", () => {
       currentPlayerIndex: 0,
       selectedTileIndex: 0,
       pendingPurchase: null,
+      auction: null,
+      tradeOffer: null,
       debt: null,
       phase: "setup",
       log: [],
@@ -220,6 +235,69 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       finishGame("Van dau duoc chot bang tay.");
     });
+    refs.auctionBidBtn?.addEventListener("click", () => {
+      const amount = Number(refs.auctionBidInput?.value || 0);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        setRoomStatus("Nhap muc gia hop le truoc khi dat gia.", true);
+        return;
+      }
+      void runRoomAction("auction_bid", null, amount);
+    });
+    refs.auctionPassBtn?.addEventListener("click", () => {
+      void runRoomAction("auction_pass");
+    });
+    refs.tradePanel?.addEventListener("change", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+      if (target.matches("[data-trade-target]")) {
+        tradeDraft.targetPlayerId = target.value || "";
+        tradeDraft.requestedTileIndices = [];
+        renderTradePanel();
+        return;
+      }
+      if (target.matches("[data-trade-offered-cash]")) {
+        tradeDraft.offeredCash = Math.max(0, Number(target.value || 0));
+        return;
+      }
+      if (target.matches("[data-trade-requested-cash]")) {
+        tradeDraft.requestedCash = Math.max(0, Number(target.value || 0));
+        return;
+      }
+      if (target.matches("[data-trade-offered-tile]")) {
+        toggleDraftTile("offeredTileIndices", Number(target.getAttribute("data-trade-offered-tile")), target.checked);
+        return;
+      }
+      if (target.matches("[data-trade-requested-tile]")) {
+        toggleDraftTile("requestedTileIndices", Number(target.getAttribute("data-trade-requested-tile")), target.checked);
+      }
+    });
+    refs.tradePanel?.addEventListener("input", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+      if (target.matches("[data-trade-offered-cash]")) {
+        tradeDraft.offeredCash = Math.max(0, Number(target.value || 0));
+      } else if (target.matches("[data-trade-requested-cash]")) {
+        tradeDraft.requestedCash = Math.max(0, Number(target.value || 0));
+      }
+    });
+    refs.tradePanel?.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-trade-action]");
+      if (!button) {
+        return;
+      }
+      const action = button.getAttribute("data-trade-action");
+      if (action === "offer") {
+        sendTradeOffer();
+      } else if (action === "accept") {
+        void runRoomAction("trade_accept");
+      } else if (action === "reject") {
+        void runRoomAction("trade_reject");
+      }
+    });
 
     refs.board.addEventListener("click", (event) => {
       const button = event.target.closest("[data-space-index]");
@@ -237,6 +315,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const action = actionButton.getAttribute("data-monopoly-action");
       const tileIndex = Number(actionButton.getAttribute("data-space-index"));
+      if (isRoomAttached()) {
+        void runRoomAction(action, tileIndex);
+        return;
+      }
       if (action === "build") {
         buildHouse(tileIndex);
       } else if (action === "sell-house") {
@@ -287,6 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       selectToken(button.getAttribute("data-token-id"));
     });
+    window.addEventListener("pagehide", notifyRoomDisconnect);
   }
 
   function syncSetupFields() {
@@ -353,7 +436,8 @@ document.addEventListener("DOMContentLoaded", () => {
       inJail: false,
       jailTurns: 0,
       escapeCards: 0,
-      consecutiveDoubles: 0
+      consecutiveDoubles: 0,
+      isDisconnected: Boolean(extra.isDisconnected)
     };
   }
 
@@ -525,7 +609,13 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="monopoly-turn-summary__lead">
         <div>
           <strong>${escapeHtml(currentPlayer.name)}</strong>
-          <small>${escapeHtml(currentPlayer.bankrupt ? "Da pha san" : "Dang dung o " + getBoardSpace(currentPlayer.position).name)}</small>
+          <small>${escapeHtml(
+            currentPlayer.bankrupt
+              ? "Da pha san"
+              : currentPlayer.isDisconnected
+                ? "Tam mat ket noi - dang giu cho trong room"
+                : "Dang dung o " + getBoardSpace(currentPlayer.position).name
+          )}</small>
         </div>
         <span class="monopoly-turn-badge">${formatMoney(currentPlayer.money)}</span>
       </div>
@@ -549,6 +639,172 @@ document.addEventListener("DOMContentLoaded", () => {
       refs.lastCard.hidden = true;
       refs.lastCard.innerHTML = "";
     }
+
+    renderAuctionPanel();
+    renderTradePanel();
+  }
+
+  function renderAuctionPanel() {
+    if (!refs.auctionPanel || !refs.auctionSummary || !refs.auctionBidInput || !refs.auctionBidBtn || !refs.auctionPassBtn) {
+      return;
+    }
+    const auction = state.auction;
+    if (!auction || state.phase !== "auction") {
+      refs.auctionPanel.hidden = true;
+      refs.auctionSummary.innerHTML = "";
+      refs.auctionBidInput.value = "";
+      return;
+    }
+    const tile = getBoardSpace(auction.tileIndex);
+    const leader = auction.leaderId ? getPlayerById(auction.leaderId) : null;
+    const activeBidder = auction.activePlayerId ? getPlayerById(auction.activePlayerId) : null;
+    refs.auctionPanel.hidden = false;
+    refs.auctionSummary.innerHTML = `
+      <strong>Dau gia: ${escapeHtml(tile ? tile.name : "Tai san")}</strong>
+      <span>Gia hien tai: ${formatMoney(auction.currentBid || 0)}</span>
+      <span>Dang dan: ${escapeHtml(leader ? leader.name : "Chua co")}</span>
+      <span>Luot hien tai: ${escapeHtml(activeBidder ? activeBidder.name : "Dang cap nhat")}</span>
+    `;
+    const isAuctionTurn = canUseTurnControls();
+    const minimumBid = Math.max((auction.currentBid || 0) + (auction.minIncrement || 10), 1);
+    if (!refs.auctionBidInput.value || Number(refs.auctionBidInput.value) <= auction.currentBid) {
+      refs.auctionBidInput.value = String(minimumBid);
+    }
+    refs.auctionBidInput.min = String(minimumBid);
+    refs.auctionBidInput.disabled = !isAuctionTurn;
+    refs.auctionBidBtn.disabled = !isAuctionTurn;
+    refs.auctionPassBtn.disabled = !isAuctionTurn;
+  }
+
+  function renderTradePanel() {
+    if (!refs.tradePanel) {
+      return;
+    }
+    if (!isRoomAttached() || !roomSession.room || roomSession.room.status !== "PLAYING") {
+      refs.tradePanel.hidden = true;
+      refs.tradePanel.innerHTML = "";
+      return;
+    }
+
+    const tradeOffer = state.tradeOffer;
+    if (tradeOffer && state.phase === "trade") {
+      refs.tradePanel.hidden = false;
+      refs.tradePanel.innerHTML = renderPendingTradeOffer(tradeOffer);
+      return;
+    }
+
+    if (!canCreateTradeOffer()) {
+      refs.tradePanel.hidden = true;
+      refs.tradePanel.innerHTML = "";
+      return;
+    }
+
+    const currentPlayer = getCurrentPlayer();
+    const targetOptions = state.players.filter((player) => player.id !== currentPlayer.id && !player.bankrupt);
+    if (!targetOptions.length) {
+      refs.tradePanel.hidden = true;
+      refs.tradePanel.innerHTML = "";
+      return;
+    }
+    if (!tradeDraft.targetPlayerId || !targetOptions.some((player) => player.id === tradeDraft.targetPlayerId)) {
+      tradeDraft.targetPlayerId = targetOptions[0].id;
+      tradeDraft.requestedTileIndices = [];
+    }
+    const targetPlayer = getPlayerById(tradeDraft.targetPlayerId);
+    const offeredAssets = tradableAssets(currentPlayer.id);
+    const requestedAssets = targetPlayer ? tradableAssets(targetPlayer.id) : [];
+
+    refs.tradePanel.hidden = false;
+    refs.tradePanel.innerHTML = `
+      <h3>Mo de nghi trade</h3>
+      <div class="monopoly-trade-grid">
+        <label class="monopoly-field">
+          <span>Doi tac</span>
+          <select class="form-select" data-trade-target>
+            ${targetOptions.map((player) => `
+              <option value="${player.id}" ${player.id === tradeDraft.targetPlayerId ? "selected" : ""}>${escapeHtml(player.name)}</option>
+            `).join("")}
+          </select>
+        </label>
+        <div class="monopoly-trade-cash">
+          <label class="monopoly-field">
+            <span>Ban dua them</span>
+            <input type="number" min="0" step="10" class="form-control" data-trade-offered-cash value="${tradeDraft.offeredCash || 0}">
+          </label>
+          <label class="monopoly-field">
+            <span>Ban muon nhan them</span>
+            <input type="number" min="0" step="10" class="form-control" data-trade-requested-cash value="${tradeDraft.requestedCash || 0}">
+          </label>
+        </div>
+        <div class="monopoly-trade-assets">
+          <div class="monopoly-trade-asset-group">
+            <strong>Tai san cua ban</strong>
+            <div class="monopoly-trade-checks">
+              ${renderTradeAssetChecks(offeredAssets, "offered", tradeDraft.offeredTileIndices)}
+            </div>
+          </div>
+          <div class="monopoly-trade-asset-group">
+            <strong>Tai san cua ${escapeHtml(targetPlayer ? targetPlayer.name : "doi tac")}</strong>
+            <div class="monopoly-trade-checks">
+              ${renderTradeAssetChecks(requestedAssets, "requested", tradeDraft.requestedTileIndices)}
+            </div>
+          </div>
+        </div>
+        <div class="monopoly-trade-actions">
+          <button type="button" class="hub-portal-inline-btn primary" data-trade-action="offer">Gui de nghi</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderPendingTradeOffer(tradeOffer) {
+    const fromPlayer = getPlayerById(tradeOffer.fromPlayerId);
+    const toPlayer = getPlayerById(tradeOffer.toPlayerId);
+    const offeredAssets = (tradeOffer.offeredTileIndices || []).map((index) => getBoardSpace(index)).filter(Boolean);
+    const requestedAssets = (tradeOffer.requestedTileIndices || []).map((index) => getBoardSpace(index)).filter(Boolean);
+    const isTarget = roomSession.playerId === tradeOffer.toPlayerId;
+    const isProposer = roomSession.playerId === tradeOffer.fromPlayerId;
+    return `
+      <h3>De nghi trade dang mo</h3>
+      <div class="monopoly-trade-summary">
+        <strong>${escapeHtml(fromPlayer ? fromPlayer.name : "Nguoi choi")} -> ${escapeHtml(toPlayer ? toPlayer.name : "Nguoi choi")}</strong>
+        <span>Ban gui: ${formatTradeSummary(tradeOffer.offeredCash, offeredAssets)}</span>
+        <span>Ban nhan: ${formatTradeSummary(tradeOffer.requestedCash, requestedAssets)}</span>
+      </div>
+      <div class="monopoly-trade-actions">
+        ${isTarget ? '<button type="button" class="hub-portal-inline-btn primary" data-trade-action="accept">Chap nhan</button>' : ""}
+        ${(isTarget || isProposer) ? '<button type="button" class="hub-portal-inline-btn" data-trade-action="reject">' + (isProposer ? "Huy de nghi" : "Tu choi") + '</button>' : ""}
+      </div>
+    `;
+  }
+
+  function renderTradeAssetChecks(assets, side, selected) {
+    if (!assets.length) {
+      return '<div class="monopoly-empty-state">Khong co tai san hop le cho trade.</div>';
+    }
+    return assets.map((tile) => `
+      <label class="monopoly-trade-check">
+        <input
+          type="checkbox"
+          ${selected.includes(tile.index) ? "checked" : ""}
+          ${side === "offered" ? 'data-trade-offered-tile="' + tile.index + '"' : 'data-trade-requested-tile="' + tile.index + '"'}>
+        <span>
+          <strong>${escapeHtml(tile.name)}</strong>
+          <small>${escapeHtml((GROUP_META[tile.group] || GROUP_META.corner).label)} | ${formatMoney(calculateTileValue(tile))}</small>
+        </span>
+      </label>
+    `).join("");
+  }
+
+  function formatTradeSummary(cash, assets) {
+    const parts = [];
+    if (Number(cash || 0) > 0) {
+      parts.push(formatMoney(cash));
+    }
+    if (assets.length) {
+      parts.push(assets.map((tile) => tile.name).join(", "));
+    }
+    return parts.length ? parts.join(" + ") : "Khong co gi";
   }
 
   function renderSelectedTile() {
@@ -612,6 +868,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (isRoomAttached() && isRoomHostPlayer(player.id)) {
         badges.push('<span class="monopoly-player-badge">Host</span>');
+      }
+      if (player.isDisconnected) {
+        badges.push('<span class="monopoly-player-badge">Mat ket noi</span>');
       }
       if (player.inJail) {
         badges.push('<span class="monopoly-player-badge">Trong tu</span>');
@@ -688,7 +947,7 @@ document.addEventListener("DOMContentLoaded", () => {
     refs.payBailBtn.disabled = turnLocked || !currentPlayer || !currentPlayer.inJail || state.phase !== "jail" || currentPlayer.money < JAIL_BAIL;
     refs.useCardBtn.disabled = turnLocked || !currentPlayer || !currentPlayer.inJail || state.phase !== "jail" || currentPlayer.escapeCards <= 0;
     refs.bankruptcyBtn.disabled = turnLocked || !isDebtTurn;
-    refs.finishBtn.disabled = turnLocked || activePlayers().length <= 1 || state.phase === "ended";
+    refs.finishBtn.disabled = turnLocked || activePlayers().length <= 1 || state.phase === "ended" || state.phase === "auction";
   }
 
   function getBoardPosition(index) {
@@ -898,7 +1157,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderSelectedTileActions(tile) {
     const currentPlayer = getCurrentPlayer();
-    if (!currentPlayer || currentPlayer.bankrupt || state.phase === "ended" || !canUseTurnControls() || isRoomAttached()) {
+    if (state.phase === "auction" || state.phase === "trade") {
+      return "";
+    }
+    if (!currentPlayer || currentPlayer.bankrupt || state.phase === "ended" || !canUseTurnControls()) {
       return "";
     }
     const buttons = [];
@@ -934,6 +1196,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!currentPlayer) {
       return "Chon setup va bat dau van moi.";
     }
+    if (currentPlayer.isDisconnected) {
+      return currentPlayer.name + " dang tam mat ket noi. Cho nguoi choi nay vao lai room de tiep tuc luot.";
+    }
     if (isRoomAttached() && !canUseTurnControls() && roomSession.room && roomSession.room.status === "PLAYING") {
       return "Dang cho " + currentPlayer.name + " thao tac va dong bo luot.";
     }
@@ -943,6 +1208,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (state.debt && state.debt.playerId === currentPlayer.id) {
       return currentPlayer.name + " dang can xoay von de tra no.";
+    }
+    if (state.auction && state.phase === "auction") {
+      const auctionTile = getBoardSpace(state.auction.tileIndex);
+      const activeBidder = state.auction.activePlayerId ? getPlayerById(state.auction.activePlayerId) : null;
+      return "Dang dau gia " + (auctionTile ? auctionTile.name : "tai san") + ". " + (activeBidder ? activeBidder.name : "Nguoi choi hien tai") + " dang duoc ra gia tiep theo.";
+    }
+    if (state.tradeOffer && state.phase === "trade") {
+      const target = state.tradeOffer.toPlayerId ? getPlayerById(state.tradeOffer.toPlayerId) : null;
+      return "Dang mo trade voi " + (target ? target.name : "nguoi choi khac") + ". Cho chap nhan hoac tu choi de tiep tuc luot.";
     }
     if (state.pendingPurchase) {
       return currentPlayer.name + " dang co quyen mua " + getBoardSpace(state.pendingPurchase.tileIndex).name + ".";
@@ -1021,7 +1295,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function canMortgage(tileIndex) {
     const currentPlayer = getCurrentPlayer();
     const tile = getBoardSpace(tileIndex);
-    return Boolean(currentPlayer && tile && tile.ownerId === currentPlayer.id && !tile.mortgaged && tile.houses === 0);
+    if (!currentPlayer || !tile || tile.ownerId !== currentPlayer.id || tile.mortgaged) {
+      return false;
+    }
+    if (tile.type === "property") {
+      const group = groupTiles(tile.group);
+      return tile.houses === 0 && group.every((space) => space.houses === 0);
+    }
+    return true;
   }
 
   function getUnmortgageCost(tile) {
@@ -1767,8 +2048,73 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!roomSession.room || roomSession.room.status !== "PLAYING") {
       return false;
     }
+    if (state.phase === "auction" && state.auction && roomSession.playerId) {
+      return state.auction.activePlayerId === roomSession.playerId;
+    }
+    if (state.phase === "trade" && state.tradeOffer && roomSession.playerId) {
+      return state.tradeOffer.fromPlayerId === roomSession.playerId || state.tradeOffer.toPlayerId === roomSession.playerId;
+    }
     const currentPlayer = getCurrentPlayer();
     return Boolean(currentPlayer && roomSession.playerId && currentPlayer.id === roomSession.playerId);
+  }
+
+  function canCreateTradeOffer() {
+    const currentPlayer = getCurrentPlayer();
+    if (!currentPlayer || currentPlayer.bankrupt || !canUseTurnControls()) {
+      return false;
+    }
+    return isRoomAttached()
+      && !state.tradeOffer
+      && !state.auction
+      && !state.debt
+      && !state.pendingPurchase
+      && ["await_roll", "await_end_turn", "jail"].includes(state.phase);
+  }
+
+  function tradableAssets(playerId) {
+    return ownedSpaces(playerId).filter((tile) => {
+      if (tile.houses > 0) {
+        return false;
+      }
+      if (tile.type === "property") {
+        return groupTiles(tile.group).every((space) => space.houses === 0);
+      }
+      return true;
+    });
+  }
+
+  function toggleDraftTile(key, tileIndex, checked) {
+    if (!Number.isFinite(tileIndex)) {
+      return;
+    }
+    const current = Array.isArray(tradeDraft[key]) ? tradeDraft[key].slice() : [];
+    const next = checked
+      ? (current.includes(tileIndex) ? current : current.concat(tileIndex))
+      : current.filter((value) => value !== tileIndex);
+    tradeDraft[key] = next;
+  }
+
+  function resetTradeDraft() {
+    tradeDraft.targetPlayerId = "";
+    tradeDraft.offeredCash = 0;
+    tradeDraft.requestedCash = 0;
+    tradeDraft.offeredTileIndices = [];
+    tradeDraft.requestedTileIndices = [];
+  }
+
+  function sendTradeOffer() {
+    const currentPlayer = getCurrentPlayer();
+    if (!currentPlayer || !tradeDraft.targetPlayerId) {
+      setRoomStatus("Chon doi tac trade truoc khi gui de nghi.", true);
+      return;
+    }
+    void runRoomAction("trade_offer", null, null, {
+      targetPlayerId: tradeDraft.targetPlayerId,
+      offeredCash: Math.max(0, Number(tradeDraft.offeredCash || 0)),
+      requestedCash: Math.max(0, Number(tradeDraft.requestedCash || 0)),
+      offeredTileIndices: tradeDraft.offeredTileIndices.slice(),
+      requestedTileIndices: tradeDraft.requestedTileIndices.slice()
+    });
   }
 
   function renderSetupAvailability() {
@@ -1807,7 +2153,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ${players.map((player) => `
             <article class="monopoly-room-player-chip">
               <strong>${escapeHtml(player.name)}${player.playerId === roomSession.playerId ? " (Ban)" : ""}</strong>
-              <small>${player.host ? "Host" : "Nguoi choi"} | Token: ${escapeHtml(player.token ? resolveTokenLabel(player.token) : "Chua chon")} | Thu tu: ${player.turnOrder + 1}</small>
+              <small>${player.host ? "Host" : "Nguoi choi"} | Token: ${escapeHtml(player.token ? resolveTokenLabel(player.token) : "Chua chon")} | Thu tu: ${player.turnOrder + 1}${player.disconnected ? " | Tam offline" : ""}</small>
             </article>
           `).join("")}
         </div>
@@ -2014,7 +2360,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  async function runRoomAction(action) {
+  async function runRoomAction(action, tileIndex, amount, extraPayload) {
     if (!isRoomAttached() || !roomSession.room) {
       return;
     }
@@ -2032,10 +2378,16 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "POST",
         body: JSON.stringify({
           playerId: roomSession.playerId,
-          action
+          action,
+          tileIndex: Number.isFinite(tileIndex) ? tileIndex : null,
+          amount: Number.isFinite(amount) ? amount : null,
+          ...(extraPayload || {})
         })
       });
       applyRoomSnapshot(payload.room);
+      if (action === "trade_offer" || action === "trade_accept" || action === "trade_reject") {
+        resetTradeDraft();
+      }
       setRoomStatus("Da cap nhat room sau hanh dong: " + describeRoomAction(action) + ".", false);
     } catch (error) {
       if (error.payload && error.payload.room) {
@@ -2053,6 +2405,24 @@ document.addEventListener("DOMContentLoaded", () => {
         return "mua tai san";
       case "skip_purchase":
         return "bo qua mua";
+      case "build":
+        return "xay nha";
+      case "sell-house":
+        return "ban nha";
+      case "mortgage":
+        return "the chap";
+      case "unmortgage":
+        return "giai chap";
+      case "auction_bid":
+        return "dat gia";
+      case "auction_pass":
+        return "bo luot dau gia";
+      case "trade_offer":
+        return "gui de nghi trade";
+      case "trade_accept":
+        return "chap nhan trade";
+      case "trade_reject":
+        return "dong trade";
       case "end_turn":
         return "ket thuc luot";
       case "pay_bail":
@@ -2073,16 +2443,15 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     const roomId = roomSession.room.roomId;
-    if (roomSession.room.status !== "PLAYING") {
-      try {
-        await fetchJson("/api/games/monopoly/rooms/" + encodeURIComponent(roomId) + "/leave", {
-          method: "POST",
-          body: JSON.stringify({
-            playerId: roomSession.playerId
-          })
-        });
-      } catch (_) {
-      }
+    const wasPlaying = roomSession.room.status === "PLAYING";
+    try {
+      await fetchJson("/api/games/monopoly/rooms/" + encodeURIComponent(roomId) + "/leave", {
+        method: "POST",
+        body: JSON.stringify({
+          playerId: roomSession.playerId
+        })
+      });
+    } catch (_) {
     }
     stopRoomPolling();
     if (roomSession.publishTimer) {
@@ -2096,10 +2465,40 @@ document.addEventListener("DOMContentLoaded", () => {
     roomSession.lastPublishedFingerprint = "";
     roomSession.statusMessage = "";
     roomSession.statusIsError = false;
+    resetTradeDraft();
     updateRoomUrl("");
-    setRoomStatus("Da roi che do phong. Ban co the tao room khac hoac choi local.", false);
+    setRoomStatus(
+      wasPlaying
+        ? "Da roi room. Slot cua ban duoc danh dau tam offline va co the vao lai bang cung ma phong."
+        : "Da roi che do phong. Ban co the tao room khac hoac choi local.",
+      false
+    );
     startConfiguredGame(readSetupConfig());
     await loadRoomList(true);
+  }
+
+  function notifyRoomDisconnect() {
+    if (!isRoomAttached() || !roomSession.room || roomSession.room.status !== "PLAYING" || !roomSession.playerId) {
+      return;
+    }
+    const url = "/api/games/monopoly/rooms/" + encodeURIComponent(roomSession.room.roomId) + "/leave";
+    const payload = JSON.stringify({ playerId: roomSession.playerId });
+    try {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(url, new Blob([payload], { type: "application/json" }));
+        return;
+      }
+    } catch (_) {
+    }
+    try {
+      window.fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+        keepalive: true
+      }).catch(() => {});
+    } catch (_) {
+    }
   }
 
   async function copyRoomInvite() {
@@ -2120,6 +2519,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function applyRoomSnapshot(room) {
     roomSession.room = room || null;
     roomSession.roomId = room && room.roomId ? room.roomId : "";
+    if (room && room.status !== "PLAYING") {
+      resetTradeDraft();
+    }
     if (refs.roomCodeInput) {
       refs.roomCodeInput.value = roomSession.roomId || "";
     }
@@ -2151,7 +2553,8 @@ document.addEventListener("DOMContentLoaded", () => {
     state.players = (room.players || []).map((player, index) => createPlayerState(player.name, index, room.startingCash, {
       id: player.playerId,
       token: player.token,
-      turnOrder: player.turnOrder
+      turnOrder: player.turnOrder,
+      isDisconnected: Boolean(player.disconnected)
     }));
     state.phase = "setup";
     state.selectedTileIndex = 0;
@@ -2174,7 +2577,8 @@ document.addEventListener("DOMContentLoaded", () => {
     state.players = (room.players || []).map((player, index) => createPlayerState(player.name, index, room.startingCash, {
       id: player.playerId,
       token: player.token,
-      turnOrder: player.turnOrder
+      turnOrder: player.turnOrder,
+      isDisconnected: Boolean(player.disconnected)
     }));
     state.phase = state.players[0] ? "await_roll" : "setup";
     state.round = 1;
@@ -2203,9 +2607,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const roomPlayer = roomPlayers.find((entry) => entry.playerId === player.id) || null;
       return {
         ...player,
+        name: roomPlayer && roomPlayer.name ? roomPlayer.name : player.name,
         color: player.color || PLAYER_COLORS[index % PLAYER_COLORS.length],
         token: player.token || (roomPlayer ? roomPlayer.token : null),
-        turnOrder: Number.isFinite(player.turnOrder) ? player.turnOrder : (roomPlayer ? roomPlayer.turnOrder : index)
+        turnOrder: Number.isFinite(player.turnOrder) ? player.turnOrder : (roomPlayer ? roomPlayer.turnOrder : index),
+        isDisconnected: roomPlayer ? Boolean(roomPlayer.disconnected) : Boolean(player.isDisconnected)
       };
     }) : [];
     roomSession.lastPublishedFingerprint = fingerprintForRoomState(exportGameStateForRoom());

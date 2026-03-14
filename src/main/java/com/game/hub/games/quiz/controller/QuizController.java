@@ -84,6 +84,7 @@ public class QuizController {
     }
 
     private Map<String, Object> toRoomSummary(QuizRoom room) {
+        room.synchronizeQuestionTimer();
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("id", room.getRoomId());
         summary.put("playerCount", room.getPlayers().size());
@@ -102,6 +103,9 @@ public class QuizController {
         summary.put("answeredCount", room.getAnsweredCount());
         summary.put("hostPlayerId", room.getHostPlayerId() == null ? "" : room.getHostPlayerId());
         summary.put("gameState", room.isGameOver() ? "FINISHED" : (room.isStarted() ? "PLAYING" : "WAITING"));
+        summary.put("questionStartedAtEpochMs", room.getQuestionStartedAtEpochMs());
+        summary.put("questionDeadlineEpochMs", room.getQuestionDeadlineEpochMs());
+        summary.put("questionDurationSeconds", room.getQuestionDurationSeconds());
         return summary;
     }
 }

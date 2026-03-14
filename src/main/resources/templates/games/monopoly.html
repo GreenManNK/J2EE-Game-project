@@ -281,6 +281,15 @@
           <p id="monopolyInstruction" class="monopoly-note"></p>
           <p id="monopolyDebtNotice" class="monopoly-note monopoly-note--alert" hidden></p>
           <div id="monopolyLastCard" class="monopoly-last-card" hidden></div>
+          <div id="monopolyAuctionPanel" class="monopoly-auction-panel" hidden>
+            <div id="monopolyAuctionSummary" class="monopoly-auction-summary"></div>
+            <div class="monopoly-auction-actions">
+              <input id="monopolyAuctionBidInput" type="number" min="1" step="10" class="form-control" placeholder="Nhap gia dat">
+              <button id="monopolyAuctionBidBtn" type="button" class="hub-portal-inline-btn primary">Dat gia</button>
+              <button id="monopolyAuctionPassBtn" type="button" class="hub-portal-inline-btn">Bo luot</button>
+            </div>
+          </div>
+          <div id="monopolyTradePanel" class="monopoly-trade-panel" hidden></div>
 
           <div class="monopoly-control-grid">
             <button id="monopolyRollBtn" type="button" class="hub-portal-inline-btn primary">Tung xuc xac</button>
@@ -1196,6 +1205,101 @@
     margin-bottom: 0.25rem;
   }
 
+  .monopoly-auction-panel {
+    padding: 0.9rem;
+    border-radius: 16px;
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    background: linear-gradient(160deg, rgba(30, 64, 175, 0.22), rgba(15, 23, 42, 0.32));
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .monopoly-auction-summary {
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.92rem;
+  }
+
+  .monopoly-auction-summary strong {
+    font-size: 1rem;
+  }
+
+  .monopoly-auction-actions {
+    display: grid;
+    gap: 0.55rem;
+    grid-template-columns: minmax(0, 1fr) repeat(2, auto);
+    align-items: center;
+  }
+
+  .monopoly-trade-panel {
+    padding: 0.95rem;
+    border-radius: 16px;
+    border: 1px solid rgba(52, 211, 153, 0.28);
+    background: linear-gradient(160deg, rgba(6, 95, 70, 0.24), rgba(15, 23, 42, 0.28));
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .monopoly-trade-panel h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .monopoly-trade-grid {
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .monopoly-trade-assets {
+    display: grid;
+    gap: 0.55rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .monopoly-trade-asset-group {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .monopoly-trade-checks {
+    display: grid;
+    gap: 0.35rem;
+    max-height: 180px;
+    overflow: auto;
+  }
+
+  .monopoly-trade-check {
+    display: flex;
+    gap: 0.55rem;
+    align-items: flex-start;
+    padding: 0.55rem 0.65rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .monopoly-trade-check input {
+    margin-top: 0.2rem;
+  }
+
+  .monopoly-trade-check strong,
+  .monopoly-trade-check small {
+    display: block;
+  }
+
+  .monopoly-trade-actions,
+  .monopoly-trade-cash {
+    display: grid;
+    gap: 0.55rem;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    align-items: center;
+  }
+
+  .monopoly-trade-summary {
+    display: grid;
+    gap: 0.4rem;
+  }
+
   .monopoly-control-grid {
     display: grid;
     gap: 0.6rem;
@@ -1493,6 +1597,8 @@
   body:not(.dark-mode) .monopoly-mini-chip,
   body:not(.dark-mode) .monopoly-turn-summary__lead,
   body:not(.dark-mode) .monopoly-last-card,
+  body:not(.dark-mode) .monopoly-auction-panel,
+  body:not(.dark-mode) .monopoly-trade-panel,
   body:not(.dark-mode) .monopoly-tile-panel__head,
   body:not(.dark-mode) .monopoly-tile-meta-item,
   body:not(.dark-mode) .monopoly-asset-item,

@@ -159,6 +159,9 @@ public class TypingSocket extends TextWebSocketHandler {
                 roomPayload.put("players", room.getPlayers());
                 roomPayload.put("gameState", room.getGameState());
                 roomPayload.put("winner", room.getWinner());
+                roomPayload.put("countdownEndsAtEpochMs", room.getCountdownEndsAtEpochMs());
+                roomPayload.put("raceStartedAtEpochMs", room.getRaceStartedAtEpochMs());
+                roomPayload.put("raceEndsAtEpochMs", room.getRaceEndsAtEpochMs());
                 roomPayload.put("yourId", sessionPlayerIds.get(ws));
                 roomPayload.put("playerCount", room.getPlayers().size());
                 roomPayload.put("playerLimit", room.getPlayerLimit());

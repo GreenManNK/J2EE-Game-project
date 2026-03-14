@@ -13,6 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class QuizRoom {
+    private static final int QUESTION_DURATION_SECONDS = 15;
+    private static final long QUESTION_DURATION_MS = QUESTION_DURATION_SECONDS * 1000L;
+
     private final String roomId;
     private final List<Question> questions;
     private final Map<WebSocketSession, Integer> players;
@@ -21,6 +24,8 @@ public class QuizRoom {
     private int currentQuestionIndex;
     private boolean started;
     private String hostPlayerId;
+    private long questionStartedAtEpochMs;
+    private long questionDeadlineEpochMs;
 
     public QuizRoom(String roomId, List<Question> questions) {
         this.roomId = roomId;
@@ -31,6 +36,8 @@ public class QuizRoom {
         this.currentQuestionIndex = 0;
         this.started = false;
         this.hostPlayerId = null;
+        this.questionStartedAtEpochMs = 0;
+        this.questionDeadlineEpochMs = 0;
     }
 
     public boolean addPlayer(WebSocketSession session) {
@@ -92,6 +99,8 @@ public class QuizRoom {
             started = false;
             currentQuestionIndex = 0;
             answeredPlayerIds.clear();
+            questionStartedAtEpochMs = 0;
+            questionDeadlineEpochMs = 0;
         }
     }
 
@@ -103,21 +112,28 @@ public class QuizRoom {
         started = true;
         answeredPlayerIds.clear();
         players.replaceAll((session, score) -> 0);
+        openCurrentQuestionWindow();
         return true;
     }
 
     public Question getCurrentQuestion() {
+        synchronizeQuestionTimer();
         if (started && currentQuestionIndex < questions.size()) {
             return questions.get(currentQuestionIndex);
         }
         return null;
     }
 
-    public boolean answerQuestion(WebSocketSession session, Object answer) {
+    public boolean answerQuestion(WebSocketSession session, Object answer, Integer questionNumber) {
         if (session == null) {
             return false;
         }
+        synchronizeQuestionTimer();
         if (!started) {
+            return false;
+        }
+        int activeQuestionNumber = currentQuestionIndex + 1;
+        if (questionNumber != null && questionNumber != activeQuestionNumber) {
             return false;
         }
         String playerId = playerKey(session);
@@ -174,10 +190,15 @@ public class QuizRoom {
         answeredPlayerIds.clear();
         if (currentQuestionIndex >= questions.size()) {
             started = false;
+            questionStartedAtEpochMs = 0;
+            questionDeadlineEpochMs = 0;
+            return;
         }
+        openCurrentQuestionWindow();
     }
 
     public boolean hasEveryoneAnswered() {
+        synchronizeQuestionTimer();
         if (!started || players.isEmpty()) {
             return false;
         }
@@ -196,6 +217,7 @@ public class QuizRoom {
     }
 
     public boolean isGameOver() {
+        synchronizeQuestionTimer();
         return !started && currentQuestionIndex >= questions.size() && !questions.isEmpty();
     }
 
@@ -212,6 +234,7 @@ public class QuizRoom {
     }
 
     public int getCurrentQuestionIndex() {
+        synchronizeQuestionTimer();
         return currentQuestionIndex;
     }
 
@@ -224,11 +247,47 @@ public class QuizRoom {
     }
 
     public boolean isStarted() {
+        synchronizeQuestionTimer();
         return started;
     }
 
     public String getHostPlayerId() {
         return hostPlayerId;
+    }
+
+    public long getQuestionStartedAtEpochMs() {
+        synchronizeQuestionTimer();
+        return questionStartedAtEpochMs;
+    }
+
+    public long getQuestionDeadlineEpochMs() {
+        synchronizeQuestionTimer();
+        return questionDeadlineEpochMs;
+    }
+
+    public int getQuestionDurationSeconds() {
+        return QUESTION_DURATION_SECONDS;
+    }
+
+    public boolean synchronizeQuestionTimer() {
+        if (!started) {
+            return false;
+        }
+        if (questionDeadlineEpochMs <= 0) {
+            openCurrentQuestionWindow();
+            return true;
+        }
+        long now = System.currentTimeMillis();
+        if (now < questionDeadlineEpochMs) {
+            return false;
+        }
+        nextQuestion();
+        return true;
+    }
+
+    private void openCurrentQuestionWindow() {
+        questionStartedAtEpochMs = System.currentTimeMillis();
+        questionDeadlineEpochMs = questionStartedAtEpochMs + QUESTION_DURATION_MS;
     }
 
     private WebSocketSession resolvePlayerSession(WebSocketSession session) {

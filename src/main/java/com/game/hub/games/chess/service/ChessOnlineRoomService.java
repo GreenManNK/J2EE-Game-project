@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -158,7 +159,17 @@ public class ChessOnlineRoomService {
         if (target != null && !target.isBlank() && target.startsWith(player.color)) {
             return ActionResult.error("Cannot capture your own piece");
         }
-        if (!ChessMoveRules.isLegalMove(board, fromRow, fromCol, toRow, toCol, player.color)) {
+
+        ChessMoveRules.ResolvedMove legalMove = ChessMoveRules.resolveLegalMove(
+            board,
+            fromRow,
+            fromCol,
+            toRow,
+            toCol,
+            player.color,
+            moveContext(room)
+        );
+        if (legalMove == null) {
             return ActionResult.error("Illegal move");
         }
 
@@ -168,12 +179,25 @@ public class ChessOnlineRoomService {
             movedPiece = piece.substring(0, 1) + requestedPromotion;
         }
 
-        board[fromRow][fromCol] = null;
-        board[toRow][toCol] = movedPiece;
+        String capturedPiece = legalMove.isEnPassant() ? board[legalMove.capturedRow()][legalMove.capturedCol()] : target;
+        applyMove(board, legalMove, movedPiece);
+        updateCastlingRights(room, piece, fromRow, fromCol, capturedPiece, legalMove.capturedRow(), legalMove.capturedCol());
+        updateEnPassantTarget(room, piece, fromRow, toRow, fromCol);
+        updateHalfmoveClock(room, piece, capturedPiece != null && !capturedPiece.isBlank());
 
-        String notation = buildNotation(piece, fromRow, fromCol, toRow, toCol, target, movedPiece, requestedPromotion);
+        String notation = buildNotation(
+            piece,
+            fromRow,
+            fromCol,
+            toRow,
+            toCol,
+            capturedPiece,
+            movedPiece,
+            requestedPromotion,
+            legalMove
+        );
         room.moveHistory.add(notation);
-        room.lastMove = new LastMoveState(fromRow, fromCol, toRow, toCol, piece, target, movedPiece, notation);
+        room.lastMove = new LastMoveState(fromRow, fromCol, toRow, toCol, piece, capturedPiece, movedPiece, notation);
 
         String nextColor = "w".equals(player.color) ? "b" : "w";
         room.currentTurnColor = nextColor;
@@ -190,7 +214,7 @@ public class ChessOnlineRoomService {
         }
 
         boolean opponentInCheck = ChessMoveRules.isKingInCheck(board, nextColor);
-        boolean opponentHasMove = ChessMoveRules.hasAnyLegalMove(board, nextColor);
+        boolean opponentHasMove = ChessMoveRules.hasAnyLegalMove(board, nextColor, moveContext(room));
         if (!opponentHasMove && opponentInCheck) {
             room.status = STATUS_GAME_OVER;
             room.currentTurnUserId = null;
@@ -202,6 +226,27 @@ public class ChessOnlineRoomService {
             room.status = STATUS_GAME_OVER;
             room.currentTurnUserId = null;
             room.statusMessage = "Hoa co (stalemate)";
+            return ActionResult.ok("MOVE", snapshotOf(room));
+        }
+
+        if (hasInsufficientMaterial(board)) {
+            room.status = STATUS_GAME_OVER;
+            room.currentTurnUserId = null;
+            room.statusMessage = "Hoa co (khong du luc luong chieu het)";
+            return ActionResult.ok("MOVE", snapshotOf(room));
+        }
+
+        if (room.halfmoveClock >= 100) {
+            room.status = STATUS_GAME_OVER;
+            room.currentTurnUserId = null;
+            room.statusMessage = "Hoa co (luat 50 nuoc)";
+            return ActionResult.ok("MOVE", snapshotOf(room));
+        }
+
+        if (recordPositionAndCheckThreefold(room)) {
+            room.status = STATUS_GAME_OVER;
+            room.currentTurnUserId = null;
+            room.statusMessage = "Hoa co (lap lai vi tri 3 lan)";
             return ActionResult.ok("MOVE", snapshotOf(room));
         }
 
@@ -318,10 +363,192 @@ public class ChessOnlineRoomService {
         return base + " | Xem: " + room.spectators.size();
     }
 
+    private ChessMoveRules.MoveContext moveContext(RoomState room) {
+        return new ChessMoveRules.MoveContext(
+            room.whiteKingSideCastle,
+            room.whiteQueenSideCastle,
+            room.blackKingSideCastle,
+            room.blackQueenSideCastle,
+            room.enPassantRow,
+            room.enPassantCol
+        );
+    }
+
+    private void applyMove(String[][] board, ChessMoveRules.ResolvedMove move, String movedPiece) {
+        board[move.fromRow()][move.fromCol()] = null;
+        if (move.isEnPassant()) {
+            board[move.capturedRow()][move.capturedCol()] = null;
+        }
+        board[move.toRow()][move.toCol()] = movedPiece;
+        if (move.isCastleKingSide()) {
+            board[move.toRow()][5] = board[move.toRow()][7];
+            board[move.toRow()][7] = null;
+        } else if (move.isCastleQueenSide()) {
+            board[move.toRow()][3] = board[move.toRow()][0];
+            board[move.toRow()][0] = null;
+        }
+    }
+
+    private void updateCastlingRights(RoomState room,
+                                      String piece,
+                                      int fromRow,
+                                      int fromCol,
+                                      String capturedPiece,
+                                      int capturedRow,
+                                      int capturedCol) {
+        if ("wK".equals(piece)) {
+            room.whiteKingSideCastle = false;
+            room.whiteQueenSideCastle = false;
+        } else if ("bK".equals(piece)) {
+            room.blackKingSideCastle = false;
+            room.blackQueenSideCastle = false;
+        } else if ("wR".equals(piece)) {
+            if (fromRow == 7 && fromCol == 0) {
+                room.whiteQueenSideCastle = false;
+            } else if (fromRow == 7 && fromCol == 7) {
+                room.whiteKingSideCastle = false;
+            }
+        } else if ("bR".equals(piece)) {
+            if (fromRow == 0 && fromCol == 0) {
+                room.blackQueenSideCastle = false;
+            } else if (fromRow == 0 && fromCol == 7) {
+                room.blackKingSideCastle = false;
+            }
+        }
+
+        if ("wR".equals(capturedPiece)) {
+            if (capturedRow == 7 && capturedCol == 0) {
+                room.whiteQueenSideCastle = false;
+            } else if (capturedRow == 7 && capturedCol == 7) {
+                room.whiteKingSideCastle = false;
+            }
+        } else if ("bR".equals(capturedPiece)) {
+            if (capturedRow == 0 && capturedCol == 0) {
+                room.blackQueenSideCastle = false;
+            } else if (capturedRow == 0 && capturedCol == 7) {
+                room.blackKingSideCastle = false;
+            }
+        }
+    }
+
+    private void updateEnPassantTarget(RoomState room, String piece, int fromRow, int toRow, int fromCol) {
+        room.enPassantRow = null;
+        room.enPassantCol = null;
+        if (piece == null || piece.length() < 2 || piece.charAt(1) != 'P') {
+            return;
+        }
+        if (Math.abs(fromRow - toRow) == 2) {
+            room.enPassantRow = (fromRow + toRow) / 2;
+            room.enPassantCol = fromCol;
+        }
+    }
+
+    private void updateHalfmoveClock(RoomState room, String piece, boolean capture) {
+        boolean pawnMove = piece != null && piece.length() >= 2 && piece.charAt(1) == 'P';
+        room.halfmoveClock = (pawnMove || capture) ? 0 : room.halfmoveClock + 1;
+    }
+
+    private boolean recordPositionAndCheckThreefold(RoomState room) {
+        String signature = positionSignature(room);
+        int count = room.positionCounts.getOrDefault(signature, 0) + 1;
+        room.positionCounts.put(signature, count);
+        return count >= 3;
+    }
+
+    private String positionSignature(RoomState room) {
+        StringBuilder builder = new StringBuilder(BOARD_SIZE * BOARD_SIZE * 3);
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                String piece = room.board[row][col];
+                builder.append(piece == null ? "--" : piece).append('|');
+            }
+        }
+        builder.append(room.currentTurnColor).append('|');
+        builder.append(room.whiteKingSideCastle ? 'K' : '-');
+        builder.append(room.whiteQueenSideCastle ? 'Q' : '-');
+        builder.append(room.blackKingSideCastle ? 'k' : '-');
+        builder.append(room.blackQueenSideCastle ? 'q' : '-');
+        builder.append('|');
+        if (room.enPassantRow == null || room.enPassantCol == null) {
+            builder.append('-');
+        } else {
+            builder.append(toSquare(room.enPassantRow, room.enPassantCol));
+        }
+        return builder.toString();
+    }
+
+    private boolean hasInsufficientMaterial(String[][] board) {
+        List<PiecePosition> whiteMinors = new ArrayList<>();
+        List<PiecePosition> blackMinors = new ArrayList<>();
+        int whiteBishops = 0;
+        int blackBishops = 0;
+        int whiteKnights = 0;
+        int blackKnights = 0;
+
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                String piece = board[row][col];
+                if (piece == null || piece.isBlank() || piece.length() < 2) {
+                    continue;
+                }
+                char type = piece.charAt(1);
+                if (type == 'K') {
+                    continue;
+                }
+                if (type == 'Q' || type == 'R' || type == 'P') {
+                    return false;
+                }
+                PiecePosition position = new PiecePosition(piece.charAt(0), type, row, col);
+                if (piece.charAt(0) == 'w') {
+                    whiteMinors.add(position);
+                    if (type == 'B') {
+                        whiteBishops += 1;
+                    } else if (type == 'N') {
+                        whiteKnights += 1;
+                    }
+                } else {
+                    blackMinors.add(position);
+                    if (type == 'B') {
+                        blackBishops += 1;
+                    } else if (type == 'N') {
+                        blackKnights += 1;
+                    }
+                }
+            }
+        }
+
+        int totalMinors = whiteMinors.size() + blackMinors.size();
+        if (totalMinors == 0) {
+            return true;
+        }
+        if (totalMinors == 1) {
+            return true;
+        }
+        if (whiteMinors.size() == 2 && blackMinors.isEmpty() && whiteKnights == 2) {
+            return true;
+        }
+        if (blackMinors.size() == 2 && whiteMinors.isEmpty() && blackKnights == 2) {
+            return true;
+        }
+        if (whiteBishops == 1 && blackBishops == 1 && whiteKnights == 0 && blackKnights == 0
+            && totalMinors == 2) {
+            return whiteMinors.get(0).squareColor() == blackMinors.get(0).squareColor();
+        }
+        return false;
+    }
+
     private void resetBoardForCurrentPlayers(RoomState room, String statusMessage) {
         room.board = createInitialBoard();
         room.moveHistory.clear();
         room.lastMove = null;
+        room.whiteKingSideCastle = true;
+        room.whiteQueenSideCastle = true;
+        room.blackKingSideCastle = true;
+        room.blackQueenSideCastle = true;
+        room.enPassantRow = null;
+        room.enPassantCol = null;
+        room.halfmoveClock = 0;
+        room.positionCounts.clear();
         if (room.players.size() >= PLAYER_LIMIT) {
             room.status = STATUS_PLAYING;
             room.currentTurnColor = "w";
@@ -329,6 +556,7 @@ public class ChessOnlineRoomService {
             room.statusMessage = statusMessage == null || statusMessage.isBlank()
                 ? "Da san sang choi"
                 : statusMessage;
+            recordPositionAndCheckThreefold(room);
         } else {
             room.status = STATUS_WAITING;
             room.currentTurnColor = "w";
@@ -438,11 +666,21 @@ public class ChessOnlineRoomService {
                                  int toCol,
                                  String capturedPiece,
                                  String movedPiece,
-                                 String promotion) {
+                                 String promotion,
+                                 ChessMoveRules.ResolvedMove move) {
         String sideText = (originalPiece != null && originalPiece.startsWith("w")) ? "Trang" : "Den";
+        if (move != null && move.isCastleKingSide()) {
+            return sideText + " nhap thanh ngan";
+        }
+        if (move != null && move.isCastleQueenSide()) {
+            return sideText + " nhap thanh dai";
+        }
         String pieceName = pieceName(originalPiece);
         String action = (capturedPiece == null || capturedPiece.isBlank()) ? "di" : "an";
         String text = sideText + " " + pieceName + " " + action + " " + toSquare(fromRow, fromCol) + " -> " + toSquare(toRow, toCol);
+        if (move != null && move.isEnPassant()) {
+            text += " (bat tot qua duong)";
+        }
         if (movedPiece != null && originalPiece != null && !movedPiece.equals(originalPiece) && isPawnPromotion(originalPiece, toRow)) {
             text += " (phong " + pieceName(movedPiece) + ")";
         } else if (promotion != null && !promotion.isBlank() && originalPiece != null && originalPiece.endsWith("P") && isPawnPromotion(originalPiece, toRow)) {
@@ -530,7 +768,9 @@ public class ChessOnlineRoomService {
             if (!isGameOver()) {
                 return null;
             }
-            // Simplified logic: assumes the currentTurnColor is the winner's color
+            if (statusMessage != null && statusMessage.toLowerCase(Locale.ROOT).contains("hoa")) {
+                return null;
+            }
             return players.stream()
                 .filter(p -> p.color.equals(currentTurnColor))
                 .map(PlayerSnapshot::userId)
@@ -563,6 +803,12 @@ public class ChessOnlineRoomService {
                                    String notation) {
     }
 
+    private record PiecePosition(char side, char type, int row, int col) {
+        int squareColor() {
+            return (row + col) % 2;
+        }
+    }
+
     private static final class RoomState {
         private final String roomId;
         private final LinkedHashMap<String, PlayerSeatState> players = new LinkedHashMap<>();
@@ -573,6 +819,14 @@ public class ChessOnlineRoomService {
         private String currentTurnUserId;
         private String currentTurnColor = "w";
         private final List<String> moveHistory = new ArrayList<>();
+        private boolean whiteKingSideCastle = true;
+        private boolean whiteQueenSideCastle = true;
+        private boolean blackKingSideCastle = true;
+        private boolean blackQueenSideCastle = true;
+        private Integer enPassantRow;
+        private Integer enPassantCol;
+        private int halfmoveClock;
+        private final Map<String, Integer> positionCounts = new LinkedHashMap<>();
         private LastMoveState lastMove;
 
         private RoomState(String roomId) {

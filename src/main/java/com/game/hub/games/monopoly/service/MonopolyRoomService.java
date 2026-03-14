@@ -75,6 +75,11 @@ public class MonopolyRoomService {
             PlayerState existing = room.players.get(playerId);
             if (existing != null) {
                 existing.name = playerName;
+                existing.disconnected = false;
+                syncGamePlayerPresence(room.gameState, existing.playerId, false);
+                if (room.status == RoomStatus.PLAYING || room.status == RoomStatus.FINISHED) {
+                    room.version += 1;
+                }
                 touch(room);
                 return RoomActionResult.ok(snapshotOf(room), playerId);
             }
@@ -172,7 +177,14 @@ public class MonopolyRoomService {
             return RoomActionResult.error("Nguoi choi khong nam trong phong", snapshotOf(room));
         }
         if (room.status == RoomStatus.PLAYING) {
-            return RoomActionResult.error("Van dang dien ra, hien chua ho tro roi phong giua tran", snapshotOf(room));
+            PlayerState player = room.players.get(playerId);
+            if (player != null && !player.disconnected) {
+                player.disconnected = true;
+                syncGamePlayerPresence(room.gameState, playerId, true);
+                room.version += 1;
+                touch(room);
+            }
+            return RoomActionResult.ok(snapshotOf(room), playerId);
         }
 
         room.players.remove(playerId);
@@ -209,6 +221,9 @@ public class MonopolyRoomService {
         String actorPlayerId = normalizePlayerId(command.playerId());
         if (actorPlayerId == null || !room.players.containsKey(actorPlayerId)) {
             return RoomActionResult.error("Nguoi choi khong hop le", snapshotOf(room));
+        }
+        if (room.players.get(actorPlayerId).disconnected) {
+            return RoomActionResult.error("Nguoi choi dang mat ket noi. Hay vao lai phong truoc.", snapshotOf(room));
         }
         if (command.baseVersion() != room.version) {
             return RoomActionResult.error("State phong da thay doi. Hay dong bo lai truoc.", snapshotOf(room));
@@ -251,11 +266,26 @@ public class MonopolyRoomService {
         if (actorPlayerId == null || !room.players.containsKey(actorPlayerId)) {
             return RoomActionResult.error("Nguoi choi khong hop le", snapshotOf(room));
         }
+        if (room.players.get(actorPlayerId).disconnected) {
+            return RoomActionResult.error("Nguoi choi dang mat ket noi. Hay vao lai phong truoc.", snapshotOf(room));
+        }
         if (room.gameState == null || room.gameState.isEmpty()) {
             return RoomActionResult.error("Room chua co game state", snapshotOf(room));
         }
 
-        MonopolyGameEngine.ActionResult result = gameEngine.applyAction(room.gameState, actorPlayerId, command.action(), random);
+        MonopolyGameEngine.ActionResult result = gameEngine.applyAction(
+            room.gameState,
+            actorPlayerId,
+            command.action(),
+            command.tileIndex(),
+            command.amount(),
+            command.targetPlayerId(),
+            command.offeredCash(),
+            command.requestedCash(),
+            command.offeredTileIndices(),
+            command.requestedTileIndices(),
+            random
+        );
         if (!result.success()) {
             return RoomActionResult.error(result.error(), snapshotOf(room));
         }
@@ -303,7 +333,8 @@ public class MonopolyRoomService {
                 player.name,
                 player.token,
                 player.turnOrder,
-                player.host
+                player.host,
+                player.disconnected
             ))
             .toList();
         return new RoomSnapshot(
@@ -356,6 +387,32 @@ public class MonopolyRoomService {
             return true;
         }
         return normalizePlayerId(stringValue(gameState.get("winnerId"))) != null;
+    }
+
+    private void syncGamePlayerPresence(Map<String, Object> gameState, String playerId, boolean disconnected) {
+        if (gameState == null) {
+            return;
+        }
+        Object playersValue = gameState.get("players");
+        if (!(playersValue instanceof List<?> players)) {
+            return;
+        }
+        for (Object playerValue : players) {
+            if (!(playerValue instanceof Map<?, ?> rawPlayer)) {
+                continue;
+            }
+            Object idValue = rawPlayer.get("id");
+            if (idValue == null) {
+                idValue = rawPlayer.get("playerId");
+            }
+            if (!Objects.equals(playerId, normalizePlayerId(stringValue(idValue)))) {
+                continue;
+            }
+            @SuppressWarnings("unchecked")
+            Map<String, Object> playerMap = (Map<String, Object>) rawPlayer;
+            playerMap.put("isDisconnected", disconnected);
+            break;
+        }
     }
 
     private Object deepCopy(Object value) {
@@ -499,6 +556,7 @@ public class MonopolyRoomService {
         private String token;
         private int turnOrder;
         private boolean host;
+        private boolean disconnected;
 
         private PlayerState(String playerId, String name, int turnOrder, boolean host) {
             this.playerId = playerId;
@@ -533,7 +591,17 @@ public class MonopolyRoomService {
     public record SyncGameStateCommand(String playerId, int baseVersion, Map<String, Object> gameState) {
     }
 
-    public record RoomGameActionCommand(String playerId, String action) {
+    public record RoomGameActionCommand(
+        String playerId,
+        String action,
+        Integer tileIndex,
+        Integer amount,
+        String targetPlayerId,
+        Integer offeredCash,
+        Integer requestedCash,
+        List<Integer> offeredTileIndices,
+        List<Integer> requestedTileIndices
+    ) {
     }
 
     public record RoomActionResult(boolean success, String error, RoomSnapshot room, String playerId) {
@@ -578,7 +646,8 @@ public class MonopolyRoomService {
         String name,
         String token,
         int turnOrder,
-        boolean host
+        boolean host,
+        boolean disconnected
     ) {
     }
 

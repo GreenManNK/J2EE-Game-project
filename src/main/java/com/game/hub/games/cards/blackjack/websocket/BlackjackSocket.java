@@ -171,6 +171,17 @@ public class BlackjackSocket extends TextWebSocketHandler {
             room.playerStand(playerId);
             broadcastRoom(room);
             awardRoundWinners(room);
+            return;
+        }
+
+        if ("surrender".equals(action)) {
+            if (!room.canPlayerSurrender(playerId)) {
+                sendError(session, "Surrender is only allowed on the opening two cards");
+                return;
+            }
+            room.playerSurrender(playerId);
+            broadcastRoom(room);
+            awardRoundWinners(room);
         }
     }
 
@@ -206,6 +217,7 @@ public class BlackjackSocket extends TextWebSocketHandler {
                 payloadMap.put("spectators", room.getSpectators());
                 payloadMap.put("dealer", room.getDealer());
                 payloadMap.put("gameState", room.getGameState());
+                payloadMap.put("currentTurnPlayerId", room.getCurrentTurnPlayerId());
                 payloadMap.put("yourId", sessionPlayerIds.get(ws));
                 payloadMap.put("playerCount", room.getPlayers().size());
                 payloadMap.put("playerLimit", room.getPlayerLimit());

@@ -32,7 +32,7 @@ class TypingSocketTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void createJoinAndCloseShouldBroadcastPlayingStateAndRemoveRoomWhenEmpty() throws Exception {
+    void createJoinAndCloseShouldBroadcastCountdownStateAndRemoveRoomWhenEmpty() throws Exception {
         TypingTextRepository textRepository = mock(TypingTextRepository.class);
         when(textRepository.findRandomText()).thenReturn(new TypingText("abc"));
         TypingService typingService = new TypingService(textRepository);
@@ -54,15 +54,16 @@ class TypingSocketTest {
         verify(firstSession, atLeastOnce()).sendMessage(firstMessages.capture());
         Map<String, Object> firstPayload = payload(firstMessages.getAllValues().get(firstMessages.getAllValues().size() - 1));
         assertEquals(room.getId(), firstPayload.get("id"));
-        assertEquals("PLAYING", String.valueOf(firstPayload.get("gameState")));
+        assertEquals("COUNTDOWN", String.valueOf(firstPayload.get("gameState")));
         assertEquals(2, ((Number) firstPayload.get("playerCount")).intValue());
         assertEquals("player-1", firstPayload.get("yourId"));
+        assertTrue(((Number) firstPayload.get("countdownEndsAtEpochMs")).longValue() > 0);
 
         ArgumentCaptor<TextMessage> secondMessages = ArgumentCaptor.forClass(TextMessage.class);
         verify(secondSession, atLeastOnce()).sendMessage(secondMessages.capture());
         Map<String, Object> secondPayload = payload(secondMessages.getAllValues().get(secondMessages.getAllValues().size() - 1));
         assertEquals(room.getId(), secondPayload.get("id"));
-        assertEquals("PLAYING", String.valueOf(secondPayload.get("gameState")));
+        assertEquals("COUNTDOWN", String.valueOf(secondPayload.get("gameState")));
         assertEquals(2, ((Number) secondPayload.get("playerCount")).intValue());
         assertEquals("player-2", secondPayload.get("yourId"));
 
@@ -110,6 +111,7 @@ class TypingSocketTest {
         socket.handleTextMessage(firstSession, new TextMessage("{\"action\":\"create\"}"));
         TypingRoom room = typingService.getAvailableRooms().stream().findFirst().orElseThrow();
         socket.handleTextMessage(secondSession, new TextMessage("{\"action\":\"join\",\"roomId\":\"" + room.getId() + "\"}"));
+        ReflectionTestUtils.setField(room, "countdownEndsAtEpochMs", System.currentTimeMillis() - 1);
 
         socket.handleTextMessage(firstSession, new TextMessage("{\"action\":\"progress\",\"roomId\":\"" + room.getId() + "\",\"typed\":\"abc\"}"));
 

@@ -71,6 +71,9 @@ public class TypingController {
         summary.put("playerLimit", room.getPlayerLimit());
         summary.put("gameState", room.getGameState());
         summary.put("textLength", room.getTextToType() == null ? 0 : room.getTextToType().length());
+        summary.put("countdownEndsAtEpochMs", room.getCountdownEndsAtEpochMs());
+        summary.put("raceStartedAtEpochMs", room.getRaceStartedAtEpochMs());
+        summary.put("raceEndsAtEpochMs", room.getRaceEndsAtEpochMs());
         return summary;
     }
 }

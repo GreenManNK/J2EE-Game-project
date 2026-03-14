@@ -17,9 +17,11 @@ public class BlackjackRoom {
     private final Map<String, BlackjackPlayer> players = new ConcurrentHashMap<>();
     private final Set<String> spectators = ConcurrentHashMap.newKeySet();
     private final Set<String> stoodPlayers = ConcurrentHashMap.newKeySet();
+    private final List<String> seatOrder = new ArrayList<>();
     private final Dealer dealer = new Dealer();
     private final Deck deck = new Deck();
     private GameState gameState = GameState.WAITING;
+    private String currentTurnPlayerId;
 
     public BlackjackRoom(String id) {
         this.id = id;
@@ -36,6 +38,7 @@ public class BlackjackRoom {
             return JoinResult.ROOM_FULL;
         }
         players.put(playerId, new BlackjackPlayer(playerId, 1000));
+        seatOrder.add(playerId);
         spectators.remove(playerId);
         return JoinResult.JOINED;
     }
@@ -58,6 +61,13 @@ public class BlackjackRoom {
         players.remove(playerId);
         stoodPlayers.remove(playerId);
         spectators.remove(playerId);
+        seatOrder.remove(playerId);
+        if (playerId != null && playerId.equals(currentTurnPlayerId)) {
+            currentTurnPlayerId = nextActingPlayerAfter(playerId);
+            if (gameState == GameState.PLAYER_TURN && currentTurnPlayerId == null) {
+                dealerTurn();
+            }
+        }
     }
 
     public void removeSpectator(String spectatorId) {
@@ -74,19 +84,43 @@ public class BlackjackRoom {
         deck.reset();
         deck.shuffle();
         stoodPlayers.clear();
+        currentTurnPlayerId = null;
         dealer.getHand().clear();
-        for (BlackjackPlayer player : players.values()) {
+        for (String playerId : seatOrder) {
+            BlackjackPlayer player = players.get(playerId);
+            if (player == null) {
+                continue;
+            }
             player.clearRoundOutcome();
             player.getHand().clear();
+            if (!player.hasActiveBet()) {
+                stoodPlayers.add(player.getId());
+                continue;
+            }
+            player.getHand().addCard(deck.deal());
+        }
+        for (String playerId : seatOrder) {
+            BlackjackPlayer player = players.get(playerId);
+            if (player == null) {
+                continue;
+            }
             if (player.hasActiveBet()) {
                 player.getHand().addCard(deck.deal());
-                player.getHand().addCard(deck.deal());
-            } else {
-                stoodPlayers.add(player.getId());
             }
         }
         dealer.getHand().addCard(deck.deal());
         dealer.getHand().addCard(deck.deal());
+        markAutoResolvedHands();
+        if (isNaturalBlackjack(dealer)) {
+            currentTurnPlayerId = null;
+            endRound();
+            return;
+        }
+        currentTurnPlayerId = firstActingPlayer();
+        if (currentTurnPlayerId == null) {
+            dealerTurn();
+            return;
+        }
         gameState = GameState.PLAYER_TURN;
     }
 
@@ -101,8 +135,8 @@ public class BlackjackRoom {
         player.getHand().addCard(deck.deal());
         if (player.getHand().getValue() > 21) {
             stoodPlayers.add(playerId);
+            advanceRoundIfNeeded();
         }
-        advanceRoundIfNeeded();
     }
 
     public void playerStand(String playerId) {
@@ -113,8 +147,22 @@ public class BlackjackRoom {
         advanceRoundIfNeeded();
     }
 
+    public void playerSurrender(String playerId) {
+        if (!canPlayerSurrender(playerId)) {
+            return;
+        }
+        BlackjackPlayer player = players.get(playerId);
+        if (player == null) {
+            return;
+        }
+        player.surrender();
+        stoodPlayers.add(playerId);
+        advanceRoundIfNeeded();
+    }
+
     public void dealerTurn() {
         gameState = GameState.DEALER_TURN;
+        currentTurnPlayerId = null;
         while (dealer.shouldHit(new ArrayList<>(players.values()))) {
             dealer.getHand().addCard(deck.deal());
         }
@@ -147,6 +195,7 @@ public class BlackjackRoom {
             }
         }
         stoodPlayers.clear();
+        currentTurnPlayerId = null;
         gameState = GameState.WAITING;
     }
 
@@ -154,9 +203,8 @@ public class BlackjackRoom {
         if (players.isEmpty()) {
             return;
         }
-        boolean allResolved = players.values().stream()
-            .allMatch(player -> stoodPlayers.contains(player.getId()) || player.getHand().getValue() > 21);
-        if (allResolved) {
+        currentTurnPlayerId = nextActingPlayerAfter(currentTurnPlayerId);
+        if (currentTurnPlayerId == null) {
             dealerTurn();
         }
     }
@@ -176,6 +224,9 @@ public class BlackjackRoom {
         if (!player.hasActiveBet()) {
             return false;
         }
+        if (currentTurnPlayerId == null || !currentTurnPlayerId.equals(playerId)) {
+            return false;
+        }
         if (stoodPlayers.contains(playerId)) {
             return false;
         }
@@ -190,8 +241,28 @@ public class BlackjackRoom {
         return player.getHand().getCards().size() == 2 && player.getBalance() >= player.getCurrentBet();
     }
 
+    public boolean canPlayerSurrender(String playerId) {
+        BlackjackPlayer player = players.get(playerId);
+        if (!canPlayerAct(playerId) || player == null) {
+            return false;
+        }
+        return player.getHand().getCards().size() == 2 && player.getCurrentBet() > 0;
+    }
+
     private boolean isNaturalBlackjack(BlackjackPlayer player) {
         return player.getHand().getCards().size() == 2 && player.getHand().getValue() == 21;
+    }
+
+    private void markAutoResolvedHands() {
+        for (String playerId : seatOrder) {
+            BlackjackPlayer player = players.get(playerId);
+            if (player == null || !player.hasActiveBet()) {
+                continue;
+            }
+            if (isNaturalBlackjack(player)) {
+                stoodPlayers.add(playerId);
+            }
+        }
     }
 
     public String getId() {
@@ -231,6 +302,51 @@ public class BlackjackRoom {
 
     public GameState getGameState() {
         return gameState;
+    }
+
+    public String getCurrentTurnPlayerId() {
+        return currentTurnPlayerId;
+    }
+
+    private String firstActingPlayer() {
+        for (String playerId : seatOrder) {
+            if (isEligibleTurnPlayer(playerId)) {
+                return playerId;
+            }
+        }
+        return null;
+    }
+
+    private String nextActingPlayerAfter(String currentPlayerId) {
+        if (seatOrder.isEmpty()) {
+            return null;
+        }
+        int startIndex = currentPlayerId == null ? -1 : seatOrder.indexOf(currentPlayerId);
+        for (int step = 1; step <= seatOrder.size(); step++) {
+            int index = startIndex + step;
+            if (index < 0) {
+                index = step - 1;
+            }
+            String candidateId = seatOrder.get(index % seatOrder.size());
+            if (isEligibleTurnPlayer(candidateId)) {
+                return candidateId;
+            }
+        }
+        return null;
+    }
+
+    private boolean isEligibleTurnPlayer(String playerId) {
+        BlackjackPlayer player = players.get(playerId);
+        if (player == null) {
+            return false;
+        }
+        if (!player.hasActiveBet()) {
+            return false;
+        }
+        if (stoodPlayers.contains(playerId)) {
+            return false;
+        }
+        return player.getHand().getValue() <= 21;
     }
 
     public enum GameState {

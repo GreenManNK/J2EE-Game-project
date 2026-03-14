@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -46,6 +47,8 @@ class QuizSocketTest {
         List<TextMessage> payloads = messages.getAllValues();
         assertTrue(payloads.stream().anyMatch(message -> message.getPayload().contains("\"question\":\"What is the capital of France?\"")));
         assertTrue(payloads.stream().anyMatch(message -> message.getPayload().contains("\"questionNumber\":1")));
+        assertTrue(payloads.stream().anyMatch(message -> message.getPayload().contains("\"questionDeadlineEpochMs\":")));
+        assertTrue(payloads.stream().anyMatch(message -> message.getPayload().contains("\"questionDurationSeconds\":15")));
         assertNotNull(quizService.getRoom(room.getRoomId()));
 
         socket.afterConnectionClosed(session, CloseStatus.NORMAL);
@@ -120,6 +123,34 @@ class QuizSocketTest {
 
         verify(achievementService).checkAndAward("quiz-player-3", "Quiz", true);
         verify(achievementService, never()).checkAndAward("quiz-player-4", "Quiz", true);
+    }
+
+    @Test
+    void tickShouldAdvanceQuestionWhenDeadlineExpires() throws Exception {
+        QuizService quizService = new QuizService();
+        AchievementService achievementService = mock(AchievementService.class);
+
+        QuizSocket socket = new QuizSocket();
+        ReflectionTestUtils.setField(socket, "quizService", quizService);
+        ReflectionTestUtils.setField(socket, "achievementService", achievementService);
+
+        WebSocketSession session = session("quiz-session-tick", "quiz-player-tick");
+
+        socket.handleTextMessage(session, new TextMessage("{\"action\":\"create\"}"));
+        QuizRoom room = quizService.getAvailableRooms().stream().findFirst().orElseThrow();
+        socket.handleTextMessage(session, new TextMessage("{\"action\":\"start\"}"));
+
+        ReflectionTestUtils.setField(room, "questionStartedAtEpochMs", System.currentTimeMillis() - 20_000L);
+        ReflectionTestUtils.setField(room, "questionDeadlineEpochMs", System.currentTimeMillis() - 1_000L);
+        clearInvocations(session);
+
+        socket.handleTextMessage(session, new TextMessage("{\"action\":\"tick\",\"roomId\":\"" + room.getRoomId() + "\"}"));
+
+        ArgumentCaptor<TextMessage> messages = ArgumentCaptor.forClass(TextMessage.class);
+        verify(session, atLeastOnce()).sendMessage(messages.capture());
+        List<TextMessage> payloads = messages.getAllValues();
+        assertTrue(payloads.stream().anyMatch(message -> message.getPayload().contains("\"questionNumber\":2")));
+        assertTrue(payloads.stream().anyMatch(message -> message.getPayload().contains("\"question\":\"What is 2 + 2?\"")));
     }
 
     private WebSocketSession session(String sessionId, String principalName) {

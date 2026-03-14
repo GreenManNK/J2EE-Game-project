@@ -51,7 +51,7 @@ public class QuizSocket extends TextWebSocketHandler {
             QuizRoom room = quizService.createRoom();
             room.addPlayer(session);
             bindSessionToRoom(session, room);
-            broadcastRoomState(room);
+            broadcastActiveState(room);
             return;
         }
 
@@ -61,7 +61,7 @@ public class QuizSocket extends TextWebSocketHandler {
             if (room != null) {
                 room.addPlayer(session);
                 bindSessionToRoom(session, room);
-                broadcastRoomState(room);
+                broadcastActiveState(room);
             } else {
                 sendError(session, "Room not found");
             }
@@ -77,7 +77,7 @@ public class QuizSocket extends TextWebSocketHandler {
                     return;
                 }
                 bindSessionToRoom(session, room);
-                broadcastRoomState(room);
+                broadcastActiveState(room);
             } else {
                 sendError(session, "Room not found");
             }
@@ -105,7 +105,7 @@ public class QuizSocket extends TextWebSocketHandler {
                 sendError(session, "Room has no players to start");
                 return;
             }
-            broadcastQuestion(room);
+            broadcastActiveState(room);
             return;
         }
 
@@ -113,7 +113,8 @@ public class QuizSocket extends TextWebSocketHandler {
             QuizRoom room = resolveRoomForSession(session, payload);
             if (room != null) {
                 Object answer = payload.get("answer");
-                boolean accepted = room.answerQuestion(session, answer);
+                Integer questionNumber = parseQuestionNumber(payload.get("questionNumber"));
+                boolean accepted = room.answerQuestion(session, answer, questionNumber);
                 if (!accepted) {
                     sendError(session, "Answer not accepted");
                     return;
@@ -123,13 +124,22 @@ public class QuizSocket extends TextWebSocketHandler {
                     return;
                 }
                 room.nextQuestion();
-                if (room.isGameOver()) {
-                    broadcastScores(room);
-                } else {
-                    broadcastQuestion(room);
-                }
+                broadcastActiveState(room);
             } else {
                 sendError(session, "You are not in a room");
+            }
+            return;
+        }
+
+        if ("tick".equals(action)) {
+            QuizRoom room = resolveRoomForSession(session, payload);
+            if (room == null) {
+                sendError(session, "You are not in a room");
+                return;
+            }
+            boolean changed = room.synchronizeQuestionTimer();
+            if (changed) {
+                broadcastActiveState(room);
             }
             return;
         }
@@ -144,6 +154,7 @@ public class QuizSocket extends TextWebSocketHandler {
         if (room == null) {
             return;
         }
+        room.synchronizeQuestionTimer();
         int totalQuestions = room.getTotalQuestions();
         int questionNumber;
         if (room.isGameOver()) {
@@ -155,19 +166,23 @@ public class QuizSocket extends TextWebSocketHandler {
         }
         String gameState = room.isGameOver() ? "FINISHED" : (room.isStarted() ? "PLAYING" : "WAITING");
 
-        sendRoomMessage(room, Map.of(
-            "roomId", room.getRoomId(),
-            "players", room.getPlayers().size(),
-            "spectators", room.getSpectators().size(),
-            "hostPlayerId", room.getHostPlayerId() == null ? "" : room.getHostPlayerId(),
-            "answeredCount", room.getAnsweredCount(),
-            "questionNumber", questionNumber,
-            "totalQuestions", totalQuestions,
-            "gameState", gameState
-        ));
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("roomId", room.getRoomId());
+        payload.put("players", room.getPlayers().size());
+        payload.put("spectators", room.getSpectators().size());
+        payload.put("hostPlayerId", room.getHostPlayerId() == null ? "" : room.getHostPlayerId());
+        payload.put("answeredCount", room.getAnsweredCount());
+        payload.put("questionNumber", questionNumber);
+        payload.put("totalQuestions", totalQuestions);
+        payload.put("gameState", gameState);
+        payload.put("questionStartedAtEpochMs", room.getQuestionStartedAtEpochMs());
+        payload.put("questionDeadlineEpochMs", room.getQuestionDeadlineEpochMs());
+        payload.put("questionDurationSeconds", room.getQuestionDurationSeconds());
+        sendRoomMessage(room, payload);
     }
 
     private void broadcastQuestion(QuizRoom room) throws IOException {
+        room.synchronizeQuestionTimer();
         if (room.getCurrentQuestion() == null) {
             return;
         }
@@ -177,6 +192,9 @@ public class QuizSocket extends TextWebSocketHandler {
         );
         questionPayload.put("questionNumber", room.getCurrentQuestionIndex() + 1);
         questionPayload.put("totalQuestions", room.getTotalQuestions());
+        questionPayload.put("questionStartedAtEpochMs", room.getQuestionStartedAtEpochMs());
+        questionPayload.put("questionDeadlineEpochMs", room.getQuestionDeadlineEpochMs());
+        questionPayload.put("questionDurationSeconds", room.getQuestionDurationSeconds());
         sendRoomMessage(room, questionPayload);
     }
 
@@ -312,16 +330,41 @@ public class QuizSocket extends TextWebSocketHandler {
 
         if (room.isStarted() && room.hasEveryoneAnswered()) {
             room.nextQuestion();
-            if (room.isGameOver()) {
-                broadcastScores(room);
-            } else {
-                broadcastQuestion(room);
-            }
+            broadcastActiveState(room);
             return;
         }
 
         if (broadcastAfter) {
-            broadcastRoomState(room);
+            broadcastActiveState(room);
+        }
+    }
+
+    private void broadcastActiveState(QuizRoom room) throws IOException {
+        if (room == null) {
+            return;
+        }
+        room.synchronizeQuestionTimer();
+        if (room.isGameOver()) {
+            broadcastScores(room);
+            return;
+        }
+        broadcastRoomState(room);
+        if (room.isStarted()) {
+            broadcastQuestion(room);
+        }
+    }
+
+    private Integer parseQuestionNumber(Object value) {
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(String.valueOf(value).trim());
+        } catch (NumberFormatException ex) {
+            return null;
         }
     }
 
