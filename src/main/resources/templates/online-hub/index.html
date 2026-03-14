@@ -17,7 +17,7 @@
             SANH PHONG - <span th:text="${selectedGameName}">Game</span>
           </h1>
           <p class="gx-page-subtitle mb-0 text-muted">
-            Trang nay dung chung cho tat ca game truc tuyen: tim phong, tao phong, moi nguoi choi va vao ban.
+            Day la trang phong rieng cua <span th:text="${selectedGameName}">game</span>, duoc dung chung room hub de tao phong, moi nguoi choi va vao ban.
           </p>
         </div>
         <span class="badge fs-6"
@@ -33,12 +33,12 @@
     <article class="theme-box rounded cg-detail-strip__card">
       <span class="cg-detail-strip__eyebrow">Room feed</span>
       <strong><span th:text="${roomRows != null ? #lists.size(roomRows) : 0}">0</span> phong trong danh sach</strong>
-      <p>Danh sach phong cap nhat tu server de random join, tao room moi hoac vao dung room da co.</p>
+      <p>Danh sach phong cap nhat tu server de vao dung room cua game nay ma khong can qua hub trung gian.</p>
     </article>
     <article class="theme-box rounded cg-detail-strip__card">
       <span class="cg-detail-strip__eyebrow">Flow</span>
       <strong>Create / join / spectate</strong>
-      <p>Sanh phong giu toan bo thao tac truoc tran tren cung mot route de giam viec doi trang long vong.</p>
+      <p>Room page cua tung game giu toan bo thao tac truoc tran tren cung mot route de giam viec doi trang long vong.</p>
     </article>
     <article class="theme-box rounded cg-detail-strip__card">
       <span class="cg-detail-strip__eyebrow">Coverage</span>

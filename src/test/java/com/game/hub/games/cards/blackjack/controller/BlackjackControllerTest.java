@@ -14,6 +14,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BlackjackControllerTest {
 
     @Test
+    void blackjackPageShouldRenderDedicatedRoomLobbyWhenRoomMissing() {
+        BlackjackController controller = new BlackjackController();
+
+        assertEquals("games/cards/blackjack", controller.blackjackPage(null, null));
+    }
+
+    @Test
     void blackjackRoomPagesShouldRenderBlackjackTemplate() {
         BlackjackController controller = new BlackjackController();
 

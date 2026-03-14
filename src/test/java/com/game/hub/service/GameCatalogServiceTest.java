@@ -96,6 +96,7 @@ class GameCatalogServiceTest {
         assertTrue(monopoly.supportsOffline());
         assertTrue(monopoly.supportsGuest());
         assertEquals("/games/monopoly", monopoly.primaryActionUrl());
+        assertTrue(monopoly.description().contains("room mode MVP"));
     }
 
     @Test

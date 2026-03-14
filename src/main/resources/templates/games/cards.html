@@ -32,7 +32,7 @@
       </div>
 
       <div class="hub-portal-action-grid">
-        <a th:href="@{/online-hub(game='cards')}" class="hub-portal-action hub-portal-action--primary">
+        <a th:href="@{/games/cards/rooms}" class="hub-portal-action hub-portal-action--primary">
           <span class="hub-portal-action__icon"><i class="bi bi-globe2"></i></span>
           <span class="hub-portal-action__text">
             <strong>Mo sanh phong</strong>
@@ -52,7 +52,7 @@
           <i class="bi bi-arrow-right"></i>
         </button>
 
-        <a th:href="@{/online-hub(game='cards')}" class="hub-portal-action hub-portal-action--accent">
+        <a th:href="@{/games/cards/rooms}" class="hub-portal-action hub-portal-action--accent">
           <span class="hub-portal-action__icon"><i class="bi bi-broadcast-pin"></i></span>
           <span class="hub-portal-action__text">
             <strong>Mo ban truc tuyen</strong>
@@ -70,7 +70,7 @@
           <i class="bi bi-arrow-right"></i>
         </a>
 
-        <a th:href="@{/online-hub(game='blackjack')}" class="hub-portal-action hub-portal-action--primary">
+        <a th:href="@{/games/blackjack/rooms}" class="hub-portal-action hub-portal-action--primary">
             <span class="hub-portal-action__icon"><i class="bi bi-suit-club-fill"></i></span>
             <span class="hub-portal-action__text">
                 <strong>Mo Blackjack</strong>
@@ -198,11 +198,11 @@
       <section class="hub-portal-card">
         <h3>Vao che do nhanh</h3>
         <div class="hub-portal-side-actions">
-          <a th:href="@{/online-hub(game='cards')}" class="hub-portal-side-action">
+          <a th:href="@{/games/cards/rooms}" class="hub-portal-side-action">
             <i class="bi bi-globe2"></i>
             <div><strong>Mo sanh phong</strong><small>Phong Tien Len 4 nguoi</small></div>
           </a>
-          <a th:href="@{/online-hub(game='cards')}" class="hub-portal-side-action">
+          <a th:href="@{/games/cards/rooms}" class="hub-portal-side-action">
             <i class="bi bi-broadcast-pin"></i>
             <div><strong>Mo ban truc tuyen</strong><small>Vao phong truc tiep</small></div>
           </a>
@@ -210,7 +210,7 @@
             <i class="bi bi-cpu"></i>
             <div><strong>Chon bot</strong><small>De / Kho</small></div>
           </a>
-          <a th:href="@{/online-hub(game='blackjack')}" class="hub-portal-side-action">
+          <a th:href="@{/games/blackjack/rooms}" class="hub-portal-side-action">
             <i class="bi bi-suit-club-fill"></i>
             <div><strong>Mo Blackjack</strong><small>Dat cuoc va theo doi van</small></div>
           </a>

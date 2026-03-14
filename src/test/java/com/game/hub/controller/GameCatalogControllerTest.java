@@ -44,6 +44,18 @@ class GameCatalogControllerTest {
     }
 
     @Test
+    void roomsShouldReturn404ForUnknownGame() {
+        GameCatalogController controller = new GameCatalogController(new GameCatalogService());
+
+        ResponseStatusException ex = assertThrows(
+            ResponseStatusException.class,
+            () -> controller.rooms("unknown-game", null)
+        );
+
+        assertEquals(404, ex.getStatusCode().value());
+    }
+
+    @Test
     void detailShouldRenderDedicatedViewPerGame() {
         GameCatalogController controller = new GameCatalogController(new GameCatalogService());
 
@@ -57,6 +69,26 @@ class GameCatalogControllerTest {
         assertEquals("games/typing", controller.detail("typing", new ConcurrentModel()));
         assertEquals("games/puzzle/index", controller.detail("puzzle", new ConcurrentModel()));
         assertEquals("games/monopoly", controller.detail("monopoly", new ConcurrentModel()));
+    }
+
+    @Test
+    void roomsShouldForwardSharedHubForGamesUsingSharedRoomPage() {
+        GameCatalogController controller = new GameCatalogController(new GameCatalogService());
+
+        assertEquals("forward:/online-hub?game=caro&roomId=CARO-1", controller.rooms("caro", "CARO-1"));
+        assertEquals("forward:/online-hub?game=chess&roomId=CHESS-1", controller.rooms("chess", "CHESS-1"));
+        assertEquals("forward:/online-hub?game=minesweeper&roomId=MINE-1", controller.rooms("minesweeper", "MINE-1"));
+    }
+
+    @Test
+    void roomsShouldRedirectToDedicatedRoomLobbyWhenGameAlreadyHasItsOwnPage() {
+        GameCatalogController controller = new GameCatalogController(new GameCatalogService());
+
+        assertEquals("redirect:/cards/tien-len?roomId=TL-1", controller.rooms("cards", "TL-1"));
+        assertEquals("redirect:/games/cards/blackjack?room=BJ-1", controller.rooms("blackjack", "BJ-1"));
+        assertEquals("redirect:/games/quiz?room=QUIZ-1", controller.rooms("quiz", "QUIZ-1"));
+        assertEquals("redirect:/games/typing?room=TYP-1", controller.rooms("typing", "TYP-1"));
+        assertEquals("redirect:/games/monopoly?roomId=MONO-1", controller.rooms("monopoly", "MONO-1"));
     }
 
     @Test

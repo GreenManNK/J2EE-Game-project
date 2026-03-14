@@ -21,6 +21,7 @@ class GameModeControllerTest {
         assertEquals(Boolean.TRUE, model.getAttribute("hasRealBotNow"));
         assertEquals("/chess/bot?difficulty=easy", model.getAttribute("easyUrl"));
         assertEquals("/chess/bot?difficulty=hard", model.getAttribute("hardUrl"));
+        assertEquals("/games/chess/rooms", model.getAttribute("onlinePlayUrl"));
     }
 
     @Test

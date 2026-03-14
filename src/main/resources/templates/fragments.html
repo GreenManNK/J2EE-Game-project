@@ -543,7 +543,7 @@
     <a th:href="@{/games/quiz}" class="cg-top-rail__item"><i class="bi bi-patch-question-fill"></i> Quiz</a>
     <a th:href="@{/games/typing}" class="cg-top-rail__item"><i class="bi bi-keyboard-fill"></i> Gõ chữ</a>
     <a th:href="@{/games/puzzle}" class="cg-top-rail__item"><i class="bi bi-puzzle-fill"></i> Giải đố</a>
-    <a th:href="@{/online-hub(game='caro')}" class="cg-top-rail__item"><i class="bi bi-wifi"></i> Sanh phong</a>
+    <a th:href="@{/games/caro/rooms}" class="cg-top-rail__item"><i class="bi bi-wifi"></i> Sanh phong</a>
   </nav>
 
   <div id="friendSidebar" class="theme-text">
@@ -557,7 +557,7 @@
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-fire me-2"></i> Xu hướng</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-arrow-repeat me-2"></i> Cập nhật</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games}"><i class="bi bi-grid-3x3-gap-fill me-2"></i> Nguyên bản</a>
-          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/online-hub(game='caro')}"><i class="bi bi-people-fill me-2"></i> Truc tuyen</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text" th:href="@{/games/caro/rooms}"><i class="bi bi-people-fill me-2"></i> Truc tuyen</a>
         </div>
 
         <div class="app-shell-menu-group">
@@ -776,7 +776,7 @@
 <div th:fragment="nav" class="d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
   <a class="btn btn-sm btn-outline-secondary" th:href="@{/}">Trang chủ</a>
   <a class="btn btn-sm btn-outline-secondary" th:href="@{/games}">Trò chơi</a>
-  <a class="btn btn-sm btn-outline-secondary" th:href="@{/lobby}">Phòng chờ</a>
+  <a class="btn btn-sm btn-outline-secondary" th:href="@{/games/caro/rooms}">Phòng chờ</a>
   <a class="btn btn-sm btn-outline-secondary" th:href="@{/game}">Game</a>
   <a class="btn btn-sm btn-outline-secondary" th:href="@{/leaderboard}">Bảng xếp hạng</a>
   <a class="btn btn-sm btn-outline-secondary" th:href="@{/account/login-page}">Đăng nhập</a>

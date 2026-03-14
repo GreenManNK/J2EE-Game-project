@@ -33,6 +33,25 @@ class TienLenControllerTest {
     }
 
     @Test
+    void shouldRenderTienLenLobbyPageWhenRoomIsMissing() {
+        UserAccountRepository userRepo = mock(UserAccountRepository.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(null);
+        when(request.getSession(true)).thenReturn(session);
+        when(session.getAttribute("GUEST_USER_ID")).thenReturn(null);
+
+        TienLenController controller = new TienLenController(userRepo);
+        ConcurrentModel model = new ConcurrentModel();
+
+        String view = controller.tienLen(null, request, model);
+
+        assertEquals("cards/tien-len", view);
+        assertEquals("", model.getAttribute("defaultRoomId"));
+        assertTrue(String.valueOf(model.getAttribute("sessionUserId")).startsWith("guest-"));
+    }
+
+    @Test
     void shouldRenderTienLenRoomPageAndCreateGuestSessionWhenAnonymous() {
         UserAccountRepository userRepo = mock(UserAccountRepository.class);
         HttpServletRequest request = mock(HttpServletRequest.class);

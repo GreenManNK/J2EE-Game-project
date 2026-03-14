@@ -74,7 +74,7 @@ public class QuizController {
         return quizService.getHighScores();
     }
 
-    @GetMapping("/rooms")
+    @GetMapping("/rooms/feed")
     @ResponseBody
     public List<Map<String, Object>> getAvailableRooms() {
         return quizService.getAvailableRooms().stream()

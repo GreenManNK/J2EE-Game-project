@@ -71,6 +71,27 @@ class QuizSocketTest {
     }
 
     @Test
+    void anonymousHostShouldBeAbleToStartGame() throws Exception {
+        QuizService quizService = new QuizService();
+        AchievementService achievementService = mock(AchievementService.class);
+
+        QuizSocket socket = new QuizSocket();
+        ReflectionTestUtils.setField(socket, "quizService", quizService);
+        ReflectionTestUtils.setField(socket, "achievementService", achievementService);
+
+        WebSocketSession session = anonymousSession("quiz-session-anon");
+
+        socket.handleTextMessage(session, new TextMessage("{\"action\":\"create\"}"));
+        socket.handleTextMessage(session, new TextMessage("{\"action\":\"start\"}"));
+
+        ArgumentCaptor<TextMessage> messages = ArgumentCaptor.forClass(TextMessage.class);
+        verify(session, atLeastOnce()).sendMessage(messages.capture());
+        assertTrue(messages.getAllValues().stream().anyMatch(message ->
+            message.getPayload().contains("\"question\":\"What is the capital of France?\"")
+        ));
+    }
+
+    @Test
     void gameOverShouldAwardQuizAchievementOnlyToTopScorer() throws Exception {
         QuizService quizService = new QuizService();
         ReflectionTestUtils.setField(quizService, "highScoreRepository", mock(HighScoreRepository.class));
@@ -90,8 +111,12 @@ class QuizSocketTest {
 
         socket.handleTextMessage(firstSession, new TextMessage("{\"action\":\"answer\",\"answer\":2}"));
         socket.handleTextMessage(secondSession, new TextMessage("{\"action\":\"answer\",\"answer\":0}"));
+        socket.handleTextMessage(firstSession, new TextMessage("{\"action\":\"answer\",\"answer\":1}"));
+        socket.handleTextMessage(secondSession, new TextMessage("{\"action\":\"answer\",\"answer\":3}"));
         socket.handleTextMessage(firstSession, new TextMessage("{\"action\":\"answer\",\"answer\":[0,2,3]}"));
-        socket.handleTextMessage(secondSession, new TextMessage("{\"action\":\"answer\",\"answer\":\"Jupiter\"}"));
+        socket.handleTextMessage(secondSession, new TextMessage("{\"action\":\"answer\",\"answer\":[0,1]}"));
+        socket.handleTextMessage(firstSession, new TextMessage("{\"action\":\"answer\",\"answer\":\"Jupiter\"}"));
+        socket.handleTextMessage(secondSession, new TextMessage("{\"action\":\"answer\",\"answer\":\"Mars\"}"));
 
         verify(achievementService).checkAndAward("quiz-player-3", "Quiz", true);
         verify(achievementService, never()).checkAndAward("quiz-player-4", "Quiz", true);
@@ -102,6 +127,14 @@ class QuizSocketTest {
         Principal principal = () -> principalName;
         when(session.getId()).thenReturn(sessionId);
         when(session.getPrincipal()).thenReturn(principal);
+        when(session.isOpen()).thenReturn(true);
+        return session;
+    }
+
+    private WebSocketSession anonymousSession(String sessionId) {
+        WebSocketSession session = mock(WebSocketSession.class);
+        when(session.getId()).thenReturn(sessionId);
+        when(session.getPrincipal()).thenReturn(null);
         when(session.isOpen()).thenReturn(true);
         return session;
     }

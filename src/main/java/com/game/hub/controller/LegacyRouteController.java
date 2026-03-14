@@ -29,7 +29,7 @@ public class LegacyRouteController {
 
     @GetMapping("/Lobby")
     public String lobby() {
-        return "redirect:/lobby";
+        return "redirect:/games/caro/rooms";
     }
 
     @GetMapping("/Friendship/FriendList")
@@ -121,9 +121,9 @@ public class LegacyRouteController {
     public String onlineHub(@RequestParam(required = false) String game,
                             @RequestParam(required = false) String roomId) {
         String selectedGame = (game == null || game.isBlank()) ? "caro" : game;
-        StringBuilder redirect = new StringBuilder("redirect:/online-hub?game=").append(selectedGame);
+        StringBuilder redirect = new StringBuilder("redirect:/games/").append(selectedGame).append("/rooms");
         if (roomId != null && !roomId.isBlank()) {
-            redirect.append("&roomId=").append(roomId);
+            redirect.append("?roomId=").append(roomId);
         }
         return redirect.toString();
     }

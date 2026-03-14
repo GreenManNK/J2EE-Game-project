@@ -14,8 +14,24 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("monopolyPlayer4")
     ],
     playerSlots: Array.from(document.querySelectorAll("[data-player-slot]")),
+    localSetupCard: document.getElementById("monopolyLocalSetupCard"),
     startBtn: document.getElementById("monopolyStartBtn"),
     restartBtn: document.getElementById("monopolyRestartBtn"),
+    roomPlayerName: document.getElementById("monopolyRoomPlayerName"),
+    roomName: document.getElementById("monopolyRoomName"),
+    roomMaxPlayers: document.getElementById("monopolyRoomMaxPlayers"),
+    roomCodeInput: document.getElementById("monopolyRoomCodeInput"),
+    roomStatus: document.getElementById("monopolyRoomStatus"),
+    createRoomBtn: document.getElementById("monopolyCreateRoomBtn"),
+    joinRoomBtn: document.getElementById("monopolyJoinRoomBtn"),
+    refreshRoomsBtn: document.getElementById("monopolyRefreshRoomsBtn"),
+    copyRoomBtn: document.getElementById("monopolyCopyRoomBtn"),
+    currentRoom: document.getElementById("monopolyCurrentRoom"),
+    roomPlayers: document.getElementById("monopolyRoomPlayers"),
+    tokenPicker: document.getElementById("monopolyTokenPicker"),
+    roomStartBtn: document.getElementById("monopolyRoomStartBtn"),
+    leaveRoomBtn: document.getElementById("monopolyLeaveRoomBtn"),
+    openRooms: document.getElementById("monopolyOpenRooms"),
     rollBtn: document.getElementById("monopolyRollBtn"),
     buyBtn: document.getElementById("monopolyBuyBtn"),
     skipBuyBtn: document.getElementById("monopolySkipBuyBtn"),
@@ -39,7 +55,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const PASS_GO_AMOUNT = 200;
   const JAIL_BAIL = 50;
   const MAX_LOG_ITEMS = 28;
+  const ROOM_POLL_MS = 2600;
+  const ROOM_STATE_DEBOUNCE_MS = 140;
+  const ROOM_STORAGE_KEY = "monopolyRoomProfile.v2";
   const PLAYER_COLORS = ["#f97316", "#22c55e", "#38bdf8", "#f43f5e"];
+  const TOKEN_CATALOG = [
+    { id: "dog", label: "Cho", icon: "bi-emoji-smile" },
+    { id: "car", label: "Xe hoi", icon: "bi-car-front-fill" },
+    { id: "hat", label: "Mu", icon: "bi-person-badge-fill" },
+    { id: "ship", label: "Tau", icon: "bi-water" },
+    { id: "cat", label: "Meo", icon: "bi-emoji-heart-eyes" },
+    { id: "boot", label: "Giay", icon: "bi-lightning-charge-fill" }
+  ];
   const GROUP_META = {
     brown: { label: "Nau", accent: "#8b5e3c" },
     lightBlue: { label: "Xanh nhat", accent: "#38bdf8" },
@@ -126,10 +153,19 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   let state = createEmptyState();
+  const roomSession = createRoomSession();
 
   bindStaticEvents();
+  bindRoomEvents();
+  hydrateStoredPlayerProfile();
   syncSetupFields();
   startNewGame(false);
+  renderRoomPanels();
+  loadRoomList(true);
+  if (roomSession.roomId) {
+    refs.roomCodeInput.value = roomSession.roomId;
+    joinRoom(roomSession.roomId, true);
+  }
 
   function createEmptyState() {
     return {
@@ -150,7 +186,10 @@ document.addEventListener("DOMContentLoaded", () => {
       freeParkingPot: 0,
       round: 1,
       turnNumber: 1,
-      winnerId: null
+      winnerId: null,
+      settings: {
+        passGoAmount: PASS_GO_AMOUNT
+      }
     };
   }
 
@@ -174,7 +213,13 @@ document.addEventListener("DOMContentLoaded", () => {
     refs.payBailBtn.addEventListener("click", handlePayBail);
     refs.useCardBtn.addEventListener("click", handleUseEscapeCard);
     refs.bankruptcyBtn.addEventListener("click", handleDeclareBankruptcy);
-    refs.finishBtn.addEventListener("click", () => finishGame("Van dau duoc chot bang tay."));
+    refs.finishBtn.addEventListener("click", () => {
+      if (isRoomAttached()) {
+        void runRoomAction("finish_game");
+        return;
+      }
+      finishGame("Van dau duoc chot bang tay.");
+    });
 
     refs.board.addEventListener("click", (event) => {
       const button = event.target.closest("[data-space-index]");
@@ -213,6 +258,37 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function bindRoomEvents() {
+    refs.createRoomBtn?.addEventListener("click", createRoom);
+    refs.joinRoomBtn?.addEventListener("click", () => joinRoomByInput());
+    refs.refreshRoomsBtn?.addEventListener("click", () => loadRoomList(false));
+    refs.copyRoomBtn?.addEventListener("click", copyRoomInvite);
+    refs.roomStartBtn?.addEventListener("click", startRoomSession);
+    refs.leaveRoomBtn?.addEventListener("click", leaveRoomSession);
+    refs.roomCodeInput?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        joinRoomByInput();
+      }
+    });
+
+    refs.openRooms?.addEventListener("click", (event) => {
+      const joinButton = event.target.closest("[data-room-join]");
+      if (!joinButton) {
+        return;
+      }
+      joinRoom(joinButton.getAttribute("data-room-join"), false);
+    });
+
+    refs.tokenPicker?.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-token-id]");
+      if (!button) {
+        return;
+      }
+      selectToken(button.getAttribute("data-token-id"));
+    });
+  }
+
   function syncSetupFields() {
     const activeCount = Number(refs.playerCount.value || 4);
     refs.playerSlots.forEach((slot) => {
@@ -222,6 +298,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startNewGame(confirmIfRunning) {
+    if (isRoomAttached()) {
+      setRoomStatus("Dang o che do phong. Roi phong neu muon mo van local rieng.", true);
+      return;
+    }
     if (confirmIfRunning && state.players.length > 0 && state.phase !== "setup") {
       const shouldReset = window.confirm("Bat dau van moi? Tien trinh hien tai se mat.");
       if (!shouldReset) {
@@ -229,9 +309,27 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    const config = readSetupConfig();
+    startConfiguredGame(readSetupConfig());
+  }
+
+  function readSetupConfig() {
+    const playerCount = Math.max(2, Math.min(4, Number(refs.playerCount.value || 4)));
+    const startingCash = Math.max(800, Number(refs.startingCash.value || 1500));
+    const players = refs.playerInputs
+      .slice(0, playerCount)
+      .map((input, index) => sanitizeName(input.value, "Ty phu " + (index + 1)));
+    return {
+      playerCount,
+      startingCash,
+      passGoAmount: PASS_GO_AMOUNT,
+      players: players.map((name) => ({ name }))
+    };
+  }
+
+  function startConfiguredGame(config) {
     state = createEmptyState();
-    state.players = config.players.map((name, index) => createPlayerState(name, index, config.startingCash));
+    state.settings.passGoAmount = Math.max(50, Number(config.passGoAmount || PASS_GO_AMOUNT));
+    state.players = config.players.map((player, index) => createPlayerState(player.name, index, config.startingCash, player));
     state.phase = state.players[0]?.inJail ? "jail" : "await_roll";
     state.log = [];
     state.round = 1;
@@ -241,20 +339,14 @@ document.addEventListener("DOMContentLoaded", () => {
     renderAll();
   }
 
-  function readSetupConfig() {
-    const playerCount = Math.max(2, Math.min(4, Number(refs.playerCount.value || 4)));
-    const startingCash = Math.max(800, Number(refs.startingCash.value || 1500));
-    const players = refs.playerInputs
-      .slice(0, playerCount)
-      .map((input, index) => sanitizeName(input.value, "Ty phu " + (index + 1)));
-    return { playerCount, startingCash, players };
-  }
-
-  function createPlayerState(name, index, startingCash) {
+  function createPlayerState(name, index, startingCash, options) {
+    const extra = options || {};
     return {
-      id: "p" + (index + 1),
+      id: extra.id || extra.playerId || ("p" + (index + 1)),
       name,
-      color: PLAYER_COLORS[index],
+      color: extra.color || PLAYER_COLORS[index],
+      token: extra.token || null,
+      turnOrder: Number.isFinite(extra.turnOrder) ? Number(extra.turnOrder) : index,
       money: startingCash,
       position: 0,
       bankrupt: false,
@@ -342,6 +434,9 @@ document.addEventListener("DOMContentLoaded", () => {
     renderPortfolio();
     renderLog();
     renderControls();
+    renderRoomPanels();
+    renderSetupAvailability();
+    maybeQueueRoomStatePublish();
   }
 
   function renderBoard() {
@@ -354,23 +449,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const groupMeta = GROUP_META[space.group] || GROUP_META.corner;
     const owner = getOwner(space);
     const ownerStyle = owner ? "--owner-color:" + owner.color + ";" : "";
+    const frameClass = resolveSpaceFrameClass(space.index);
     const selectedClass = state.selectedTileIndex === space.index ? " is-selected" : "";
     const ownedClass = owner ? " is-owned" : "";
+    const mortgagedClass = space.mortgaged ? " is-mortgaged" : "";
     const houses = renderHouseDots(space);
     const tokens = renderTokenDots(space.index);
     const meta = renderSpaceMeta(space, owner);
+    const price = renderSpacePrice(space, owner);
     return `
       <button
         type="button"
-        class="monopoly-space${selectedClass}${ownedClass}"
+        class="monopoly-space ${frameClass} type-${space.type}${selectedClass}${ownedClass}${mortgagedClass}"
         data-space-index="${space.index}"
         style="grid-row:${position.row};grid-column:${position.col};--space-accent:${groupMeta.accent};${ownerStyle}">
         <span class="monopoly-space__band"></span>
+        <span class="monopoly-space__badge">${escapeHtml(resolveSpaceBadge(space))}</span>
         <span class="monopoly-space__type">${escapeHtml(groupMeta.label)}</span>
         <strong class="monopoly-space__name">${escapeHtml(space.name)}</strong>
+        <span class="monopoly-space__price">${escapeHtml(price)}</span>
         <span class="monopoly-space__meta">${meta}</span>
-        <div class="monopoly-space__houses">${houses}</div>
-        <div class="monopoly-space__tokens">${tokens}</div>
+        <div class="monopoly-space__bottom">
+          <div class="monopoly-space__houses">${houses}</div>
+          <div class="monopoly-space__tokens">${tokens}</div>
+        </div>
       </button>
     `;
   }
@@ -381,9 +483,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const dieB = state.lastDice ? state.lastDice.b : "-";
     return `
       <div class="monopoly-board-center">
-        <span class="monopoly-board-center__eyebrow">Local Monopoly</span>
-        <h3 class="monopoly-board-center__title">${escapeHtml(currentPlayer ? currentPlayer.name : "Ban choi")}</h3>
-        <p class="monopoly-board-center__subtitle">${escapeHtml(resolveInstructionText())}</p>
+        <div class="monopoly-board-center__tickets" aria-hidden="true">
+          <div class="monopoly-board-ticket monopoly-board-ticket--chance">Chance</div>
+          <div class="monopoly-board-ticket monopoly-board-ticket--chest">Community</div>
+        </div>
+        <div class="monopoly-board-center__hero">
+          <span class="monopoly-board-center__eyebrow">${escapeHtml(resolveBoardEyebrowLabel())}</span>
+          <div class="monopoly-board-center__banner">
+            <span>MONOPOLY</span>
+            <small>REAL ESTATE EDITION</small>
+          </div>
+          <h3 class="monopoly-board-center__title">${escapeHtml(currentPlayer ? "Luot cua " + currentPlayer.name : "Ban choi Monopoly")}</h3>
+          <p class="monopoly-board-center__subtitle">${escapeHtml(resolveInstructionText())}</p>
+        </div>
         <div class="monopoly-dice-row">
           <div class="monopoly-dice">
             <div class="monopoly-die">${dieA}</div>
@@ -495,6 +607,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (state.players[state.currentPlayerIndex]?.id === player.id && !player.bankrupt) {
         badges.push('<span class="monopoly-player-badge">Dang luot</span>');
       }
+      if (player.token) {
+        badges.push('<span class="monopoly-player-badge">' + escapeHtml(resolveTokenLabel(player.token)) + "</span>");
+      }
+      if (isRoomAttached() && isRoomHostPlayer(player.id)) {
+        badges.push('<span class="monopoly-player-badge">Host</span>');
+      }
       if (player.inJail) {
         badges.push('<span class="monopoly-player-badge">Trong tu</span>');
       }
@@ -562,14 +680,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderControls() {
     const currentPlayer = getCurrentPlayer();
     const isDebtTurn = state.debt && currentPlayer && state.debt.playerId === currentPlayer.id;
-    refs.rollBtn.disabled = !currentPlayer || currentPlayer.bankrupt || !["await_roll", "jail"].includes(state.phase);
-    refs.buyBtn.disabled = !state.pendingPurchase || !currentPlayer || currentPlayer.money < getBoardSpace(state.pendingPurchase?.tileIndex || 0).price;
-    refs.skipBuyBtn.disabled = !state.pendingPurchase;
-    refs.endTurnBtn.disabled = !currentPlayer || currentPlayer.bankrupt || state.phase !== "await_end_turn";
-    refs.payBailBtn.disabled = !currentPlayer || !currentPlayer.inJail || state.phase !== "jail" || currentPlayer.money < JAIL_BAIL;
-    refs.useCardBtn.disabled = !currentPlayer || !currentPlayer.inJail || state.phase !== "jail" || currentPlayer.escapeCards <= 0;
-    refs.bankruptcyBtn.disabled = !isDebtTurn;
-    refs.finishBtn.disabled = activePlayers().length <= 1 || state.phase === "ended";
+    const turnLocked = !canUseTurnControls();
+    refs.rollBtn.disabled = turnLocked || !currentPlayer || currentPlayer.bankrupt || !["await_roll", "jail"].includes(state.phase);
+    refs.buyBtn.disabled = turnLocked || !state.pendingPurchase || !currentPlayer || currentPlayer.money < getBoardSpace(state.pendingPurchase?.tileIndex || 0).price;
+    refs.skipBuyBtn.disabled = turnLocked || !state.pendingPurchase;
+    refs.endTurnBtn.disabled = turnLocked || !currentPlayer || currentPlayer.bankrupt || state.phase !== "await_end_turn";
+    refs.payBailBtn.disabled = turnLocked || !currentPlayer || !currentPlayer.inJail || state.phase !== "jail" || currentPlayer.money < JAIL_BAIL;
+    refs.useCardBtn.disabled = turnLocked || !currentPlayer || !currentPlayer.inJail || state.phase !== "jail" || currentPlayer.escapeCards <= 0;
+    refs.bankruptcyBtn.disabled = turnLocked || !isDebtTurn;
+    refs.finishBtn.disabled = turnLocked || activePlayers().length <= 1 || state.phase === "ended";
   }
 
   function getBoardPosition(index) {
@@ -595,6 +714,22 @@ document.addEventListener("DOMContentLoaded", () => {
       return { row: 1, col: 11 };
     }
     return { row: index - 29, col: 11 };
+  }
+
+  function resolveSpaceFrameClass(index) {
+    if (index === 0 || index === 10 || index === 20 || index === 30) {
+      return "is-corner";
+    }
+    if (index > 0 && index < 10) {
+      return "edge-bottom";
+    }
+    if (index > 10 && index < 20) {
+      return "edge-left";
+    }
+    if (index > 20 && index < 30) {
+      return "edge-top";
+    }
+    return "edge-right";
   }
 
   function renderHouseDots(space) {
@@ -629,6 +764,87 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (space.type === "tax") {
       return formatMoney(space.amount);
+    }
+    return escapeHtml(space.text || "");
+  }
+
+  function renderSpacePrice(space, owner) {
+    const passGoAmount = Number(state.settings?.passGoAmount || PASS_GO_AMOUNT);
+    if (space.type === "property" || space.type === "railroad" || space.type === "utility") {
+      return owner ? "Thue " + renderTileRent(space) : "Gia " + formatMoney(space.price || 0);
+    }
+    if (space.type === "tax") {
+      return "Phi " + formatMoney(space.amount || 0);
+    }
+    if (space.type === "chance" || space.type === "community") {
+      return "Rut the";
+    }
+    if (space.type === "go") {
+      return "Thuong " + formatMoney(passGoAmount);
+    }
+    if (space.type === "freeParking") {
+      return "Jackpot";
+    }
+    if (space.type === "jail") {
+      return "Visit / Jail";
+    }
+    if (space.type === "goToJail") {
+      return "Di den o 10";
+    }
+    return "Su kien";
+  }
+
+  function resolveSpaceBadge(space) {
+    switch (space.type) {
+      case "go":
+        return "GO";
+      case "property":
+        return "DEED";
+      case "railroad":
+        return "RAIL";
+      case "utility":
+        return "UTIL";
+      case "tax":
+        return "TAX";
+      case "chance":
+        return "?";
+      case "community":
+        return "CHEST";
+      case "jail":
+        return "JAIL";
+      case "freeParking":
+        return "FREE";
+      case "goToJail":
+        return "LOCK";
+      default:
+        return "CARD";
+    }
+  }
+
+  function renderSpaceMeta(space, owner) {
+    if (space.type === "property" || space.type === "railroad" || space.type === "utility") {
+      if (owner) {
+        return "Chu " + escapeHtml(owner.name) + (space.mortgaged ? " · the chap" : "");
+      }
+      return "Ngan hang";
+    }
+    if (space.type === "tax") {
+      return "Nop vao quy chung";
+    }
+    if (space.type === "chance") {
+      return "Rut 1 the co hoi";
+    }
+    if (space.type === "community") {
+      return "Rut 1 the cong dong";
+    }
+    if (space.type === "goToJail") {
+      return "Khong linh thuong GO";
+    }
+    if (space.type === "freeParking") {
+      return "Thuong la nghi chan";
+    }
+    if (space.type === "go") {
+      return "Nhan thuong khi di qua";
     }
     return escapeHtml(space.text || "");
   }
@@ -682,7 +898,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderSelectedTileActions(tile) {
     const currentPlayer = getCurrentPlayer();
-    if (!currentPlayer || currentPlayer.bankrupt || state.phase === "ended") {
+    if (!currentPlayer || currentPlayer.bankrupt || state.phase === "ended" || !canUseTurnControls() || isRoomAttached()) {
       return "";
     }
     const buttons = [];
@@ -712,8 +928,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function resolveInstructionText() {
     const currentPlayer = getCurrentPlayer();
+    if (isRoomAttached() && roomSession.room && roomSession.room.status === "WAITING") {
+      return isCurrentBrowserHost() ? "Phong da san sang. Chon token cho du nguoi roi bam bat dau." : "Dang cho host bat dau van Monopoly.";
+    }
     if (!currentPlayer) {
       return "Chon setup va bat dau van moi.";
+    }
+    if (isRoomAttached() && !canUseTurnControls() && roomSession.room && roomSession.room.status === "PLAYING") {
+      return "Dang cho " + currentPlayer.name + " thao tac va dong bo luot.";
     }
     if (state.phase === "ended") {
       const winner = state.winnerId ? getPlayerById(state.winnerId) : null;
@@ -841,6 +1063,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleRoll() {
+    if (isRoomAttached()) {
+      void runRoomAction("roll");
+      return;
+    }
     const currentPlayer = getCurrentPlayer();
     if (!currentPlayer || currentPlayer.bankrupt || state.phase === "ended" || state.debt || !["await_roll", "jail"].includes(state.phase)) {
       return;
@@ -899,6 +1125,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleBuyProperty() {
+    if (isRoomAttached()) {
+      void runRoomAction("buy");
+      return;
+    }
     const currentPlayer = getCurrentPlayer();
     if (!currentPlayer || !state.pendingPurchase) {
       return;
@@ -917,6 +1147,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleSkipPurchase() {
+    if (isRoomAttached()) {
+      void runRoomAction("skip_purchase");
+      return;
+    }
     if (!state.pendingPurchase) {
       return;
     }
@@ -927,6 +1161,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleEndTurn() {
+    if (isRoomAttached()) {
+      void runRoomAction("end_turn");
+      return;
+    }
     const currentPlayer = getCurrentPlayer();
     if (!currentPlayer || state.phase !== "await_end_turn") {
       return;
@@ -938,6 +1176,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handlePayBail() {
+    if (isRoomAttached()) {
+      void runRoomAction("pay_bail");
+      return;
+    }
     const currentPlayer = getCurrentPlayer();
     if (!currentPlayer || !currentPlayer.inJail || state.phase !== "jail" || currentPlayer.money < JAIL_BAIL) {
       return;
@@ -952,6 +1194,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleUseEscapeCard() {
+    if (isRoomAttached()) {
+      void runRoomAction("use_escape_card");
+      return;
+    }
     const currentPlayer = getCurrentPlayer();
     if (!currentPlayer || !currentPlayer.inJail || state.phase !== "jail" || currentPlayer.escapeCards <= 0) {
       return;
@@ -965,6 +1211,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleDeclareBankruptcy() {
+    if (isRoomAttached()) {
+      void runRoomAction("declare_bankruptcy");
+      return;
+    }
     const currentPlayer = getCurrentPlayer();
     if (!currentPlayer || !state.debt || state.debt.playerId !== currentPlayer.id) {
       return;
@@ -1038,9 +1288,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const origin = player.position;
     const destination = (origin + steps) % state.board.length;
     const passedGo = origin + steps >= state.board.length;
+    const passGoAmount = Math.max(50, Number(state.settings?.passGoAmount || PASS_GO_AMOUNT));
     if (passedGo) {
-      player.money += PASS_GO_AMOUNT;
-      logAction("Qua GO", player.name + " nhan " + formatMoney(PASS_GO_AMOUNT) + " khi di qua GO.");
+      player.money += passGoAmount;
+      logAction("Qua GO", player.name + " nhan " + formatMoney(passGoAmount) + " khi di qua GO.");
     }
     player.position = destination;
     state.selectedTileIndex = destination;
@@ -1050,9 +1301,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function movePlayerTo(player, destination, reason, collectGo) {
     const passedGo = collectGo || destination < player.position;
+    const passGoAmount = Math.max(50, Number(state.settings?.passGoAmount || PASS_GO_AMOUNT));
     if (passedGo) {
-      player.money += PASS_GO_AMOUNT;
-      logAction("Qua GO", player.name + " nhan " + formatMoney(PASS_GO_AMOUNT) + " khi di qua GO.");
+      player.money += passGoAmount;
+      logAction("Qua GO", player.name + " nhan " + formatMoney(passGoAmount) + " khi di qua GO.");
     }
     player.position = destination;
     state.selectedTileIndex = destination;
@@ -1389,5 +1641,709 @@ document.addEventListener("DOMContentLoaded", () => {
       logAction("Ket van", reason);
     }
     renderAll();
+  }
+
+  function createRoomSession() {
+    return {
+      playerId: "",
+      playerName: "",
+      roomId: readRoomIdFromUrl(),
+      room: null,
+      rooms: [],
+      pollTimer: 0,
+      publishTimer: 0,
+      pendingGameState: null,
+      pendingFingerprint: "",
+      lastPublishedFingerprint: "",
+      applyingRemote: false,
+      statusMessage: "",
+      statusIsError: false
+    };
+  }
+
+  function hydrateStoredPlayerProfile() {
+    const stored = readStoredProfile();
+    if (stored.playerId) {
+      roomSession.playerId = stored.playerId;
+    }
+    if (stored.playerName) {
+      roomSession.playerName = stored.playerName;
+    }
+    if (refs.roomPlayerName && roomSession.playerName) {
+      refs.roomPlayerName.value = roomSession.playerName;
+    }
+  }
+
+  function readStoredProfile() {
+    try {
+      const raw = window.localStorage.getItem(ROOM_STORAGE_KEY);
+      if (!raw) {
+        return {};
+      }
+      const parsed = JSON.parse(raw);
+      return typeof parsed === "object" && parsed ? parsed : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function persistStoredProfile() {
+    try {
+      window.localStorage.setItem(ROOM_STORAGE_KEY, JSON.stringify({
+        playerId: roomSession.playerId || "",
+        playerName: roomSession.playerName || ""
+      }));
+    } catch (_) {
+    }
+  }
+
+  function readRoomIdFromUrl() {
+    try {
+      const params = new URL(window.location.href).searchParams;
+      return String(params.get("roomId") || params.get("room") || "").trim().toUpperCase();
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function updateRoomUrl(roomId) {
+    try {
+      const url = new URL(window.location.href);
+      if (roomId) {
+        url.searchParams.set("roomId", roomId);
+      } else {
+        url.searchParams.delete("roomId");
+      }
+      window.history.replaceState({}, "", url.toString());
+    } catch (_) {
+    }
+  }
+
+  function setRoomStatus(message, isError) {
+    roomSession.statusMessage = message || "";
+    roomSession.statusIsError = Boolean(isError);
+    if (!refs.roomStatus) {
+      return;
+    }
+    refs.roomStatus.textContent = roomSession.statusMessage || "Tao phong moi hoac nhap ma phong de vao lobby Monopoly.";
+    refs.roomStatus.classList.toggle("monopoly-note--alert", roomSession.statusIsError);
+  }
+
+  function isRoomAttached() {
+    return Boolean(roomSession.room && roomSession.room.roomId);
+  }
+
+  function isCurrentBrowserHost() {
+    return Boolean(roomSession.room && roomSession.playerId && roomSession.room.hostPlayerId === roomSession.playerId);
+  }
+
+  function isRoomHostPlayer(playerId) {
+    return Boolean(roomSession.room && playerId && roomSession.room.hostPlayerId === playerId);
+  }
+
+  function currentBrowserRoomPlayer() {
+    if (!roomSession.room || !roomSession.playerId) {
+      return null;
+    }
+    return (roomSession.room.players || []).find((player) => player.playerId === roomSession.playerId) || null;
+  }
+
+  function resolveBoardEyebrowLabel() {
+    if (roomSession.room && roomSession.room.roomId) {
+      return "Room " + roomSession.room.roomId;
+    }
+    return "Local Monopoly";
+  }
+
+  function resolveTokenLabel(tokenId) {
+    const token = TOKEN_CATALOG.find((item) => item.id === tokenId);
+    return token ? token.label : "Token";
+  }
+
+  function canUseTurnControls() {
+    if (!isRoomAttached()) {
+      return true;
+    }
+    if (!roomSession.room || roomSession.room.status !== "PLAYING") {
+      return false;
+    }
+    const currentPlayer = getCurrentPlayer();
+    return Boolean(currentPlayer && roomSession.playerId && currentPlayer.id === roomSession.playerId);
+  }
+
+  function renderSetupAvailability() {
+    if (!refs.localSetupCard) {
+      return;
+    }
+    refs.localSetupCard.hidden = isRoomAttached();
+  }
+
+  function renderRoomPanels() {
+    if (!refs.currentRoom || !refs.roomPlayers || !refs.tokenPicker || !refs.openRooms) {
+      return;
+    }
+
+    const room = roomSession.room;
+    const players = room && Array.isArray(room.players) ? room.players : [];
+    if (!room) {
+      refs.currentRoom.innerHTML = '<div class="monopoly-empty-state">Chua gan voi phong nao. Tao room moi hoac chon mot phong dang mo ben duoi.</div>';
+      refs.roomPlayers.innerHTML = '<div class="monopoly-empty-state">Lobby nguoi choi se hien tai day khi ban vao phong.</div>';
+      refs.tokenPicker.innerHTML = '<div class="monopoly-empty-state">Vao phong truoc, sau do chon token dai dien nhu cho, xe hoi, mu hoac tau.</div>';
+    } else {
+      const host = players.find((player) => player.playerId === room.hostPlayerId) || null;
+      refs.currentRoom.innerHTML = `
+        <div class="monopoly-current-room__meta">
+          <div><span>Ma phong</span><strong>${escapeHtml(room.roomId)}</strong></div>
+          <div><span>Ten phong</span><strong>${escapeHtml(room.roomName)}</strong></div>
+          <div><span>Trang thai</span><strong>${escapeHtml(room.status)}</strong></div>
+          <div><span>Host</span><strong>${escapeHtml(host ? host.name : "Host")}</strong></div>
+          <div><span>So nguoi choi</span><strong>${players.length}/${room.maxPlayers}</strong></div>
+          <div><span>Qua GO</span><strong>${formatMoney(room.passGoAmount)}</strong></div>
+        </div>
+      `;
+
+      refs.roomPlayers.innerHTML = `
+        <div class="monopoly-room-player-grid">
+          ${players.map((player) => `
+            <article class="monopoly-room-player-chip">
+              <strong>${escapeHtml(player.name)}${player.playerId === roomSession.playerId ? " (Ban)" : ""}</strong>
+              <small>${player.host ? "Host" : "Nguoi choi"} | Token: ${escapeHtml(player.token ? resolveTokenLabel(player.token) : "Chua chon")} | Thu tu: ${player.turnOrder + 1}</small>
+            </article>
+          `).join("")}
+        </div>
+      `;
+
+      if (room.status === "WAITING") {
+        refs.tokenPicker.innerHTML = `
+          <div class="monopoly-token-grid">
+            ${TOKEN_CATALOG.map((token) => {
+              const owner = players.find((player) => player.token === token.id) || null;
+              const selected = owner && owner.playerId === roomSession.playerId;
+              const disabled = owner && owner.playerId !== roomSession.playerId;
+              return `
+                <button
+                  type="button"
+                  class="monopoly-token-btn${selected ? " is-selected" : ""}${disabled ? " is-taken" : ""}"
+                  data-token-id="${token.id}"
+                  ${disabled ? "disabled" : ""}>
+                  <strong><i class="bi ${token.icon}"></i> ${escapeHtml(token.label)}</strong>
+                  <small>${owner ? "Dang giu: " + escapeHtml(owner.name) : "Con trong"}</small>
+                </button>
+              `;
+            }).join("")}
+          </div>
+        `;
+      } else {
+        refs.tokenPicker.innerHTML = '<div class="monopoly-empty-state">Game da bat dau. Token duoc khoa cho den khi mo room moi.</div>';
+      }
+    }
+
+    if (!roomSession.rooms.length) {
+      refs.openRooms.innerHTML = '<div class="monopoly-empty-state">Chua co phong dang cho nao. Ban co the tao phong moi de mo lobby.</div>';
+    } else {
+      refs.openRooms.innerHTML = roomSession.rooms.map((entry) => `
+        <article class="monopoly-open-room-card">
+          <div class="monopoly-open-room-card__head">
+            <strong>${escapeHtml(entry.roomName)}</strong>
+            <code>${escapeHtml(entry.roomId)}</code>
+          </div>
+          <small>${escapeHtml(entry.hostName)} | ${entry.playerCount}/${entry.maxPlayers} nguoi | ${escapeHtml(entry.status)}</small>
+          <button type="button" class="hub-portal-inline-btn" data-room-join="${entry.roomId}" ${entry.playerCount >= entry.maxPlayers ? "disabled" : ""}>Vao phong</button>
+        </article>
+      `).join("");
+    }
+
+    const missingToken = room && room.status === "WAITING" && players.some((player) => !player.token);
+    refs.roomStartBtn.disabled = !room || !isCurrentBrowserHost() || room.status !== "WAITING" || players.length < 2 || missingToken;
+    refs.leaveRoomBtn.disabled = !room;
+    refs.copyRoomBtn.disabled = !room;
+    if (!roomSession.statusMessage) {
+      if (room && room.status === "WAITING") {
+        setRoomStatus(isCurrentBrowserHost()
+          ? "Phong da tao. Moi nguoi vao phong, chon token roi host bat dau."
+          : "Da vao phong. Chon token va cho host mo van.", false);
+      } else if (room && room.status === "PLAYING") {
+        setRoomStatus("Phong dang trong tran. Chi nguoi dang den luot moi duoc thao tac.", false);
+      }
+    } else if (refs.roomStatus) {
+      refs.roomStatus.textContent = roomSession.statusMessage;
+      refs.roomStatus.classList.toggle("monopoly-note--alert", roomSession.statusIsError);
+    }
+  }
+
+  async function loadRoomList(silent) {
+    try {
+      const payload = await fetchJson("/api/games/monopoly/rooms");
+      roomSession.rooms = Array.isArray(payload.rooms) ? payload.rooms : [];
+      renderRoomPanels();
+      if (!silent && !roomSession.room) {
+        setRoomStatus("Da cap nhat danh sach phong mo.", false);
+      }
+    } catch (error) {
+      if (!silent) {
+        setRoomStatus(error.message || "Khong tai duoc danh sach phong.", true);
+      }
+    }
+  }
+
+  async function createRoom() {
+    const playerName = sanitizeName(refs.roomPlayerName?.value, "Ty phu online");
+    roomSession.playerName = playerName;
+    persistStoredProfile();
+    if (isRoomAttached() && roomSession.room && roomSession.room.status === "PLAYING") {
+      setRoomStatus("Room hien tai dang o trong tran. Bam 'Roi phong' truoc neu muon mo room moi.", true);
+      return;
+    }
+    try {
+      if (isRoomAttached() && roomSession.room && roomSession.room.status !== "PLAYING") {
+        await leaveRoomSession();
+      }
+      const payload = await fetchJson("/api/games/monopoly/rooms", {
+        method: "POST",
+        body: JSON.stringify({
+          playerId: roomSession.playerId || null,
+          playerName,
+          roomName: sanitizeName(refs.roomName?.value, "Ban Co ty phu"),
+          maxPlayers: Number(refs.roomMaxPlayers?.value || 4),
+          startingCash: Number(refs.startingCash?.value || 1500),
+          passGoAmount: PASS_GO_AMOUNT
+        })
+      });
+      roomSession.playerId = payload.playerId || roomSession.playerId;
+      roomSession.playerName = playerName;
+      persistStoredProfile();
+      applyRoomSnapshot(payload.room);
+      setRoomStatus("Da tao phong " + payload.room.roomId + ". Chia ma phong va moi them nguoi.", false);
+      await loadRoomList(true);
+    } catch (error) {
+      setRoomStatus(error.message || "Khong tao duoc phong.", true);
+    }
+  }
+
+  function joinRoomByInput() {
+    const roomId = String(refs.roomCodeInput?.value || "").trim().toUpperCase();
+    if (!roomId) {
+      setRoomStatus("Nhap ma phong truoc khi bam vao phong.", true);
+      return;
+    }
+    joinRoom(roomId, false);
+  }
+
+  async function joinRoom(roomId, silent) {
+    const normalizedRoomId = String(roomId || "").trim().toUpperCase();
+    if (!normalizedRoomId) {
+      if (!silent) {
+        setRoomStatus("Ma phong khong hop le.", true);
+      }
+      return;
+    }
+
+    const playerName = sanitizeName(refs.roomPlayerName?.value, roomSession.playerName || "Ty phu online");
+    roomSession.playerName = playerName;
+    persistStoredProfile();
+    if (isRoomAttached() && roomSession.room && roomSession.room.roomId !== normalizedRoomId && roomSession.room.status === "PLAYING") {
+      setRoomStatus("Dang o trong tran khac. Roi phong hien tai truoc khi chuyen room.", true);
+      return;
+    }
+
+    try {
+      if (isRoomAttached() && roomSession.room && roomSession.room.roomId !== normalizedRoomId && roomSession.room.status !== "PLAYING") {
+        await leaveRoomSession();
+      }
+      const payload = await fetchJson("/api/games/monopoly/rooms/" + encodeURIComponent(normalizedRoomId) + "/join", {
+        method: "POST",
+        body: JSON.stringify({
+          playerId: roomSession.playerId || null,
+          playerName
+        })
+      });
+      roomSession.playerId = payload.playerId || roomSession.playerId;
+      roomSession.playerName = playerName;
+      persistStoredProfile();
+      applyRoomSnapshot(payload.room);
+      if (!silent) {
+        setRoomStatus("Da vao phong " + normalizedRoomId + ".", false);
+      }
+      await loadRoomList(true);
+    } catch (error) {
+      if (!silent) {
+        setRoomStatus(error.message || "Khong vao duoc phong.", true);
+      }
+      if (roomSession.roomId === normalizedRoomId && !roomSession.room) {
+        updateRoomUrl("");
+        roomSession.roomId = "";
+      }
+    }
+  }
+
+  async function selectToken(tokenId) {
+    if (!isRoomAttached() || !roomSession.room || roomSession.room.status !== "WAITING") {
+      return;
+    }
+    try {
+      const payload = await fetchJson("/api/games/monopoly/rooms/" + encodeURIComponent(roomSession.room.roomId) + "/token", {
+        method: "POST",
+        body: JSON.stringify({
+          playerId: roomSession.playerId,
+          token: tokenId
+        })
+      });
+      applyRoomSnapshot(payload.room);
+      setRoomStatus("Da chon token " + resolveTokenLabel(tokenId) + ".", false);
+      await loadRoomList(true);
+    } catch (error) {
+      setRoomStatus(error.message || "Khong doi duoc token.", true);
+    }
+  }
+
+  async function startRoomSession() {
+    if (!isRoomAttached() || !roomSession.room) {
+      return;
+    }
+    try {
+      const payload = await fetchJson("/api/games/monopoly/rooms/" + encodeURIComponent(roomSession.room.roomId) + "/start", {
+        method: "POST",
+        body: JSON.stringify({
+          playerId: roomSession.playerId
+        })
+      });
+      applyRoomSnapshot(payload.room);
+      setRoomStatus("Host da bat dau van. Room da chuyen sang che do choi.", false);
+    } catch (error) {
+      setRoomStatus(error.message || "Khong bat dau duoc phong.", true);
+    }
+  }
+
+  async function runRoomAction(action) {
+    if (!isRoomAttached() || !roomSession.room) {
+      return;
+    }
+    if (roomSession.room.status !== "PLAYING") {
+      setRoomStatus("Room chua o trang thai dang choi.", true);
+      return;
+    }
+    if (!roomSession.playerId) {
+      setRoomStatus("Khong xac dinh duoc nguoi choi hien tai.", true);
+      return;
+    }
+
+    try {
+      const payload = await fetchJson("/api/games/monopoly/rooms/" + encodeURIComponent(roomSession.room.roomId) + "/action", {
+        method: "POST",
+        body: JSON.stringify({
+          playerId: roomSession.playerId,
+          action
+        })
+      });
+      applyRoomSnapshot(payload.room);
+      setRoomStatus("Da cap nhat room sau hanh dong: " + describeRoomAction(action) + ".", false);
+    } catch (error) {
+      if (error.payload && error.payload.room) {
+        applyRoomSnapshot(error.payload.room);
+      }
+      setRoomStatus(error.message || "Khong thuc hien duoc hanh dong trong room.", true);
+    }
+  }
+
+  function describeRoomAction(action) {
+    switch (action) {
+      case "roll":
+        return "tung xuc xac";
+      case "buy":
+        return "mua tai san";
+      case "skip_purchase":
+        return "bo qua mua";
+      case "end_turn":
+        return "ket thuc luot";
+      case "pay_bail":
+        return "nop bao lanh";
+      case "use_escape_card":
+        return "dung the ra tu";
+      case "declare_bankruptcy":
+        return "tuyen bo pha san";
+      case "finish_game":
+        return "chot van";
+      default:
+        return "cap nhat luot choi";
+    }
+  }
+
+  async function leaveRoomSession() {
+    if (!isRoomAttached() || !roomSession.room) {
+      return;
+    }
+    const roomId = roomSession.room.roomId;
+    if (roomSession.room.status !== "PLAYING") {
+      try {
+        await fetchJson("/api/games/monopoly/rooms/" + encodeURIComponent(roomId) + "/leave", {
+          method: "POST",
+          body: JSON.stringify({
+            playerId: roomSession.playerId
+          })
+        });
+      } catch (_) {
+      }
+    }
+    stopRoomPolling();
+    if (roomSession.publishTimer) {
+      window.clearTimeout(roomSession.publishTimer);
+      roomSession.publishTimer = 0;
+    }
+    roomSession.room = null;
+    roomSession.roomId = "";
+    roomSession.pendingGameState = null;
+    roomSession.pendingFingerprint = "";
+    roomSession.lastPublishedFingerprint = "";
+    roomSession.statusMessage = "";
+    roomSession.statusIsError = false;
+    updateRoomUrl("");
+    setRoomStatus("Da roi che do phong. Ban co the tao room khac hoac choi local.", false);
+    startConfiguredGame(readSetupConfig());
+    await loadRoomList(true);
+  }
+
+  async function copyRoomInvite() {
+    if (!isRoomAttached() || !roomSession.room) {
+      setRoomStatus("Chua co room nao de sao chep.", true);
+      return;
+    }
+    try {
+      const inviteUrl = new URL(window.location.href);
+      inviteUrl.searchParams.set("roomId", roomSession.room.roomId);
+      await navigator.clipboard.writeText(inviteUrl.toString());
+      setRoomStatus("Da sao chep link moi vao phong " + roomSession.room.roomId + ".", false);
+    } catch (_) {
+      setRoomStatus("Khong the sao chep tu dong. Hay copy ma phong " + roomSession.room.roomId + ".", true);
+    }
+  }
+
+  function applyRoomSnapshot(room) {
+    roomSession.room = room || null;
+    roomSession.roomId = room && room.roomId ? room.roomId : "";
+    if (refs.roomCodeInput) {
+      refs.roomCodeInput.value = roomSession.roomId || "";
+    }
+    if (roomSession.roomId) {
+      updateRoomUrl(roomSession.roomId);
+      startRoomPolling();
+    } else {
+      stopRoomPolling();
+      updateRoomUrl("");
+    }
+
+    if (!room) {
+      renderAll();
+      return;
+    }
+
+    if (!room.gameState) {
+      applyLobbyPreview(room);
+      return;
+    }
+    applyRemoteGameState(room.gameState);
+    return;
+  }
+
+  function applyLobbyPreview(room) {
+    roomSession.applyingRemote = true;
+    state = createEmptyState();
+    state.settings.passGoAmount = Number(room.passGoAmount || PASS_GO_AMOUNT);
+    state.players = (room.players || []).map((player, index) => createPlayerState(player.name, index, room.startingCash, {
+      id: player.playerId,
+      token: player.token,
+      turnOrder: player.turnOrder
+    }));
+    state.phase = "setup";
+    state.selectedTileIndex = 0;
+    state.log = [{
+      title: "Lobby room",
+      message: room.status === "PLAYING"
+        ? "Room " + room.roomId + " dang khoi tao state van dau. Cho dong bo..."
+        : "Phong " + room.roomId + " dang cho host bat dau.",
+      stamp: "Lobby"
+    }];
+    roomSession.lastPublishedFingerprint = "";
+    roomSession.applyingRemote = false;
+    renderAll();
+  }
+
+  function initializeRoomGameState(room) {
+    roomSession.applyingRemote = true;
+    state = createEmptyState();
+    state.settings.passGoAmount = Number(room.passGoAmount || PASS_GO_AMOUNT);
+    state.players = (room.players || []).map((player, index) => createPlayerState(player.name, index, room.startingCash, {
+      id: player.playerId,
+      token: player.token,
+      turnOrder: player.turnOrder
+    }));
+    state.phase = state.players[0] ? "await_roll" : "setup";
+    state.round = 1;
+    state.turnNumber = 1;
+    state.selectedTileIndex = 0;
+    logAction("Phong bat dau", "Room " + room.roomId + " da vao van. " + (state.players[0] ? state.players[0].name : "Nguoi choi") + " di truoc.");
+    roomSession.lastPublishedFingerprint = "";
+    roomSession.applyingRemote = false;
+    renderAll();
+  }
+
+  function applyRemoteGameState(gameState) {
+    roomSession.applyingRemote = true;
+    state = cloneData(gameState);
+    if (!state.settings) {
+      state.settings = {};
+    }
+    if (!state.settings.passGoAmount) {
+      state.settings.passGoAmount = Number(roomSession.room?.passGoAmount || PASS_GO_AMOUNT);
+    }
+    if (!Array.isArray(state.board) || !state.board.length) {
+      state.board = cloneBoardSpaces();
+    }
+    const roomPlayers = roomSession.room && Array.isArray(roomSession.room.players) ? roomSession.room.players : [];
+    state.players = Array.isArray(state.players) ? state.players.map((player, index) => {
+      const roomPlayer = roomPlayers.find((entry) => entry.playerId === player.id) || null;
+      return {
+        ...player,
+        color: player.color || PLAYER_COLORS[index % PLAYER_COLORS.length],
+        token: player.token || (roomPlayer ? roomPlayer.token : null),
+        turnOrder: Number.isFinite(player.turnOrder) ? player.turnOrder : (roomPlayer ? roomPlayer.turnOrder : index)
+      };
+    }) : [];
+    roomSession.lastPublishedFingerprint = fingerprintForRoomState(exportGameStateForRoom());
+    roomSession.applyingRemote = false;
+    renderAll();
+  }
+
+  function startRoomPolling() {
+    stopRoomPolling();
+    roomSession.pollTimer = window.setInterval(() => {
+      void pollCurrentRoom();
+    }, ROOM_POLL_MS);
+  }
+
+  function stopRoomPolling() {
+    if (roomSession.pollTimer) {
+      window.clearInterval(roomSession.pollTimer);
+      roomSession.pollTimer = 0;
+    }
+  }
+
+  async function pollCurrentRoom() {
+    if (!roomSession.roomId) {
+      return;
+    }
+    try {
+      const payload = await fetchJson("/api/games/monopoly/rooms/" + encodeURIComponent(roomSession.roomId));
+      const incomingRoom = payload.room || null;
+      if (!incomingRoom) {
+        return;
+      }
+      const currentRoom = roomSession.room;
+      const localVersion = currentRoom ? Number(currentRoom.version || 0) : 0;
+      const incomingVersion = Number(incomingRoom.version || 0);
+      if (incomingVersion !== localVersion || Boolean(currentRoom?.gameState) !== Boolean(incomingRoom.gameState) || incomingRoom.status !== (currentRoom?.status || "")) {
+        applyRoomSnapshot(incomingRoom);
+      } else {
+        roomSession.room = incomingRoom;
+        roomSession.roomId = incomingRoom.roomId;
+        renderRoomPanels();
+      }
+    } catch (_) {
+    }
+  }
+
+  function maybeQueueRoomStatePublish() {
+    if (!canPublishRoomState()) {
+      return;
+    }
+    const exportState = exportGameStateForRoom();
+    const fingerprint = fingerprintForRoomState(exportState);
+    if (!fingerprint || fingerprint === roomSession.lastPublishedFingerprint || fingerprint === roomSession.pendingFingerprint) {
+      return;
+    }
+    roomSession.pendingGameState = exportState;
+    roomSession.pendingFingerprint = fingerprint;
+    if (roomSession.publishTimer) {
+      window.clearTimeout(roomSession.publishTimer);
+    }
+    roomSession.publishTimer = window.setTimeout(() => {
+      void publishRoomState();
+    }, ROOM_STATE_DEBOUNCE_MS);
+  }
+
+  function canPublishRoomState() {
+    return false;
+  }
+
+  async function publishRoomState() {
+    if (!roomSession.pendingGameState || !roomSession.pendingFingerprint || !roomSession.roomId || !roomSession.room) {
+      return;
+    }
+    const roomId = roomSession.roomId;
+    const baseVersion = Number(roomSession.room.version || 0);
+    const payloadState = roomSession.pendingGameState;
+    const payloadFingerprint = roomSession.pendingFingerprint;
+    roomSession.pendingGameState = null;
+    roomSession.pendingFingerprint = "";
+    roomSession.publishTimer = 0;
+
+    try {
+      const payload = await fetchJson("/api/games/monopoly/rooms/" + encodeURIComponent(roomId) + "/sync", {
+        method: "POST",
+        body: JSON.stringify({
+          playerId: roomSession.playerId,
+          baseVersion,
+          gameState: payloadState
+        })
+      });
+      roomSession.lastPublishedFingerprint = payloadFingerprint;
+      if (payload.room) {
+        applyRoomSnapshot(payload.room);
+      }
+    } catch (error) {
+      if (error.payload && error.payload.room) {
+        applyRoomSnapshot(error.payload.room);
+      }
+      setRoomStatus(error.message || "Dong bo state room that bai.", true);
+    }
+  }
+
+  function exportGameStateForRoom() {
+    return cloneData(state);
+  }
+
+  function fingerprintForRoomState(snapshot) {
+    if (!snapshot) {
+      return "";
+    }
+    const clone = cloneData(snapshot);
+    clone.selectedTileIndex = -1;
+    return JSON.stringify(clone);
+  }
+
+  function cloneData(value) {
+    if (typeof window.structuredClone === "function") {
+      try {
+        return window.structuredClone(value);
+      } catch (_) {
+      }
+    }
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  async function fetchJson(url, options) {
+    const requestInit = options ? { ...options } : {};
+    requestInit.headers = {
+      Accept: "application/json",
+      ...(requestInit.body ? { "Content-Type": "application/json" } : {}),
+      ...(requestInit.headers || {})
+    };
+    const response = await fetch(url, requestInit);
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || payload.success === false) {
+      const error = new Error(payload.error || "Yeu cau Monopoly khong thanh cong.");
+      error.payload = payload;
+      throw error;
+    }
+    return payload;
   }
 });

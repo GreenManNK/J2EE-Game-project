@@ -7,11 +7,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.util.UriUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Locale;
 
 @Controller
 @RequestMapping("/games")
@@ -32,6 +36,28 @@ public class GameCatalogController {
     @GetMapping("/api")
     public Map<String, Object> apiIndex() {
         return Map.of("games", gameCatalogService.findAll());
+    }
+
+    @GetMapping("/{code}/rooms")
+    public String rooms(@PathVariable String code,
+                        @RequestParam(required = false) String roomId) {
+        GameCatalogItem game = gameCatalogService.findByCode(code)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
+        if (game.isExternalSource()) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "External game module uses its own module page or external API gateway"
+            );
+        }
+
+        return switch (normalizeCode(game.code())) {
+            case "cards" -> redirectWithRoomQuery("/cards/tien-len", "roomId", roomId);
+            case "blackjack" -> redirectWithRoomQuery("/games/cards/blackjack", "room", roomId);
+            case "quiz" -> redirectWithRoomQuery("/games/quiz", "room", roomId);
+            case "typing" -> redirectWithRoomQuery("/games/typing", "room", roomId);
+            case "monopoly" -> redirectWithRoomQuery("/games/monopoly", "roomId", roomId);
+            default -> forwardToSharedRoomHub(game.code(), roomId);
+        };
     }
 
     @GetMapping("/{code}")
@@ -56,5 +82,36 @@ public class GameCatalogController {
             case "monopoly" -> "games/monopoly";
             default -> "games/detail";
         };
+    }
+
+    private String forwardToSharedRoomHub(String gameCode, String roomId) {
+        StringBuilder forward = new StringBuilder("forward:/online-hub?game=")
+            .append(UriUtils.encodeQueryParam(gameCode, StandardCharsets.UTF_8));
+        String normalizedRoomId = normalizeRoomId(roomId);
+        if (!normalizedRoomId.isEmpty()) {
+            forward.append("&roomId=")
+                .append(UriUtils.encodeQueryParam(normalizedRoomId, StandardCharsets.UTF_8));
+        }
+        return forward.toString();
+    }
+
+    private String redirectWithRoomQuery(String basePath, String roomParamName, String roomId) {
+        String normalizedRoomId = normalizeRoomId(roomId);
+        if (normalizedRoomId.isEmpty()) {
+            return "redirect:" + basePath;
+        }
+        return "redirect:" + basePath
+            + "?"
+            + UriUtils.encodeQueryParam(roomParamName, StandardCharsets.UTF_8)
+            + "="
+            + UriUtils.encodeQueryParam(normalizedRoomId, StandardCharsets.UTF_8);
+    }
+
+    private String normalizeCode(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizeRoomId(String value) {
+        return value == null ? "" : value.trim();
     }
 }

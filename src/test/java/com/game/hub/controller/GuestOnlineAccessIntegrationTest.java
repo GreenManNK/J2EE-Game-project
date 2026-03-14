@@ -28,7 +28,7 @@ class GuestOnlineAccessIntegrationTest {
     void anonymousUserCanOpenLobby() throws Exception {
         mockMvc.perform(get("/lobby"))
             .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/online-hub?game=caro"));
+            .andExpect(redirectedUrl("/games/caro/rooms"));
 
         mockMvc.perform(get("/online-hub").param("game", "caro"))
             .andExpect(status().isOk());

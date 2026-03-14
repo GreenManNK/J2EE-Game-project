@@ -143,7 +143,7 @@
     const roomId = (initialRoomId || '').trim();
     if (!roomId) {
       notify('Ban chua vao phong. He thong se quay lai sanh.', 'warning');
-      window.location.href = appPath('/lobby');
+      window.location.href = appPath('/games/caro/rooms');
       return;
     }
 
@@ -162,7 +162,7 @@
 
     if (!userId) {
       notify('Khong xac dinh duoc nguoi choi. He thong se quay lai sanh.', 'danger');
-      window.location.href = appPath('/lobby');
+      window.location.href = appPath('/games/caro/rooms');
       return;
     }
 
@@ -468,7 +468,7 @@
       if (connected) {
         client.publish({ destination: '/app/game.leave', body: JSON.stringify({ roomId, userId }) });
       }
-      window.location.href = appPath('/lobby');
+      window.location.href = appPath('/games/caro/rooms');
     });
 
     surrenderBtn?.addEventListener('click', () => {

@@ -271,7 +271,7 @@ public class OnlineHubController {
         if (!playUrlTemplate.isBlank()) {
             return playUrlTemplate;
         }
-        return "/online-hub?game=" + gameCode + "&roomId={roomId}";
+        return "/games/" + gameCode + "/rooms?roomId={roomId}";
     }
 
     private List<RoomRow> listRooms(String gameCode) {

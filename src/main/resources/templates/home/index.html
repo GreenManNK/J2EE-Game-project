@@ -27,7 +27,7 @@
 
       <div class="cg-home-stage__actions">
         <a th:href="@{/games}" class="hub-portal-inline-btn primary">Mo thu vien</a>
-        <a th:href="@{/online-hub(game='caro')}" class="hub-portal-inline-btn">Sanh online</a>
+        <a th:href="@{/games/caro/rooms}" class="hub-portal-inline-btn">Sanh online</a>
       </div>
     </div>
 
@@ -46,7 +46,7 @@
          th:classappend="${st.index == 0} ? ' is-feature' : (${st.index == 4} ? ' is-wide' : '')"
          th:attr="data-code=${g.code}">
         <span class="cg-recommended-card__badge"
-              th:text="${st.index == 0} ? 'Top pick' : (${g.supportsOnline} ? 'Online' : 'Quick play')">Top pick</span>
+              th:text="${g.code == 'monopoly'} ? ((st.index == 0) ? 'Moi cap nhat' : 'Board game') : ((st.index == 0) ? 'Top pick' : (${g.supportsOnline} ? 'Online' : 'Quick play'))">Top pick</span>
         <div class="cg-recommended-card__icon">
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
@@ -56,6 +56,7 @@
           <p th:text="${g.description}">Mo ta game</p>
         </div>
         <div class="cg-recommended-card__meta">
+          <span th:if="${g.code == 'monopoly'}"><i class="bi bi-bank2"></i> Board 40 o + room MVP</span>
           <span th:if="${g.supportsOnline}"><i class="bi bi-wifi"></i> Online</span>
           <span th:if="${g.supportsOffline}"><i class="bi bi-display"></i> Local</span>
           <span th:if="${g.supportsGuest}"><i class="bi bi-lightning-charge-fill"></i> Guest</span>
@@ -97,7 +98,7 @@
                th:each="g : ${recommendedGames}"
                th:attr="data-name=${g.displayName},data-code=${g.code}">
         <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
-          <span class="cg-tile-badge" th:text="${g.supportsOnline} ? 'Hot online' : 'Recommended'">Recommended</span>
+          <span class="cg-tile-badge" th:text="${g.code == 'monopoly'} ? 'Moi cap nhat' : (${g.supportsOnline} ? 'Hot online' : 'Recommended')">Recommended</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
         <div class="cg-tile-body">
@@ -124,7 +125,7 @@
   <section class="cg-lane" data-lane-section>
     <header class="cg-lane-head">
       <h2>Choi online cung ban be</h2>
-      <a th:href="@{/online-hub(game='caro')}" class="cg-lane-more">Mo sanh</a>
+      <a th:href="@{/games/caro/rooms}" class="cg-lane-more">Mo sanh</a>
     </header>
     <div class="cg-lane-track" data-lane-track>
       <article class="cg-tile"

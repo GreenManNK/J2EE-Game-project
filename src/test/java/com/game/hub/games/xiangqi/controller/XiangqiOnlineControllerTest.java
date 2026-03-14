@@ -16,6 +16,14 @@ import static org.mockito.Mockito.when;
 class XiangqiOnlineControllerTest {
 
     @Test
+    void onlineShouldRedirectToDedicatedRoomPageWhenRoomMissing() {
+        UserAccountRepository repo = mock(UserAccountRepository.class);
+        XiangqiOnlineController controller = new XiangqiOnlineController(repo);
+
+        assertEquals("redirect:/games/xiangqi/rooms", controller.online(null, null, new MockHttpServletRequest(), new ConcurrentModel()));
+    }
+
+    @Test
     void onlineShouldRenderTemplateAndCreateGuestSessionPlayer() {
         UserAccountRepository repo = mock(UserAccountRepository.class);
         when(repo.findById(anyString())).thenReturn(Optional.empty());

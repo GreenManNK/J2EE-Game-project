@@ -111,7 +111,7 @@
     <div class="monopoly-surface__head">
       <div>
         <h2>Ban choi Co ty phu local</h2>
-        <p>Setup nhanh, vao luot, quan ly tai san va theo doi log van dau ngay trong mot layout.</p>
+        <p>Setup local nhanh hoac mo phong de dong bo ban choi theo luot giua nhieu client.</p>
       </div>
       <div class="monopoly-surface__chips">
         <span class="monopoly-mini-chip"><i class="bi bi-dice-6"></i> Board 40 o</span>
@@ -120,10 +120,90 @@
       </div>
     </div>
 
-    <section class="hub-portal-card monopoly-setup-card">
+    <section class="hub-portal-card monopoly-room-card">
       <div class="hub-portal-card__head">
-        <h2>Setup van</h2>
-        <span class="hub-portal-tag">Lobby local</span>
+        <h2>Phong cho Monopoly</h2>
+        <span class="hub-portal-tag">Room sync MVP</span>
+      </div>
+
+      <div class="monopoly-room-grid">
+        <label class="monopoly-field">
+          <span>Ten cua ban</span>
+          <input id="monopolyRoomPlayerName" type="text" class="form-control" maxlength="24" value="Ty phu online">
+        </label>
+
+        <label class="monopoly-field">
+          <span>Ten phong</span>
+          <input id="monopolyRoomName" type="text" class="form-control" maxlength="36" value="Ban Co ty phu">
+        </label>
+
+        <label class="monopoly-field">
+          <span>So cho toi da</span>
+          <select id="monopolyRoomMaxPlayers" class="form-select">
+            <option value="2">2 cho</option>
+            <option value="3">3 cho</option>
+            <option value="4" selected>4 cho</option>
+          </select>
+        </label>
+
+        <label class="monopoly-field">
+          <span>Ma phong</span>
+          <div class="monopoly-room-join">
+            <input id="monopolyRoomCodeInput" type="text" class="form-control" maxlength="12" placeholder="VD: A7K9M2">
+            <button id="monopolyJoinRoomBtn" type="button" class="hub-portal-inline-btn">Vao phong</button>
+          </div>
+        </label>
+      </div>
+
+      <div class="monopoly-room-actions">
+        <button id="monopolyCreateRoomBtn" type="button" class="hub-portal-action hub-portal-action--primary">
+          <span class="hub-portal-action__icon"><i class="bi bi-plus-circle-fill"></i></span>
+          <span class="hub-portal-action__text">
+            <strong>Tao phong</strong>
+            <small>Tao room, vao ngay va giu quyen host</small>
+          </span>
+          <i class="bi bi-arrow-right"></i>
+        </button>
+        <button id="monopolyRefreshRoomsBtn" type="button" class="hub-portal-action hub-portal-action--soft">
+          <span class="hub-portal-action__icon"><i class="bi bi-arrow-clockwise"></i></span>
+          <span class="hub-portal-action__text">
+            <strong>Tai lai phong mo</strong>
+            <small>Cap nhat danh sach room dang cho nguoi</small>
+          </span>
+          <i class="bi bi-arrow-right"></i>
+        </button>
+        <button id="monopolyCopyRoomBtn" type="button" class="hub-portal-action hub-portal-action--soft">
+          <span class="hub-portal-action__icon"><i class="bi bi-link-45deg"></i></span>
+          <span class="hub-portal-action__text">
+            <strong>Sao chep link moi</strong>
+            <small>Gui room code va link vao phong nhanh</small>
+          </span>
+          <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+
+      <p id="monopolyRoomStatus" class="monopoly-note">Tao phong moi hoac nhap ma phong de vao lobby Monopoly.</p>
+
+      <div id="monopolyCurrentRoom" class="monopoly-current-room"></div>
+      <div id="monopolyRoomPlayers" class="monopoly-room-players"></div>
+      <div id="monopolyTokenPicker" class="monopoly-token-picker"></div>
+
+      <div class="monopoly-room-footer">
+        <button id="monopolyRoomStartBtn" type="button" class="hub-portal-inline-btn primary">Host bat dau game</button>
+        <button id="monopolyLeaveRoomBtn" type="button" class="hub-portal-inline-btn">Roi phong</button>
+      </div>
+
+      <div class="hub-portal-card__head">
+        <h3>Phong dang mo</h3>
+        <span class="hub-portal-tag">Open rooms</span>
+      </div>
+      <div id="monopolyOpenRooms" class="monopoly-open-rooms"></div>
+    </section>
+
+    <section id="monopolyLocalSetupCard" class="hub-portal-card monopoly-setup-card">
+      <div class="hub-portal-card__head">
+        <h2>Setup van local</h2>
+        <span class="hub-portal-tag">Offline / cung may</span>
       </div>
 
       <div class="monopoly-setup-grid">
@@ -363,7 +443,7 @@
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('games-monopoly')}"></th:block>
-<script th:src="@{/js/monopoly-game.js(v=20260314a)}"></script>
+<script th:src="@{/js/monopoly-game.js(v=20260314d)}"></script>
 <style>
   .monopoly-surface {
     display: grid;
@@ -455,6 +535,158 @@
     gap: 0.85rem;
   }
 
+  .monopoly-room-grid {
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .monopoly-room-join {
+    display: grid;
+    gap: 0.55rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .monopoly-room-actions {
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .monopoly-current-room,
+  .monopoly-room-players,
+  .monopoly-token-picker,
+  .monopoly-open-rooms {
+    margin-top: 0.95rem;
+  }
+
+  .monopoly-current-room,
+  .monopoly-room-players,
+  .monopoly-open-room-card,
+  .monopoly-token-btn {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(13, 22, 36, 0.6);
+    border-radius: 18px;
+  }
+
+  .monopoly-current-room {
+    padding: 0.9rem 1rem;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .monopoly-current-room__meta,
+  .monopoly-room-player-grid,
+  .monopoly-open-rooms {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .monopoly-current-room__meta {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .monopoly-current-room__meta span,
+  .monopoly-room-player-chip small,
+  .monopoly-open-room-card small {
+    color: rgba(229, 238, 250, 0.72);
+  }
+
+  .monopoly-room-players {
+    padding: 0.9rem 1rem;
+  }
+
+  .monopoly-room-player-grid {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  }
+
+  .monopoly-room-player-chip {
+    padding: 0.8rem 0.9rem;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .monopoly-room-player-chip strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .monopoly-token-picker {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .monopoly-token-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  }
+
+  .monopoly-token-btn {
+    width: 100%;
+    padding: 0.85rem;
+    display: grid;
+    gap: 0.2rem;
+    text-align: left;
+    color: #f6fbff;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  }
+
+  .monopoly-token-btn:hover,
+  .monopoly-token-btn:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(255, 219, 111, 0.62);
+  }
+
+  .monopoly-token-btn.is-selected {
+    border-color: rgba(111, 229, 175, 0.82);
+    background: linear-gradient(160deg, rgba(19, 63, 53, 0.86), rgba(9, 26, 22, 0.92));
+  }
+
+  .monopoly-token-btn.is-taken {
+    opacity: 0.62;
+  }
+
+  .monopoly-room-footer {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .monopoly-open-rooms {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .monopoly-open-room-card {
+    padding: 0.9rem 1rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .monopoly-open-room-card__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .monopoly-open-room-card__head code {
+    font-size: 0.84rem;
+    padding: 0.22rem 0.42rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #eef6ff;
+  }
+
+  .monopoly-open-room-card button {
+    justify-self: start;
+  }
+
   .monopoly-layout {
     display: grid;
     gap: 1rem;
@@ -468,145 +700,383 @@
   }
 
   .monopoly-board-card {
-    padding: 0.95rem;
+    padding: 1.1rem;
     overflow: auto;
+    background:
+      radial-gradient(circle at 16% 18%, rgba(197, 243, 211, 0.16), transparent 22%),
+      radial-gradient(circle at 82% 10%, rgba(255, 233, 167, 0.14), transparent 26%),
+      linear-gradient(145deg, rgba(18, 54, 42, 0.94), rgba(11, 31, 24, 0.98));
+    border: 1px solid rgba(255, 244, 210, 0.12);
   }
 
   .monopoly-board {
-    min-width: 720px;
+    min-width: 760px;
     aspect-ratio: 1 / 1;
     display: grid;
-    grid-template-columns: repeat(11, minmax(0, 1fr));
-    grid-template-rows: repeat(11, minmax(0, 1fr));
-    gap: 0.45rem;
+    grid-template-columns: 1.28fr repeat(9, minmax(0, 1fr)) 1.28fr;
+    grid-template-rows: 1.28fr repeat(9, minmax(0, 1fr)) 1.28fr;
+    gap: 0.16rem;
+    padding: 0.2rem;
+    border-radius: 28px;
+    background:
+      linear-gradient(135deg, rgba(17, 17, 17, 0.96), rgba(34, 24, 17, 0.98));
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 246, 219, 0.08),
+      0 28px 48px rgba(3, 9, 6, 0.34);
   }
 
   .monopoly-space,
   .monopoly-board-center {
-    border-radius: 18px;
+    border-radius: 14px;
   }
 
   .monopoly-space {
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: linear-gradient(160deg, rgba(18, 28, 48, 0.88), rgba(9, 15, 28, 0.96));
-    color: #f8fbff;
-    padding: 0.45rem;
+    border: 1px solid rgba(20, 17, 12, 0.92);
+    background:
+      linear-gradient(180deg, rgba(252, 248, 229, 0.98), rgba(235, 228, 201, 0.98));
+    color: #1e1911;
+    padding: 0.6rem 0.5rem 0.48rem;
     display: grid;
-    gap: 0.18rem;
+    gap: 0.12rem;
     align-content: start;
     text-align: left;
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 3px 10px rgba(17, 12, 9, 0.08);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    font-family: "Trebuchet MS", "Arial Narrow", sans-serif;
   }
 
   .monopoly-space:hover,
   .monopoly-space:focus-visible {
-    transform: translateY(-1px);
-    border-color: rgba(255, 219, 111, 0.55);
-    box-shadow: 0 14px 28px rgba(3, 10, 25, 0.22);
+    transform: translateY(-1px) scale(1.01);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.64),
+      0 12px 24px rgba(17, 12, 9, 0.18);
+    filter: saturate(1.03);
   }
 
   .monopoly-space.is-selected {
-    border-color: rgba(255, 219, 111, 0.92);
-    box-shadow: 0 0 0 1px rgba(255, 219, 111, 0.55) inset, 0 16px 26px rgba(3, 10, 25, 0.28);
+    box-shadow:
+      0 0 0 2px rgba(255, 222, 118, 0.82),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65),
+      0 14px 28px rgba(17, 12, 9, 0.2);
   }
 
   .monopoly-space.is-owned::after {
     content: "";
     position: absolute;
-    inset: auto 8px 8px auto;
-    width: 12px;
-    height: 12px;
+    inset: auto 7px 7px auto;
+    width: 13px;
+    height: 13px;
     border-radius: 999px;
     background: var(--owner-color, rgba(255, 255, 255, 0.45));
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 0 0 2px rgba(33, 21, 10, 0.22),
+      0 0 0 4px rgba(255, 255, 255, 0.45);
+  }
+
+  .monopoly-space.is-mortgaged {
+    filter: grayscale(0.2) saturate(0.72);
+  }
+
+  .monopoly-space.is-mortgaged::before {
+    content: "MORTGAGED";
+    position: absolute;
+    inset: auto 8px 26px auto;
+    transform: rotate(-12deg);
+    padding: 0.12rem 0.28rem;
+    border-radius: 6px;
+    background: rgba(107, 33, 17, 0.9);
+    color: #fff4d8;
+    font-size: 0.44rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
   }
 
   .monopoly-space__band {
-    height: 0.42rem;
-    border-radius: 999px;
+    position: absolute;
     background: var(--space-accent, rgba(255, 255, 255, 0.14));
-    opacity: 0.95;
+    opacity: 1;
+    box-shadow: inset 0 0 0 1px rgba(15, 12, 8, 0.34);
+  }
+
+  .monopoly-space.edge-top,
+  .monopoly-space.is-corner {
+    padding-top: 0.98rem;
+  }
+
+  .monopoly-space.edge-bottom {
+    padding-bottom: 0.98rem;
+  }
+
+  .monopoly-space.edge-left {
+    padding-left: 0.95rem;
+  }
+
+  .monopoly-space.edge-right {
+    padding-right: 0.95rem;
+  }
+
+  .monopoly-space.edge-top .monopoly-space__band {
+    inset: 0 0 auto 0;
+    height: 0.8rem;
+  }
+
+  .monopoly-space.edge-bottom .monopoly-space__band {
+    inset: auto 0 0 0;
+    height: 0.8rem;
+  }
+
+  .monopoly-space.edge-left .monopoly-space__band {
+    inset: 0 auto 0 0;
+    width: 0.76rem;
+  }
+
+  .monopoly-space.edge-right .monopoly-space__band {
+    inset: 0 0 0 auto;
+    width: 0.76rem;
+  }
+
+  .monopoly-space.is-corner {
+    align-content: center;
+    justify-items: center;
+    text-align: center;
+    gap: 0.24rem;
+    background:
+      radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.66), transparent 36%),
+      linear-gradient(180deg, rgba(253, 250, 236, 1), rgba(232, 224, 197, 0.98));
+  }
+
+  .monopoly-space.is-corner .monopoly-space__band {
+    inset: 0;
+    opacity: 0.14;
+    background:
+      linear-gradient(135deg, var(--space-accent, rgba(255, 255, 255, 0.2)) 0 40%, transparent 40% 60%, rgba(15, 12, 8, 0.08) 60%);
+  }
+
+  .monopoly-space__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: start;
+    min-width: 3.7rem;
+    max-width: fit-content;
+    padding: 0.18rem 0.42rem;
+    border-radius: 999px;
+    border: 1px solid rgba(27, 19, 10, 0.32);
+    background: rgba(255, 251, 238, 0.86);
+    color: #251a10;
+    font-size: 0.5rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .monopoly-space.is-corner .monopoly-space__badge {
+    font-size: 0.64rem;
+    min-width: 4.2rem;
+    padding: 0.24rem 0.48rem;
   }
 
   .monopoly-space__type {
-    font-size: 0.56rem;
+    font-size: 0.5rem;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: rgba(221, 232, 248, 0.7);
+    letter-spacing: 0.08em;
+    color: #736756;
   }
 
   .monopoly-space__name {
-    font-size: 0.73rem;
-    line-height: 1.15;
-    min-height: 2.1em;
+    font-size: 0.71rem;
+    line-height: 1.12;
+    min-height: 2.05em;
+    text-transform: uppercase;
+  }
+
+  .monopoly-space__price {
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #8a2315;
   }
 
   .monopoly-space__meta {
-    font-size: 0.62rem;
-    color: rgba(224, 235, 252, 0.82);
+    font-size: 0.54rem;
+    color: #655a4b;
+  }
+
+  .monopoly-space__bottom {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.3rem;
+    align-items: end;
   }
 
   .monopoly-space__houses,
   .monopoly-space__tokens {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.18rem;
+    gap: 0.16rem;
   }
 
   .monopoly-house-dot,
   .monopoly-token-dot {
-    width: 0.62rem;
-    height: 0.62rem;
-    border-radius: 999px;
+    width: 0.64rem;
+    height: 0.64rem;
   }
 
   .monopoly-house-dot {
-    background: linear-gradient(180deg, #a7f3d0, #22c55e);
-    box-shadow: 0 0 0 1px rgba(7, 22, 15, 0.32);
+    border-radius: 3px;
+    background: linear-gradient(180deg, #4ade80, #15803d);
+    box-shadow: 0 0 0 1px rgba(15, 34, 10, 0.24);
   }
 
   .monopoly-house-dot.is-hotel {
-    background: linear-gradient(180deg, #fecdd3, #ef4444);
+    border-radius: 2px;
+    background: linear-gradient(180deg, #fb7185, #b91c1c);
   }
 
   .monopoly-token-dot {
-    border: 1px solid rgba(255, 255, 255, 0.52);
+    border-radius: 999px;
+    border: 1px solid rgba(32, 23, 12, 0.34);
     background: var(--token-color, #fff);
-    box-shadow: 0 0 0 2px rgba(9, 17, 30, 0.45);
+    box-shadow: 0 0 0 2px rgba(255, 250, 239, 0.78);
+  }
+
+  .monopoly-space.type-chance .monopoly-space__badge,
+  .monopoly-space.type-tax .monopoly-space__badge,
+  .monopoly-space.type-goToJail .monopoly-space__badge {
+    color: #991b1b;
+  }
+
+  .monopoly-space.type-community .monopoly-space__badge,
+  .monopoly-space.type-utility .monopoly-space__badge {
+    color: #0f5e74;
+  }
+
+  .monopoly-space.type-railroad .monopoly-space__badge {
+    color: #1f2937;
+  }
+
+  .monopoly-space.type-go .monopoly-space__badge,
+  .monopoly-space.type-freeParking .monopoly-space__badge {
+    color: #166534;
   }
 
   .monopoly-board-center {
     grid-row: 2 / span 9;
     grid-column: 2 / span 9;
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    position: relative;
+    border: 2px solid rgba(18, 16, 12, 0.94);
     background:
-      radial-gradient(circle at 18% 16%, rgba(255, 214, 72, 0.16), transparent 38%),
-      radial-gradient(circle at 82% 14%, rgba(93, 208, 255, 0.18), transparent 34%),
-      linear-gradient(160deg, rgba(9, 18, 34, 0.95), rgba(11, 22, 42, 0.92));
-    padding: 1.1rem;
+      radial-gradient(circle at 20% 14%, rgba(255, 255, 255, 0.6), transparent 22%),
+      linear-gradient(180deg, rgba(242, 238, 217, 0.98), rgba(222, 214, 184, 0.98));
+    padding: 1.35rem;
     display: grid;
-    gap: 0.9rem;
+    gap: 1rem;
     align-content: start;
+    justify-items: center;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .monopoly-board-center::before {
+    content: "";
+    position: absolute;
+    inset: 9% 12%;
+    border: 2px solid rgba(15, 14, 10, 0.1);
+    border-radius: 18px;
+    pointer-events: none;
+  }
+
+  .monopoly-board-center__tickets {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    pointer-events: none;
+  }
+
+  .monopoly-board-ticket {
+    padding: 0.45rem 0.8rem;
+    border: 2px solid rgba(18, 16, 12, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 8px 14px rgba(24, 18, 11, 0.12);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .monopoly-board-ticket--chance {
+    background: #fef08a;
+    color: #854d0e;
+    transform: rotate(-14deg);
+  }
+
+  .monopoly-board-ticket--chest {
+    background: #fde68a;
+    color: #92400e;
+    transform: rotate(13deg);
+  }
+
+  .monopoly-board-center__hero {
+    display: grid;
+    gap: 0.75rem;
+    justify-items: center;
+    max-width: 34rem;
   }
 
   .monopoly-board-center__eyebrow {
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
+    font-size: 0.74rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgba(240, 247, 255, 0.7);
+    color: #6e6558;
+  }
+
+  .monopoly-board-center__banner {
+    width: min(100%, 28rem);
+    padding: 0.9rem 1.2rem 0.7rem;
+    border: 4px solid rgba(24, 18, 12, 0.96);
+    border-radius: 12px;
+    background:
+      linear-gradient(180deg, #ff4a3a, #b01717);
+    color: #fffdf4;
+    transform: rotate(-14deg);
+    box-shadow:
+      0 16px 28px rgba(55, 13, 8, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  }
+
+  .monopoly-board-center__banner span {
+    display: block;
+    font-size: clamp(2rem, 1.4rem + 2vw, 3.6rem);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: 0.05em;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.24);
+  }
+
+  .monopoly-board-center__banner small {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    font-weight: 800;
   }
 
   .monopoly-board-center__title {
     margin: 0;
-    font-size: clamp(1.25rem, 0.95rem + 0.9vw, 1.9rem);
+    font-size: clamp(1.25rem, 1rem + 0.8vw, 1.9rem);
+    color: #24180d;
   }
 
   .monopoly-board-center__subtitle {
     margin: 0;
-    color: rgba(228, 238, 252, 0.78);
+    color: #5b5449;
     max-width: 44ch;
   }
 
@@ -615,6 +1085,7 @@
     flex-wrap: wrap;
     gap: 0.85rem;
     align-items: center;
+    justify-content: center;
   }
 
   .monopoly-dice {
@@ -625,15 +1096,17 @@
   .monopoly-die {
     width: 56px;
     height: 56px;
-    border-radius: 16px;
+    border-radius: 14px;
     display: grid;
     place-items: center;
     font-size: 1.25rem;
     font-weight: 800;
-    color: #f8fbff;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    color: #18130f;
+    border: 2px solid rgba(23, 19, 14, 0.94);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 236, 214, 0.98));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      0 8px 16px rgba(23, 19, 14, 0.12);
   }
 
   .monopoly-center-stats {
@@ -644,8 +1117,8 @@
 
   .monopoly-center-stat {
     border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(35, 26, 16, 0.16);
+    background: rgba(255, 250, 239, 0.76);
     padding: 0.75rem 0.8rem;
     display: grid;
     gap: 0.18rem;
@@ -655,11 +1128,12 @@
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: rgba(227, 238, 252, 0.7);
+    color: #706759;
   }
 
   .monopoly-center-stat strong {
     font-size: 1rem;
+    color: #24180d;
   }
 
   .monopoly-turn-summary {
@@ -1033,18 +1507,17 @@
   }
 
   body:not(.dark-mode) .monopoly-board-center {
-    border-color: rgba(101, 147, 201, 0.22);
+    border-color: rgba(18, 16, 12, 0.94);
     background:
-      radial-gradient(circle at 18% 16%, rgba(255, 214, 72, 0.14), transparent 38%),
-      radial-gradient(circle at 82% 14%, rgba(93, 208, 255, 0.16), transparent 34%),
-      linear-gradient(160deg, rgba(243, 249, 255, 0.98), rgba(233, 244, 255, 0.96));
-    color: #163654;
+      radial-gradient(circle at 20% 14%, rgba(255, 255, 255, 0.6), transparent 22%),
+      linear-gradient(180deg, rgba(242, 238, 217, 0.98), rgba(222, 214, 184, 0.98));
+    color: #24180d;
   }
 
   body:not(.dark-mode) .monopoly-space {
-    border-color: rgba(104, 146, 197, 0.22);
-    background: linear-gradient(160deg, rgba(247, 251, 255, 0.98), rgba(235, 244, 255, 0.98));
-    color: #163654;
+    border-color: rgba(20, 17, 12, 0.92);
+    background: linear-gradient(180deg, rgba(252, 248, 229, 0.98), rgba(235, 228, 201, 0.98));
+    color: #1e1911;
   }
 
   body:not(.dark-mode) .monopoly-field span,
@@ -1052,7 +1525,11 @@
   body:not(.dark-mode) .monopoly-center-stat span,
   body:not(.dark-mode) .monopoly-player-stat span,
   body:not(.dark-mode) .monopoly-space__type {
-    color: #5d7899;
+    color: #706759;
+  }
+
+  body:not(.dark-mode) .monopoly-space__meta {
+    color: #655a4b;
   }
 
   body:not(.dark-mode) .monopoly-note--alert {
@@ -1076,24 +1553,61 @@
 
   @media (max-width: 768px) {
     .monopoly-board {
-      min-width: 640px;
-      gap: 0.35rem;
+      min-width: 660px;
+      gap: 0.12rem;
     }
 
     .monopoly-space {
       padding: 0.32rem;
     }
 
-    .monopoly-space__name {
-      font-size: 0.66rem;
+    .monopoly-space.edge-top,
+    .monopoly-space.is-corner {
+      padding-top: 0.78rem;
     }
 
+    .monopoly-space.edge-bottom {
+      padding-bottom: 0.78rem;
+    }
+
+    .monopoly-space.edge-left {
+      padding-left: 0.76rem;
+    }
+
+    .monopoly-space.edge-right {
+      padding-right: 0.76rem;
+    }
+
+    .monopoly-space__badge {
+      min-width: 2.8rem;
+      padding: 0.1rem 0.24rem;
+      font-size: 0.42rem;
+    }
+
+    .monopoly-space__name {
+      font-size: 0.61rem;
+    }
+
+    .monopoly-space__price,
     .monopoly-space__meta {
-      font-size: 0.56rem;
+      font-size: 0.5rem;
     }
 
     .monopoly-board-center {
-      padding: 0.85rem;
+      padding: 0.85rem 0.7rem;
+    }
+
+    .monopoly-board-ticket {
+      padding: 0.32rem 0.52rem;
+      font-size: 0.62rem;
+    }
+
+    .monopoly-board-center__banner {
+      padding: 0.72rem 0.9rem 0.6rem;
+    }
+
+    .monopoly-board-center__banner span {
+      font-size: clamp(1.6rem, 1rem + 2vw, 2.5rem);
     }
 
     .monopoly-die {

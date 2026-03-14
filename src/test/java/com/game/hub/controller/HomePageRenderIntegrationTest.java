@@ -8,6 +8,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -96,6 +97,35 @@ class HomePageRenderIntegrationTest {
                 "roomRows",
                 "onlineSupportedNow"
             ));
+    }
+
+    @Test
+    void dedicatedCaroRoomPageShouldRenderViaSharedRoomHub() throws Exception {
+        mockMvc.perform(get("/games/caro/rooms"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("forward:/online-hub?game=caro"))
+            .andExpect(forwardedUrl("/online-hub?game=caro"));
+    }
+
+    @Test
+    void dedicatedQuizRoomPageShouldRedirectToQuizLobbyPage() throws Exception {
+        mockMvc.perform(get("/games/quiz/rooms"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(view().name("redirect:/games/quiz"));
+    }
+
+    @Test
+    void dedicatedTypingRoomPageShouldRedirectToTypingLobbyPage() throws Exception {
+        mockMvc.perform(get("/games/typing/rooms"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(view().name("redirect:/games/typing"));
+    }
+
+    @Test
+    void dedicatedBlackjackRoomPageShouldRedirectToBlackjackLobbyPage() throws Exception {
+        mockMvc.perform(get("/games/blackjack/rooms"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(view().name("redirect:/games/cards/blackjack"));
     }
 
     @Test

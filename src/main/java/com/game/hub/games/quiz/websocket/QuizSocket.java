@@ -260,7 +260,13 @@ public class QuizSocket extends TextWebSocketHandler {
     }
 
     private String resolvePlayerId(WebSocketSession session) {
-        return resolvePlayerName(session);
+        if (session != null && session.getPrincipal() != null && session.getPrincipal().getName() != null) {
+            String principalName = session.getPrincipal().getName().trim();
+            if (!principalName.isEmpty()) {
+                return principalName;
+            }
+        }
+        return session == null ? "" : String.valueOf(session.getId());
     }
 
     private QuizRoom resolveRoomForSession(WebSocketSession session, Map<String, Object> payload) {

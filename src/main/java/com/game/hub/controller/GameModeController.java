@@ -83,7 +83,7 @@ public class GameModeController {
     }
 
     private String onlinePlayUrl(String gameCode) {
-        return "/online-hub?game=" + gameCode;
+        return "/games/" + gameCode + "/rooms";
     }
 
     private String normalizeDifficulty(String difficulty) {

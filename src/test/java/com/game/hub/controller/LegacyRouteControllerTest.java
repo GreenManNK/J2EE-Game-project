@@ -19,6 +19,11 @@ class LegacyRouteControllerTest {
     }
 
     @Test
+    void lobbyShouldRedirectToDedicatedCaroRoomPage() {
+        assertEquals("redirect:/games/caro/rooms", controller.lobby());
+    }
+
+    @Test
     void gameIndexShouldRedirectRoomRequestsToDedicatedRoomPage() {
         assertEquals("redirect:/game/room/ROOM-123?symbol=X", controller.gameIndex("ROOM-123", "X"));
     }
@@ -36,5 +41,10 @@ class LegacyRouteControllerTest {
     @Test
     void cardsTienLenShouldRedirectRoomRequestsToDedicatedRoomPage() {
         assertEquals("redirect:/cards/tien-len/room/TL-ROOM", controller.cardsTienLen("TL-ROOM"));
+    }
+
+    @Test
+    void onlineHubAliasShouldRedirectToDedicatedGameRoomPage() {
+        assertEquals("redirect:/games/chess/rooms?roomId=CHESS-9", controller.onlineHub("chess", "CHESS-9"));
     }
 }

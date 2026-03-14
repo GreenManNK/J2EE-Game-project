@@ -42,7 +42,7 @@
             </details>
 
             <div class="d-flex flex-wrap gap-2 mb-3">
-                <a th:href="@{/online-hub(game='quiz')}" class="btn theme-outline-btn">Mo sanh phong</a>
+                <a th:href="@{/games/quiz/rooms}" class="btn theme-outline-btn">Mo sanh phong</a>
                 <a th:href="@{/games}" class="btn theme-outline-btn">Ve thu vien</a>
             </div>
 
@@ -158,7 +158,7 @@
             <section class="hub-portal-card">
                 <h3>Thao tac nhanh</h3>
                 <div class="hub-portal-side-actions">
-                    <a th:href="@{/online-hub(game='quiz')}" class="hub-portal-side-action">
+                    <a th:href="@{/games/quiz/rooms}" class="hub-portal-side-action">
                         <i class="bi bi-globe2"></i>
                         <div><strong>Mo sanh phong</strong><small>Xem danh sach room quiz va vao nhanh</small></div>
                     </a>
@@ -1213,7 +1213,7 @@
 
     async function fetchRoomList(showFallbackMessage) {
         try {
-            const response = await fetch(appPath('/games/quiz/rooms'));
+            const response = await fetch(appPath('/games/quiz/rooms/feed'));
             if (!response.ok) {
                 throw new Error('Khong tai duoc danh sach phong');
             }

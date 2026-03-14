@@ -4,11 +4,14 @@ import com.game.hub.entity.Post;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.PostRepository;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.GameCatalogItem;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.ui.ExtendedModelMap;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,6 +24,22 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class HomeControllerTest {
+
+    @Test
+    void indexShouldPromoteMonopolyOnHomeRecommendedStrip() {
+        PostRepository postRepository = mock(PostRepository.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        when(postRepository.findAll()).thenReturn(List.of());
+
+        HomeController controller = new HomeController(postRepository, userAccountRepository);
+        ExtendedModelMap model = new ExtendedModelMap();
+
+        assertEquals("home/index", controller.index(model));
+        @SuppressWarnings("unchecked")
+        List<GameCatalogItem> recommendedGames = (List<GameCatalogItem>) model.getAttribute("recommendedGames");
+        assertTrue(recommendedGames != null && !recommendedGames.isEmpty());
+        assertEquals("monopoly", recommendedGames.get(0).code());
+    }
 
     @Test
     void multiplayerShouldRedirectToCanonicalCaroModePage() {

@@ -163,7 +163,7 @@ public class QuizRoom {
         players.put(playerSession, nextScore);
 
         answeredPlayerIds.add(playerId);
-        return correct;
+        return true;
     }
 
     public void nextQuestion() {

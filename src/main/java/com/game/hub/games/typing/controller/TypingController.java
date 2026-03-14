@@ -55,7 +55,7 @@ public class TypingController {
         model.addAttribute("allGames", gameCatalogService.findAll());
     }
 
-    @GetMapping("/rooms")
+    @GetMapping("/rooms/feed")
     @ResponseBody
     public List<Map<String, Object>> getAvailableRooms() {
         return typingService.getAvailableRooms().stream()

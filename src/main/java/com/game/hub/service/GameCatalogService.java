@@ -218,7 +218,7 @@ public class GameCatalogService {
                 "monopoly",
                 "Co ty phu",
                 "Monopoly",
-                "Co ty phu local 2-4 nguoi voi ban co day du, the su kien, nha/hotel, the chap va cuoc dua tai san den luc chot bang xep hang.",
+                "Co ty phu da choi duoc local 2-4 nguoi va room mode MVP, voi board 40 o, chance/community, nha-hotel, the chap va bang xep hang tai san realtime.",
                 "bi-bank",
                 true,
                 false,
@@ -227,9 +227,9 @@ public class GameCatalogService {
                 "Mo Co ty phu",
                 "/games/monopoly",
                 List.of(
-                    "Them trade giua nguoi choi va de xuat doi tai san.",
-                    "Bo sung save/load local cho van dang choi.",
-                    "Mo rong sang bot va che do online theo luot."
+                    "Chuyen roll/buy/rent/jail sang backend-authoritative day du cho room mode.",
+                    "Bo sung trade, auction va mortgage flow day du giua nhieu nguoi choi.",
+                    "Them save/load, reconnect va bot cho che do Monopoly."
                 )
             )
         );
