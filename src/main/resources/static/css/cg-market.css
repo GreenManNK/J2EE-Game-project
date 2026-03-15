@@ -3164,3 +3164,128 @@ body:not(.dark-mode) .cg-browser-page .cg-recommended-card[data-code="minesweepe
   }
 }
 
+/* Final storefront override */
+:root[data-theme="light"] body,
+body.light-mode {
+  --cg-bg-1: #f5eee4;
+  --cg-bg-2: #eef4fb;
+  --cg-bg-3: #dbe8ef;
+  --cg-panel: rgba(255, 251, 245, 0.92);
+  --cg-panel-soft: rgba(248, 251, 255, 0.82);
+  --cg-border: rgba(84, 112, 145, 0.18);
+  --cg-ink: #102237;
+  --cg-muted: #5b708c;
+  --cg-accent: #0e8aa8;
+  --cg-accent-2: #d68a1f;
+}
+
+:root[data-theme="dark"] body,
+body.dark-mode {
+  --cg-bg-1: #09151f;
+  --cg-bg-2: #112638;
+  --cg-bg-3: #18364d;
+  --cg-panel: rgba(8, 20, 32, 0.9);
+  --cg-panel-soft: rgba(12, 29, 43, 0.76);
+  --cg-border: rgba(122, 160, 188, 0.22);
+  --cg-ink: #edf6f8;
+  --cg-muted: #a8bdc6;
+  --cg-accent: #23b5c9;
+  --cg-accent-2: #f0a63a;
+}
+
+#appShellLayer .cg-topbar {
+  border-bottom-color: var(--app-shell-border, var(--cg-border));
+  background:
+    radial-gradient(circle at 6% 6%, rgba(35, 181, 201, 0.18), transparent 28%),
+    radial-gradient(circle at 94% 8%, rgba(240, 166, 58, 0.18), transparent 30%),
+    var(--app-shell-surface, linear-gradient(180deg, rgba(8, 20, 32, 0.94), rgba(6, 15, 25, 0.98)));
+  backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: 0 18px 44px rgba(4, 12, 23, 0.16);
+}
+
+#appShellLayer .cg-topbar__brand,
+#appShellLayer .cg-topbar__search,
+#appShellLayer .cg-topbar__icon-btn,
+#appShellLayer .cg-topbar__login-btn,
+#appShellLayer .cg-topbar__menu-toggle,
+#appShellLayer .cg-top-rail__item {
+  border-color: var(--app-shell-border, var(--cg-border));
+  background: var(--app-shell-surface-soft, rgba(255, 255, 255, 0.06));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 24px rgba(4, 12, 23, 0.12);
+  backdrop-filter: blur(14px);
+}
+
+#appShellLayer .cg-topbar__brand {
+  font-family: var(--app-font-display, "Space Grotesk", "Trebuchet MS", sans-serif);
+  letter-spacing: -0.03em;
+}
+
+.cg-home-stage,
+.cg-browser-hero,
+.cg-browser-state-card,
+.cg-home-community-panel,
+.cg-home-stat-card,
+.cg-lane,
+.cg-market-panel,
+.cg-market-card,
+.cg-market-lane-item,
+.cg-market-feature-item,
+.cg-market-loadmore {
+  position: relative;
+  overflow: hidden;
+  border-radius: 30px;
+  border: 1px solid var(--cg-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent),
+    var(--cg-panel);
+  box-shadow: 0 24px 52px rgba(20, 32, 49, 0.12);
+}
+
+.cg-title,
+.cg-market-body h2,
+.cg-recommended-card__body h2,
+.cg-tile-body h3,
+.cg-browser-state-card__head h2,
+.cg-section-head h2 {
+  font-family: var(--app-font-display, "Space Grotesk", "Trebuchet MS", sans-serif);
+  letter-spacing: -0.05em;
+}
+
+.cg-recommended-card,
+.cg-tile,
+.cg-market-card,
+.cg-market-lane-item,
+.cg-market-feature-item {
+  border-radius: 26px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.cg-recommended-card:hover,
+.cg-tile:hover,
+.cg-market-card:hover,
+.cg-market-lane-item:hover,
+.cg-market-feature-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 30px 58px rgba(17, 28, 41, 0.18);
+  border-color: rgba(124, 197, 209, 0.34);
+}
+
+.hub-portal-inline-btn,
+.cg-market-actions .hub-portal-inline-btn {
+  border-radius: 999px;
+  border: 1px solid rgba(124, 197, 209, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cg-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.hub-portal-inline-btn.primary,
+.cg-market-actions .hub-portal-inline-btn.primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--cg-accent), var(--cg-accent-2));
+  color: #fff;
+  box-shadow: 0 16px 30px rgba(18, 30, 45, 0.18);
+}
+

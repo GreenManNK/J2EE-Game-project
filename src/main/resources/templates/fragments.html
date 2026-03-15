@@ -61,12 +61,12 @@
   <link rel="stylesheet" th:href="@{/css/site.css}">
   <link rel="stylesheet" th:href="@{/css/games-portal.css}">
   <link rel="stylesheet" th:href="@{/css/layout-refresh.css(v=20260307a)}">
-  <link rel="stylesheet" th:href="@{/css/cg-market.css(v=20260307b)}">
+  <link rel="stylesheet" th:href="@{/css/cg-market.css(v=20260315a)}">
   <link rel="stylesheet" th:href="@{/css/game-identity.css(v=20260304a)}">
   <link rel="stylesheet" th:href="@{/css/arcade-shell.css(v=20260313a)}">
   <link rel="stylesheet" th:href="@{/css/account-surface.css(v=20260313a)}">
-  <link rel="stylesheet" th:href="@{/css/unified-app.css(v=20260313a)}">
-  <link rel="stylesheet" th:href="@{/css/play-surfaces.css(v=20260313b)}">
+  <link rel="stylesheet" th:href="@{/css/unified-app.css(v=20260315a)}">
+  <link rel="stylesheet" th:href="@{/css/play-surfaces.css(v=20260315a)}">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     [data-auth-only],
@@ -78,6 +78,16 @@
       --app-shell-gap: 18px;
       --app-back-button-left: 10px;
       --app-topbar-offset: 76px;
+      --app-font-body: "Manrope", "Trebuchet MS", "Segoe UI", sans-serif;
+      --app-font-display: "Space Grotesk", "Aptos Display", "Trebuchet MS", sans-serif;
+      --app-shell-surface: linear-gradient(180deg, rgba(10, 27, 42, 0.94), rgba(7, 19, 31, 0.98));
+      --app-shell-surface-soft: rgba(15, 39, 58, 0.82);
+      --app-shell-border: rgba(121, 171, 206, 0.24);
+      --app-shell-hover-surface: rgba(18, 48, 69, 0.92);
+      --app-shell-ink: #f3f8ff;
+      --app-shell-muted: #b8cdea;
+      font-family: var(--app-font-body);
+      text-rendering: geometricPrecision;
     }
     html, body { margin: 0; padding: 0; overflow-x: hidden; }
     #appShellLayer {
@@ -121,13 +131,15 @@
       width: var(--app-sidebar-width);
       height: 100vh;
       height: 100dvh;
-      background-color: var(--bg, #fff);
+      background: var(--app-shell-surface, var(--bg, #fff));
       overflow: hidden;
       transform: translateX(-100%);
       transition: transform 0.28s ease-in-out;
       z-index: 1046;
       padding: calc(var(--app-topbar-offset) + 8px) 10px 10px 10px;
-      border-right: 1px solid var(--border-color, #ccc);
+      border-right: 1px solid var(--app-shell-border, var(--border-color, #ccc));
+      box-shadow: 20px 0 48px rgba(4, 12, 23, 0.18);
+      backdrop-filter: blur(18px) saturate(140%);
       pointer-events: none;
     }
     body.sidebar-open:not(.sidebar-desktop) #friendSidebar {
@@ -174,16 +186,17 @@
     #friendListInlineContainer {
       position: static;
       width: 100%;
-      background-color: var(--bg, #fff);
-      border: 1px solid var(--border-color, #ccc);
-      border-radius: 8px;
+      background: var(--app-shell-surface-soft, var(--bg, #fff));
+      border: 1px solid var(--app-shell-border, var(--border-color, #ccc));
+      border-radius: 18px;
       padding: 10px;
       font-size: 0.85rem;
       min-height: 190px;
       max-height: min(34vh, 300px);
       overflow: hidden;
       z-index: auto;
-      box-shadow: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(14px);
     }
     #friendSidebar #friendListInlineContainer {
       display: flex;
@@ -304,7 +317,7 @@
         font-size: 1.02rem !important;
         line-height: 1 !important;
         text-indent: 0;
-        color: #e9f3ff !important;
+        color: var(--app-shell-ink) !important;
       }
       body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-menu .btn.theme-outline-btn::after {
         display: none;
@@ -372,17 +385,19 @@
       max-width: min(240px, 38vw);
       padding: 4px 10px 4px 6px;
       border-radius: 999px;
-      border: 1px solid rgba(119, 163, 231, 0.3);
-      background: rgba(8, 27, 55, 0.84);
-      color: #f3f8ff;
+      border: 1px solid var(--app-shell-border, rgba(119, 163, 231, 0.3));
+      background: var(--app-shell-surface-soft, rgba(8, 27, 55, 0.84));
+      color: var(--app-shell-ink);
       text-decoration: none;
+      box-shadow: 0 12px 28px rgba(4, 12, 23, 0.18);
+      backdrop-filter: blur(14px);
     }
 
     #appShellLayer .cg-topbar__account:hover,
     #appShellLayer .cg-topbar__account:focus-visible {
-      border-color: rgba(157, 200, 255, 0.58);
-      background: rgba(14, 44, 86, 0.94);
-      color: #f5f9ff;
+      border-color: rgba(139, 211, 222, 0.58);
+      background: var(--app-shell-hover-surface, rgba(18, 48, 69, 0.92));
+      color: var(--app-shell-ink);
     }
 
     #appShellLayer .cg-topbar__account-avatar,
@@ -416,7 +431,7 @@
     #appShellLayer .cg-topbar__account-meta,
     #appShellLayer .app-shell-current-user__meta {
       font-size: 0.68rem;
-      color: #b8cdea;
+      color: var(--app-shell-muted);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -428,17 +443,19 @@
       gap: 10px;
       padding: 10px;
       text-decoration: none;
-      border-radius: 16px;
-      border: 1px solid rgba(119, 163, 231, 0.28);
-      background: rgba(8, 27, 55, 0.42);
+      border-radius: 20px;
+      border: 1px solid var(--app-shell-border, rgba(119, 163, 231, 0.28));
+      background: var(--app-shell-surface-soft, rgba(8, 27, 55, 0.42));
       color: inherit;
       margin-bottom: 6px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(14px);
     }
 
     #appShellLayer .app-shell-current-user:hover,
     #appShellLayer .app-shell-current-user:focus-visible {
-      border-color: rgba(157, 200, 255, 0.52);
-      background: rgba(14, 44, 86, 0.56);
+      border-color: rgba(139, 211, 222, 0.52);
+      background: var(--app-shell-hover-surface, rgba(18, 48, 69, 0.92));
       color: inherit;
     }
 
@@ -446,12 +463,13 @@
       display: grid;
       gap: 4px;
       padding: 10px 12px;
-      border-radius: 16px;
-      border: 1px dashed rgba(119, 163, 231, 0.28);
-      background: rgba(8, 27, 55, 0.22);
-      color: #b8cdea;
+      border-radius: 18px;
+      border: 1px dashed rgba(139, 211, 222, 0.34);
+      background: var(--app-shell-hover-surface, rgba(18, 48, 69, 0.92));
+      color: var(--app-shell-muted);
       font-size: 0.74rem;
       margin-bottom: 6px;
+      backdrop-filter: blur(12px);
     }
 
     @media (max-width: 767.98px) {

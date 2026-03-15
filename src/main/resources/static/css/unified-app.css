@@ -486,3 +486,239 @@ body:not(.game-index) .text-bg-light {
   background: var(--unified-soft-bg) !important;
   color: var(--unified-heading) !important;
 }
+
+/* March 2026 full-interface refresh */
+:root,
+:root[data-theme="light"] {
+  --unified-app-bg:
+    radial-gradient(circle at 8% 0%, rgba(14, 138, 168, 0.12), transparent 30%),
+    radial-gradient(circle at 92% 4%, rgba(214, 138, 31, 0.14), transparent 32%),
+    linear-gradient(180deg, #f6efe5 0%, #eef4fb 48%, #e4ecf7 100%);
+  --unified-surface-bg: linear-gradient(180deg, rgba(255, 251, 246, 0.95), rgba(246, 249, 253, 0.94));
+  --unified-surface-strong:
+    radial-gradient(circle at top left, rgba(14, 138, 168, 0.11), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(214, 138, 31, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(240, 244, 249, 0.98));
+  --unified-border: rgba(69, 89, 114, 0.14);
+  --unified-border-strong: rgba(69, 89, 114, 0.22);
+  --unified-shadow: 0 26px 60px rgba(33, 49, 74, 0.12);
+  --unified-text: #142235;
+  --unified-heading: #09131f;
+  --unified-muted: rgba(72, 86, 111, 0.82);
+  --unified-control-bg: rgba(255, 255, 255, 0.86);
+  --unified-control-focus-bg: rgba(255, 255, 255, 0.98);
+  --unified-soft-bg: rgba(255, 255, 255, 0.76);
+  --unified-soft-bg-hover: rgba(255, 255, 255, 0.92);
+  --unified-table-bg: rgba(255, 255, 255, 0.78);
+  --unified-table-head-bg: rgba(239, 244, 249, 0.96);
+  --unified-table-hover-bg: rgba(226, 234, 244, 0.7);
+  --unified-accent-start: #0e8aa8;
+  --unified-accent-end: #d68a1f;
+  --app-shell-surface: linear-gradient(180deg, rgba(250, 246, 240, 0.94), rgba(237, 244, 250, 0.97));
+  --app-shell-surface-soft: rgba(255, 255, 255, 0.72);
+  --app-shell-border: rgba(86, 113, 146, 0.2);
+  --app-shell-hover-surface: rgba(255, 255, 255, 0.92);
+  --app-shell-ink: #13233a;
+  --app-shell-muted: #5b708c;
+}
+
+:root[data-theme="dark"] {
+  --unified-app-bg:
+    radial-gradient(circle at 8% 0%, rgba(35, 181, 201, 0.16), transparent 30%),
+    radial-gradient(circle at 92% 4%, rgba(240, 166, 58, 0.18), transparent 32%),
+    linear-gradient(180deg, #08131d 0%, #102233 52%, #0d1a26 100%);
+  --unified-surface-bg: linear-gradient(180deg, rgba(9, 21, 33, 0.94), rgba(6, 15, 25, 0.98));
+  --unified-surface-strong:
+    radial-gradient(circle at top left, rgba(35, 181, 201, 0.14), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(240, 166, 58, 0.14), transparent 30%),
+    linear-gradient(180deg, rgba(12, 25, 39, 0.97), rgba(7, 16, 26, 0.99));
+  --unified-border: rgba(124, 162, 189, 0.18);
+  --unified-border-strong: rgba(124, 162, 189, 0.28);
+  --unified-shadow: 0 30px 70px rgba(2, 8, 16, 0.34);
+  --unified-text: #edf5f7;
+  --unified-heading: #f7faf9;
+  --unified-muted: rgba(182, 199, 205, 0.78);
+  --unified-control-bg: rgba(9, 18, 27, 0.88);
+  --unified-control-focus-bg: rgba(12, 23, 35, 0.96);
+  --unified-soft-bg: rgba(255, 255, 255, 0.04);
+  --unified-soft-bg-hover: rgba(255, 255, 255, 0.08);
+  --unified-table-bg: rgba(4, 10, 18, 0.54);
+  --unified-table-head-bg: rgba(255, 255, 255, 0.05);
+  --unified-table-hover-bg: rgba(255, 255, 255, 0.04);
+  --unified-accent-start: #23b5c9;
+  --unified-accent-end: #f0a63a;
+  --app-shell-surface: linear-gradient(180deg, rgba(8, 20, 32, 0.95), rgba(6, 15, 25, 0.98));
+  --app-shell-surface-soft: rgba(15, 35, 52, 0.76);
+  --app-shell-border: rgba(124, 162, 189, 0.22);
+  --app-shell-hover-surface: rgba(18, 48, 69, 0.92);
+  --app-shell-ink: #f3f8ff;
+  --app-shell-muted: #b8cdea;
+}
+
+body {
+  font-family: var(--app-font-body, "Manrope", "Trebuchet MS", "Segoe UI", sans-serif);
+  line-height: 1.55;
+}
+
+body:not(.game-index) {
+  background: var(--unified-app-bg) fixed;
+  color: var(--unified-text);
+  letter-spacing: 0.01em;
+}
+
+body:not(.game-index)::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.34;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.16) 0 1px, transparent 1.2px) 0 0 / 24px 24px,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 42%);
+  mix-blend-mode: soft-light;
+}
+
+body:not(.game-index) .gx-page-shell,
+body:not(.game-index) .auth-shell,
+body:not(.game-index) .cg-home,
+body:not(.game-index) .cg-market-catalog,
+body:not(.game-index) .hub-page-shell,
+body:not(.game-index) .board-page-shell {
+  position: relative;
+  z-index: 1;
+}
+
+body:not(.game-index) .theme-box,
+body:not(.game-index) .gx-section-card,
+body:not(.game-index) .card.theme-box,
+body:not(.game-index) .home-dashboard__composer,
+body:not(.game-index) .home-dashboard__feed {
+  border-radius: 28px;
+  overflow: hidden;
+  backdrop-filter: blur(18px) saturate(130%);
+}
+
+body:not(.game-index) .gx-page-hero.theme-box,
+body:not(.game-index) .hub-portal-hero.theme-box {
+  position: relative;
+  border-radius: 34px;
+  overflow: hidden;
+}
+
+body:not(.game-index) .gx-page-hero.theme-box::after,
+body:not(.game-index) .hub-portal-hero.theme-box::after {
+  content: "";
+  position: absolute;
+  inset: auto -10% -38% auto;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 70%);
+  pointer-events: none;
+}
+
+body:not(.game-index) .gx-page-title,
+body:not(.game-index) .hub-portal-hero-title,
+body:not(.game-index) .theme-box h1,
+body:not(.game-index) .theme-box h2,
+body:not(.game-index) .theme-box h3,
+body:not(.game-index) .theme-box h4,
+body:not(.game-index) .theme-box h5 {
+  font-family: var(--app-font-display, "Space Grotesk", "Aptos Display", "Trebuchet MS", sans-serif);
+  letter-spacing: -0.04em;
+}
+
+body:not(.game-index) .gx-page-subtitle,
+body:not(.game-index) .gx-section-card__meta,
+body:not(.game-index) .theme-box p,
+body:not(.game-index) .theme-box small,
+body:not(.game-index) .text-muted {
+  color: var(--unified-muted) !important;
+}
+
+body:not(.game-index) .gx-page-badge,
+body:not(.game-index) .home-dashboard__eyebrow,
+body:not(.game-index) .cg-chip,
+body:not(.game-index) .account-drawer__chip,
+body:not(.game-index) .badge {
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+body:not(.game-index) .form-control,
+body:not(.game-index) .form-select,
+body:not(.game-index) .input-group-text,
+body:not(.game-index) textarea.form-control {
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+body:not(.game-index) .btn,
+body:not(.game-index) a.btn {
+  border-radius: 999px;
+  padding-inline: 1rem;
+  box-shadow: 0 12px 24px rgba(18, 30, 45, 0.12);
+}
+
+body:not(.game-index) .btn-primary,
+body:not(.game-index) .btn-success,
+body:not(.game-index) .hub-portal-inline-btn,
+body:not(.game-index) .account-drawer__profile-btn {
+  box-shadow: 0 18px 32px rgba(18, 30, 45, 0.16);
+}
+
+body:not(.game-index) .btn-outline-primary,
+body:not(.game-index) .btn-outline-secondary,
+body:not(.game-index) .btn-outline-danger,
+body:not(.game-index) .btn-outline-warning,
+body:not(.game-index) .btn-outline-light,
+body:not(.game-index) .theme-outline-btn,
+body:not(.game-index) .auth-onboard__link-btn {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body:not(.game-index) .table-responsive,
+body:not(.game-index) .alert,
+body:not(.game-index) .list-group-item {
+  border-radius: 24px;
+}
+
+@keyframes interface-refresh-lift {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body:not(.game-index) .gx-page-shell > *,
+  body:not(.game-index) .auth-shell > *,
+  body:not(.game-index) .cg-home > *,
+  body:not(.game-index) .cg-market-catalog > *,
+  body:not(.game-index) .hub-page-shell > *,
+  body:not(.game-index) .board-page-shell > * {
+    animation: interface-refresh-lift 0.46s ease both;
+  }
+
+  body:not(.game-index) .gx-page-shell > *:nth-child(2),
+  body:not(.game-index) .auth-shell > *:nth-child(2),
+  body:not(.game-index) .cg-home > *:nth-child(2),
+  body:not(.game-index) .cg-market-catalog > *:nth-child(2),
+  body:not(.game-index) .hub-page-shell > *:nth-child(2),
+  body:not(.game-index) .board-page-shell > *:nth-child(2) {
+    animation-delay: 0.06s;
+  }
+
+  body:not(.game-index) .gx-page-shell > *:nth-child(3),
+  body:not(.game-index) .auth-shell > *:nth-child(3),
+  body:not(.game-index) .cg-home > *:nth-child(3),
+  body:not(.game-index) .cg-market-catalog > *:nth-child(3),
+  body:not(.game-index) .hub-page-shell > *:nth-child(3),
+  body:not(.game-index) .board-page-shell > *:nth-child(3) {
+    animation-delay: 0.1s;
+  }
+}
