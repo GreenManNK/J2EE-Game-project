@@ -1,33 +1,33 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: appHead('Co ty phu - Ban choi local')}"></head>
+<head th:replace="~{fragments :: appHead('Co ty phu')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('games-monopoly')}"></div>
 
-<main class="hub-portal-shell hub-portal-theme-monopoly">
-  <section class="hub-portal-hero">
+<main id="monopolyPage" class="hub-portal-shell hub-portal-theme-monopoly">
+  <section th:if="${roomPage != true and localPage != true}" class="hub-portal-hero">
     <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
     <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
 
     <div class="hub-portal-hero__main">
       <div class="hub-portal-eyebrow">
         <i class="bi bi-bank"></i>
-        <span>CO TY PHU / LOCAL BOARD ENGINE</span>
+        <span>CO TY PHU / SANH PHONG</span>
       </div>
 
       <h1 class="hub-portal-title">
         <span th:text="${game != null ? game.displayName : 'Co ty phu'}">Co ty phu</span>
-        local 2-4 nguoi voi full core loop tai mot trang
+        voi sanh phong rieng va ban choi tach biet nhu cac game online khac
       </h1>
 
       <p class="hub-portal-subtitle">
-        Tung xuc xac, di qua GO, mua lo dat, xay nha, rut the su kien, vao tu, the chap tai san
-        va dua bang gia tri rong den luc con lai mot nguoi hoac chu dong chot van.
+        Tao phong, moi nguoi choi vao sanh de chon token va bat dau van trong mot room rieng.
+        Neu muon choi cung may, local mode da duoc dua sang trang rieng de khong tron voi sanh online.
       </p>
 
       <div class="hub-portal-chip-row">
-        <span class="hub-portal-chip is-live"><i class="bi bi-check-circle-fill"></i> Ban choi local san sang</span>
-        <span class="hub-portal-chip"><i class="bi bi-people-fill"></i> 2-4 nguoi tren cung may</span>
+        <span class="hub-portal-chip is-live"><i class="bi bi-check-circle-fill"></i> Sanh phong tach rieng</span>
+        <span class="hub-portal-chip"><i class="bi bi-people-fill"></i> Room 2-4 nguoi</span>
         <span class="hub-portal-chip"><i class="bi bi-house-add-fill"></i> Nha + hotel + the chap</span>
         <span class="hub-portal-chip"><i class="bi bi-exclamation-diamond-fill"></i> Chance / Community Chest / Jail</span>
       </div>
@@ -36,17 +36,17 @@
         <a href="#monopolyTable" class="hub-portal-action hub-portal-action--primary">
           <span class="hub-portal-action__icon"><i class="bi bi-play-fill"></i></span>
           <span class="hub-portal-action__text">
-            <strong>Choi ngay</strong>
-            <small>Setup van va vao luot dau tien ngay tai trang nay</small>
+            <strong>Mo sanh phong</strong>
+            <small>Tao room, vao room hoac tiep tuc ma phong co san</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
 
-        <a href="#monopolyRules" class="hub-portal-action hub-portal-action--accent">
-          <span class="hub-portal-action__icon"><i class="bi bi-journal-check"></i></span>
+        <a th:href="@{/games/monopoly/local}" class="hub-portal-action hub-portal-action--accent">
+          <span class="hub-portal-action__icon"><i class="bi bi-controller"></i></span>
           <span class="hub-portal-action__text">
-            <strong>Luat nhanh</strong>
-            <small>Xem phan luot, nha, the chap va pha san</small>
+            <strong>Choi local</strong>
+            <small>Mo trang local rieng khong dung sanh online</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </a>
@@ -99,8 +99,8 @@
         </div>
 
         <div class="hub-portal-meta-list">
-          <div class="hub-portal-meta-item"><span>Session</span><strong>25-50 phut / local</strong></div>
-          <div class="hub-portal-meta-item"><span>Dieu khien</span><strong>Cung may, lan luot ro rang</strong></div>
+          <div class="hub-portal-meta-item"><span>Session</span><strong>Room online hoac local tach rieng</strong></div>
+          <div class="hub-portal-meta-item"><span>Dieu khien</span><strong>Sanh phong, room, local page doc lap</strong></div>
           <div class="hub-portal-meta-item"><span>Ket van</span><strong>1 nguoi con lai hoac chot bang xep hang</strong></div>
         </div>
       </section>
@@ -109,18 +109,36 @@
 
   <section id="monopolyTable" class="monopoly-surface">
     <div class="monopoly-surface__head">
-      <div>
-        <h2>Ban choi Co ty phu local</h2>
-        <p>Setup local nhanh hoac mo phong de dong bo ban choi theo luot giua nhieu client.</p>
+      <div th:if="${roomPage == true}">
+        <h2>Phong Co ty phu online</h2>
+        <p>Room <strong th:text="${defaultRoomId} ?: 'Dang ket noi'">Dang ket noi</strong> chi giu HUD, ban choi va thao tac tran.</p>
       </div>
-      <div class="monopoly-surface__chips">
+      <div th:if="${localPage == true}">
+        <h2>Ban choi Co ty phu local</h2>
+        <p>Local mode da duoc dua sang trang rieng de khong tron voi sanh online.</p>
+      </div>
+      <div th:if="${roomPage != true and localPage != true}">
+        <h2>Sanh phong Co ty phu</h2>
+        <p>Chon ten, tao room, vao room dang mo hoac mo local page rieng neu muon choi cung may.</p>
+      </div>
+      <div class="monopoly-surface__chips" th:if="${roomPage == true}">
+        <span class="monopoly-mini-chip"><i class="bi bi-broadcast-pin"></i> Room route rieng</span>
+        <span class="monopoly-mini-chip"><i class="bi bi-people-fill"></i> Dong bo nguoi choi + token</span>
+        <span class="monopoly-mini-chip"><i class="bi bi-trophy-fill"></i> BXH gia tri rong realtime</span>
+      </div>
+      <div class="monopoly-surface__chips" th:if="${localPage == true}">
         <span class="monopoly-mini-chip"><i class="bi bi-dice-6"></i> Board 40 o</span>
         <span class="monopoly-mini-chip"><i class="bi bi-cash-stack"></i> Starting cash tuy chon</span>
         <span class="monopoly-mini-chip"><i class="bi bi-trophy-fill"></i> BXH gia tri rong realtime</span>
       </div>
+      <div class="monopoly-surface__chips" th:if="${roomPage != true and localPage != true}">
+        <span class="monopoly-mini-chip"><i class="bi bi-door-open-fill"></i> Lobby rieng</span>
+        <span class="monopoly-mini-chip"><i class="bi bi-broadcast-pin"></i> Room page rieng</span>
+        <span class="monopoly-mini-chip"><i class="bi bi-controller"></i> Local page rieng</span>
+      </div>
     </div>
 
-    <section class="hub-portal-card monopoly-room-card">
+    <section th:if="${roomPage != true and localPage != true}" class="hub-portal-card monopoly-room-card">
       <div class="hub-portal-card__head">
         <h2>Phong cho Monopoly</h2>
         <span class="hub-portal-tag">Room sync MVP</span>
@@ -200,7 +218,29 @@
       <div id="monopolyOpenRooms" class="monopoly-open-rooms"></div>
     </section>
 
-    <section id="monopolyLocalSetupCard" class="hub-portal-card monopoly-setup-card">
+    <section th:if="${roomPage == true}" class="hub-portal-card monopoly-room-card monopoly-room-card--arena">
+      <input id="monopolyRoomCodeInput" type="hidden" th:value="${defaultRoomId}">
+
+      <div class="hub-portal-card__head">
+        <h2>Thong tin room</h2>
+        <span class="hub-portal-tag">Arena</span>
+      </div>
+
+      <p id="monopolyRoomStatus" class="monopoly-note">Dang dong bo thong tin room...</p>
+      <div id="monopolyCurrentRoom" class="monopoly-current-room"></div>
+      <div id="monopolyRoomPlayers" class="monopoly-room-players"></div>
+      <div id="monopolyTokenPicker" class="monopoly-token-picker"></div>
+
+      <div class="monopoly-room-footer">
+        <button id="monopolyCopyRoomBtn" type="button" class="hub-portal-inline-btn">Sao chep link moi</button>
+        <button id="monopolyRoomStartBtn" type="button" class="hub-portal-inline-btn primary">Host bat dau game</button>
+        <button id="monopolyLeaveRoomBtn" type="button" class="hub-portal-inline-btn">Roi phong</button>
+        <a th:href="@{/games/monopoly}" class="hub-portal-inline-btn">Mo sanh phong</a>
+        <a th:href="@{/games}" class="hub-portal-inline-btn">Ve thu vien game</a>
+      </div>
+    </section>
+
+    <section th:if="${localPage == true}" id="monopolyLocalSetupCard" class="hub-portal-card monopoly-setup-card">
       <div class="hub-portal-card__head">
         <h2>Setup van local</h2>
         <span class="hub-portal-tag">Offline / cung may</span>
@@ -265,7 +305,7 @@
       </div>
     </section>
 
-    <div id="monopolyApp" class="monopoly-layout">
+    <div th:if="${roomPage == true or localPage == true}" id="monopolyApp" class="monopoly-layout">
       <section class="hub-portal-card monopoly-board-card">
         <div id="monopolyBoard" class="monopoly-board" aria-live="polite"></div>
       </section>
@@ -348,7 +388,7 @@
     </div>
   </section>
 
-  <section class="hub-portal-highlights">
+  <section th:if="${roomPage != true and localPage != true}" class="hub-portal-highlights">
     <article class="hub-portal-highlight">
       <div class="hub-portal-highlight__icon"><i class="bi bi-signpost-split-fill"></i></div>
       <div>
@@ -372,7 +412,7 @@
     </article>
   </section>
 
-  <section id="monopolyRules" class="hub-portal-layout">
+  <section th:if="${roomPage != true and localPage != true}" id="monopolyRules" class="hub-portal-layout">
     <div class="hub-portal-main">
       <section class="hub-portal-card">
         <div class="hub-portal-card__head">
@@ -418,7 +458,7 @@
         <div class="hub-portal-side-actions">
           <a href="#monopolyTable" class="hub-portal-side-action">
             <i class="bi bi-play-fill"></i>
-            <div><strong>Ban choi</strong><small>Scroll den khu gameplay local</small></div>
+            <div><strong>Sanh phong</strong><small>Mo khu tao room va danh sach phong</small></div>
           </a>
           <a href="#monopolyRules" class="hub-portal-side-action">
             <i class="bi bi-journal-text"></i>
@@ -452,7 +492,14 @@
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('games-monopoly')}"></th:block>
-<script th:src="@{/js/monopoly-game.js(v=20260314d)}"></script>
+<script th:inline="javascript">
+  window.MonopolyBoot = {
+    defaultRoomId: /*[[${defaultRoomId}]]*/ '',
+    roomPage: /*[[${roomPage == true}]]*/ false,
+    localPage: /*[[${localPage == true}]]*/ false
+  };
+</script>
+<script th:src="@{/js/monopoly-game.js(v=20260315a)}"></script>
 <style>
   .monopoly-surface {
     display: grid;

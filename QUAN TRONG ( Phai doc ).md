@@ -90,13 +90,13 @@ He thong khong chi la mot game don le. Day la mot hub co 3 lop:
 | Chess | `/Game/games/chess` | offline, bot, online 1v1 | Dong bo nuoc di realtime, room/spectate, ban co da refresh giao dien |
 | Xiangqi | `/Game/games/xiangqi` | offline, bot, online 1v1 | Dong bo nuoc di realtime, room/spectate, ban co da refresh giao dien |
 | Cards hub | `/Game/games/cards` | hub dieu huong | Gom Tien Len va Blackjack |
-| Tien Len | `/Game/games/cards/tien-len` | online 4 nguoi, bot | Ban bai 4 huong, room realtime, room page rieng |
+| Tien Len | `/Game/cards/tien-len/rooms` | online 4 nguoi, bot | Sảnh phong rieng, room realtime tach biet, ban bai 4 huong |
 | Blackjack | `/Game/games/cards/blackjack` | realtime room, spectate | Dat cuoc, hit, stand, double co ban, room page rieng |
 | Quiz | `/Game/games/quiz` | room, spectate, highscores | Ho tro single / multiple / typed question, room page rieng |
 | Typing Battle | `/Game/games/typing` | room realtime | Theo doi progress + accuracy + winner, room page rieng |
 | Minesweeper | `/Game/games/minesweeper` | offline | Beginner / Intermediate / Expert, flag, first-click safe, win award |
 | Puzzle Pack | `/Game/games/puzzle` | offline | Gom Jigsaw, Sliding, Sudoku, Word Puzzle |
-| Monopoly / Co ty phu | `/Game/games/monopoly` | local 2-4 nguoi, room mode MVP | Ban co 40 o, chance/community, rent, nha/hotel, mortgage, jail, bankruptcy, room create/join/token/start |
+| Monopoly / Co ty phu | `/Game/games/monopoly` | lobby room, local 2-4 nguoi, room mode MVP | Tach 3 route: lobby, local page rieng, room page rieng; board 40 o, chance/community, rent, nha/hotel, mortgage, jail, bankruptcy |
 | External modules | `/Game/games/{code}` | tuy module | Import qua registry, co the embed / redirect / API proxy |
 
 ## 5. Chi tiet gameplay / module theo nhom
@@ -141,13 +141,15 @@ He thong khong chi la mot game don le. Day la mot hub co 3 lop:
   - Sudoku
   - Word Puzzle
 - `Monopoly`
-  - local 2-4 nguoi
+  - local 2-4 nguoi o page rieng
   - room mode MVP qua REST backend
+  - lobby va room page da tach rieng
 
 ### 5.3 Trang thai Monopoly de nguoi moi vao lam tiep
 
 Phan Monopoly hien da co:
 
+- lobby room rieng, local page rieng, room page rieng
 - tao / join / leave room
 - host start
 - chon token khong trung
@@ -189,6 +191,12 @@ Ngoai ra:
 - route chuan vao room cua game la `/Game/games/{code}/rooms`
 - tat ca room page hien uu tien trang choi rieng, tach khoi lobby/catalog
 - trang room chi giu ban choi, danh sach nguoi choi, thao tac can thiet va trang thai tran
+- create/join tu sanh phai nhay sang route room native thay vi render tren cung trang
+- `Tien Len` dung sanh rieng tai `/Game/cards/tien-len/rooms`
+- `Monopoly` da tach thanh:
+  - lobby: `/Game/games/monopoly`
+  - local: `/Game/games/monopoly/local`
+  - room: `/Game/games/monopoly/room/{roomId}`
 - game co page room rieng se redirect ve page native
 - game chua co room engine rieng co the di qua room hub chung
 
@@ -331,11 +339,12 @@ Neu ban moi vao du an, thu tu doc/soi code nen la:
 - Project dang co nhiu route legacy duoc redirect de giu tuong thich.
 - Context path `/Game` can duoc tinh toi khi them route/frontend asset.
 - Public runtime co logic whitelist WebSocket origin, can can nhac khi them domain/tunnel moi.
-- Monopoly la module dang mo rong nhanh, nen check ky test + state transition truoc khi chinh.
+- Monopoly da co 3 mode route (`lobby/local/room`), nen khi sua UI/logic phai check dung mode dang boot.
 - Test websocket `Blackjack` da duoc co dinh deck trong test de tranh flaky do random shuffle; neu sua luong chia bai thi cap nhat ca test deck.
 - Neu sua UI toan app, uu tien check 4 diem goc: `templates/fragments.html`, `static/css/cg-market.css`, `static/css/unified-app.css`, `static/css/play-surfaces.css`.
 - Neu sua logo/icon, check them `static/images/brand`, `static/icons`, `static/manifest.webmanifest` va `static/service-worker.js` de dong bo web icon + PWA cache.
 - External module registry co the override game native neu manifest bat `overrideExisting`.
+- Full suite hien tai dang o muc `253` test pass.
 
 ## 14. Moc lich su phat trien
 
@@ -378,6 +387,9 @@ Neu ban moi vao du an, thu tu doc/soi code nen la:
   - dong bo lai palette, glass surface, typography va HUD/room panels
   - cache-bust CSS chung qua version query moi trong `fragments`
   - dong bo brand `Game Hub` giua logo web, favicon va bo icon app/PWA
+  - tach dut diem sanh phong va room page rieng cho `Typing`, `Quiz`, `Blackjack`, `Tien Len`, `Monopoly`
+  - tach `Monopoly` thanh 3 route ro rang: lobby, local, room
+  - nang full suite len `253` test pass sau khi bo sung test route/page mode moi
 
 ### 14.2 Raw commit timeline
 

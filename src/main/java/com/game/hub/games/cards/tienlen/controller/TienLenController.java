@@ -36,7 +36,18 @@ public class TienLenController {
         if (!normalizedRoomId.isEmpty()) {
             return "redirect:/cards/tien-len/room/" + UriUtils.encodePathSegment(normalizedRoomId, StandardCharsets.UTF_8);
         }
-        return renderTienLen("", request, model, false);
+        return renderTienLenLobby("", request, model);
+    }
+
+    @GetMapping("/tien-len/rooms")
+    public String tienLenRooms(@RequestParam(required = false) String roomId,
+                               HttpServletRequest request,
+                               Model model) {
+        String normalizedRoomId = roomId == null ? "" : roomId.trim();
+        if (!normalizedRoomId.isEmpty()) {
+            return "redirect:/cards/tien-len/room/" + UriUtils.encodePathSegment(normalizedRoomId, StandardCharsets.UTF_8);
+        }
+        return renderTienLenLobby("", request, model);
     }
 
     @GetMapping("/tien-len/room/{roomId}")
@@ -44,6 +55,18 @@ public class TienLenController {
                               HttpServletRequest request,
                               Model model) {
         return renderTienLen(roomId, request, model, true);
+    }
+
+    private String renderTienLenLobby(String roomId,
+                                      HttpServletRequest request,
+                                      Model model) {
+        SessionPlayer player = resolveSessionPlayer(request);
+        model.addAttribute("sessionUserId", player.userId());
+        model.addAttribute("sessionDisplayName", player.displayName());
+        model.addAttribute("sessionAvatarPath", player.avatarPath());
+        model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
+        model.addAttribute("roomPage", false);
+        return "cards/tien-len-lobby";
     }
 
     private String renderTienLen(String roomId,

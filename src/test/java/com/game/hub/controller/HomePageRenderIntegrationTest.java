@@ -86,6 +86,25 @@ class HomePageRenderIntegrationTest {
     }
 
     @Test
+    void monopolyLocalPageShouldRenderDedicatedLocalMode() throws Exception {
+        mockMvc.perform(get("/games/monopoly/local"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/monopoly"))
+            .andExpect(model().attribute("localPage", true))
+            .andExpect(model().attribute("roomPage", false));
+    }
+
+    @Test
+    void monopolyRoomPageShouldRenderDedicatedRoomMode() throws Exception {
+        mockMvc.perform(get("/games/monopoly/room/MONO-1"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/monopoly"))
+            .andExpect(model().attribute("defaultRoomId", "MONO-1"))
+            .andExpect(model().attribute("roomPage", true))
+            .andExpect(model().attribute("localPage", false));
+    }
+
+    @Test
     void onlineHubShouldRenderWithSelectedGameModel() throws Exception {
         mockMvc.perform(get("/online-hub"))
             .andExpect(status().isOk())
@@ -126,6 +145,13 @@ class HomePageRenderIntegrationTest {
         mockMvc.perform(get("/games/blackjack/rooms"))
             .andExpect(status().is3xxRedirection())
             .andExpect(view().name("redirect:/games/cards/blackjack"));
+    }
+
+    @Test
+    void dedicatedMonopolyRoomPageShouldRedirectToMonopolyLobbyPage() throws Exception {
+        mockMvc.perform(get("/games/monopoly/rooms"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(view().name("redirect:/games/monopoly"));
     }
 
     @Test

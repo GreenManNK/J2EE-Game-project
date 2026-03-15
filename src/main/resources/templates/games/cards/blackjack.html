@@ -709,13 +709,34 @@
         return false;
     }
 
-    createRoomBtn.addEventListener('click', () => {
+    createRoomBtn.addEventListener('click', async () => {
         isSpectator = false;
         myPlayerId = null;
+        if (!isDedicatedRoomPage()) {
+            try {
+                setConnectionStatus('Dang tao ban blackjack...', '');
+                const createdRoomId = await requestRoomIdFromHub('/online-hub/api/create-room?game=blackjack');
+                navigateToRoomPage(createdRoomId, '');
+            } catch (error) {
+                setConnectionStatus(error.message || 'Khong tao duoc phong blackjack.', 'error');
+            }
+            return;
+        }
         openSocket({ action: 'create' });
     });
 
     randomRoomBtn.addEventListener('click', async () => {
+        if (!isDedicatedRoomPage()) {
+            try {
+                setConnectionStatus('Dang tim ban blackjack phu hop...', '');
+                const selectedRoomId = await requestRoomIdFromHub('/online-hub/api/quick-random?game=blackjack');
+                navigateToRoomPage(selectedRoomId, '');
+            } catch (error) {
+                setConnectionStatus(error.message || 'Khong chon duoc phong random.', 'error');
+            }
+            return;
+        }
+
         const rooms = await fetchRoomList(false);
         const candidates = Array.isArray(rooms)
             ? rooms.filter((room) => {
@@ -752,6 +773,10 @@
             setConnectionStatus('Can nhap ma phong.', 'error');
             return;
         }
+        if (!isDedicatedRoomPage()) {
+            navigateToRoomPage(roomIdToJoin, '');
+            return;
+        }
         roomId = roomIdToJoin;
         isSpectator = false;
         myPlayerId = null;
@@ -766,6 +791,10 @@
         const roomIdToJoin = roomIdInput.value.trim();
         if (!roomIdToJoin) {
             setConnectionStatus('Can nhap ma phong.', 'error');
+            return;
+        }
+        if (!isDedicatedRoomPage()) {
+            navigateToRoomPage(roomIdToJoin, 'spectate');
             return;
         }
         roomId = roomIdToJoin;
@@ -1243,6 +1272,10 @@
                     return;
                 }
                 roomIdInput.value = targetRoom;
+                if (!isDedicatedRoomPage()) {
+                    navigateToRoomPage(targetRoom, '');
+                    return;
+                }
                 isSpectator = false;
                 myPlayerId = null;
                 openSocket({ action: 'join', roomId: targetRoom });
@@ -1256,6 +1289,10 @@
                     return;
                 }
                 roomIdInput.value = targetRoom;
+                if (!isDedicatedRoomPage()) {
+                    navigateToRoomPage(targetRoom, 'spectate');
+                    return;
+                }
                 isSpectator = true;
                 myPlayerId = null;
                 openSocket({ action: 'spectate', roomId: targetRoom });
@@ -1284,6 +1321,27 @@
             path += '/spectate';
         }
         return appPath(path);
+    }
+
+    function isDedicatedRoomPage() {
+        return /\/games\/cards\/blackjack\/room\//i.test(String(window.location.pathname || ''));
+    }
+
+    function navigateToRoomPage(roomIdValue, mode) {
+        window.location.href = buildRoomPagePath(roomIdValue, mode);
+    }
+
+    async function requestRoomIdFromHub(path) {
+        const response = await fetch(appPath(path), { method: 'POST' });
+        if (!response.ok) {
+            throw new Error('Khong the chuan bi phong blackjack.');
+        }
+        const payload = await response.json();
+        const nextRoomId = String(payload.roomId || '').trim();
+        if (!nextRoomId) {
+            throw new Error('Server khong tra ve ma phong hop le.');
+        }
+        return nextRoomId;
     }
 
     function replaceRoomUrl(roomIdValue, mode) {

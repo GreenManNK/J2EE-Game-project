@@ -5,7 +5,7 @@
 <div th:replace="~{fragments :: appShell('tien-len')}"></div>
 
 <main class="container py-3 pb-5 tienlen-arena-shell">
-  <section th:unless="${roomPage}" class="gx-page-hero theme-box text-center mb-3">
+  <section class="gx-page-hero theme-box text-center mb-3">
     <div class="home-dashboard__eyebrow mx-auto">
       <i class="bi bi-suit-spade-fill"></i>
       <span>Tien len / Truc tuyen</span>
@@ -15,43 +15,7 @@
     <p class="text-muted mb-0">Ho tro TLMN co ban: don, doi, sam, tu quy, sanh, doi thong, chat 2 (tu quy/doi thong) va toi trang (sanh rong 3-A, 5 doi thong, 6 doi, tu quy 2).</p>
   </section>
 
-  <section th:if="${roomPage}" class="card shadow-sm theme-box mb-3">
-    <div class="card-body">
-      <input id="tlRoomIdInput" type="hidden" th:value="${defaultRoomId}">
-
-      <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-        <div class="d-flex flex-wrap gap-3 small align-items-center">
-          <div class="tl-self-summary">
-            <img id="tlSelfAvatar"
-                 class="tl-self-summary__avatar"
-                 th:src="@{/uploads/avatars/default-avatar.jpg}"
-                 alt="Anh dai dien nguoi choi">
-            <div class="tl-self-summary__body">
-              <div><strong>Ban:</strong> <span id="tlSelfName" th:text="${sessionDisplayName}">Khach</span></div>
-              <div id="tlSelfMeta" class="text-muted">Khach tam thoi</div>
-            </div>
-          </div>
-          <div><strong>Phong hien tai:</strong> <span id="tlCurrentRoomLabel" th:text="${defaultRoomId} ?: 'Chua vao'">Chua vao</span></div>
-        </div>
-
-        <div class="d-flex flex-wrap gap-2">
-          <button id="tlStartBtn" type="button" class="btn theme-outline-btn" disabled>Bat dau (du 4 nguoi)</button>
-          <button id="tlSurrenderBtn" type="button" class="btn btn-outline-warning" disabled>Dau hang</button>
-          <button id="tlLeaveBtn" type="button" class="btn btn-outline-danger" disabled>Roi phong</button>
-          <a th:href="@{/cards/tien-len/rooms}" class="btn theme-outline-btn">Mo sanh phong</a>
-          <a th:href="@{/games/cards}" class="btn theme-outline-btn">Ve trang che do</a>
-        </div>
-      </div>
-
-      <div class="mt-3">
-        <div class="small"><strong>Trang thai:</strong> <span id="tlStatusText">Dang khoi tao ket noi...</span></div>
-        <div class="small"><strong>Thong bao:</strong> <span id="tlMessageText">-</span></div>
-        <div id="tlStatusTimeline" class="tl-status-timeline mt-2" aria-live="polite"></div>
-      </div>
-    </div>
-  </section>
-
-  <div th:unless="${roomPage}" class="tienlen-grid">
+  <div class="tienlen-grid">
     <section class="card shadow-sm theme-box">
       <div class="card-body">
         <div class="d-flex flex-wrap gap-2 align-items-end">
@@ -102,62 +66,6 @@
     </section>
   </div>
 
-  <div class="tienlen-main-grid mt-3">
-    <section class="card shadow-sm theme-box">
-      <div class="card-body">
-        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
-          <h2 class="h5 theme-text mb-0">Ban choi</h2>
-          <div class="small">
-            <span class="me-3"><strong>Luot:</strong> <span id="tlTurnText">-</span></span>
-            <span class="text-muted">Bo bai hien tai hien thi o giua ban</span>
-          </div>
-        </div>
-
-        <div id="tlPlayersBoard" class="tienlen-players-board tl-table-stage">
-          <div class="tienlen-player-slot tl-seat-slot tl-seat-slot--top" data-slot="0" data-table-pos="top">Chua co nguoi choi</div>
-          <div class="tienlen-player-slot tl-seat-slot tl-seat-slot--right" data-slot="1" data-table-pos="right">Chua co nguoi choi</div>
-          <div class="tienlen-player-slot tl-seat-slot tl-seat-slot--bottom" data-slot="2" data-table-pos="bottom">Chua co nguoi choi</div>
-          <div class="tienlen-player-slot tl-seat-slot tl-seat-slot--left" data-slot="3" data-table-pos="left">Chua co nguoi choi</div>
-
-          <div class="tl-table-center" aria-live="polite">
-            <div class="tl-table-center__header">
-              <div class="tl-table-center__title">Bo bai tren ban</div>
-              <div class="tl-table-center__sub">
-                <span class="tl-table-chip">Bo: <strong id="tlCurrentTrickLabel">Chua co</strong></span>
-                <span class="tl-table-chip">Nguoi danh: <strong id="tlTrickOwnerText">-</strong></span>
-              </div>
-            </div>
-            <div id="tlTrickCards" class="tienlen-cards-row tl-trick-cards">
-              <div class="text-muted small">Chua co bo bai nao</div>
-            </div>
-            <div class="tl-table-center__hint">Ban cua ban luon duoc sap xep o vi tri phia duoi</div>
-          </div>
-
-          <aside id="tlScoreBoard" class="tl-scoreboard" aria-live="polite"></aside>
-        </div>
-      </div>
-    </section>
-
-    <section class="card shadow-sm theme-box">
-      <div class="card-body">
-        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
-          <h2 class="h5 theme-text mb-0">Bai tren tay cua ban</h2>
-          <div class="small">
-            <span class="me-2">Da chon: <strong id="tlSelectedCount">0</strong></span>
-            <span>Con lai: <strong id="tlHandCount">0</strong></span>
-          </div>
-        </div>
-
-        <div id="tlMyHand" class="tienlen-hand tl-player-hand"></div>
-
-        <div class="mt-3 d-flex flex-wrap gap-2">
-          <button id="tlPlayBtn" type="button" class="btn theme-outline-btn" disabled>Danh bai</button>
-          <button id="tlPassBtn" type="button" class="btn theme-outline-btn" disabled>Bo luot</button>
-          <button id="tlClearSelectBtn" type="button" class="btn theme-outline-btn">Bo chon</button>
-        </div>
-      </div>
-    </section>
-  </div>
 </main>
 
 <style>

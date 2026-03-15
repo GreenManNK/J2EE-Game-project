@@ -51,11 +51,11 @@ public class GameCatalogController {
         }
 
         return switch (normalizeCode(game.code())) {
-            case "cards" -> redirectWithRoomQuery("/cards/tien-len", "roomId", roomId);
-            case "blackjack" -> redirectWithRoomQuery("/games/cards/blackjack", "room", roomId);
-            case "quiz" -> redirectWithRoomQuery("/games/quiz", "room", roomId);
-            case "typing" -> redirectWithRoomQuery("/games/typing", "room", roomId);
-            case "monopoly" -> redirectWithRoomQuery("/games/monopoly", "roomId", roomId);
+            case "cards" -> redirectToDedicatedRoom("/cards/tien-len/rooms", "/cards/tien-len/room/", roomId);
+            case "blackjack" -> redirectToDedicatedRoom("/games/cards/blackjack", "/games/cards/blackjack/room/", roomId);
+            case "quiz" -> redirectToDedicatedRoom("/games/quiz", "/games/quiz/room/", roomId);
+            case "typing" -> redirectToDedicatedRoom("/games/typing", "/games/typing/room/", roomId);
+            case "monopoly" -> redirectToDedicatedRoom("/games/monopoly", "/games/monopoly/room/", roomId);
             default -> forwardToSharedRoomHub(game.code(), roomId);
         };
     }
@@ -66,6 +66,11 @@ public class GameCatalogController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
         model.addAttribute("game", game);
         model.addAttribute("allGames", gameCatalogService.findAll());
+        if ("monopoly".equals(game.code())) {
+            model.addAttribute("defaultRoomId", "");
+            model.addAttribute("roomPage", false);
+            model.addAttribute("localPage", false);
+        }
         if (game.usesExternalDetailView()) {
             return "games/external-detail";
         }
@@ -105,6 +110,15 @@ public class GameCatalogController {
             + UriUtils.encodeQueryParam(roomParamName, StandardCharsets.UTF_8)
             + "="
             + UriUtils.encodeQueryParam(normalizedRoomId, StandardCharsets.UTF_8);
+    }
+
+    private String redirectToDedicatedRoom(String lobbyPath, String roomPathPrefix, String roomId) {
+        String normalizedRoomId = normalizeRoomId(roomId);
+        if (normalizedRoomId.isEmpty()) {
+            return "redirect:" + lobbyPath;
+        }
+        return "redirect:" + roomPathPrefix
+            + UriUtils.encodePathSegment(normalizedRoomId, StandardCharsets.UTF_8);
     }
 
     private String normalizeCode(String value) {

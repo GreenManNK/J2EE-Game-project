@@ -806,12 +806,33 @@
         return false;
     }
 
-    createRoomBtn.addEventListener('click', () => {
+    createRoomBtn.addEventListener('click', async () => {
         myPlayerId = null;
+        if (!isDedicatedRoomPage()) {
+            try {
+                setConnectionStatus('Dang tao phong...', '');
+                const createdRoomId = await requestRoomIdFromHub('/online-hub/api/create-room?game=typing');
+                navigateToRoomPage(createdRoomId);
+            } catch (error) {
+                setConnectionStatus(error.message || 'Khong tao duoc phong.', 'error');
+            }
+            return;
+        }
         openSocket({ action: 'create' });
     });
 
     randomRoomBtn.addEventListener('click', async () => {
+        if (!isDedicatedRoomPage()) {
+            try {
+                setConnectionStatus('Dang tim phong phu hop...', '');
+                const selectedRoomId = await requestRoomIdFromHub('/online-hub/api/quick-random?game=typing');
+                navigateToRoomPage(selectedRoomId);
+            } catch (error) {
+                setConnectionStatus(error.message || 'Khong chon duoc phong random.', 'error');
+            }
+            return;
+        }
+
         const rooms = await fetchRoomList(false);
         const candidates = Array.isArray(rooms)
             ? rooms.filter((room) => {
@@ -843,6 +864,10 @@
         roomId = roomIdInput.value.trim();
         if (!roomId) {
             setConnectionStatus('Can nhap ma phong.', 'error');
+            return;
+        }
+        if (!isDedicatedRoomPage()) {
+            navigateToRoomPage(roomId);
             return;
         }
         myPlayerId = null;
@@ -1161,6 +1186,10 @@
                     return;
                 }
                 roomIdInput.value = targetRoom;
+                if (!isDedicatedRoomPage()) {
+                    navigateToRoomPage(targetRoom);
+                    return;
+                }
                 myPlayerId = null;
                 openSocket({ action: 'join', roomId: targetRoom });
             });
@@ -1185,6 +1214,27 @@
             return appPath('/games/typing');
         }
         return appPath('/games/typing/room/' + encodeURIComponent(normalizedRoomId));
+    }
+
+    function isDedicatedRoomPage() {
+        return /\/games\/typing\/room\//i.test(String(window.location.pathname || ''));
+    }
+
+    function navigateToRoomPage(roomIdValue) {
+        window.location.href = buildRoomPagePath(roomIdValue);
+    }
+
+    async function requestRoomIdFromHub(path) {
+        const response = await fetch(appPath(path), { method: 'POST' });
+        if (!response.ok) {
+            throw new Error('Khong the chuan bi phong cho typing.');
+        }
+        const payload = await response.json();
+        const nextRoomId = String(payload.roomId || '').trim();
+        if (!nextRoomId) {
+            throw new Error('Server khong tra ve ma phong hop le.');
+        }
+        return nextRoomId;
     }
 
     function replaceRoomUrl(roomIdValue) {

@@ -84,11 +84,11 @@ class GameCatalogControllerTest {
     void roomsShouldRedirectToDedicatedRoomLobbyWhenGameAlreadyHasItsOwnPage() {
         GameCatalogController controller = new GameCatalogController(new GameCatalogService());
 
-        assertEquals("redirect:/cards/tien-len?roomId=TL-1", controller.rooms("cards", "TL-1"));
-        assertEquals("redirect:/games/cards/blackjack?room=BJ-1", controller.rooms("blackjack", "BJ-1"));
-        assertEquals("redirect:/games/quiz?room=QUIZ-1", controller.rooms("quiz", "QUIZ-1"));
-        assertEquals("redirect:/games/typing?room=TYP-1", controller.rooms("typing", "TYP-1"));
-        assertEquals("redirect:/games/monopoly?roomId=MONO-1", controller.rooms("monopoly", "MONO-1"));
+        assertEquals("redirect:/cards/tien-len/room/TL-1", controller.rooms("cards", "TL-1"));
+        assertEquals("redirect:/games/cards/blackjack/room/BJ-1", controller.rooms("blackjack", "BJ-1"));
+        assertEquals("redirect:/games/quiz/room/QUIZ-1", controller.rooms("quiz", "QUIZ-1"));
+        assertEquals("redirect:/games/typing/room/TYP-1", controller.rooms("typing", "TYP-1"));
+        assertEquals("redirect:/games/monopoly/room/MONO-1", controller.rooms("monopoly", "MONO-1"));
     }
 
     @Test

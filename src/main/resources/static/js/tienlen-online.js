@@ -234,6 +234,10 @@
   }
 
   function joinRoom(roomId) {
+    if (!isDedicatedRoomPage()) {
+      navigateToDedicatedRoom(roomId);
+      return;
+    }
     if (!state.connected) {
       setMessage('Chua ket noi xong, vui long doi...');
       return;
@@ -286,7 +290,7 @@
     els.currentRoomLabel.textContent = 'Chua vao';
     const dedicatedRoomPage = /\/cards\/tien-len\/room\//i.test(String(window.location.pathname || ''));
     if (dedicatedRoomPage) {
-      window.location.href = appPath('/cards/tien-len');
+      window.location.href = buildLobbyPath();
       return;
     }
     replaceRoomUrl('');
@@ -1012,11 +1016,28 @@
       const normalizedRoomId = String(roomIdValue || '').trim();
       const path = normalizedRoomId
         ? appPath('/cards/tien-len/room/' + encodeURIComponent(normalizedRoomId))
-        : appPath('/cards/tien-len');
+        : buildLobbyPath();
       const target = new URL(path, window.location.origin);
       window.history.replaceState({}, '', target.pathname + target.search + target.hash);
     } catch (_) {
     }
+  }
+
+  function isDedicatedRoomPage() {
+    return /\/cards\/tien-len\/room\//i.test(String(window.location.pathname || ''));
+  }
+
+  function buildLobbyPath() {
+    return appPath('/cards/tien-len/rooms');
+  }
+
+  function navigateToDedicatedRoom(roomIdValue) {
+    const normalizedRoomId = String(roomIdValue || '').trim();
+    if (!normalizedRoomId) {
+      setMessage('Ma phong khong hop le');
+      return;
+    }
+    window.location.href = appPath('/cards/tien-len/room/' + encodeURIComponent(normalizedRoomId));
   }
 
   function restartAnimation(el, className) {
