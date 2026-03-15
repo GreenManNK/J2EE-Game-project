@@ -3,6 +3,7 @@ package com.game.hub.games.cards.blackjack.controller;
 import com.game.hub.games.cards.blackjack.logic.BlackjackRoom;
 import com.game.hub.games.cards.blackjack.service.BlackjackService;
 import org.junit.jupiter.api.Test;
+import org.springframework.ui.ConcurrentModel;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -16,16 +17,28 @@ class BlackjackControllerTest {
     @Test
     void blackjackPageShouldRenderDedicatedRoomLobbyWhenRoomMissing() {
         BlackjackController controller = new BlackjackController();
+        ConcurrentModel model = new ConcurrentModel();
 
-        assertEquals("games/cards/blackjack", controller.blackjackPage(null, null));
+        assertEquals("games/cards/blackjack", controller.blackjackPage(null, null, model));
+        assertEquals("", model.getAttribute("defaultRoomId"));
+        assertEquals(Boolean.FALSE, model.getAttribute("roomPage"));
+        assertEquals(Boolean.FALSE, model.getAttribute("spectateMode"));
     }
 
     @Test
     void blackjackRoomPagesShouldRenderBlackjackTemplate() {
         BlackjackController controller = new BlackjackController();
+        ConcurrentModel playModel = new ConcurrentModel();
+        ConcurrentModel spectateModel = new ConcurrentModel();
 
-        assertEquals("games/cards/blackjack", controller.blackjackRoomPage("BJ-ROOM-1"));
-        assertEquals("games/cards/blackjack", controller.blackjackSpectatePage("BJ-ROOM-1"));
+        assertEquals("games/cards/blackjack", controller.blackjackRoomPage("BJ-ROOM-1", playModel));
+        assertEquals("games/cards/blackjack", controller.blackjackSpectatePage("BJ-ROOM-1", spectateModel));
+        assertEquals("BJ-ROOM-1", playModel.getAttribute("defaultRoomId"));
+        assertEquals(Boolean.TRUE, playModel.getAttribute("roomPage"));
+        assertEquals(Boolean.FALSE, playModel.getAttribute("spectateMode"));
+        assertEquals("BJ-ROOM-1", spectateModel.getAttribute("defaultRoomId"));
+        assertEquals(Boolean.TRUE, spectateModel.getAttribute("roomPage"));
+        assertEquals(Boolean.TRUE, spectateModel.getAttribute("spectateMode"));
     }
 
     @Test

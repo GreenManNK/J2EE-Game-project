@@ -22,10 +22,13 @@ class TypingControllerTest {
     void typingRoomPageShouldRenderTypingTemplate() {
         TypingController controller = new TypingController();
         ReflectionTestUtils.setField(controller, "gameCatalogService", new GameCatalogService());
+        ConcurrentModel model = new ConcurrentModel();
 
-        String view = controller.typingRoomPage("TYP-ROOM-1", new ConcurrentModel());
+        String view = controller.typingRoomPage("TYP-ROOM-1", model);
 
         assertEquals("games/typing", view);
+        assertEquals("TYP-ROOM-1", model.getAttribute("defaultRoomId"));
+        assertEquals(Boolean.TRUE, model.getAttribute("roomPage"));
     }
 
     @Test

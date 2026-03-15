@@ -48,6 +48,7 @@ class TienLenControllerTest {
 
         assertEquals("cards/tien-len", view);
         assertEquals("", model.getAttribute("defaultRoomId"));
+        assertEquals(Boolean.FALSE, model.getAttribute("roomPage"));
         assertTrue(String.valueOf(model.getAttribute("sessionUserId")).startsWith("guest-"));
     }
 
@@ -67,6 +68,7 @@ class TienLenControllerTest {
 
         assertEquals("cards/tien-len", view);
         assertEquals("room-a", model.getAttribute("defaultRoomId"));
+        assertEquals(Boolean.TRUE, model.getAttribute("roomPage"));
         assertTrue(String.valueOf(model.getAttribute("sessionUserId")).startsWith("guest-"));
         assertTrue(String.valueOf(model.getAttribute("sessionDisplayName")).startsWith("Guest "));
         verify(session).setAttribute(anyString(), org.mockito.ArgumentMatchers.any(String.class));

@@ -4,7 +4,68 @@
 <body>
 <div th:replace="~{fragments :: appShell('games-typing')}"></div>
 
-<main class="hub-portal-shell hub-portal-theme-typing">
+<main th:if="${roomPage}" class="container py-4 typing-room-stage">
+    <section class="card shadow-sm theme-box mb-3">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <div class="small text-muted">Typing / Phong choi</div>
+                <h1 class="h4 theme-text mb-1">
+                    Room <span th:text="${defaultRoomId} ?: 'Dang ket noi'">Dang ket noi</span>
+                </h1>
+                <p class="small text-muted mb-0">Chi giu lai duong dua, tien do nguoi choi va thao tac can thiet.</p>
+            </div>
+
+            <div class="d-flex flex-column align-items-md-end gap-2">
+                <div class="small text-md-end">
+                    <div><strong>Ket noi:</strong> <span id="typing-connection-status">Dang ket noi...</span></div>
+                </div>
+                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                    <a th:href="@{/games/typing/rooms}" class="btn btn-sm theme-outline-btn">Mo sanh phong</a>
+                    <a th:href="@{/games/typing}" class="btn btn-sm theme-outline-btn">Ve lobby</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="room-selection" hidden aria-hidden="true">
+        <button id="create-room-btn" type="button"></button>
+        <button id="random-room-btn" type="button"></button>
+        <button id="refresh-room-list-btn" type="button"></button>
+        <input type="text" id="room-id-input" th:value="${defaultRoomId}">
+        <button id="join-room-btn" type="button"></button>
+        <div id="typing-room-list"></div>
+    </div>
+
+    <div id="game-container" class="typing-shell">
+        <div class="typing-room-tools">
+            <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
+            <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
+            <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
+            <button id="rematch-btn" class="hub-portal-action">Tai dau</button>
+        </div>
+
+        <div class="typing-hud">
+            <div class="typing-hud__item"><span>Phong</span><strong id="room-id-display">-</strong></div>
+            <div class="typing-hud__item"><span>Trang thai</span><strong id="race-status">Dang cho</strong></div>
+            <div class="typing-hud__item"><span>Dong ho</span><strong id="timer-value">--:--</strong></div>
+            <div class="typing-hud__item"><span>WPM</span><strong id="wpm-value">0</strong></div>
+            <div class="typing-hud__item"><span>Do chinh xac</span><strong id="accuracy-value">0%</strong></div>
+        </div>
+
+        <section class="typing-target-card">
+            <p class="typing-target-label">Cau mau</p>
+            <div id="text-to-type" class="typing-target-text"></div>
+        </section>
+
+        <textarea id="typing-input" class="form-control" rows="5" disabled placeholder="Dang cho tran bat dau..."></textarea>
+
+        <div id="players-progress" class="typing-progress-board"></div>
+        <div id="winner-display" class="typing-winner" hidden></div>
+        <p id="typing-status-note" class="typing-note"></p>
+    </div>
+</main>
+
+<main th:unless="${roomPage}" class="hub-portal-shell hub-portal-theme-typing">
     <section class="hub-portal-hero hub-portal-hero--single">
         <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
         <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
@@ -189,6 +250,10 @@
         display: grid;
         gap: 0.75rem;
         max-width: 860px;
+    }
+
+    .typing-room-stage {
+        max-width: 1160px;
     }
 
     .typing-signal-strip {
@@ -1031,6 +1096,12 @@
         myPlayerId = null;
         raceStartedAt = null;
         lastAutoSyncAt = 0;
+
+        const dedicatedRoomPage = /\/games\/typing\/room\//i.test(String(window.location.pathname || ''));
+        if (dedicatedRoomPage) {
+            window.location.href = appPath('/games/typing');
+            return;
+        }
 
         typingInput.value = '';
         typingInput.disabled = true;

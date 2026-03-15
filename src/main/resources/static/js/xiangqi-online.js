@@ -7,8 +7,8 @@
         : (value) => value;
     const FILE_LABELS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
     const PIECE_LABELS = {
-        rG: "G", rA: "A", rE: "E", rH: "H", rR: "R", rC: "C", rP: "P",
-        bG: "G", bA: "A", bE: "E", bH: "H", bR: "R", bC: "C", bP: "P"
+        rG: "\u5E25", rA: "\u4ED5", rE: "\u76F8", rH: "\u508C", rR: "\u4FE5", rC: "\u70AE", rP: "\u5175",
+        bG: "\u5C06", bA: "\u58EB", bE: "\u8C61", bH: "\u99AC", bR: "\u8ECA", bC: "\u70AE", bP: "\u5352"
     };
     const PIECE_NAMES = {
         G: "Tuong",
@@ -420,18 +420,6 @@
                 cell.appendChild(pieceEl);
             }
 
-            if (row === ROWS - 1) {
-                const f = document.createElement("span");
-                f.className = "xiangqi-coord file";
-                f.textContent = FILE_LABELS[col];
-                cell.appendChild(f);
-            }
-            if (col === 0) {
-                const r = document.createElement("span");
-                r.className = "xiangqi-coord rank";
-                r.textContent = String(ROWS - row);
-                cell.appendChild(r);
-            }
         });
     }
 

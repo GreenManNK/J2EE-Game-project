@@ -24,9 +24,17 @@ class QuizControllerTest {
     void quizRoomPagesShouldRenderQuizTemplate() {
         QuizController controller = new QuizController();
         ReflectionTestUtils.setField(controller, "gameCatalogService", new GameCatalogService());
+        ConcurrentModel playModel = new ConcurrentModel();
+        ConcurrentModel spectateModel = new ConcurrentModel();
 
-        assertEquals("games/quiz", controller.quizRoomPage("QUIZ-ROOM-1", new ConcurrentModel()));
-        assertEquals("games/quiz", controller.quizSpectatePage("QUIZ-ROOM-1", new ConcurrentModel()));
+        assertEquals("games/quiz", controller.quizRoomPage("QUIZ-ROOM-1", playModel));
+        assertEquals("games/quiz", controller.quizSpectatePage("QUIZ-ROOM-1", spectateModel));
+        assertEquals("QUIZ-ROOM-1", playModel.getAttribute("defaultRoomId"));
+        assertEquals(Boolean.TRUE, playModel.getAttribute("roomPage"));
+        assertEquals(Boolean.FALSE, playModel.getAttribute("spectateMode"));
+        assertEquals("QUIZ-ROOM-1", spectateModel.getAttribute("defaultRoomId"));
+        assertEquals(Boolean.TRUE, spectateModel.getAttribute("roomPage"));
+        assertEquals(Boolean.TRUE, spectateModel.getAttribute("spectateMode"));
     }
 
     @Test

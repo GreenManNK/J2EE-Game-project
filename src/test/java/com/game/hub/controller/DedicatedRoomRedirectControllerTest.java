@@ -77,7 +77,7 @@ class DedicatedRoomRedirectControllerTest {
     void blackjackSpectateQueryShouldRedirectToDedicatedSpectatePage() {
         BlackjackController controller = new BlackjackController();
 
-        String view = controller.blackjackPage("BJ-1", "spectate");
+        String view = controller.blackjackPage("BJ-1", "spectate", new ConcurrentModel());
 
         assertEquals("redirect:/games/cards/blackjack/room/BJ-1/spectate", view);
     }

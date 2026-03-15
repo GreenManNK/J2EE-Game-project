@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -81,8 +82,18 @@ class RawWebSocketOnlineIntegrationTest {
 
             secondSocket.sendText("{\"action\":\"join\",\"roomId\":\"" + roomId + "\"}", true).join();
 
-            Map<String, Object> firstPlayingState = firstListener.awaitJson();
-            Map<String, Object> secondPlayingState = secondListener.awaitJson();
+            Map<String, Object> firstCountdownState = awaitTypingState(firstListener, roomId, "COUNTDOWN", 2);
+            Map<String, Object> secondCountdownState = awaitTypingState(secondListener, roomId, "COUNTDOWN", 2);
+
+            assertEquals(roomId, firstCountdownState.get("id"));
+            assertEquals(roomId, secondCountdownState.get("id"));
+
+            TypingRoom room = typingService.getRoom(roomId);
+            assertNotNull(room);
+            forceTypingRoomIntoPlaying(room, firstSocket);
+
+            Map<String, Object> firstPlayingState = awaitTypingState(firstListener, roomId, "PLAYING", 2);
+            Map<String, Object> secondPlayingState = awaitTypingState(secondListener, roomId, "PLAYING", 2);
 
             assertEquals(roomId, firstPlayingState.get("id"));
             assertEquals("PLAYING", String.valueOf(firstPlayingState.get("gameState")));
@@ -113,28 +124,26 @@ class RawWebSocketOnlineIntegrationTest {
             String roomId = String.valueOf(createdState.get("id"));
 
             secondSocket.sendText("{\"action\":\"join\",\"roomId\":\"" + roomId + "\"}", true).join();
-            firstListener.awaitJsonMatching(json -> "PLAYING".equals(String.valueOf(json.get("gameState"))));
-            secondListener.awaitJsonMatching(json -> "PLAYING".equals(String.valueOf(json.get("gameState"))));
+            awaitTypingState(firstListener, roomId, "COUNTDOWN", 2);
+            awaitTypingState(secondListener, roomId, "COUNTDOWN", 2);
 
             closeQuietly(secondSocket);
-            Map<String, Object> waitingState = firstListener.awaitJsonMatching(json ->
-                roomId.equals(json.get("id"))
-                    && "WAITING".equals(String.valueOf(json.get("gameState")))
-                    && ((Number) json.get("playerCount")).intValue() == 1
-            );
+            Map<String, Object> waitingState = awaitTypingState(firstListener, roomId, "WAITING", 1);
             assertEquals(roomId, waitingState.get("id"));
 
             thirdSocket.sendText("{\"action\":\"join\",\"roomId\":\"" + roomId + "\"}", true).join();
-            Map<String, Object> resumedState = firstListener.awaitJsonMatching(json ->
-                roomId.equals(json.get("id"))
-                    && "PLAYING".equals(String.valueOf(json.get("gameState")))
-                    && ((Number) json.get("playerCount")).intValue() == 2
-            );
-            Map<String, Object> thirdState = thirdListener.awaitJsonMatching(json ->
-                roomId.equals(json.get("id"))
-                    && "PLAYING".equals(String.valueOf(json.get("gameState")))
-                    && ((Number) json.get("playerCount")).intValue() == 2
-            );
+            Map<String, Object> resumedCountdown = awaitTypingState(firstListener, roomId, "COUNTDOWN", 2);
+            Map<String, Object> thirdCountdown = awaitTypingState(thirdListener, roomId, "COUNTDOWN", 2);
+
+            assertEquals(roomId, resumedCountdown.get("id"));
+            assertEquals(roomId, thirdCountdown.get("id"));
+
+            TypingRoom room = typingService.getRoom(roomId);
+            assertNotNull(room);
+            forceTypingRoomIntoPlaying(room, firstSocket);
+
+            Map<String, Object> resumedState = awaitTypingState(firstListener, roomId, "PLAYING", 2);
+            Map<String, Object> thirdState = awaitTypingState(thirdListener, roomId, "PLAYING", 2);
 
             assertEquals(roomId, resumedState.get("id"));
             assertEquals(roomId, thirdState.get("id"));
@@ -160,8 +169,14 @@ class RawWebSocketOnlineIntegrationTest {
             String textToType = String.valueOf(createdState.get("textToType"));
 
             secondSocket.sendText("{\"action\":\"join\",\"roomId\":\"" + roomId + "\"}", true).join();
-            firstListener.awaitJsonMatching(json -> "PLAYING".equals(String.valueOf(json.get("gameState"))));
-            secondListener.awaitJsonMatching(json -> "PLAYING".equals(String.valueOf(json.get("gameState"))));
+            awaitTypingState(firstListener, roomId, "COUNTDOWN", 2);
+            awaitTypingState(secondListener, roomId, "COUNTDOWN", 2);
+
+            TypingRoom room = typingService.getRoom(roomId);
+            assertNotNull(room);
+            forceTypingRoomIntoPlaying(room, firstSocket);
+            awaitTypingState(firstListener, roomId, "PLAYING", 2);
+            awaitTypingState(secondListener, roomId, "PLAYING", 2);
 
             firstSocket.sendText("{\"action\":\"progress\",\"roomId\":\"" + roomId + "\",\"typed\":" + objectMapper.writeValueAsString(textToType) + "}", true).join();
 
@@ -198,7 +213,10 @@ class RawWebSocketOnlineIntegrationTest {
             assertEquals(0, ((Number) roomState.get("spectators")).intValue());
 
             socket.sendText("{\"action\":\"start\"}", true).join();
-            Map<String, Object> questionState = listener.awaitJson();
+            Map<String, Object> questionState = listener.awaitJsonMatching(json ->
+                "What is the capital of France?".equals(json.get("question"))
+                    && ((Number) json.get("questionNumber")).intValue() == 1
+            );
 
             assertEquals("What is the capital of France?", questionState.get("question"));
             assertEquals(1, ((Number) questionState.get("questionNumber")).intValue());
@@ -424,6 +442,25 @@ class RawWebSocketOnlineIntegrationTest {
         } catch (Exception ignored) {
             socket.abort();
         }
+    }
+
+    private Map<String, Object> awaitTypingState(TestSocketListener listener,
+                                                 String roomId,
+                                                 String gameState,
+                                                 int playerCount) throws Exception {
+        return listener.awaitJsonMatching(json ->
+            roomId.equals(json.get("id"))
+                && gameState.equals(String.valueOf(json.get("gameState")))
+                && ((Number) json.get("playerCount")).intValue() == playerCount
+        );
+    }
+
+    private void forceTypingRoomIntoPlaying(TypingRoom room, WebSocket triggerSocket) {
+        ReflectionTestUtils.setField(room, "countdownEndsAtEpochMs", System.currentTimeMillis() - 1L);
+        triggerSocket.sendText(
+            "{\"action\":\"progress\",\"roomId\":\"" + room.getId() + "\",\"typed\":\"\"}",
+            true
+        ).join();
     }
 
     private final class TestSocketListener implements WebSocket.Listener {

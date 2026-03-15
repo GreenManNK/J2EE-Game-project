@@ -4,7 +4,79 @@
 <body>
 <div th:replace="~{fragments :: appShell('games-quiz')}"></div>
 
-<main class="hub-portal-shell hub-portal-theme-quiz">
+<main th:if="${roomPage}" class="container py-4 quiz-room-stage">
+    <section class="card shadow-sm theme-box mb-3">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <div class="small text-muted">Quiz / Phong choi</div>
+                <h1 class="h4 theme-text mb-1">
+                    Phong <span th:text="${defaultRoomId} ?: 'Dang ket noi'">Dang ket noi</span>
+                </h1>
+                <p class="small text-muted mb-0">Giu lai man hinh thi dau, thao tac tra loi va thong tin tran.</p>
+            </div>
+
+            <div class="d-flex flex-column align-items-md-end gap-2">
+                <div class="small text-md-end">
+                    <div><strong>Che do:</strong> <span th:text="${spectateMode} ? 'Nguoi xem' : 'Nguoi choi'">Nguoi choi</span></div>
+                    <div><strong>Ket noi:</strong> <span id="connection-status">Dang ket noi...</span></div>
+                </div>
+                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                    <a th:href="@{/games/quiz/rooms}" class="btn btn-sm theme-outline-btn">Mo sanh phong</a>
+                    <a th:href="@{/games/quiz}" class="btn btn-sm theme-outline-btn">Ve lobby</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="room-selection" hidden aria-hidden="true">
+        <button id="create-room-btn" type="button"></button>
+        <button id="random-room-btn" type="button"></button>
+        <button id="refresh-room-list-btn" type="button"></button>
+        <input type="text" id="room-id-input" maxlength="64" th:value="${defaultRoomId}">
+        <button id="join-room-btn" type="button"></button>
+        <button id="spectate-room-btn" type="button"></button>
+        <div id="quiz-room-list"></div>
+    </div>
+
+    <div id="quiz-container" class="quiz-shell">
+        <div class="quiz-room-tools">
+            <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
+            <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
+            <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
+        </div>
+
+        <div class="quiz-hud">
+            <div class="quiz-hud__item"><span>Phong</span><strong id="room-id-value">-</strong></div>
+            <div class="quiz-hud__item"><span>Nguoi choi</span><strong id="player-count-value">0</strong></div>
+            <div class="quiz-hud__item"><span>Nguoi xem</span><strong id="spectator-count-value">0</strong></div>
+            <div class="quiz-hud__item"><span>Thoi gian</span><strong id="timer">15s</strong></div>
+        </div>
+
+        <div class="quiz-progress">
+            <div class="quiz-progress__meta">
+                <span id="question-index">Cau hoi 0/0</span>
+                <span>Phim nhanh: 1-4, Enter</span>
+            </div>
+            <div class="quiz-progress__track">
+                <div id="quiz-progress-fill" class="quiz-progress__fill"></div>
+            </div>
+        </div>
+
+        <section class="quiz-question-card">
+            <h2 id="question" class="quiz-question">Dang vao phong...</h2>
+            <div id="options" class="quiz-options"></div>
+            <div class="quiz-actions">
+                <button id="submit-answer-btn" class="hub-portal-action hub-portal-action--primary">Gui dap an</button>
+                <button id="start-game-btn" class="hub-portal-action">Bat dau tran</button>
+            </div>
+            <p id="question-feedback" class="quiz-status-note"></p>
+        </section>
+    </div>
+
+    <ol id="high-scores-list" hidden aria-hidden="true"></ol>
+</main>
+
+<main th:unless="${roomPage}" class="hub-portal-shell hub-portal-theme-quiz">
     <section class="hub-portal-hero hub-portal-hero--single">
         <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
         <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
@@ -199,6 +271,10 @@
         display: grid;
         gap: 0.75rem;
         max-width: 860px;
+    }
+
+    .quiz-room-stage {
+        max-width: 1160px;
     }
 
     .quiz-energy-strip {
@@ -1226,6 +1302,12 @@
         currentQuestionDurationSeconds = QUESTION_SECONDS;
         isSpectator = false;
         reconnectMode = 'join';
+
+        const dedicatedRoomPage = /\/games\/quiz\/room\//i.test(String(window.location.pathname || ''));
+        if (dedicatedRoomPage) {
+            window.location.href = appPath('/games/quiz');
+            return;
+        }
 
         roomSelection.hidden = false;
         quizContainer.hidden = true;

@@ -44,21 +44,27 @@ public class QuizController {
             }
             return redirect.toString();
         }
-        return renderQuizPage(model);
+        return renderQuizPage(model, "", false, false);
     }
 
     @GetMapping("/room/{roomId}")
     public String quizRoomPage(@PathVariable String roomId, Model model) {
-        return renderQuizPage(model);
+        return renderQuizPage(model, roomId, false, true);
     }
 
     @GetMapping("/room/{roomId}/spectate")
     public String quizSpectatePage(@PathVariable String roomId, Model model) {
-        return renderQuizPage(model);
+        return renderQuizPage(model, roomId, true, true);
     }
 
-    private String renderQuizPage(Model model) {
+    private String renderQuizPage(Model model,
+                                  String roomId,
+                                  boolean spectateMode,
+                                  boolean roomPage) {
         populateCatalogModel(model);
+        model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
+        model.addAttribute("spectateMode", spectateMode);
+        model.addAttribute("roomPage", roomPage);
         return "games/quiz";
     }
 

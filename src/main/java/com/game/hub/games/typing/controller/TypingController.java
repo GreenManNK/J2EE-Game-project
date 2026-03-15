@@ -36,16 +36,18 @@ public class TypingController {
         if (!normalizedRoomId.isEmpty()) {
             return "redirect:/games/typing/room/" + UriUtils.encodePathSegment(normalizedRoomId, StandardCharsets.UTF_8);
         }
-        return renderTypingPage(model);
+        return renderTypingPage(model, "", false);
     }
 
     @GetMapping("/room/{roomId}")
     public String typingRoomPage(@PathVariable String roomId, Model model) {
-        return renderTypingPage(model);
+        return renderTypingPage(model, roomId, true);
     }
 
-    private String renderTypingPage(Model model) {
+    private String renderTypingPage(Model model, String roomId, boolean roomPage) {
         populateCatalogModel(model);
+        model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
+        model.addAttribute("roomPage", roomPage);
         return "games/typing";
     }
 

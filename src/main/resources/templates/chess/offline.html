@@ -32,7 +32,21 @@
         </div>
 
         <div class="chess-board-wrap">
-          <div id="chessBoard" class="chess-board" role="grid" aria-label="Ban co vua cung may"></div>
+          <div class="chess-board-shell">
+            <div class="chess-axis chess-axis--files chess-axis--top" aria-hidden="true">
+              <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
+            </div>
+            <div class="chess-axis chess-axis--ranks chess-axis--left" aria-hidden="true">
+              <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+            </div>
+            <div class="chess-axis chess-axis--ranks chess-axis--right" aria-hidden="true">
+              <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+            </div>
+            <div id="chessBoard" class="chess-board" role="grid" aria-label="Ban co vua cung may"></div>
+            <div class="chess-axis chess-axis--files chess-axis--bottom" aria-hidden="true">
+              <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -56,116 +70,247 @@
 </main>
 
 <style>
-  .chess-layout {
+  main.container .chess-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 300px;
     gap: 14px;
     align-items: start;
   }
 
-  .chess-board-wrap {
+  main.container .chess-board-wrap {
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    padding: 4px 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
   }
 
-  .chess-board {
-    width: min(100%, 560px);
+  main.container .chess-board-shell {
+    --chess-frame-size: clamp(20px, 3.6vw, 32px);
+    position: relative;
+    width: min(100%, 680px);
     min-width: 280px;
+    margin: 0 auto;
+    padding: var(--chess-frame-size);
+    border-radius: 24px;
+    background:
+      linear-gradient(145deg, rgba(255, 236, 196, 0.98), rgba(212, 151, 80, 0.97) 38%, rgba(130, 76, 36, 0.99) 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.45),
+      inset 0 -12px 18px rgba(69, 39, 16, 0.32),
+      0 26px 38px rgba(27, 15, 8, 0.28);
+  }
+
+  main.container .chess-board-shell::before {
+    content: "";
+    position: absolute;
+    inset: max(7px, calc(var(--chess-frame-size) * 0.24));
+    border-radius: 18px;
+    border: 2px solid rgba(88, 49, 24, 0.58);
+    box-shadow: inset 0 0 0 1px rgba(255, 245, 220, 0.42);
+    pointer-events: none;
+  }
+
+  main.container .chess-board-shell::after {
+    content: "";
+    position: absolute;
+    inset: calc(var(--chess-frame-size) - 8px);
+    border-radius: 10px;
+    box-shadow: inset 0 0 18px rgba(42, 18, 6, 0.18);
+    pointer-events: none;
+  }
+
+  main.container .chess-axis {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    color: #4d2d19;
+    font-size: clamp(10px, 1.4vw, 13px);
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 0 rgba(255, 245, 228, 0.65);
+    pointer-events: none;
+  }
+
+  main.container .chess-axis span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  main.container .chess-axis--files {
+    left: var(--chess-frame-size);
+    right: var(--chess-frame-size);
+    grid-template-columns: repeat(8, 1fr);
+  }
+
+  main.container .chess-axis--top {
+    top: 5px;
+  }
+
+  main.container .chess-axis--bottom {
+    bottom: 5px;
+  }
+
+  main.container .chess-axis--ranks {
+    top: var(--chess-frame-size);
+    bottom: var(--chess-frame-size);
+    width: 20px;
+    grid-template-rows: repeat(8, 1fr);
+    letter-spacing: 0.08em;
+  }
+
+  main.container .chess-axis--left {
+    left: 5px;
+  }
+
+  main.container .chess-axis--right {
+    right: 5px;
+  }
+
+  main.container .chess-board {
+    width: 100%;
+    min-width: 0;
     aspect-ratio: 1 / 1;
     display: grid;
     grid-template-columns: repeat(8, 1fr);
-    border: 2px solid #333;
+    border: 3px solid rgba(84, 50, 26, 0.72);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #8c613f;
     margin: 0 auto;
+    box-shadow: 0 16px 28px rgba(21, 11, 4, 0.22);
   }
 
-  .chess-cell {
+  main.container .chess-cell {
+    appearance: none;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    font-size: clamp(22px, 4.4vw, 38px);
+    font-size: clamp(24px, 4.6vw, 42px);
     font-weight: 700;
+    line-height: 1;
     user-select: none;
     aspect-ratio: 1 / 1;
     padding: 0;
+    cursor: pointer;
+    transition: transform 0.14s ease, filter 0.14s ease, box-shadow 0.14s ease;
   }
 
-  .chess-cell.light {
-    background: #f0d9b5;
+  main.container .chess-cell:hover {
+    filter: brightness(1.04);
   }
 
-  .chess-cell.dark {
-    background: #b58863;
+  main.container .chess-cell:focus-visible {
+    outline: 3px solid rgba(73, 186, 255, 0.92);
+    outline-offset: -3px;
+    z-index: 1;
   }
 
-  .chess-cell.selected {
+  main.container .chess-cell.light {
+    background:
+      linear-gradient(140deg, rgba(255, 255, 255, 0.2), rgba(173, 120, 63, 0.08)),
+      repeating-linear-gradient(90deg, rgba(160, 110, 56, 0.05) 0 2px, rgba(255, 245, 226, 0.05) 2px 4px),
+      #ead1a4;
+  }
+
+  main.container .chess-cell.dark {
+    background:
+      linear-gradient(140deg, rgba(255, 255, 255, 0.08), rgba(21, 10, 4, 0.18)),
+      repeating-linear-gradient(90deg, rgba(255, 213, 160, 0.04) 0 2px, rgba(35, 16, 7, 0.05) 2px 4px),
+      #6d4122;
+  }
+
+  main.container .chess-cell.selected {
     outline: 3px solid #00b7ff;
     outline-offset: -3px;
-    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.22);
   }
 
-  .chess-cell.legal::after {
+  main.container .chess-cell.selected .chess-piece {
+    transform: translateY(-4%) scale(1.04);
+  }
+
+  main.container .chess-cell.legal::after {
     content: "";
     width: 28%;
     height: 28%;
     border-radius: 50%;
-    background: rgba(0, 183, 255, 0.85);
+    background: rgba(73, 186, 255, 0.86);
+    box-shadow: 0 0 0 6px rgba(73, 186, 255, 0.14);
     position: absolute;
   }
 
-  .chess-cell.capture::after {
+  main.container .chess-cell.capture::after {
     width: 82%;
     height: 82%;
     background: transparent;
     border: 3px solid rgba(255, 82, 82, 0.9);
   }
 
-  .chess-cell.last-move {
+  main.container .chess-cell.last-move {
     box-shadow: inset 0 0 0 999px rgba(255, 235, 59, 0.22);
   }
 
-  .chess-cell.in-check {
+  main.container .chess-cell.in-check {
     box-shadow: inset 0 0 0 999px rgba(255, 0, 0, 0.24);
   }
 
-  .chess-piece.white { color: #fff; text-shadow: 0 0 2px #000, 0 0 4px #000; }
-  .chess-piece.black { color: #111; text-shadow: 0 0 2px rgba(255,255,255,0.45); }
-
-  .chess-coord {
-    position: absolute;
-    font-size: 10px;
-    line-height: 1;
-    opacity: 0.8;
+  main.container .chess-piece {
+    position: relative;
+    z-index: 1;
+    transform: translateY(-2%);
+    font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "Arial Unicode MS", sans-serif;
     pointer-events: none;
   }
-  .chess-coord.file { right: 4px; bottom: 4px; }
-  .chess-coord.rank { left: 4px; top: 4px; }
 
-  .chess-move-log {
+  main.container .chess-piece.white {
+    color: #f9f1dc;
+    text-shadow:
+      0 1px 0 rgba(109, 83, 51, 0.65),
+      0 4px 6px rgba(34, 21, 12, 0.22),
+      0 0 2px rgba(255, 255, 255, 0.45);
+  }
+
+  main.container .chess-piece.black {
+    color: #1c120c;
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.16),
+      0 4px 6px rgba(0, 0, 0, 0.34);
+  }
+
+  main.container .chess-move-log {
     max-height: 360px;
     overflow-y: auto;
     padding-left: 1.1rem;
   }
 
   @media (max-width: 991.98px) {
-    .chess-layout {
+    main.container .chess-layout {
       grid-template-columns: 1fr;
     }
-    .chess-side-panel {
+    main.container .chess-side-panel {
       order: 2;
     }
   }
 
   @media (max-width: 575.98px) {
-    .chess-board {
-      width: min(100%, 92vw);
+    main.container .chess-board-shell {
+      --chess-frame-size: 18px;
+      width: min(100%, 94vw);
     }
-    .chess-cell {
-      font-size: clamp(18px, 6.5vw, 28px);
+    main.container .chess-axis {
+      font-size: 10px;
     }
-    .chess-move-log {
+    main.container .chess-cell {
+      font-size: clamp(18px, 7vw, 30px);
+    }
+    main.container .chess-move-log {
       max-height: 200px;
     }
   }

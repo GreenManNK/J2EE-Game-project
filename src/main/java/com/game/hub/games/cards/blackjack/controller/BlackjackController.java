@@ -4,6 +4,7 @@ import com.game.hub.games.cards.blackjack.logic.BlackjackRoom;
 import com.game.hub.games.cards.blackjack.service.BlackjackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +26,8 @@ public class BlackjackController {
 
     @GetMapping
     public String blackjackPage(@RequestParam(required = false) String room,
-                                @RequestParam(required = false) String mode) {
+                                @RequestParam(required = false) String mode,
+                                Model model) {
         String normalizedRoomId = room == null ? "" : room.trim();
         if (!normalizedRoomId.isEmpty()) {
             StringBuilder redirect = new StringBuilder("redirect:/games/cards/blackjack/room/")
@@ -35,20 +37,26 @@ public class BlackjackController {
             }
             return redirect.toString();
         }
-        return renderBlackjackPage();
+        return renderBlackjackPage(model, "", false, false);
     }
 
     @GetMapping("/room/{roomId}")
-    public String blackjackRoomPage(@PathVariable String roomId) {
-        return renderBlackjackPage();
+    public String blackjackRoomPage(@PathVariable String roomId, Model model) {
+        return renderBlackjackPage(model, roomId, false, true);
     }
 
     @GetMapping("/room/{roomId}/spectate")
-    public String blackjackSpectatePage(@PathVariable String roomId) {
-        return renderBlackjackPage();
+    public String blackjackSpectatePage(@PathVariable String roomId, Model model) {
+        return renderBlackjackPage(model, roomId, true, true);
     }
 
-    private String renderBlackjackPage() {
+    private String renderBlackjackPage(Model model,
+                                       String roomId,
+                                       boolean spectateMode,
+                                       boolean roomPage) {
+        model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
+        model.addAttribute("spectateMode", spectateMode);
+        model.addAttribute("roomPage", roomPage);
         return "games/cards/blackjack";
     }
 

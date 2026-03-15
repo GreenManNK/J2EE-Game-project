@@ -17,6 +17,10 @@
         N: "Ma",
         P: "Tot"
     };
+    Object.assign(PIECE_ICONS, {
+        wK: "\u2654", wQ: "\u2655", wR: "\u2656", wB: "\u2657", wN: "\u2658", wP: "\u2659",
+        bK: "\u265A", bQ: "\u265B", bR: "\u265C", bB: "\u265D", bN: "\u265E", bP: "\u265F"
+    });
     const SESSION_RESYNC_KEY = "chessOnline.sessionResync.v1";
     const SESSION_RESYNC_COOLDOWN_MS = 20000;
     const USER_CHANGE_EVENT = (window.CaroUser && window.CaroUser.eventName) || "caro:user-changed";
@@ -410,18 +414,6 @@
                 cell.appendChild(pieceEl);
             }
 
-            if (r === 7) {
-                const fileEl = document.createElement("span");
-                fileEl.className = "chess-coord file";
-                fileEl.textContent = FILES[c];
-                cell.appendChild(fileEl);
-            }
-            if (c === 0) {
-                const rankEl = document.createElement("span");
-                rankEl.className = "chess-coord rank";
-                rankEl.textContent = String(8 - r);
-                cell.appendChild(rankEl);
-            }
         });
     }
 

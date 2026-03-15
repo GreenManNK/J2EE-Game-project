@@ -48,6 +48,7 @@ class GameControllerTest {
 
         assertEquals("game/index", view);
         assertEquals("room1", model.getAttribute("roomId"));
+        assertEquals(Boolean.TRUE, model.getAttribute("roomPage"));
         assertTrue(String.valueOf(model.getAttribute("sessionUserId")).startsWith("guest-"));
         assertTrue(String.valueOf(model.getAttribute("sessionDisplayName")).startsWith("Guest "));
         assertEquals("/uploads/avatars/default-avatar.jpg", model.getAttribute("sessionAvatarPath"));

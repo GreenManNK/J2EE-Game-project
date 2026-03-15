@@ -284,6 +284,11 @@
     state.myHand = [];
     state.selectedCodes.clear();
     els.currentRoomLabel.textContent = 'Chua vao';
+    const dedicatedRoomPage = /\/cards\/tien-len\/room\//i.test(String(window.location.pathname || ''));
+    if (dedicatedRoomPage) {
+      window.location.href = appPath('/cards/tien-len');
+      return;
+    }
     replaceRoomUrl('');
     setStatus(opts.statusText || 'Da roi phong');
     setMessage(opts.messageText || '-');

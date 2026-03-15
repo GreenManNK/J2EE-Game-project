@@ -5,13 +5,6 @@
 <div th:replace="~{fragments :: appShell('game-index')}"></div>
 
 <main id="gameMain" class="transition-margin d-flex flex-column align-items-center text-center gap-2 game-online-shell">
-  <h1 class="display-4 theme-text fw-bold game-online-title">
-    MULTIPLAYER - ONLINE
-  </h1>
-  <p class="game-online-subtitle theme-text">
-    Tran dau realtime, chat trong phong va cap nhat luot danh theo WebSocket.
-  </p>
-
   <div class="info-top-container">
     <div class="info-box theme-box">
       <div><strong>Ma phong:</strong> <span id="roomIdText" th:text="${roomId}">room</span></div>

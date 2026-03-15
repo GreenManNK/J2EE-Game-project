@@ -55,6 +55,7 @@ public class GameController {
                                Model model) {
         model.addAttribute("roomId", roomId == null ? "" : roomId);
         model.addAttribute("symbol", symbol == null ? "" : symbol);
+        model.addAttribute("roomPage", roomId != null && !roomId.isBlank());
         addSessionPlayer(model, request);
         return "game/index";
     }

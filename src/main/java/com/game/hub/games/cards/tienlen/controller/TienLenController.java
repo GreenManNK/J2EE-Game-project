@@ -36,24 +36,26 @@ public class TienLenController {
         if (!normalizedRoomId.isEmpty()) {
             return "redirect:/cards/tien-len/room/" + UriUtils.encodePathSegment(normalizedRoomId, StandardCharsets.UTF_8);
         }
-        return renderTienLen("", request, model);
+        return renderTienLen("", request, model, false);
     }
 
     @GetMapping("/tien-len/room/{roomId}")
     public String tienLenRoom(@PathVariable String roomId,
                               HttpServletRequest request,
                               Model model) {
-        return renderTienLen(roomId, request, model);
+        return renderTienLen(roomId, request, model, true);
     }
 
     private String renderTienLen(String roomId,
                                  HttpServletRequest request,
-                                 Model model) {
+                                 Model model,
+                                 boolean roomPage) {
         SessionPlayer player = resolveSessionPlayer(request);
         model.addAttribute("sessionUserId", player.userId());
         model.addAttribute("sessionDisplayName", player.displayName());
         model.addAttribute("sessionAvatarPath", player.avatarPath());
         model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
+        model.addAttribute("roomPage", roomPage);
         return "cards/tien-len";
     }
 

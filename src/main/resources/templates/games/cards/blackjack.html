@@ -4,7 +4,83 @@
 <body>
 <div th:replace="~{fragments :: appShell('games-blackjack')}"></div>
 
-<main class="hub-portal-shell hub-portal-theme-blackjack">
+<main th:if="${roomPage}" class="container py-4 blackjack-room-stage">
+    <section class="card shadow-sm theme-box mb-3">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <div class="small text-muted">Blackjack / Phong choi</div>
+                <h1 class="h4 theme-text mb-1">
+                    Ban <span th:text="${defaultRoomId} ?: 'Dang ket noi'">Dang ket noi</span>
+                </h1>
+                <p class="small text-muted mb-0">Chi giu lai ban bai, luot choi, muc cuoc va thao tac trong van.</p>
+            </div>
+
+            <div class="d-flex flex-column align-items-md-end gap-2">
+                <div class="small text-md-end">
+                    <div><strong>Che do:</strong> <span th:text="${spectateMode} ? 'Nguoi xem' : 'Nguoi choi'">Nguoi choi</span></div>
+                    <div><strong>Ket noi:</strong> <span id="blackjack-connection-status">Dang ket noi...</span></div>
+                </div>
+                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                    <a th:href="@{/games/blackjack/rooms}" class="btn btn-sm theme-outline-btn">Mo sanh phong</a>
+                    <a th:href="@{/games/cards/blackjack}" class="btn btn-sm theme-outline-btn">Ve lobby</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="room-selection" hidden aria-hidden="true">
+        <button id="create-room-btn" type="button"></button>
+        <button id="random-room-btn" type="button"></button>
+        <button id="refresh-room-list-btn" type="button"></button>
+        <input type="text" id="room-id-input" th:value="${defaultRoomId}">
+        <button id="join-room-btn" type="button"></button>
+        <button id="spectate-room-btn" type="button"></button>
+        <div id="blackjack-room-list"></div>
+    </div>
+
+    <div id="game-board" class="blackjack-shell">
+        <div class="blackjack-room-tools">
+            <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
+            <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
+            <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
+        </div>
+
+        <div class="blackjack-hud">
+            <div class="blackjack-hud__item"><span>Phong</span><strong id="room-id-label">-</strong></div>
+            <div class="blackjack-hud__item"><span>Trang thai</span><strong id="table-state-label">Dang cho</strong></div>
+            <div class="blackjack-hud__item"><span>Luot hien tai</span><strong id="current-turn-label">-</strong></div>
+            <div class="blackjack-hud__item"><span>So du cua ban</span><strong id="my-balance-label">-</strong></div>
+            <div class="blackjack-hud__item"><span>Muc cuoc</span><strong id="my-bet-label">-</strong></div>
+        </div>
+
+        <section class="blackjack-table">
+            <div id="dealer-panel" class="blackjack-hand-panel">
+                <div class="blackjack-hand-title">Nha cai <span id="dealer-value-label"></span></div>
+                <div id="dealer-cards" class="blackjack-cards"></div>
+            </div>
+            <div id="player-hands" class="blackjack-player-grid"></div>
+        </section>
+
+        <div id="controls" class="blackjack-controls">
+            <div class="blackjack-bet-row">
+                <label for="bet-amount" class="form-label">Tien cuoc</label>
+                <input type="number" id="bet-amount" min="1" value="10" class="form-control">
+                <button id="bet-btn" class="hub-portal-action hub-portal-action--primary">Dat cuoc</button>
+                <button id="rebet-btn" class="hub-portal-action">Dat lai</button>
+            </div>
+            <div class="blackjack-action-row">
+                <button id="hit-btn" class="hub-portal-action" disabled>Rut bai</button>
+                <button id="stand-btn" class="hub-portal-action" disabled>Dung bai</button>
+                <button id="double-btn" class="hub-portal-action" disabled>Gap doi</button>
+                <button id="surrender-btn" class="hub-portal-action" disabled>Bo bai</button>
+            </div>
+        </div>
+
+        <p id="blackjack-status-note" class="blackjack-note"></p>
+    </div>
+</main>
+
+<main th:unless="${roomPage}" class="hub-portal-shell hub-portal-theme-blackjack">
     <section class="hub-portal-hero hub-portal-hero--single">
         <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
         <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
@@ -135,6 +211,10 @@
         display: grid;
         gap: 0.75rem;
         max-width: 860px;
+    }
+
+    .blackjack-room-stage {
+        max-width: 1160px;
     }
 
     .blackjack-milestone-grid {
@@ -1098,6 +1178,12 @@
         previousRoundResult = 'NONE';
         isSpectator = false;
         reconnectMode = 'join';
+
+        const dedicatedRoomPage = /\/games\/cards\/blackjack\/room\//i.test(String(window.location.pathname || ''));
+        if (dedicatedRoomPage) {
+            window.location.href = appPath('/games/cards/blackjack');
+            return;
+        }
 
         roomSelection.hidden = false;
         gameBoard.hidden = true;
