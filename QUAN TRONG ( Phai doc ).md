@@ -63,6 +63,8 @@ He thong khong chi la mot game don le. Day la mot hub co 3 lop:
 - Guest mode va migrate du lieu guest sang account sau khi dang nhap.
 - Luu preferences, stats, game browser state, puzzle catalog state vao database.
 - Avatar upload va avatar binary luu trong DB.
+- Profile gom moc diem, thanh tuu tong va thanh tuu theo game.
+- Thanh tuu chi duoc award va hien thi cho tai khoan nguoi choi that; guest khong duoc luu/hien achievement.
 
 ### 3.3 Social / community
 
@@ -145,6 +147,12 @@ He thong khong chi la mot game don le. Day la mot hub co 3 lop:
   - local 2-4 nguoi o page rieng
   - room mode MVP qua REST backend
   - lobby va room page da tach rieng
+
+### 5.2.1 He thong achievement
+
+- Moi game co the mo khoa moc chien thang dau tien theo tung game.
+- Profile co thanh tuu tong theo do phu game da chinh phuc va moc hoan tat full `Puzzle Pack`.
+- Guest co the choi online/offline, nhung achievement chi tinh cho tai khoan da ton tai trong he thong.
 
 ### 5.3 Trang thai Monopoly de nguoi moi vao lam tiep
 

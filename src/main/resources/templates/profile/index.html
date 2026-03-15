@@ -108,18 +108,21 @@
     </div>
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">Diem thanh tuu</h2>
-        <ul class="list-group list-group-flush">
+        <h2 class="h5 theme-text">Moc diem</h2>
+        <ul class="list-group list-group-flush" th:if="${showAchievements}">
           <li class="list-group-item" th:each="a : ${diemAchievements}" th:text="${a}"></li>
         </ul>
+        <div class="text-muted small" th:if="${!showAchievements}">Chi hien thi cho tai khoan nguoi choi.</div>
       </div>
     </div>
     <div class="col-lg-4">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">Chua mo khoa</h2>
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item" th:each="a : ${lockedAchievements}" th:text="${a}"></li>
+        <h2 class="h5 theme-text">Thanh tuu tong</h2>
+        <ul class="list-group list-group-flush" th:if="${showAchievements and !#lists.isEmpty(overallAchievements)}">
+          <li class="list-group-item" th:each="a : ${overallAchievements}" th:text="${a}"></li>
         </ul>
+        <div class="text-muted small" th:if="${!showAchievements}">Chi hien thi cho tai khoan nguoi choi.</div>
+        <div class="text-muted small" th:if="${showAchievements and #lists.isEmpty(overallAchievements)}">Chua co.</div>
       </div>
     </div>
   </div>
@@ -127,22 +130,44 @@
   <div class="row g-3 mt-1">
     <div class="col-lg-6">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">Thanh tuu lap lai</h2>
-        <ul class="list-group list-group-flush" th:if="${!#maps.isEmpty(repeatAchievements)}">
-          <li class="list-group-item"
-              th:each="entry : ${repeatAchievements}"
-              th:text="${entry.key + ' x' + entry.value}"></li>
-        </ul>
-        <div class="text-muted small" th:if="${#maps.isEmpty(repeatAchievements)}">Chua co.</div>
+        <h2 class="h5 theme-text">Thanh tuu theo game</h2>
+        <div th:if="${showAchievements and !#maps.isEmpty(gameAchievements)}" class="d-flex flex-column gap-3">
+          <div th:each="entry : ${gameAchievements}">
+            <div class="fw-semibold mb-2 theme-text" th:text="${entry.key}">Caro</div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"
+                  th:each="achievement : ${entry.value}"
+                  th:text="${achievement}"></li>
+            </ul>
+          </div>
+        </div>
+        <div class="text-muted small" th:if="${!showAchievements}">Chi hien thi cho tai khoan nguoi choi.</div>
+        <div class="text-muted small" th:if="${showAchievements and #maps.isEmpty(gameAchievements)}">Chua co.</div>
       </div>
     </div>
     <div class="col-lg-6">
       <div class="theme-box rounded p-3 h-100 gx-section-card">
-        <h2 class="h5 theme-text">Thanh tuu dac biet</h2>
-        <ul class="list-group list-group-flush" th:if="${!#lists.isEmpty(achievements)}">
-          <li class="list-group-item" th:each="a : ${achievements}" th:text="${a}"></li>
+        <h2 class="h5 theme-text">Thanh tuu lap lai</h2>
+        <ul class="list-group list-group-flush" th:if="${showAchievements and !#maps.isEmpty(repeatAchievements)}">
+          <li class="list-group-item"
+              th:each="entry : ${repeatAchievements}"
+              th:text="${entry.key + ' x' + entry.value}"></li>
         </ul>
-        <div class="text-muted small" th:if="${#lists.isEmpty(achievements)}">Chua co.</div>
+        <div class="text-muted small" th:if="${!showAchievements}">Chi hien thi cho tai khoan nguoi choi.</div>
+        <div class="text-muted small" th:if="${showAchievements and #maps.isEmpty(repeatAchievements)}">Chua co.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-1">
+    <div class="col-12">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
+        <h2 class="h5 theme-text">Chua mo khoa</h2>
+        <ul class="list-group list-group-flush" th:if="${showAchievements and !#lists.isEmpty(lockedAchievements)}">
+          <li class="list-group-item" th:each="a : ${lockedAchievements}" th:text="${a}"></li>
+        </ul>
+        <div class="text-muted small" th:if="${!showAchievements}">Chi hien thi cho tai khoan nguoi choi.</div>
+        <div class="text-muted small" th:if="${showAchievements and #lists.isEmpty(lockedAchievements)}">Chua co.</div>
       </div>
     </div>
   </div>

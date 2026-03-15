@@ -13,13 +13,39 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class AchievementService {
+    private static final Set<String> GAME_WIN_ACHIEVEMENTS = Set.of(
+        "Winner - Caro",
+        "Winner - Chess",
+        "Winner - Xiangqi",
+        "Winner - Tien Len",
+        "Winner - Typing",
+        "Winner - Blackjack",
+        "Winner - Quiz",
+        "Winner - Minesweeper",
+        "Winner - Puzzle Jigsaw",
+        "Winner - Puzzle Sliding",
+        "Winner - Puzzle Word",
+        "Winner - Puzzle Sudoku"
+    );
+    private static final Set<String> PUZZLE_WIN_ACHIEVEMENTS = Set.of(
+        "Winner - Puzzle Jigsaw",
+        "Winner - Puzzle Sliding",
+        "Winner - Puzzle Word",
+        "Winner - Puzzle Sudoku"
+    );
     private static final String BAC = "Bac";
     private static final String VANG = "Vang";
     private static final String KIM_CUONG = "Kim cuong";
     private static final String THACH_DAU = "Thach dau";
+    private static final String KHOI_DONG_DA_GAME = "Khoi dong da game";
+    private static final String CHINH_PHUC_6_GAME = "Chinh phuc 6 game";
+    private static final String CHINH_PHUC_9_GAME = "Chinh phuc 9 game";
+    private static final String BAO_TRUM_GAME_HUB = "Bao trum Game Hub";
+    private static final String HOAN_TAT_PUZZLE_PACK = "Hoan tat Puzzle Pack";
     private static final String DAU_TRI_THANG_PHAT = "Dau tri thang Phat";
     private static final String CHIEN_THANG_KHONG_TUONG = "Chien thang khong tuong";
     private static final String CHUOI_BAT_BAI = "Chuoi bat bai";
@@ -50,11 +76,12 @@ public class AchievementService {
 
     @Transactional
     public void checkAndAward(String userId, String gameName, boolean won) {
-        if (userId == null || userId.isBlank() || gameName == null || gameName.isBlank()) {
+        if (!isPersistentPlayerAccount(userId) || gameName == null || gameName.isBlank()) {
             return;
         }
         if (won) {
             grantOnce(userId, "Winner - " + gameName.trim());
+            evaluateGameCoverageAchievements(userId);
         }
     }
 
@@ -182,6 +209,9 @@ public class AchievementService {
     }
 
     private void grantOnce(String userId, String achievementName) {
+        if (!isPersistentPlayerAccount(userId)) {
+            return;
+        }
         if (userAchievementRepository.existsByUserIdAndAchievementName(userId, achievementName)) {
             return;
         }
@@ -196,6 +226,44 @@ public class AchievementService {
         notification.setUserId(userId);
         notification.setAchievementName(achievementName);
         achievementNotificationRepository.save(notification);
+    }
+
+    private void evaluateGameCoverageAchievements(String userId) {
+        Set<String> unlockedAchievements = userAchievementRepository.findByUserId(userId).stream()
+            .map(UserAchievement::getAchievementName)
+            .filter(name -> name != null && !name.isBlank())
+            .collect(java.util.stream.Collectors.toSet());
+
+        long distinctGameWins = GAME_WIN_ACHIEVEMENTS.stream()
+            .filter(unlockedAchievements::contains)
+            .count();
+
+        if (distinctGameWins >= 3) {
+            grantOnce(userId, KHOI_DONG_DA_GAME);
+        }
+        if (distinctGameWins >= 6) {
+            grantOnce(userId, CHINH_PHUC_6_GAME);
+        }
+        if (distinctGameWins >= 9) {
+            grantOnce(userId, CHINH_PHUC_9_GAME);
+        }
+        if (distinctGameWins >= GAME_WIN_ACHIEVEMENTS.size()) {
+            grantOnce(userId, BAO_TRUM_GAME_HUB);
+        }
+        if (unlockedAchievements.containsAll(PUZZLE_WIN_ACHIEVEMENTS)) {
+            grantOnce(userId, HOAN_TAT_PUZZLE_PACK);
+        }
+    }
+
+    private boolean isPersistentPlayerAccount(String userId) {
+        if (userId == null) {
+            return false;
+        }
+        String normalized = userId.trim();
+        if (normalized.isEmpty() || normalized.toLowerCase().startsWith("guest-")) {
+            return false;
+        }
+        return userAccountRepository.existsById(normalized);
     }
 
     private record PlayerStats(int totalGames, int totalWins, double winRate, int currentWinStreak, int currentLoseStreak) {

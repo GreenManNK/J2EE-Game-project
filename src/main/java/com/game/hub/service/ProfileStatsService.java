@@ -9,6 +9,7 @@ import com.game.hub.repository.UserAccountRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +18,73 @@ import java.util.Set;
 
 @Service
 public class ProfileStatsService {
+    private static final Set<String> POINT_BASED_ACHIEVEMENTS = Set.of("Bac", "Vang", "Kim cuong", "Thach dau");
+    private static final List<String> GAME_ACHIEVEMENT_ORDER = List.of(
+        "Caro",
+        "Chess",
+        "Xiangqi",
+        "Tien Len",
+        "Typing",
+        "Quiz",
+        "Blackjack",
+        "Minesweeper",
+        "Puzzle Jigsaw",
+        "Puzzle Sliding",
+        "Puzzle Word",
+        "Puzzle Sudoku"
+    );
+    private static final List<String> OVERALL_ACHIEVEMENT_ORDER = List.of(
+        "Khoi dong da game",
+        "Chinh phuc 6 game",
+        "Chinh phuc 9 game",
+        "Bao trum Game Hub",
+        "Hoan tat Puzzle Pack",
+        "Dau tri thang Phat",
+        "Chien thang khong tuong",
+        "Chuoi bat bai",
+        "Ha guc vua",
+        "Chuoi thua huyen thoai",
+        "Choi vi dam me",
+        "1 phut lo la",
+        "Ke sat than",
+        "That bai xung dang",
+        "Chien thang kho khan"
+    );
+    private static final List<String> ALL_POSSIBLE_ACHIEVEMENTS = List.of(
+        "Winner - Caro",
+        "Winner - Chess",
+        "Winner - Xiangqi",
+        "Winner - Tien Len",
+        "Winner - Typing",
+        "Winner - Blackjack",
+        "Winner - Quiz",
+        "Winner - Minesweeper",
+        "Winner - Puzzle Jigsaw",
+        "Winner - Puzzle Sliding",
+        "Winner - Puzzle Word",
+        "Winner - Puzzle Sudoku",
+        "Bac",
+        "Vang",
+        "Kim cuong",
+        "Thach dau",
+        "Khoi dong da game",
+        "Chinh phuc 6 game",
+        "Chinh phuc 9 game",
+        "Bao trum Game Hub",
+        "Hoan tat Puzzle Pack",
+        "Dau tri thang Phat",
+        "Chien thang khong tuong",
+        "Chuoi bat bai",
+        "Ha guc vua",
+        "Chuoi thua huyen thoai",
+        "Choi vi dam me",
+        "1 phut lo la",
+        "Ke sat than",
+        "That bai xung dang",
+        "Chien thang kho khan",
+        "Ke co chap",
+        "Khong the ngan can"
+    );
     private final GameHistoryRepository gameHistoryRepository;
     private final UserAchievementRepository userAchievementRepository;
     private final UserAccountRepository userAccountRepository;
@@ -32,6 +100,7 @@ public class ProfileStatsService {
     public Map<String, Object> buildProfileStats(String userId, String currentUserId) {
         UserAccount user = userAccountRepository.findById(userId).orElseThrow();
         List<GameHistory> allGames = gameHistoryRepository.findByPlayer1IdOrPlayer2IdOrderByPlayedAtDesc(userId, userId);
+        boolean showAchievements = !isGuestUserId(userId);
 
         int totalGames = allGames.size();
         int winCount = (int) allGames.stream().filter(g -> userId.equals(g.getWinnerId())).count();
@@ -67,42 +136,42 @@ public class ProfileStatsService {
         else if (rank <= 3) danhHieu.add("Trum server");
         else if (rank <= 5) danhHieu.add("Thach dau");
 
-        Set<String> pointBased = Set.of("Bac", "Vang", "Kim cuong", "Thach dau");
-        List<UserAchievement> userAchievements = userAchievementRepository.findByUserId(userId);
+        List<UserAchievement> userAchievements = showAchievements
+            ? userAchievementRepository.findByUserId(userId)
+            : List.of();
+        Set<String> unlockedAchievementNames = userAchievements.stream()
+            .map(UserAchievement::getAchievementName)
+            .filter(name -> name != null && !name.isBlank())
+            .collect(java.util.stream.Collectors.toCollection(HashSet::new));
 
         List<String> diemAchievements = userAchievements.stream()
             .map(UserAchievement::getAchievementName)
-            .filter(pointBased::contains)
+            .filter(POINT_BASED_ACHIEVEMENTS::contains)
             .distinct()
             .toList();
 
         Map<String, Long> repeatAchievements = new HashMap<>();
         for (UserAchievement a : userAchievements) {
-            if (!pointBased.contains(a.getAchievementName())) {
+            if (isRepeatAchievement(a.getAchievementName())) {
                 repeatAchievements.merge(a.getAchievementName(), 1L, Long::sum);
             }
         }
 
-        List<String> freeAchievements = userAchievements.stream()
-            .map(UserAchievement::getAchievementName)
-            .filter(name -> name.startsWith("Ke co chap") || name.startsWith("Khong the ngan can"))
+        List<String> overallAchievements = OVERALL_ACHIEVEMENT_ORDER.stream()
+            .filter(unlockedAchievementNames::contains)
             .toList();
 
-        List<String> allPossible = List.of(
-            "Winner - Caro", "Winner - Chess", "Winner - Xiangqi", "Winner - Tien Len",
-            "Winner - Typing", "Winner - Blackjack", "Winner - Quiz",
-            "Bac", "Vang", "Kim cuong", "Thach dau",
-            "Dau tri thang Phat", "Chien thang khong tuong", "Chuoi bat bai", "Ha guc vua",
-            "Chuoi thua huyen thoai", "Choi vi dam me", "1 phut lo la",
-            "Ke sat than", "That bai xung dang", "Chien thang kho khan",
-            "Ke co chap", "Khong the ngan can"
-        );
+        Map<String, List<String>> gameAchievements = buildGameAchievements(unlockedAchievementNames);
 
         Set<String> achieved = new HashSet<>();
         achieved.addAll(diemAchievements);
+        achieved.addAll(overallAchievements);
+        achieved.addAll(gameAchievements.keySet().stream().map(this::toGameAchievementName).toList());
         achieved.addAll(repeatAchievements.keySet());
 
-        List<String> locked = allPossible.stream().filter(a -> !achieved.contains(a)).toList();
+        List<String> locked = showAchievements
+            ? ALL_POSSIBLE_ACHIEVEMENTS.stream().filter(a -> !achieved.contains(a)).toList()
+            : List.of();
 
         Map<String, Object> result = new HashMap<>();
         result.put("user", user);
@@ -113,11 +182,37 @@ public class ProfileStatsService {
         result.put("danhHieu", danhHieu);
         result.put("winFastRanked", winFastRanked);
         result.put("bestStreak", maxStreak);
+        result.put("showAchievements", showAchievements);
         result.put("diemAchievements", diemAchievements);
+        result.put("overallAchievements", overallAchievements);
+        result.put("gameAchievements", gameAchievements);
         result.put("repeatAchievements", repeatAchievements);
-        result.put("achievements", freeAchievements);
+        result.put("achievements", overallAchievements);
         result.put("lockedAchievements", locked);
         result.put("isOwner", userId.equals(currentUserId));
         return result;
+    }
+
+    private Map<String, List<String>> buildGameAchievements(Set<String> unlockedAchievementNames) {
+        Map<String, List<String>> grouped = new LinkedHashMap<>();
+        GAME_ACHIEVEMENT_ORDER.stream()
+            .filter(gameName -> unlockedAchievementNames.contains(toGameAchievementName(gameName)))
+            .forEach(gameName -> grouped.put(gameName, List.of("Chien thang dau tien")));
+        return grouped;
+    }
+
+    private String toGameAchievementName(String gameName) {
+        return "Winner - " + gameName;
+    }
+
+    private boolean isRepeatAchievement(String achievementName) {
+        if (achievementName == null || achievementName.isBlank()) {
+            return false;
+        }
+        return achievementName.startsWith("Ke co chap") || achievementName.startsWith("Khong the ngan can");
+    }
+
+    private boolean isGuestUserId(String userId) {
+        return userId != null && userId.trim().toLowerCase().startsWith("guest-");
     }
 }
