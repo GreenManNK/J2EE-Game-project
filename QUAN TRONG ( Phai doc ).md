@@ -44,6 +44,9 @@ He thong khong chi la mot game don le. Day la mot hub co 3 lop:
 - Trang chu dang storefront, co game rail, feed bai viet, card hinh anh, CTA nhanh.
 - Card art trang chu da duoc cap nhat rieng cho `Minesweeper` va `Quiz`.
 - Catalog `/games` va detail page cho tung game.
+- Shell chung, storefront va play surface da duoc refresh lai theo mot he palette/thiet ke thong nhat.
+- Branding `Game Hub` da duoc dong bo lai giua topbar, sidebar, favicon web va icon PWA/app.
+- Cac room page/lobby page uu tien dung chung he `shared UI` thay vi style roi rac tung man hinh.
 - Theme light/dark dong bo giua shell va cac trang.
 - Ho tro chuyen doi ngon ngu `vi/en`.
 - PWA install flow va onboarding UI.
@@ -330,6 +333,8 @@ Neu ban moi vao du an, thu tu doc/soi code nen la:
 - Public runtime co logic whitelist WebSocket origin, can can nhac khi them domain/tunnel moi.
 - Monopoly la module dang mo rong nhanh, nen check ky test + state transition truoc khi chinh.
 - Test websocket `Blackjack` da duoc co dinh deck trong test de tranh flaky do random shuffle; neu sua luong chia bai thi cap nhat ca test deck.
+- Neu sua UI toan app, uu tien check 4 diem goc: `templates/fragments.html`, `static/css/cg-market.css`, `static/css/unified-app.css`, `static/css/play-surfaces.css`.
+- Neu sua logo/icon, check them `static/images/brand`, `static/icons`, `static/manifest.webmanifest` va `static/service-worker.js` de dong bo web icon + PWA cache.
 - External module registry co the override game native neu manifest bat `overrideExisting`.
 
 ## 14. Moc lich su phat trien
@@ -368,11 +373,17 @@ Neu ban moi vao du an, thu tu doc/soi code nen la:
   - lam moi giao dien ban co `Chess` va `Xiangqi`
   - cap nhat anh gioi thieu `Minesweeper` va `Quiz`
   - on dinh test websocket `Blackjack` de loai flaky do deck ngau nhien
+- `2026-03-15`
+  - refresh shell chung, storefront va play surfaces tren toan app
+  - dong bo lai palette, glass surface, typography va HUD/room panels
+  - cache-bust CSS chung qua version query moi trong `fragments`
+  - dong bo brand `Game Hub` giua logo web, favicon va bo icon app/PWA
 
 ### 14.2 Raw commit timeline
 
 Ben duoi la timeline commit de de truy vet theo hash:
 
+- 2026-03-15 `c9cf29f` Refresh shared interface styling across app
 - 2026-03-15 `2e914a0` Refine dedicated game room pages and board visuals
 - 2026-03-14 `99e11d5` Add Monopoly room support and per-game room routes
 - 2026-03-14 `3bfe621` Add Monopoly gameplay and refresh game portal

@@ -1,17 +1,23 @@
-const SHELL_CACHE = 'gamehub-shell-v1';
-const ASSET_CACHE = 'gamehub-assets-v1';
+const SHELL_CACHE = 'gamehub-shell-v2';
+const ASSET_CACHE = 'gamehub-assets-v2';
 const STATIC_ASSETS = [
   './',
   './manifest.webmanifest',
+  './icons/favicon-32.png',
+  './icons/favicon-16.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-180.png',
+  './images/brand/gamehub-logo.png',
   './css/site.css',
   './css/games-portal.css',
   './css/layout-refresh.css?v=20260307a',
-  './css/cg-market.css?v=20260307b',
+  './css/cg-market.css?v=20260315b',
   './css/game-identity.css?v=20260304a',
   './css/arcade-shell.css?v=20260313a',
+  './css/account-surface.css?v=20260313a',
+  './css/unified-app.css?v=20260315a',
+  './css/play-surfaces.css?v=20260315a',
   './js/site.js',
   './js/app-shell.js',
   './js/install-app.js'

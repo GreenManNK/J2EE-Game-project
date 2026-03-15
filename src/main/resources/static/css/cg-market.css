@@ -3289,3 +3289,93 @@ body.dark-mode {
   box-shadow: 0 16px 30px rgba(18, 30, 45, 0.18);
 }
 
+#appShellLayer .cg-topbar__brand {
+  gap: 10px;
+  padding: 6px 12px 6px 8px;
+}
+
+#appShellLayer .cg-topbar__brand-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex: 0 0 auto;
+  box-shadow:
+    0 10px 22px rgba(2, 12, 23, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+#appShellLayer .cg-topbar__brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.02;
+}
+
+#appShellLayer .cg-topbar__brand-text strong {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #f5fbff;
+}
+
+#appShellLayer .cg-topbar__brand-text small {
+  margin-top: 2px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(191, 226, 235, 0.84);
+}
+
+.app-shell-sidebar-brand {
+  display: block;
+  text-decoration: none;
+}
+
+.app-shell-sidebar-brand:hover {
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.app-shell-sidebar-brand__badge {
+  gap: 10px;
+  padding: 6px 10px 6px 6px;
+}
+
+.app-shell-sidebar-brand__logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex: 0 0 auto;
+  box-shadow:
+    0 12px 26px rgba(2, 10, 25, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.app-shell-sidebar-brand__badge span {
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  #appShellLayer .cg-topbar__brand {
+    gap: 8px;
+    padding: 6px 8px 6px 6px;
+  }
+
+  #appShellLayer .cg-topbar__brand-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+  }
+
+  #appShellLayer .cg-topbar__brand-text strong {
+    font-size: 0.84rem;
+  }
+
+  #appShellLayer .cg-topbar__brand-text small {
+    display: none;
+  }
+}
+

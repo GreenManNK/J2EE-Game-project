@@ -8,11 +8,14 @@
   <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
   <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
   <title th:text="${title} + ' - Caro'">Caro</title>
-  <meta name="theme-color" content="#0b1220">
+  <meta name="theme-color" content="#08141f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Game Hub">
   <link rel="manifest" th:href="@{/manifest.webmanifest}">
+  <link rel="icon" type="image/png" sizes="32x32" th:href="@{/icons/favicon-32.png}">
+  <link rel="icon" type="image/png" sizes="16x16" th:href="@{/icons/favicon-16.png}">
+  <link rel="shortcut icon" type="image/png" th:href="@{/icons/favicon-32.png}">
   <link rel="apple-touch-icon" th:href="@{/icons/icon-180.png}">
   <script>
     (function () {
@@ -61,7 +64,7 @@
   <link rel="stylesheet" th:href="@{/css/site.css}">
   <link rel="stylesheet" th:href="@{/css/games-portal.css}">
   <link rel="stylesheet" th:href="@{/css/layout-refresh.css(v=20260307a)}">
-  <link rel="stylesheet" th:href="@{/css/cg-market.css(v=20260315a)}">
+  <link rel="stylesheet" th:href="@{/css/cg-market.css(v=20260315b)}">
   <link rel="stylesheet" th:href="@{/css/game-identity.css(v=20260304a)}">
   <link rel="stylesheet" th:href="@{/css/arcade-shell.css(v=20260313a)}">
   <link rel="stylesheet" th:href="@{/css/account-surface.css(v=20260313a)}">
@@ -267,8 +270,11 @@
         justify-content: center;
         padding: 6px;
       }
-      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__badge i {
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__badge i,
+      body:not(.sidebar-desktop-hidden) #friendSidebar:not(:hover):not(:focus-within) .app-shell-sidebar-brand__logo {
         margin: 0 !important;
+        width: 22px;
+        height: 22px;
         font-size: 1rem !important;
         line-height: 1 !important;
       }
@@ -504,9 +510,15 @@
         <button id="toggleSidebar" class="cg-topbar__menu-toggle" type="button" aria-label="Bật/tắt sidebar" aria-expanded="false" title="Bật/tắt sidebar">
           <i class="bi bi-list"></i>
         </button>
-        <a class="cg-topbar__brand" th:href="@{/}">
-          <i class="bi bi-controller"></i>
-          <span>Thu vien game</span>
+        <a class="cg-topbar__brand" th:href="@{/}" aria-label="Game Hub">
+          <img class="cg-topbar__brand-logo"
+               th:src="@{/images/brand/gamehub-logo.png}"
+               src="/images/brand/gamehub-logo.png"
+               alt="Game Hub logo">
+          <span class="cg-topbar__brand-text">
+            <strong>Game Hub</strong>
+            <small>Play. Room. Social.</small>
+          </span>
         </a>
       </div>
 
@@ -566,6 +578,17 @@
 
   <div id="friendSidebar" class="theme-text">
     <div class="app-shell-sidebar-scroll d-flex flex-column px-1">
+      <a class="app-shell-sidebar-brand" th:href="@{/}" aria-label="Game Hub">
+        <div class="app-shell-sidebar-brand__badge">
+          <img class="app-shell-sidebar-brand__logo"
+               th:src="@{/images/brand/gamehub-logo.png}"
+               src="/images/brand/gamehub-logo.png"
+               alt="Game Hub logo">
+          <span>Game Hub</span>
+        </div>
+        <div class="app-shell-sidebar-brand__title">Hub game va phong dau chung</div>
+        <div class="app-shell-sidebar-brand__meta">Mot he giao dien, mot bo icon va mot diem vao cho board, room, social va PWA app.</div>
+      </a>
       <div class="app-shell-sidebar-menu">
         <div class="app-shell-menu-group">
           <div class="app-shell-menu-group__title">Điều hướng</div>
