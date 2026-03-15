@@ -302,7 +302,18 @@ Neu `target/` dang bi lock boi process khac tren Windows, co the dung:
 .\mvnw.cmd -q "-Dproject.build.directory=target-verify" test
 ```
 
-### 11.4 Chay bang script tong
+### 11.4 Smoke test ket noi online
+
+Khi can verify online flow ngoai pham vi test trong JVM, nen chay them mot dot smoke test tren app that:
+
+- boot app local voi `test profile` de tat canonical URL guard va dung H2
+- probe HTTP cho lobby/page room cua tung game online
+- test `online-hub/api/create-room`
+- test `Monopoly room API`
+- test `Raw WebSocket` cho `Typing`, `Quiz`, `Blackjack`
+- test `SockJS/STOMP` cho `Caro`, `Chess`, `Xiangqi`, `Tien Len`
+
+### 11.5 Chay bang script tong
 
 ```powershell
 .\scripts\manual-start.cmd start --local
@@ -310,7 +321,7 @@ Neu `target/` dang bi lock boi process khac tren Windows, co the dung:
 .\scripts\manual-start.cmd start --docker
 ```
 
-### 11.5 Docker
+### 11.6 Docker
 
 ```powershell
 docker compose up --build
@@ -345,6 +356,8 @@ Neu ban moi vao du an, thu tu doc/soi code nen la:
 - Neu sua logo/icon, check them `static/images/brand`, `static/icons`, `static/manifest.webmanifest` va `static/service-worker.js` de dong bo web icon + PWA cache.
 - External module registry co the override game native neu manifest bat `overrideExisting`.
 - Full suite hien tai dang o muc `253` test pass.
+- Online flow hien da duoc verify them bang smoke test chay tren app jar local that, khong chi dua vao surefire test trong JVM.
+- Khi sua room flow/websocket, uu tien re-run ca `.\mvnw.cmd test` va mot dot smoke test local cho create/join/spectate/rejoin/action.
 
 ## 14. Moc lich su phat trien
 
@@ -390,12 +403,17 @@ Neu ban moi vao du an, thu tu doc/soi code nen la:
   - tach dut diem sanh phong va room page rieng cho `Typing`, `Quiz`, `Blackjack`, `Tien Len`, `Monopoly`
   - tach `Monopoly` thanh 3 route ro rang: lobby, local, room
   - nang full suite len `253` test pass sau khi bo sung test route/page mode moi
+  - verify them ket noi online tren app that cho `Caro`, `Chess`, `Xiangqi`, `Tien Len`, `Typing`, `Quiz`, `Blackjack`, `Monopoly`
+  - smoke test da cover HTTP room pages, create-room API, room API va ca 2 stack `SockJS/STOMP` + `Raw WebSocket`
 
 ### 14.2 Raw commit timeline
 
 Ben duoi la timeline commit de de truy vet theo hash:
 
+- 2026-03-15 `5da25f3` Separate lobbies from dedicated game room pages
+- 2026-03-15 `56f8dc5` Update Game Hub branding assets
 - 2026-03-15 `c9cf29f` Refresh shared interface styling across app
+- 2026-03-15 `32b6f69` Update project README and stabilize blackjack websocket tests
 - 2026-03-15 `2e914a0` Refine dedicated game room pages and board visuals
 - 2026-03-14 `99e11d5` Add Monopoly room support and per-game room routes
 - 2026-03-14 `3bfe621` Add Monopoly gameplay and refresh game portal
