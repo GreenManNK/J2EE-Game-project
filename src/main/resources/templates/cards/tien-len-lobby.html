@@ -5,19 +5,21 @@
 <div th:replace="~{fragments :: appShell('tien-len')}"></div>
 
 <main class="container py-3 pb-5 tienlen-arena-shell">
-  <section class="gx-page-hero theme-box text-center mb-3">
-    <div class="home-dashboard__eyebrow mx-auto">
-      <i class="bi bi-suit-spade-fill"></i>
-      <span>Tien len / Truc tuyen</span>
-    </div>
-    <h1 class="theme-text fw-bold mb-2">Tien len Mien Nam truc tuyen</h1>
-    <p class="theme-text mb-1">Cho phep khach choi truc tuyen. Su dung phong 4 nguoi tren cung server.</p>
-    <p class="text-muted mb-0">Ho tro TLMN co ban: don, doi, sam, tu quy, sanh, doi thong, chat 2 (tu quy/doi thong) va toi trang (sanh rong 3-A, 5 doi thong, 6 doi, tu quy 2).</p>
-  </section>
-
   <div class="tienlen-grid">
     <section class="card shadow-sm theme-box">
       <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <div class="small text-muted">Tien Len / Lobby</div>
+            <h1 class="h4 theme-text mb-1">Tien Len Mien Nam truc tuyen</h1>
+            <p class="small text-muted mb-0">Tao phong 4 nguoi, dan ma de vao ngay hoac random join neu muon bat dau nhanh.</p>
+          </div>
+          <div class="small text-md-end">
+            <div><strong>Che do:</strong> Online room 4 nguoi</div>
+            <div><strong>Luot ho tro:</strong> join / random / start / roi phong</div>
+          </div>
+        </div>
+
         <div class="d-flex flex-wrap gap-2 align-items-end">
           <div class="flex-grow-1 tl-room-input-min">
             <label for="tlRoomIdInput" class="form-label theme-text mb-1">Ma phong</label>

@@ -20,8 +20,8 @@
                     <div><strong>Ket noi:</strong> <span id="typing-connection-status">Dang ket noi...</span></div>
                 </div>
                 <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-                    <a th:href="@{/games/typing/rooms}" class="btn btn-sm theme-outline-btn">Mo sanh phong</a>
-                    <a th:href="@{/games/typing}" class="btn btn-sm theme-outline-btn">Ve lobby</a>
+                    <a th:href="@{/games/typing}" class="btn btn-sm theme-outline-btn">Mo sanh phong</a>
+                    <a th:href="@{/games}" class="btn btn-sm theme-outline-btn">Ve thu vien</a>
                 </div>
             </div>
         </div>
@@ -66,182 +66,79 @@
 </main>
 
 <main th:unless="${roomPage}" class="hub-portal-shell hub-portal-theme-typing">
-    <section class="hub-portal-hero hub-portal-hero--single">
-        <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
-        <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
-
-        <div class="hub-portal-hero__main">
-            <div class="hub-portal-eyebrow">
-                <i class="bi bi-keyboard-fill"></i>
-                <span>Go chu / Dua toc do</span>
-            </div>
-
-            <h1 class="hub-portal-title">Typing theo phong thoi gian thuc</h1>
-            <p class="hub-portal-subtitle">
-                Vao room, go chuan, ve dich dau tien.
-            </p>
-
-            <div class="hub-portal-chip-row">
-                <span class="hub-portal-chip is-live"><i class="bi bi-people-fill"></i> 2+ nguoi vao countdown 3s</span>
-                <span class="hub-portal-chip"><i class="bi bi-check2-circle"></i> Chi thang khi go dung 100%</span>
-                <span class="hub-portal-chip"><i class="bi bi-speedometer2"></i> Theo doi WPM + do chinh xac</span>
-                <span class="hub-portal-chip"><i class="bi bi-arrow-repeat"></i> Co tai dau sau tran</span>
-            </div>
-
-            <div class="typing-signal-strip" aria-hidden="true">
-                <span></span><span></span><span></span><span></span><span></span>
-            </div>
-
-            <details class="game-rules">
-                <summary>Luat nhanh</summary>
-                <ul>
-                    <li>Phong vao countdown 3 giay khi co it nhat 2 nguoi choi.</li>
-                    <li>Chi duoc tinh ve dich khi go chinh xac toan bo cau.</li>
-                    <li>Nguoi hoan thanh dung dau tien la nguoi thang.</li>
-                    <li>Sau tran co the bam Tai dau de choi tiep ngay.</li>
-                </ul>
-            </details>
-
-            <div class="d-flex flex-wrap gap-2 mb-3">
-                <a th:href="@{/games/typing/rooms}" class="btn theme-outline-btn">Mo sanh phong</a>
-                <a th:href="@{/games}" class="btn theme-outline-btn">Ve thu vien</a>
-            </div>
-
-            <div id="room-selection" class="typing-room-panel">
-                <div class="typing-lobby-head">
-                    <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">
-                        <span class="hub-portal-action__icon"><i class="bi bi-plus-circle-fill"></i></span>
-                        <span class="hub-portal-action__text">Tao phong va vao ngay</span>
-                    </button>
-                    <button id="random-room-btn" class="hub-portal-action">
-                        <span class="hub-portal-action__icon"><i class="bi bi-shuffle"></i></span>
-                        <span class="hub-portal-action__text">Vao nhanh random</span>
-                    </button>
-                    <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
+    <section class="card shadow-sm theme-box mb-3">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <div class="small text-muted">Typing / Lobby</div>
+                <h1 class="h3 theme-text mb-1">Typing realtime</h1>
+                <p class="small text-muted mb-2">Tao phong, dan ma va vao tran ngay. Server tu countdown khi du nguoi choi.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="hub-portal-chip is-live"><i class="bi bi-people-fill"></i> 2+ nguoi la bat dau</span>
+                    <span class="hub-portal-chip"><i class="bi bi-speedometer2"></i> WPM + accuracy realtime</span>
+                    <span class="hub-portal-chip"><i class="bi bi-check2-circle"></i> Ve dich khi go dung 100%</span>
                 </div>
-                <div class="hub-portal-action typing-join-row">
-                    <input type="text" id="room-id-input" placeholder="Nhap hoac dan ma phong de vao ngay" class="form-control">
-                    <button id="join-room-btn" class="hub-portal-action__icon" title="Vao ngay"><i class="bi bi-arrow-right"></i></button>
-                </div>
-                <p class="typing-note mb-0">Nhan Enter hoac dan ma phong de vao tran ngay.</p>
-                <div id="typing-room-list" class="typing-room-list"></div>
-                <p id="typing-connection-status" class="typing-note">Chua ket noi.</p>
             </div>
 
-            <div id="game-container" class="typing-shell" hidden>
-                <div class="typing-room-tools">
-                    <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
-                    <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
-                    <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
-                    <button id="rematch-btn" class="hub-portal-action">Tai dau</button>
+            <div class="d-flex flex-column align-items-md-end gap-2">
+                <div class="small text-md-end">
+                    <div><strong>Flow:</strong> create / join / rematch</div>
+                    <div><strong>Ket noi:</strong> <span id="typing-connection-status">Chua ket noi.</span></div>
                 </div>
-
-                <div class="typing-hud">
-                    <div class="typing-hud__item"><span>Phong</span><strong id="room-id-display">-</strong></div>
-                    <div class="typing-hud__item"><span>Trang thai</span><strong id="race-status">Dang cho</strong></div>
-                    <div class="typing-hud__item"><span>Dong ho</span><strong id="timer-value">--:--</strong></div>
-                    <div class="typing-hud__item"><span>WPM</span><strong id="wpm-value">0</strong></div>
-                    <div class="typing-hud__item"><span>Do chinh xac</span><strong id="accuracy-value">0%</strong></div>
+                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                    <a th:href="@{/games}" class="btn btn-sm theme-outline-btn">Ve thu vien</a>
+                    <a th:href="@{/games/quiz}" class="btn btn-sm theme-outline-btn">Qua Quiz</a>
                 </div>
-
-                <section class="typing-target-card">
-                    <p class="typing-target-label">Cau mau</p>
-                    <div id="text-to-type" class="typing-target-text"></div>
-                </section>
-
-                <textarea id="typing-input" class="form-control" rows="5" disabled placeholder="Dang cho tran bat dau..."></textarea>
-
-                <div id="players-progress" class="typing-progress-board"></div>
-                <div id="winner-display" class="typing-winner" hidden></div>
-                <p id="typing-status-note" class="typing-note"></p>
             </div>
+        </div>
+    </section>
 
+    <div id="room-selection" class="typing-room-panel">
+        <div class="typing-lobby-head">
+            <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">
+                <span class="hub-portal-action__icon"><i class="bi bi-plus-circle-fill"></i></span>
+                <span class="hub-portal-action__text">Tao phong va vao ngay</span>
+            </button>
+            <button id="random-room-btn" class="hub-portal-action">
+                <span class="hub-portal-action__icon"><i class="bi bi-shuffle"></i></span>
+                <span class="hub-portal-action__text">Vao nhanh random</span>
+            </button>
+            <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
+        </div>
+        <div class="hub-portal-action typing-join-row">
+            <input type="text" id="room-id-input" placeholder="Nhap hoac dan ma phong de vao ngay" class="form-control">
+            <button id="join-room-btn" class="hub-portal-action__icon" title="Vao ngay"><i class="bi bi-arrow-right"></i></button>
+        </div>
+        <p class="typing-note mb-0">Nhan Enter hoac dan ma phong de vao tran ngay.</p>
+        <div id="typing-room-list" class="typing-room-list"></div>
+    </div>
+
+    <div id="game-container" class="typing-shell" hidden>
+        <div class="typing-room-tools">
+            <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
+            <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
+            <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
+            <button id="rematch-btn" class="hub-portal-action">Tai dau</button>
         </div>
 
-    </section>
-    <section class="cg-detail-strip" aria-label="Tong quan Typing">
-        <article class="hub-portal-panel cg-detail-strip__card">
-            <span class="cg-detail-strip__eyebrow">Room flow</span>
-            <strong>Create / join / rematch</strong>
-            <p>Typing dat lobby, race HUD va rematch vao cung mot route de giam do vo cua flow choi lien tiep.</p>
-        </article>
-        <article class="hub-portal-panel cg-detail-strip__card">
-            <span class="cg-detail-strip__eyebrow">Metrics</span>
-            <strong>WPM + accuracy realtime</strong>
-            <p>Tien do duoc hien thi song song theo nguoi choi, giong mot lane race trong browser game portal.</p>
-        </article>
-        <article class="hub-portal-panel cg-detail-strip__card">
-            <span class="cg-detail-strip__eyebrow">Victory</span>
-            <strong>100% dung moi tinh ve dich</strong>
-            <p>Rule ve dich va ket thuc tran duoc nhac lai bang strip tong quan de nhat quan voi cac detail page khac.</p>
-        </article>
-    </section>
-
-    <section class="hub-portal-layout">
-        <div class="hub-portal-main">
-            <section class="hub-portal-card">
-                <div class="hub-portal-card__head">
-                    <h2>Nhip gameplay Typing</h2>
-                    <span class="hub-portal-tag">Gameplay</span>
-                </div>
-                <ul class="hub-portal-bullet-list">
-                    <li>Tao/join room, cho du nguoi, countdown ngan roi bat dau cung mot cau mau.</li>
-                    <li>Tien do tung nguoi cap nhat theo WPM va do chinh xac realtime.</li>
-                    <li>Chi ve dich khi go dung 100%, ket tran mo rematch ngay.</li>
-                </ul>
-            </section>
-
-            <section class="hub-portal-card">
-                <div class="hub-portal-card__head">
-                    <h2>Thanh tuu Typing</h2>
-                    <span class="hub-portal-tag">Achievement</span>
-                </div>
-                <ul class="hub-portal-bullet-list">
-                    <li>Khoi dong manh: hoan thanh tran typing dau tien.</li>
-                    <li>Nuoc rut on dinh: ve dich dau tien 5 tran.</li>
-                    <li>Chinh xac cao: dat >=95% accuracy trong 3 tran lien tiep.</li>
-                    <li>Van toc toc chien: cham moc WPM 80 tro len.</li>
-                </ul>
-            </section>
+        <div class="typing-hud">
+            <div class="typing-hud__item"><span>Phong</span><strong id="room-id-display">-</strong></div>
+            <div class="typing-hud__item"><span>Trang thai</span><strong id="race-status">Dang cho</strong></div>
+            <div class="typing-hud__item"><span>Dong ho</span><strong id="timer-value">--:--</strong></div>
+            <div class="typing-hud__item"><span>WPM</span><strong id="wpm-value">0</strong></div>
+            <div class="typing-hud__item"><span>Do chinh xac</span><strong id="accuracy-value">0%</strong></div>
         </div>
 
-        <aside class="hub-portal-side">
-            <section class="hub-portal-card">
-                <h3>Thao tac nhanh</h3>
-                <div class="hub-portal-side-actions">
-                    <a th:href="@{/games/typing/rooms}" class="hub-portal-side-action">
-                        <i class="bi bi-globe2"></i>
-                        <div><strong>Mo sanh phong</strong><small>Tim room typing dang mo va vao nhanh</small></div>
-                    </a>
-                    <a th:href="@{/games}" class="hub-portal-side-action">
-                        <i class="bi bi-grid"></i>
-                        <div><strong>Ve thu vien</strong><small>Quay lai grid game chinh</small></div>
-                    </a>
-                    <a th:href="@{/games/quiz}" class="hub-portal-side-action">
-                        <i class="bi bi-patch-question-fill"></i>
-                        <div><strong>Qua Quiz</strong><small>Chuyen sang mode dau tri thoi gian thuc</small></div>
-                    </a>
-                </div>
-            </section>
+        <section class="typing-target-card">
+            <p class="typing-target-label">Cau mau</p>
+            <div id="text-to-type" class="typing-target-text"></div>
+        </section>
 
-            <section class="hub-portal-card">
-                <h3>Game lien quan</h3>
-                <div class="hub-portal-related-list">
-                    <a th:each="g : ${allGames}"
-                       th:if="${g.code != game.code}"
-                       th:href="@{/games/{code}(code=${g.code})}"
-                       class="hub-portal-related-item"
-                       th:attr="data-code=${g.code}">
-                        <i class="bi" th:classappend="${g.iconClass}"></i>
-                        <div>
-                            <strong th:text="${g.displayName}">Game</strong>
-                            <small th:text="${g.description}">Mo ta</small>
-                        </div>
-                    </a>
-                </div>
-            </section>
-        </aside>
-    </section>
+        <textarea id="typing-input" class="form-control" rows="5" disabled placeholder="Dang cho tran bat dau..."></textarea>
+
+        <div id="players-progress" class="typing-progress-board"></div>
+        <div id="winner-display" class="typing-winner" hidden></div>
+        <p id="typing-status-note" class="typing-note"></p>
+    </div>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('games-typing')}"></th:block>
@@ -254,47 +151,6 @@
 
     .typing-room-stage {
         max-width: 1160px;
-    }
-
-    .typing-signal-strip {
-        margin: 0.6rem 0 0.25rem;
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 0.38rem;
-    }
-
-    .typing-signal-strip span {
-        height: 5px;
-        border-radius: 999px;
-        background: linear-gradient(90deg, rgba(34, 211, 238, 0.95), rgba(74, 222, 128, 0.95));
-        box-shadow: 0 0 10px rgba(56, 189, 248, 0.34);
-        animation: typingPulse 1.2s ease-in-out infinite;
-    }
-
-    .typing-signal-strip span:nth-child(2) { animation-delay: .1s; }
-    .typing-signal-strip span:nth-child(3) { animation-delay: .2s; }
-    .typing-signal-strip span:nth-child(4) { animation-delay: .3s; }
-    .typing-signal-strip span:nth-child(5) { animation-delay: .4s; }
-
-    .game-rules {
-        margin: 0.55rem 0 0.8rem;
-        border: 1px solid rgba(56, 189, 248, 0.32);
-        border-radius: 10px;
-        background: linear-gradient(165deg, rgba(14, 165, 233, 0.18), rgba(34, 197, 94, 0.18));
-        padding: 0.55rem 0.7rem;
-    }
-
-    .game-rules summary {
-        cursor: pointer;
-        font-weight: 600;
-    }
-
-    .game-rules ul {
-        margin: 0.45rem 0 0;
-        padding-left: 1.1rem;
-        display: grid;
-        gap: 0.25rem;
-        font-size: 0.88rem;
     }
 
     .typing-lobby-head {

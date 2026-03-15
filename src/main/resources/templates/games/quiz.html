@@ -21,8 +21,8 @@
                     <div><strong>Ket noi:</strong> <span id="connection-status">Dang ket noi...</span></div>
                 </div>
                 <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-                    <a th:href="@{/games/quiz/rooms}" class="btn btn-sm theme-outline-btn">Mo sanh phong</a>
-                    <a th:href="@{/games/quiz}" class="btn btn-sm theme-outline-btn">Ve lobby</a>
+                    <a th:href="@{/games/quiz}" class="btn btn-sm theme-outline-btn">Mo sanh phong</a>
+                    <a th:href="@{/games}" class="btn btn-sm theme-outline-btn">Ve thu vien</a>
                 </div>
             </div>
         </div>
@@ -77,192 +77,89 @@
 </main>
 
 <main th:unless="${roomPage}" class="hub-portal-shell hub-portal-theme-quiz">
-    <section class="hub-portal-hero hub-portal-hero--single">
-        <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
-        <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
-
-        <div class="hub-portal-hero__main">
-            <div class="hub-portal-eyebrow">
-                <i class="bi bi-patch-question-fill"></i>
-                <span>Quiz / Phong thi dau</span>
+    <section class="card shadow-sm theme-box mb-3">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <div class="small text-muted">Quiz / Lobby</div>
+                <h1 class="h3 theme-text mb-1">Quiz realtime</h1>
+                <p class="small text-muted mb-2">Tao phong, vao nhanh hoac spectate. Host bat dau tran va server cham diem theo tung cau.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="hub-portal-chip is-live"><i class="bi bi-lightning-charge-fill"></i> +2 dung / -1 sai</span>
+                    <span class="hub-portal-chip"><i class="bi bi-stopwatch-fill"></i> Dem nguoc tung cau</span>
+                    <span class="hub-portal-chip"><i class="bi bi-people-fill"></i> Co che do nguoi xem</span>
+                </div>
             </div>
 
-            <h1 class="hub-portal-title">Quiz theo phong thoi gian thuc</h1>
-            <p class="hub-portal-subtitle">
-                Chon phong, tra loi nhanh, leo bang diem.
-            </p>
-
-            <div class="hub-portal-chip-row">
-                <span class="hub-portal-chip is-live"><i class="bi bi-lightning-charge-fill"></i> Tra loi +2 / sai -1</span>
-                <span class="hub-portal-chip"><i class="bi bi-stopwatch-fill"></i> Dem nguoc tung cau</span>
-                <span class="hub-portal-chip"><i class="bi bi-people-fill"></i> Ho tro nguoi xem</span>
-                <span class="hub-portal-chip"><i class="bi bi-bar-chart-fill"></i> Bang xep hang theo diem</span>
+            <div class="d-flex flex-column align-items-md-end gap-2">
+                <div class="small text-md-end">
+                    <div><strong>Flow:</strong> create / join / spectate</div>
+                    <div><strong>Ket noi:</strong> <span id="connection-status">Chua ket noi.</span></div>
+                </div>
+                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                    <a th:href="@{/games}" class="btn btn-sm theme-outline-btn">Ve thu vien</a>
+                    <a th:href="@{/games/typing}" class="btn btn-sm theme-outline-btn">Qua Typing</a>
+                </div>
             </div>
+        </div>
+    </section>
 
-            <div class="quiz-energy-strip" aria-hidden="true">
-                <span></span><span></span><span></span><span></span><span></span><span></span>
+    <div id="room-selection" class="quiz-room-panel">
+        <div class="quiz-lobby-head">
+            <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">Tao phong va vao ngay</button>
+            <button id="random-room-btn" class="hub-portal-action">Vao nhanh random</button>
+            <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
+        </div>
+        <div class="hub-portal-action quiz-join-row">
+            <input type="text" id="room-id-input" placeholder="Nhap hoac dan ma phong de vao ngay" maxlength="64">
+            <button id="join-room-btn" class="hub-portal-action__icon" title="Vao ngay"><i class="bi bi-arrow-right"></i></button>
+            <button id="spectate-room-btn" class="hub-portal-action__icon" title="Xem tran"><i class="bi bi-eye"></i></button>
+        </div>
+        <p class="quiz-status-note mb-0">Nhan Enter hoac dan ma phong de vao tran ngay.</p>
+        <div id="quiz-room-list" class="quiz-room-list"></div>
+    </div>
+
+    <section class="hub-portal-card mt-3">
+        <div class="hub-portal-card__head">
+            <h2>Bang xep hang quiz</h2>
+            <span class="hub-portal-tag">Diem cao</span>
+        </div>
+        <ol id="high-scores-list" class="hub-portal-bullet-list"></ol>
+    </section>
+
+    <div id="quiz-container" class="quiz-shell" hidden>
+        <div class="quiz-room-tools">
+            <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
+            <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
+            <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
+        </div>
+
+        <div class="quiz-hud">
+            <div class="quiz-hud__item"><span>Phong</span><strong id="room-id-value">-</strong></div>
+            <div class="quiz-hud__item"><span>Nguoi choi</span><strong id="player-count-value">0</strong></div>
+            <div class="quiz-hud__item"><span>Nguoi xem</span><strong id="spectator-count-value">0</strong></div>
+            <div class="quiz-hud__item"><span>Thoi gian</span><strong id="timer">15s</strong></div>
+        </div>
+
+        <div class="quiz-progress">
+            <div class="quiz-progress__meta">
+                <span id="question-index">Cau hoi 0/0</span>
+                <span>Phim nhanh: 1-4, Enter</span>
             </div>
-
-            <details class="game-rules">
-                <summary>Luat nhanh</summary>
-                <ul>
-                    <li>Moi cau tra loi dung: +2 diem.</li>
-                    <li>Moi cau sai hoac het gio: -1 diem (khong am).</li>
-                    <li>Moi nguoi chi gui 1 dap an cho moi cau.</li>
-                    <li>Cau tu nhap bo qua hoa/thuong va khoang trang thua.</li>
-                </ul>
-            </details>
-
-            <div class="d-flex flex-wrap gap-2 mb-3">
-                <a th:href="@{/games/quiz/rooms}" class="btn theme-outline-btn">Mo sanh phong</a>
-                <a th:href="@{/games}" class="btn theme-outline-btn">Ve thu vien</a>
-            </div>
-
-            <div id="room-selection" class="quiz-room-panel">
-                <div class="quiz-lobby-head">
-                    <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">Tao phong va vao ngay</button>
-                    <button id="random-room-btn" class="hub-portal-action">Vao nhanh random</button>
-                    <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
-                </div>
-                <div class="hub-portal-action quiz-join-row">
-                    <input type="text" id="room-id-input" placeholder="Nhap hoac dan ma phong de vao ngay" maxlength="64">
-                    <button id="join-room-btn" class="hub-portal-action__icon" title="Vao ngay"><i class="bi bi-arrow-right"></i></button>
-                    <button id="spectate-room-btn" class="hub-portal-action__icon" title="Xem tran"><i class="bi bi-eye"></i></button>
-                </div>
-                <p class="quiz-status-note mb-0">Nhan Enter hoac dan ma phong de vao tran ngay.</p>
-                <div id="quiz-room-list" class="quiz-room-list"></div>
-                <p id="connection-status" class="quiz-status-note">Chua ket noi.</p>
-            </div>
-
-            <div id="quiz-container" class="quiz-shell" hidden>
-                <div class="quiz-room-tools">
-                    <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
-                    <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
-                    <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
-                </div>
-
-                <div class="quiz-hud">
-                    <div class="quiz-hud__item"><span>Phong</span><strong id="room-id-value">-</strong></div>
-                    <div class="quiz-hud__item"><span>Nguoi choi</span><strong id="player-count-value">0</strong></div>
-                    <div class="quiz-hud__item"><span>Nguoi xem</span><strong id="spectator-count-value">0</strong></div>
-                    <div class="quiz-hud__item"><span>Thoi gian</span><strong id="timer">15s</strong></div>
-                </div>
-
-                <div class="quiz-progress">
-                    <div class="quiz-progress__meta">
-                        <span id="question-index">Cau hoi 0/0</span>
-                        <span>Phim nhanh: 1-4, Enter</span>
-                    </div>
-                    <div class="quiz-progress__track">
-                        <div id="quiz-progress-fill" class="quiz-progress__fill"></div>
-                    </div>
-                </div>
-
-                <section class="quiz-question-card">
-                    <h2 id="question" class="quiz-question">Dang cho chu phong bat dau...</h2>
-                    <div id="options" class="quiz-options"></div>
-                    <div class="quiz-actions">
-                        <button id="submit-answer-btn" class="hub-portal-action hub-portal-action--primary">Gui dap an</button>
-                        <button id="start-game-btn" class="hub-portal-action">Bat dau tran</button>
-                    </div>
-                    <p id="question-feedback" class="quiz-status-note"></p>
-                </section>
+            <div class="quiz-progress__track">
+                <div id="quiz-progress-fill" class="quiz-progress__fill"></div>
             </div>
         </div>
 
-    </section>
-
-    <section class="cg-detail-strip" aria-label="Tong quan Quiz">
-        <article class="hub-portal-panel cg-detail-strip__card">
-            <span class="cg-detail-strip__eyebrow">Room flow</span>
-            <strong>Create / join / spectate</strong>
-            <p>Quiz dat lobby, spectate va room invite ngay tren cung mot be mat de giam thao tac truoc tran.</p>
-        </article>
-        <article class="hub-portal-panel cg-detail-strip__card">
-            <span class="cg-detail-strip__eyebrow">Scoring</span>
-            <strong>+2 dung, -1 sai</strong>
-            <p>He thong tinh diem theo tung cau va cap nhat BXH realtime de giong mot dau truong quiz nhip nhanh.</p>
-        </article>
-        <article class="hub-portal-panel cg-detail-strip__card">
-            <span class="cg-detail-strip__eyebrow">Access</span>
-            <strong>Player + spectator</strong>
-            <p>Trang nay duoc dong bo voi he storefront chung nhung van giu du mode choi va mode xem tran.</p>
-        </article>
-    </section>
-
-    <section class="hub-portal-layout">
-        <div class="hub-portal-main">
-            <section class="hub-portal-card">
-                <div class="hub-portal-card__head">
-                    <h2>Nhip gameplay Quiz</h2>
-                    <span class="hub-portal-tag">Gameplay</span>
-                </div>
-                <ul class="hub-portal-bullet-list">
-                    <li>Chu phong tao room, mo tran va chay bo cau hoi theo tung vong.</li>
-                    <li>Nguoi choi gui 1 dap an/cau, he thong cham diem +2/-1 ngay tren server.</li>
-                    <li>Bang xep hang cap nhat realtime sau tung cau hoi den khi tong ket tran.</li>
-                </ul>
-            </section>
-
-            <section class="hub-portal-card">
-                <div class="hub-portal-card__head">
-                    <h2>Thanh tuu Quiz</h2>
-                    <span class="hub-portal-tag">Achievement</span>
-                </div>
-                <ul class="hub-portal-bullet-list">
-                    <li>Tan thu tranh tai: hoan thanh room quiz dau tien.</li>
-                    <li>Toc do cao: tra loi dung 10 cau lien tiep.</li>
-                    <li>Dau truong ben bi: choi du 5 room lien tiep khong roi tran.</li>
-                    <li>So 1 BXH: dat top 1 voi ti le dung >=80%.</li>
-                </ul>
-            </section>
-
-            <section class="hub-portal-card">
-                <div class="hub-portal-card__head">
-                    <h2>Bang xep hang quiz</h2>
-                    <span class="hub-portal-tag">Diem cao</span>
-                </div>
-                <ol id="high-scores-list" class="hub-portal-bullet-list"></ol>
-            </section>
-        </div>
-
-        <aside class="hub-portal-side">
-            <section class="hub-portal-card">
-                <h3>Thao tac nhanh</h3>
-                <div class="hub-portal-side-actions">
-                    <a th:href="@{/games/quiz/rooms}" class="hub-portal-side-action">
-                        <i class="bi bi-globe2"></i>
-                        <div><strong>Mo sanh phong</strong><small>Xem danh sach room quiz va vao nhanh</small></div>
-                    </a>
-                    <a th:href="@{/games}" class="hub-portal-side-action">
-                        <i class="bi bi-grid"></i>
-                        <div><strong>Ve thu vien</strong><small>Mo lai directory game chinh</small></div>
-                    </a>
-                    <a th:href="@{/games/typing}" class="hub-portal-side-action">
-                        <i class="bi bi-keyboard-fill"></i>
-                        <div><strong>Qua Typing</strong><small>Chuyen sang mode dau toc do realtime</small></div>
-                    </a>
-                </div>
-            </section>
-
-            <section class="hub-portal-card">
-                <h3>Game lien quan</h3>
-                <div class="hub-portal-related-list">
-                    <a th:each="g : ${allGames}"
-                       th:if="${g.code != game.code}"
-                       th:href="@{/games/{code}(code=${g.code})}"
-                       class="hub-portal-related-item"
-                       th:attr="data-code=${g.code}">
-                        <i class="bi" th:classappend="${g.iconClass}"></i>
-                        <div>
-                            <strong th:text="${g.displayName}">Game</strong>
-                            <small th:text="${g.description}">Mo ta</small>
-                        </div>
-                    </a>
-                </div>
-            </section>
-        </aside>
-    </section>
+        <section class="quiz-question-card">
+            <h2 id="question" class="quiz-question">Dang cho chu phong bat dau...</h2>
+            <div id="options" class="quiz-options"></div>
+            <div class="quiz-actions">
+                <button id="submit-answer-btn" class="hub-portal-action hub-portal-action--primary">Gui dap an</button>
+                <button id="start-game-btn" class="hub-portal-action">Bat dau tran</button>
+            </div>
+            <p id="question-feedback" class="quiz-status-note"></p>
+        </section>
+    </div>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('games-quiz')}"></th:block>
@@ -275,48 +172,6 @@
 
     .quiz-room-stage {
         max-width: 1160px;
-    }
-
-    .quiz-energy-strip {
-        margin: 0.6rem 0 0.25rem;
-        display: grid;
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-        gap: 0.35rem;
-    }
-
-    .quiz-energy-strip span {
-        height: 5px;
-        border-radius: 999px;
-        background: linear-gradient(90deg, rgba(111, 208, 255, 0.9), rgba(255, 131, 214, 0.92));
-        box-shadow: 0 0 12px rgba(129, 216, 255, 0.35);
-        animation: quizPulse 1.4s ease-in-out infinite;
-    }
-
-    .quiz-energy-strip span:nth-child(2) { animation-delay: .1s; }
-    .quiz-energy-strip span:nth-child(3) { animation-delay: .2s; }
-    .quiz-energy-strip span:nth-child(4) { animation-delay: .3s; }
-    .quiz-energy-strip span:nth-child(5) { animation-delay: .4s; }
-    .quiz-energy-strip span:nth-child(6) { animation-delay: .5s; }
-
-    .game-rules {
-        margin: 0.55rem 0 0.8rem;
-        border: 1px solid rgba(180, 126, 255, 0.35);
-        border-radius: 10px;
-        background: linear-gradient(165deg, rgba(98, 42, 161, 0.3), rgba(52, 17, 113, 0.3));
-        padding: 0.55rem 0.7rem;
-    }
-
-    .game-rules summary {
-        cursor: pointer;
-        font-weight: 600;
-    }
-
-    .game-rules ul {
-        margin: 0.45rem 0 0;
-        padding-left: 1.1rem;
-        display: grid;
-        gap: 0.25rem;
-        font-size: 0.88rem;
     }
 
     .quiz-lobby-head {

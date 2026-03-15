@@ -21,8 +21,8 @@
                     <div><strong>Ket noi:</strong> <span id="blackjack-connection-status">Dang ket noi...</span></div>
                 </div>
                 <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-                    <a th:href="@{/games/blackjack/rooms}" class="btn btn-sm theme-outline-btn">Mo sanh phong</a>
-                    <a th:href="@{/games/cards/blackjack}" class="btn btn-sm theme-outline-btn">Ve lobby</a>
+                    <a th:href="@{/games/cards/blackjack}" class="btn btn-sm theme-outline-btn">Mo sanh phong</a>
+                    <a th:href="@{/games/cards}" class="btn btn-sm theme-outline-btn">Ve trang che do</a>
                 </div>
             </div>
         </div>
@@ -81,128 +81,87 @@
 </main>
 
 <main th:unless="${roomPage}" class="hub-portal-shell hub-portal-theme-blackjack">
-    <section class="hub-portal-hero hub-portal-hero--single">
-        <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
-        <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
-
-        <div class="hub-portal-hero__main">
-            <div class="hub-portal-eyebrow">
-                <i class="bi bi-suit-club-fill"></i>
-                <span>Blackjack / Phong choi</span>
+    <section class="card shadow-sm theme-box mb-3">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <div class="small text-muted">Blackjack / Lobby</div>
+                <h1 class="h3 theme-text mb-1">Blackjack realtime</h1>
+                <p class="small text-muted mb-2">Tao ban, dat cuoc va vao van ngay. Room ho tro choi, xem tran va dat lai nhanh.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="hub-portal-chip is-live"><i class="bi bi-cash-coin"></i> Dat cuoc moi van</span>
+                    <span class="hub-portal-chip"><i class="bi bi-star-fill"></i> Blackjack tu nhien 3:2</span>
+                    <span class="hub-portal-chip"><i class="bi bi-eye-fill"></i> Co che do nguoi xem</span>
+                </div>
             </div>
 
-            <h1 class="hub-portal-title">Blackjack phong choi thoi gian thuc</h1>
-            <p class="hub-portal-subtitle">
-                Dat cuoc, rut bai, dung bai va dau nha cai theo nhip nhanh.
-            </p>
-
-            <div class="hub-portal-chip-row">
-                <span class="hub-portal-chip is-live"><i class="bi bi-cash-coin"></i> Dat cuoc moi van</span>
-                <span class="hub-portal-chip"><i class="bi bi-star-fill"></i> Blackjack tu nhien 3:2</span>
-                <span class="hub-portal-chip"><i class="bi bi-arrow-repeat"></i> Dat lai nhanh</span>
-                <span class="hub-portal-chip"><i class="bi bi-eye-fill"></i> Ho tro nguoi xem</span>
+            <div class="d-flex flex-column align-items-md-end gap-2">
+                <div class="small text-md-end">
+                    <div><strong>Flow:</strong> create / join / spectate</div>
+                    <div><strong>Ket noi:</strong> <span id="blackjack-connection-status">Chua ket noi.</span></div>
+                </div>
+                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                    <a th:href="@{/games/cards}" class="btn btn-sm theme-outline-btn">Ve trang che do</a>
+                    <a th:href="@{/games}" class="btn btn-sm theme-outline-btn">Ve thu vien</a>
+                </div>
             </div>
+        </div>
+    </section>
 
-            <details class="game-rules">
-                <summary>Luat nhanh</summary>
-                <ul>
-                    <li>Nha cai rut den khi dat it nhat 17 diem.</li>
-                    <li>Blackjack tu nhien (2 la = 21) tra thuong 3:2.</li>
-                    <li>Gap doi chi dung khi con 2 la dau va du tien cuoc.</li>
-                    <li>Dat lai se su dung muc cuoc cua van truoc neu so du du.</li>
-                </ul>
-            </details>
+    <div id="room-selection" class="blackjack-room-panel">
+        <div class="blackjack-lobby-head">
+            <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">Tao phong va vao ngay</button>
+            <button id="random-room-btn" class="hub-portal-action">Vao nhanh random</button>
+            <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
+        </div>
+        <div class="hub-portal-action blackjack-join-row">
+            <input type="text" id="room-id-input" placeholder="Nhap hoac dan ma phong de vao ngay">
+            <button id="join-room-btn" class="hub-portal-action__icon" title="Vao ngay"><i class="bi bi-arrow-right"></i></button>
+            <button id="spectate-room-btn" class="hub-portal-action__icon" title="Xem tran"><i class="bi bi-eye"></i></button>
+        </div>
+        <p class="blackjack-note mb-0">Nhan Enter hoac dan ma phong de vao tran ngay.</p>
+        <div id="blackjack-room-list" class="blackjack-room-list"></div>
+    </div>
 
-            <div class="d-flex flex-wrap gap-2 mb-3">
-                <a th:href="@{/games/blackjack/rooms}" class="btn theme-outline-btn">Mo sanh phong</a>
-                <a th:href="@{/games/cards}" class="btn theme-outline-btn">Ve trang che do</a>
-            </div>
-
-            <div id="room-selection" class="blackjack-room-panel">
-                <div class="blackjack-lobby-head">
-                    <button id="create-room-btn" class="hub-portal-action hub-portal-action--primary">Tao phong va vao ngay</button>
-                    <button id="random-room-btn" class="hub-portal-action">Vao nhanh random</button>
-                    <button id="refresh-room-list-btn" class="hub-portal-action">Tai lai danh sach</button>
-                </div>
-                <div class="hub-portal-action blackjack-join-row">
-                    <input type="text" id="room-id-input" placeholder="Nhap hoac dan ma phong de vao ngay">
-                    <button id="join-room-btn" class="hub-portal-action__icon" title="Vao ngay"><i class="bi bi-arrow-right"></i></button>
-                    <button id="spectate-room-btn" class="hub-portal-action__icon" title="Xem tran"><i class="bi bi-eye"></i></button>
-                </div>
-                <p class="blackjack-note mb-0">Nhan Enter hoac dan ma phong de vao tran ngay.</p>
-                <div id="blackjack-room-list" class="blackjack-room-list"></div>
-                <p id="blackjack-connection-status" class="blackjack-note">Chua ket noi.</p>
-            </div>
-
-            <div id="game-board" class="blackjack-shell" hidden>
-                <div class="blackjack-room-tools">
-                    <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
-                    <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
-                    <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
-                </div>
-
-                <div class="blackjack-hud">
-                    <div class="blackjack-hud__item"><span>Phong</span><strong id="room-id-label">-</strong></div>
-                    <div class="blackjack-hud__item"><span>Trang thai</span><strong id="table-state-label">Dang cho</strong></div>
-                    <div class="blackjack-hud__item"><span>Luot hien tai</span><strong id="current-turn-label">-</strong></div>
-                    <div class="blackjack-hud__item"><span>So du cua ban</span><strong id="my-balance-label">-</strong></div>
-                    <div class="blackjack-hud__item"><span>Muc cuoc</span><strong id="my-bet-label">-</strong></div>
-                </div>
-
-                <section class="blackjack-table">
-                    <div id="dealer-panel" class="blackjack-hand-panel">
-                        <div class="blackjack-hand-title">Nha cai <span id="dealer-value-label"></span></div>
-                        <div id="dealer-cards" class="blackjack-cards"></div>
-                    </div>
-                    <div id="player-hands" class="blackjack-player-grid"></div>
-                </section>
-
-                <div id="controls" class="blackjack-controls">
-                    <div class="blackjack-bet-row">
-                        <label for="bet-amount" class="form-label">Tien cuoc</label>
-                        <input type="number" id="bet-amount" min="1" value="10" class="form-control">
-                        <button id="bet-btn" class="hub-portal-action hub-portal-action--primary">Dat cuoc</button>
-                        <button id="rebet-btn" class="hub-portal-action">Dat lai</button>
-                    </div>
-                    <div class="blackjack-action-row">
-                        <button id="hit-btn" class="hub-portal-action" disabled>Rut bai</button>
-                        <button id="stand-btn" class="hub-portal-action" disabled>Dung bai</button>
-                        <button id="double-btn" class="hub-portal-action" disabled>Gap doi</button>
-                        <button id="surrender-btn" class="hub-portal-action" disabled>Bo bai</button>
-                    </div>
-                </div>
-
-                <p id="blackjack-status-note" class="blackjack-note"></p>
-            </div>
-
-            <section class="blackjack-milestone-grid">
-                <article class="hub-portal-card">
-                    <div class="hub-portal-card__head">
-                        <h2>Nhip gameplay Blackjack</h2>
-                        <span class="hub-portal-tag">Gameplay</span>
-                    </div>
-                    <ul class="hub-portal-bullet-list">
-                        <li>Tao/join room, dat cuoc moi van va vao luot cung dealer.</li>
-                        <li>Round choi chay theo nhac hit/stand/double/surrender, cap nhat tay bai realtime.</li>
-                        <li>Ket van chia tien thang/thua, mo dat lai de vao van tiep theo ngay.</li>
-                    </ul>
-                </article>
-                <article class="hub-portal-card">
-                    <div class="hub-portal-card__head">
-                        <h2>Thanh tuu Blackjack</h2>
-                        <span class="hub-portal-tag">Achievement</span>
-                    </div>
-                    <ul class="hub-portal-bullet-list">
-                        <li>Dealer hunter: choi du van blackjack dau tien.</li>
-                        <li>Ban tay vang: dat blackjack tu nhien 3 van.</li>
-                        <li>Chuoi nong: thang lien tiep 5 van khong chay cuoc.</li>
-                        <li>Loi nhuan cao: chot van voi +200 tro len.</li>
-                    </ul>
-                </article>
-            </section>
+    <div id="game-board" class="blackjack-shell" hidden>
+        <div class="blackjack-room-tools">
+            <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
+            <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
+            <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
         </div>
 
-    </section>
+        <div class="blackjack-hud">
+            <div class="blackjack-hud__item"><span>Phong</span><strong id="room-id-label">-</strong></div>
+            <div class="blackjack-hud__item"><span>Trang thai</span><strong id="table-state-label">Dang cho</strong></div>
+            <div class="blackjack-hud__item"><span>Luot hien tai</span><strong id="current-turn-label">-</strong></div>
+            <div class="blackjack-hud__item"><span>So du cua ban</span><strong id="my-balance-label">-</strong></div>
+            <div class="blackjack-hud__item"><span>Muc cuoc</span><strong id="my-bet-label">-</strong></div>
+        </div>
+
+        <section class="blackjack-table">
+            <div id="dealer-panel" class="blackjack-hand-panel">
+                <div class="blackjack-hand-title">Nha cai <span id="dealer-value-label"></span></div>
+                <div id="dealer-cards" class="blackjack-cards"></div>
+            </div>
+            <div id="player-hands" class="blackjack-player-grid"></div>
+        </section>
+
+        <div id="controls" class="blackjack-controls">
+            <div class="blackjack-bet-row">
+                <label for="bet-amount" class="form-label">Tien cuoc</label>
+                <input type="number" id="bet-amount" min="1" value="10" class="form-control">
+                <button id="bet-btn" class="hub-portal-action hub-portal-action--primary">Dat cuoc</button>
+                <button id="rebet-btn" class="hub-portal-action">Dat lai</button>
+            </div>
+            <div class="blackjack-action-row">
+                <button id="hit-btn" class="hub-portal-action" disabled>Rut bai</button>
+                <button id="stand-btn" class="hub-portal-action" disabled>Dung bai</button>
+                <button id="double-btn" class="hub-portal-action" disabled>Gap doi</button>
+                <button id="surrender-btn" class="hub-portal-action" disabled>Bo bai</button>
+            </div>
+        </div>
+
+        <p id="blackjack-status-note" class="blackjack-note"></p>
+    </div>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('games-blackjack')}"></th:block>
@@ -215,34 +174,6 @@
 
     .blackjack-room-stage {
         max-width: 1160px;
-    }
-
-    .blackjack-milestone-grid {
-        margin-top: 1rem;
-        display: grid;
-        gap: 0.75rem;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    }
-
-    .game-rules {
-        margin: 0.55rem 0 0.8rem;
-        border: 1px solid rgba(255, 255, 255, 0.22);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.08);
-        padding: 0.55rem 0.7rem;
-    }
-
-    .game-rules summary {
-        cursor: pointer;
-        font-weight: 600;
-    }
-
-    .game-rules ul {
-        margin: 0.45rem 0 0;
-        padding-left: 1.1rem;
-        display: grid;
-        gap: 0.25rem;
-        font-size: 0.88rem;
     }
 
     .blackjack-lobby-head {

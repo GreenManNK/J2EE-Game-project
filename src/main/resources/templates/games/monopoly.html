@@ -5,121 +5,48 @@
 <div th:replace="~{fragments :: appShell('games-monopoly')}"></div>
 
 <main id="monopolyPage" class="hub-portal-shell hub-portal-theme-monopoly">
-  <section th:if="${roomPage != true and localPage != true}" class="hub-portal-hero">
-    <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
-    <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
-
-    <div class="hub-portal-hero__main">
-      <div class="hub-portal-eyebrow">
-        <i class="bi bi-bank"></i>
-        <span>CO TY PHU / SANH PHONG</span>
+  <section th:if="${roomPage != true and localPage != true}" class="card shadow-sm theme-box mb-3">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div>
+        <div class="small text-muted">Monopoly / Lobby</div>
+        <h1 class="h3 theme-text mb-1">
+          <span th:text="${game != null ? game.displayName : 'Co ty phu'}">Co ty phu</span>
+        </h1>
+        <p class="small text-muted mb-2">Sanh phong online va local page da tach rieng. Tao room, vao room dang mo hoac nhay sang local mode neu muon choi cung may.</p>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="hub-portal-chip is-live"><i class="bi bi-people-fill"></i> Room 2-4 nguoi</span>
+          <span class="hub-portal-chip"><i class="bi bi-house-add-fill"></i> Nha / hotel / the chap</span>
+          <span class="hub-portal-chip"><i class="bi bi-exclamation-diamond-fill"></i> Chance / Chest / Jail</span>
+        </div>
       </div>
 
-      <h1 class="hub-portal-title">
-        <span th:text="${game != null ? game.displayName : 'Co ty phu'}">Co ty phu</span>
-        voi sanh phong rieng va ban choi tach biet nhu cac game online khac
-      </h1>
-
-      <p class="hub-portal-subtitle">
-        Tao phong, moi nguoi choi vao sanh de chon token va bat dau van trong mot room rieng.
-        Neu muon choi cung may, local mode da duoc dua sang trang rieng de khong tron voi sanh online.
-      </p>
-
-      <div class="hub-portal-chip-row">
-        <span class="hub-portal-chip is-live"><i class="bi bi-check-circle-fill"></i> Sanh phong tach rieng</span>
-        <span class="hub-portal-chip"><i class="bi bi-people-fill"></i> Room 2-4 nguoi</span>
-        <span class="hub-portal-chip"><i class="bi bi-house-add-fill"></i> Nha + hotel + the chap</span>
-        <span class="hub-portal-chip"><i class="bi bi-exclamation-diamond-fill"></i> Chance / Community Chest / Jail</span>
-      </div>
-
-      <div class="hub-portal-action-grid">
-        <a href="#monopolyTable" class="hub-portal-action hub-portal-action--primary">
-          <span class="hub-portal-action__icon"><i class="bi bi-play-fill"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Mo sanh phong</strong>
-            <small>Tao room, vao room hoac tiep tuc ma phong co san</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:href="@{/games/monopoly/local}" class="hub-portal-action hub-portal-action--accent">
-          <span class="hub-portal-action__icon"><i class="bi bi-controller"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Choi local</strong>
-            <small>Mo trang local rieng khong dung sanh online</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a href="#monopolyRoadmap" class="hub-portal-action hub-portal-action--soft">
-          <span class="hub-portal-action__icon"><i class="bi bi-sign-turn-right-fill"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Buoc tiep theo</strong>
-            <small>Trade, save/load va bot la cac tang mo rong tiep</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:href="@{/games}" class="hub-portal-action hub-portal-action--soft">
-          <span class="hub-portal-action__icon"><i class="bi bi-grid"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Ve thu vien game</strong>
-            <small>Mo lai catalog va cac game khac trong hub</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
+      <div class="d-flex flex-column align-items-md-end gap-2">
+        <div class="small text-md-end">
+          <div><strong>Flow:</strong> lobby / room / local</div>
+          <div><strong>Board:</strong> 40 o / 8 nhom mau / 4 nha ga</div>
+        </div>
+        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+          <a href="#monopolyTable" class="btn btn-sm theme-outline-btn">Mo sanh phong</a>
+          <a th:href="@{/games/monopoly/local}" class="btn btn-sm theme-outline-btn">Choi local</a>
+          <a th:href="@{/games}" class="btn btn-sm theme-outline-btn">Ve thu vien</a>
+        </div>
       </div>
     </div>
-
-    <aside class="hub-portal-hero__side">
-      <section class="hub-portal-panel">
-        <div class="hub-portal-panel__head">
-          <div>
-            <div class="hub-portal-panel__label">Monopoly loop</div>
-            <div class="hub-portal-panel__title">40 o / 8 nhom mau / 4 nha ga</div>
-          </div>
-          <span class="hub-portal-pill">Dice + rent + economy</span>
-        </div>
-
-        <div class="hub-portal-preview">
-          <div class="hub-portal-preview-grid" aria-hidden="true">
-            <div class="hub-portal-preview-cell is-accent-a">GO</div>
-            <div class="hub-portal-preview-cell">BUY</div>
-            <div class="hub-portal-preview-cell is-accent-b">CHEST</div>
-            <div class="hub-portal-preview-cell">RENT</div>
-            <div class="hub-portal-preview-cell is-accent-a">RAIL</div>
-            <div class="hub-portal-preview-cell">UTIL</div>
-            <div class="hub-portal-preview-cell">TAX</div>
-            <div class="hub-portal-preview-cell is-accent-b">HOUSE</div>
-            <div class="hub-portal-preview-cell">CARD</div>
-            <div class="hub-portal-preview-cell is-accent-a">JAIL</div>
-            <div class="hub-portal-preview-cell">MORT</div>
-            <div class="hub-portal-preview-cell is-accent-b">WIN</div>
-          </div>
-        </div>
-
-        <div class="hub-portal-meta-list">
-          <div class="hub-portal-meta-item"><span>Session</span><strong>Room online hoac local tach rieng</strong></div>
-          <div class="hub-portal-meta-item"><span>Dieu khien</span><strong>Sanh phong, room, local page doc lap</strong></div>
-          <div class="hub-portal-meta-item"><span>Ket van</span><strong>1 nguoi con lai hoac chot bang xep hang</strong></div>
-        </div>
-      </section>
-    </aside>
   </section>
 
   <section id="monopolyTable" class="monopoly-surface">
     <div class="monopoly-surface__head">
       <div th:if="${roomPage == true}">
         <h2>Phong Co ty phu online</h2>
-        <p>Room <strong th:text="${defaultRoomId} ?: 'Dang ket noi'">Dang ket noi</strong> chi giu HUD, ban choi va thao tac tran.</p>
+        <p>Room <strong th:text="${defaultRoomId} ?: 'Dang ket noi'">Dang ket noi</strong> tap trung vao HUD, ban choi va thao tac trong van.</p>
       </div>
       <div th:if="${localPage == true}">
         <h2>Ban choi Co ty phu local</h2>
-        <p>Local mode da duoc dua sang trang rieng de khong tron voi sanh online.</p>
+        <p>Choi 2-4 nguoi tren cung thiet bi voi setup va bang xep hang tai cho.</p>
       </div>
       <div th:if="${roomPage != true and localPage != true}">
         <h2>Sanh phong Co ty phu</h2>
-        <p>Chon ten, tao room, vao room dang mo hoac mo local page rieng neu muon choi cung may.</p>
+        <p>Chon ten, tao room, vao room dang mo hoac sang local mode neu muon choi cung may.</p>
       </div>
       <div class="monopoly-surface__chips" th:if="${roomPage == true}">
         <span class="monopoly-mini-chip"><i class="bi bi-broadcast-pin"></i> Room route rieng</span>
@@ -388,107 +315,6 @@
     </div>
   </section>
 
-  <section th:if="${roomPage != true and localPage != true}" class="hub-portal-highlights">
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-signpost-split-fill"></i></div>
-      <div>
-        <h2>Ban co day du 40 o</h2>
-        <p>GO, Jail, Free Parking, nha ga, cong ty, Chance, Community Chest va 8 nhom mau duoc dat day du quanh ban.</p>
-      </div>
-    </article>
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-buildings-fill"></i></div>
-      <div>
-        <h2>Kinh te co can doi</h2>
-        <p>Nang cap nha/hotel theo nhom so huu, the chap de xoay von va pha san neu khong con cach can bang tien mat.</p>
-      </div>
-    </article>
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-card-list"></i></div>
-      <div>
-        <h2>Su kien lam xoay van</h2>
-        <p>The su kien co chuyen o, thu/chi tien, ra tu va sua chua tai san de vong choi bieu cam hon placeholder cu.</p>
-      </div>
-    </article>
-  </section>
-
-  <section th:if="${roomPage != true and localPage != true}" id="monopolyRules" class="hub-portal-layout">
-    <div class="hub-portal-main">
-      <section class="hub-portal-card">
-        <div class="hub-portal-card__head">
-          <h2>Luat nhanh tren ban nay</h2>
-          <span class="hub-portal-tag">Rules</span>
-        </div>
-        <ul class="hub-portal-bullet-list">
-          <li>Moi luot tung 2 xuc xac, di qua GO nhan 200$ va kich hoat o dang dung.</li>
-          <li>Dat trong co the mua ngay; dat cua doi thu tinh tien thue theo set so huu, nha va hotel.</li>
-          <li>So huu tron nhom mau mo khoa xay nha, sau do nang len hotel theo quy tac can bang cung nhom.</li>
-          <li>Neu can tien de tra no, nguoi choi co the ban nha theo nua gia va the chap tai san truoc khi tuyen bo pha san.</li>
-          <li>Van ket thuc khi chi con 1 nguoi chua pha san hoac khi bam chot van de xep hang theo gia tri rong.</li>
-        </ul>
-      </section>
-
-      <section class="hub-portal-card">
-        <div class="hub-portal-card__head">
-          <h2>Nhung gi da co trong engine</h2>
-          <span class="hub-portal-tag">Feature</span>
-        </div>
-        <div class="hub-portal-rule-grid">
-          <div class="hub-portal-rule-item"><strong>1.</strong><span>Setup 2-4 nguoi, tuy chon von khoi diem va vao van moi ngay tren trang.</span></div>
-          <div class="hub-portal-rule-item"><strong>2.</strong><span>Board render day du, token tung nguoi, free parking pot va selected tile detail.</span></div>
-          <div class="hub-portal-rule-item"><strong>3.</strong><span>Chance / Community Chest, Jail, utility, railroad, mortgage, buy/sell nha va hotel.</span></div>
-          <div class="hub-portal-rule-item"><strong>4.</strong><span>Bang xep hang net worth + log van dau cap nhat realtime khi choi local.</span></div>
-        </div>
-      </section>
-
-      <section id="monopolyRoadmap" class="hub-portal-card" th:if="${game != null and game.roadmapItems != null}">
-        <div class="hub-portal-card__head">
-          <h2>Buoc tiep theo</h2>
-          <span class="hub-portal-tag">Roadmap</span>
-        </div>
-        <ul class="hub-portal-bullet-list">
-          <li th:each="item : ${game.roadmapItems}" th:text="${item}">Muc tieu tiep theo</li>
-        </ul>
-      </section>
-    </div>
-
-    <aside class="hub-portal-side">
-      <section class="hub-portal-card">
-        <h3>Di nhanh</h3>
-        <div class="hub-portal-side-actions">
-          <a href="#monopolyTable" class="hub-portal-side-action">
-            <i class="bi bi-play-fill"></i>
-            <div><strong>Sanh phong</strong><small>Mo khu tao room va danh sach phong</small></div>
-          </a>
-          <a href="#monopolyRules" class="hub-portal-side-action">
-            <i class="bi bi-journal-text"></i>
-            <div><strong>Luat nhanh</strong><small>Doc cach van hanh cua ban nay</small></div>
-          </a>
-          <a th:href="@{/games}" class="hub-portal-side-action">
-            <i class="bi bi-grid"></i>
-            <div><strong>Thu vien game</strong><small>Mo lai catalog game hub</small></div>
-          </a>
-        </div>
-      </section>
-
-      <section class="hub-portal-card">
-        <h3>Game lien quan</h3>
-        <div class="hub-portal-related-list">
-          <a th:each="g : ${allGames}"
-             th:if="${g.code != game.code}"
-             th:href="@{/games/{code}(code=${g.code})}"
-             class="hub-portal-related-item"
-             th:attr="data-code=${g.code}">
-            <i class="bi" th:classappend="${g.iconClass}"></i>
-            <div>
-              <strong th:text="${g.displayName}">Game</strong>
-              <small th:text="${g.description}">Mo ta</small>
-            </div>
-          </a>
-        </div>
-      </section>
-    </aside>
-  </section>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('games-monopoly')}"></th:block>

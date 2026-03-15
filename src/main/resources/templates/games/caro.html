@@ -5,272 +5,78 @@
 <div th:replace="~{fragments :: appShell('games-caro')}"></div>
 
 <main class="hub-portal-shell hub-portal-theme-caro">
-  <section class="hub-portal-hero">
-    <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
-    <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
-
-    <div class="hub-portal-hero__main">
-      <div class="hub-portal-eyebrow">
-        <i class="bi bi-grid-3x3-gap-fill"></i>
-        <span>CARO / CHON CHE DO</span>
+  <section class="card shadow-sm theme-box mb-3">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div>
+        <div class="small text-muted">Caro / Chon che do</div>
+        <h1 class="h3 theme-text mb-1">
+          <span th:text="${game != null ? game.displayName : 'Caro'}">Caro</span>
+        </h1>
+        <p class="small text-muted mb-2">Vao room online, random join, bot hoac local 2 nguoi ma khong qua them man hinh gioi thieu.</p>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="hub-portal-chip is-live" th:if="${game != null and game.availableNow}"><i class="bi bi-broadcast"></i> San sang</span>
+          <span class="hub-portal-chip" th:if="${game != null and game.supportsOnline}"><i class="bi bi-wifi"></i> Room online</span>
+          <span class="hub-portal-chip" th:if="${game != null and game.supportsOffline}"><i class="bi bi-display"></i> Bot + local</span>
+          <span class="hub-portal-chip" th:if="${game != null and game.supportsGuest}"><i class="bi bi-person-check"></i> Guest duoc choi</span>
+        </div>
       </div>
-
-      <h1 class="hub-portal-title">
-        <span th:text="${game != null ? game.displayName : 'Caro'}">Caro</span>
-        online, bot va local trong mot entry flow thong nhat
-      </h1>
-
-      <p class="hub-portal-subtitle">
-        Trang Caro duoc dua ve cung he voi cac game khac: hero ro CTA, preview ban co,
-        thong tin mode va lane thao tac nhanh de vao tran chi sau vai nhap.
-      </p>
-
-      <div class="hub-portal-chip-row">
-        <span class="hub-portal-chip is-live" th:if="${game != null and game.availableNow}">
-          <i class="bi bi-broadcast"></i> San sang
-        </span>
-        <span class="hub-portal-chip" th:if="${game != null and game.supportsOnline}">
-          <i class="bi bi-wifi"></i> Phong truc tuyen
-        </span>
-        <span class="hub-portal-chip" th:if="${game != null and game.supportsOffline}">
-          <i class="bi bi-display"></i> Cung may
-        </span>
-        <span class="hub-portal-chip" th:if="${game != null and game.supportsGuest}">
-          <i class="bi bi-person-check"></i> Guest duoc choi
-        </span>
-      </div>
-
-      <div class="hub-portal-action-grid">
-        <a th:href="@{/games/caro/rooms}" class="hub-portal-action hub-portal-action--primary">
-          <span class="hub-portal-action__icon"><i class="bi bi-globe2"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Mo sanh phong</strong>
-            <small>Tao phong, moi ban va vao match realtime</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <button type="button"
-                class="hub-portal-action hub-portal-action--accent js-quick-random-room"
-                data-game="caro">
-          <span class="hub-portal-action__icon"><i class="bi bi-shuffle"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Vao nhanh random</strong>
-            <small>Tu dong vao phong cho phu hop hoac tao phong moi</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </button>
-
-        <a th:href="@{/game-mode/bot(game='caro')}" class="hub-portal-action hub-portal-action--accent">
-          <span class="hub-portal-action__icon"><i class="bi bi-cpu-fill"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Choi voi bot</strong>
-            <small>Chon do kho Easy/Hard va luyen tap nhanh</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:href="@{/game/offline}" class="hub-portal-action hub-portal-action--soft">
-          <span class="hub-portal-action__icon"><i class="bi bi-people-fill"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Cung may 2 nguoi</strong>
-            <small>Choi chung tren cung thiet bi, khong can room</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:href="@{/games/caro/rooms}" class="hub-portal-action hub-portal-action--soft">
-          <span class="hub-portal-action__icon"><i class="bi bi-door-open-fill"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Ve sanh Caro</strong>
-            <small>Mo luong sanh nhanh de quan ly phong choi</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
+      <div class="small text-md-end">
+        <div><strong>Recommended:</strong> Online 1v1</div>
+        <div><strong>Access:</strong> Guest + account</div>
+        <div><strong>Session:</strong> Room / bot / local</div>
       </div>
     </div>
-
-    <aside class="hub-portal-hero__side">
-      <section class="hub-portal-panel">
-        <div class="hub-portal-panel__head">
-          <div>
-            <div class="hub-portal-panel__label">Preview gameplay</div>
-            <div class="hub-portal-panel__title">Ban co Caro 10x10</div>
-          </div>
-          <span class="hub-portal-pill">1v1 realtime</span>
-        </div>
-
-        <div class="hub-portal-preview hub-portal-preview--board">
-          <div class="hub-portal-board-preview" aria-hidden="true">
-            <div class="hub-portal-board-stone hub-portal-board-stone--x" style="--x:1; --y:1;">X</div>
-            <div class="hub-portal-board-stone hub-portal-board-stone--o" style="--x:2; --y:2;">O</div>
-            <div class="hub-portal-board-stone hub-portal-board-stone--x" style="--x:3; --y:3;">X</div>
-            <div class="hub-portal-board-stone hub-portal-board-stone--o" style="--x:4; --y:3;">O</div>
-            <div class="hub-portal-board-stone hub-portal-board-stone--x" style="--x:4; --y:4;">X</div>
-            <div class="hub-portal-board-stone hub-portal-board-stone--o" style="--x:5; --y:4;">O</div>
-            <div class="hub-portal-board-stone hub-portal-board-stone--x is-glow" style="--x:5; --y:5;">X</div>
-            <div class="hub-portal-board-stone hub-portal-board-stone--o" style="--x:6; --y:5;">O</div>
-            <div class="hub-portal-board-stone hub-portal-board-stone--x" style="--x:6; --y:6;">X</div>
-            <div class="hub-portal-board-stone hub-portal-board-stone--o" style="--x:7; --y:6;">O</div>
-            <div class="hub-portal-board-stone hub-portal-board-stone--x" style="--x:7; --y:7;">X</div>
-          </div>
-        </div>
-
-        <div class="hub-portal-meta-list">
-          <div class="hub-portal-meta-item"><span>Recommended</span><strong>Online 1v1</strong></div>
-          <div class="hub-portal-meta-item"><span>Access</span><strong>Guest + account</strong></div>
-          <div class="hub-portal-meta-item"><span>Tempo</span><strong>3-10 phut / tran</strong></div>
-        </div>
-      </section>
-
-      <section class="hub-portal-panel">
-        <div class="hub-portal-panel__head">
-          <div>
-            <div class="hub-portal-panel__label">Quick read</div>
-            <div class="hub-portal-panel__title">Flow vao tran</div>
-          </div>
-          <span class="hub-portal-pill">Mode-first</span>
-        </div>
-        <ol class="hub-portal-inline-list">
-          <li><span>1. Chon mode</span><strong>Online / Bot / Local</strong></li>
-          <li><span>2. Vao room</span><strong>Random hoac room rieng</strong></li>
-          <li><span>3. Bat dau</span><strong>X/O luan phien</strong></li>
-          <li><span>4. Tong ket</span><strong>Rematch ngay</strong></li>
-        </ol>
-      </section>
-    </aside>
   </section>
 
-  <section class="hub-portal-highlights">
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-lightning-charge-fill"></i></div>
-      <div>
-        <h2>Entry flow ngan hon</h2>
-        <p>CTA vao random room, sanh phong va bot duoc dat cung mot hang de vao tran nhanh.</p>
-      </div>
-    </article>
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-controller"></i></div>
-      <div>
-        <h2>Dong bo voi catalog</h2>
-        <p>Trang mode Caro dung cung visual language voi Chess, Xiangqi, Cards va detail page khac.</p>
-      </div>
-    </article>
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-chat-dots-fill"></i></div>
-      <div>
-        <h2>Hop cho online va local</h2>
-        <p>Nguoi choi co the doi nhanh giua room online, bot va local 2 nguoi ma khong lac luong.</p>
-      </div>
-    </article>
-  </section>
+  <section class="hub-portal-card">
+    <div class="hub-portal-action-grid">
+      <a th:href="@{/games/caro/rooms}" class="hub-portal-action hub-portal-action--primary">
+        <span class="hub-portal-action__icon"><i class="bi bi-globe2"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Mo sanh phong</strong>
+          <small>Tao phong, moi ban va vao match realtime</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
 
-  <section class="cg-detail-strip" aria-label="Tong quan Caro">
-    <article class="hub-portal-panel cg-detail-strip__card">
-      <span class="cg-detail-strip__eyebrow">Core loop</span>
-      <strong>Join room -> play -> rematch</strong>
-      <p>Khung vao tran, choi va tai dau duoc gom lai de phu hop nhip game board nhanh.</p>
-    </article>
-    <article class="hub-portal-panel cg-detail-strip__card">
-      <span class="cg-detail-strip__eyebrow">Session type</span>
-      <strong>Online + bot + local</strong>
-      <p>Mot trang mode phuc vu ca nguoi choi solo, duo local va match online.</p>
-    </article>
-    <article class="hub-portal-panel cg-detail-strip__card">
-      <span class="cg-detail-strip__eyebrow">Access</span>
-      <strong>Guest + account</strong>
-      <p>Khach van co the vao choi nhanh, trong khi tai khoan co them lich su va profile.</p>
-    </article>
-  </section>
+      <button type="button"
+              class="hub-portal-action hub-portal-action--accent js-quick-random-room"
+              data-game="caro">
+        <span class="hub-portal-action__icon"><i class="bi bi-shuffle"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Vao nhanh random</strong>
+          <small>Tu dong vao phong cho phu hop hoac tao phong moi</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </button>
 
-  <section class="hub-portal-layout">
-    <div class="hub-portal-main">
-      <section class="hub-portal-card">
-        <div class="hub-portal-card__head">
-          <h2>Cac che do choi Caro</h2>
-          <span class="hub-portal-tag">Mode</span>
-        </div>
-        <div class="hub-portal-rule-grid">
-          <div class="hub-portal-rule-item"><strong>1.</strong><span>Mo sanh phong de tao room, moi ban va quan ly tran online.</span></div>
-          <div class="hub-portal-rule-item"><strong>2.</strong><span>Vao nhanh random de nhay vao room cho phu hop trong it thao tac nhat.</span></div>
-          <div class="hub-portal-rule-item"><strong>3.</strong><span>Chon bot Easy/Hard khi can luyen tap nuoc di va phan ung nhanh.</span></div>
-          <div class="hub-portal-rule-item"><strong>4.</strong><span>Choi local 2 nguoi tren cung may khi muon bat dau ngay lap tuc.</span></div>
-        </div>
-      </section>
+      <a th:href="@{/game-mode/bot(game='caro')}" class="hub-portal-action hub-portal-action--accent">
+        <span class="hub-portal-action__icon"><i class="bi bi-cpu-fill"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Choi voi bot</strong>
+          <small>Chon do kho Easy/Hard va luyen tap nhanh</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
 
-      <section class="hub-portal-card">
-        <div class="hub-portal-card__head">
-          <h2>Nhip gameplay Caro</h2>
-          <span class="hub-portal-tag">Gameplay</span>
-        </div>
-        <ul class="hub-portal-bullet-list">
-          <li>Online: vao room, cho du nguoi va bat dau theo luot X/O voi dong bo realtime.</li>
-          <li>Bot/local: vao board ngay, luu nhip choi ngan gon de phu hop quick session.</li>
-          <li>Chat, bo cuoc va rematch duoc dat sat nhau de giu nhiet do cua tran.</li>
-          <li>Ket tran cap nhat ngay va mo lua chon vao van moi ma khong doi huong long vong.</li>
-        </ul>
-      </section>
+      <a th:href="@{/game/offline}" class="hub-portal-action hub-portal-action--soft">
+        <span class="hub-portal-action__icon"><i class="bi bi-people-fill"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Cung may 2 nguoi</strong>
+          <small>Choi chung tren cung thiet bi, khong can room</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
 
-      <section class="hub-portal-card">
-        <div class="hub-portal-card__head">
-          <h2>Thanh tuu Caro</h2>
-          <span class="hub-portal-tag">Achievement</span>
-        </div>
-        <ul class="hub-portal-bullet-list">
-          <li>Khoi dong nong may: hoan thanh tran online dau tien.</li>
-          <li>Bam nhip tot: thang 3 tran lien tiep trong room.</li>
-          <li>Nuoc di quyet doan: ha doi thu trong 20 nuoc tro xuong.</li>
-          <li>Ong vua sanh Caro: thang 10 tran voi 3 doi thu khac nhau.</li>
-        </ul>
-      </section>
-
-      <section class="hub-portal-card" th:if="${game != null and game.roadmapItems != null}">
-        <div class="hub-portal-card__head">
-          <h2>Tien trinh cap nhat Caro</h2>
-          <span class="hub-portal-tag">Roadmap</span>
-        </div>
-        <ul class="hub-portal-bullet-list">
-          <li th:each="item : ${game.roadmapItems}" th:text="${item}">Muc tieu tiep theo</li>
-        </ul>
-      </section>
+      <a th:href="@{/games}" class="hub-portal-action hub-portal-action--soft">
+        <span class="hub-portal-action__icon"><i class="bi bi-grid"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Ve thu vien</strong>
+          <small>Quay lai catalog de doi game hoac mode</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
     </div>
-
-    <aside class="hub-portal-side">
-      <section class="hub-portal-card">
-        <h3>Vao che do nhanh</h3>
-        <div class="hub-portal-side-actions">
-          <a th:href="@{/games/caro/rooms}" class="hub-portal-side-action">
-            <i class="bi bi-globe2"></i>
-            <div><strong>Mo sanh phong</strong><small>Tao room, moi ban va vao tran realtime</small></div>
-          </a>
-          <a th:href="@{/game-mode/bot(game='caro')}" class="hub-portal-side-action">
-            <i class="bi bi-cpu"></i>
-            <div><strong>Chon bot</strong><small>Tap luyen voi 2 muc do kho</small></div>
-          </a>
-          <a th:href="@{/game/offline}" class="hub-portal-side-action">
-            <i class="bi bi-grid"></i>
-            <div><strong>Cung may 2 nguoi</strong><small>Choi nhanh local tren cung may</small></div>
-          </a>
-        </div>
-      </section>
-
-      <section class="hub-portal-card">
-        <h3>Game lien quan</h3>
-        <div class="hub-portal-related-list">
-          <a th:each="g : ${allGames}"
-             th:if="${g.code != game.code}"
-             th:href="@{/games/{code}(code=${g.code})}"
-             class="hub-portal-related-item"
-             th:attr="data-code=${g.code}">
-            <i class="bi" th:classappend="${g.iconClass}"></i>
-            <div>
-              <strong th:text="${g.displayName}">Game</strong>
-              <small th:text="${g.description}">Mo ta</small>
-            </div>
-          </a>
-        </div>
-      </section>
-    </aside>
   </section>
 </main>
 

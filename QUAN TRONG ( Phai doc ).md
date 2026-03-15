@@ -47,6 +47,7 @@ He thong khong chi la mot game don le. Day la mot hub co 3 lop:
 - Shell chung, storefront va play surface da duoc refresh lai theo mot he palette/thiet ke thong nhat.
 - Branding `Game Hub` da duoc dong bo lai giua topbar, sidebar, favicon web va icon PWA/app.
 - Cac room page/lobby page uu tien dung chung he `shared UI` thay vi style roi rac tung man hinh.
+- Cac page mode/lobby/catalog da duoc rut gon tiep: uu tien summary card + action grid, loai bo cac khoi gioi thieu lap lai khong can thiet.
 - Theme light/dark dong bo giua shell va cac trang.
 - Ho tro chuyen doi ngon ngu `vi/en`.
 - PWA install flow va onboarding UI.
@@ -353,6 +354,7 @@ Neu ban moi vao du an, thu tu doc/soi code nen la:
 - Monopoly da co 3 mode route (`lobby/local/room`), nen khi sua UI/logic phai check dung mode dang boot.
 - Test websocket `Blackjack` da duoc co dinh deck trong test de tranh flaky do random shuffle; neu sua luong chia bai thi cap nhat ca test deck.
 - Neu sua UI toan app, uu tien check 4 diem goc: `templates/fragments.html`, `static/css/cg-market.css`, `static/css/unified-app.css`, `static/css/play-surfaces.css`.
+- Neu sua page mode/lobby, uu tien giu bo cuc ngan: 1 summary card + cum action vao tran; tranh them lai highlight/intro strip neu khong phuc vu thao tac.
 - Neu sua logo/icon, check them `static/images/brand`, `static/icons`, `static/manifest.webmanifest` va `static/service-worker.js` de dong bo web icon + PWA cache.
 - External module registry co the override game native neu manifest bat `overrideExisting`.
 - Full suite hien tai dang o muc `253` test pass.
@@ -402,6 +404,7 @@ Neu ban moi vao du an, thu tu doc/soi code nen la:
   - dong bo brand `Game Hub` giua logo web, favicon va bo icon app/PWA
   - tach dut diem sanh phong va room page rieng cho `Typing`, `Quiz`, `Blackjack`, `Tien Len`, `Monopoly`
   - tach `Monopoly` thanh 3 route ro rang: lobby, local, room
+  - rut gon them cac page mode/lobby cua `Caro`, `Chess`, `Xiangqi`, `Cards`, `Minesweeper`, `Tien Len` va bo meta-strip du tren catalog/puzzle hub
   - nang full suite len `253` test pass sau khi bo sung test route/page mode moi
   - verify them ket noi online tren app that cho `Caro`, `Chess`, `Xiangqi`, `Tien Len`, `Typing`, `Quiz`, `Blackjack`, `Monopoly`
   - smoke test da cover HTTP room pages, create-room API, room API va ca 2 stack `SockJS/STOMP` + `Raw WebSocket`

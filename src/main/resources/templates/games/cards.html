@@ -5,235 +5,77 @@
 <div th:replace="~{fragments :: appShell('games-cards')}"></div>
 
 <main class="hub-portal-shell hub-portal-theme-cards">
-  <section class="hub-portal-hero">
-    <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
-    <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
-
-    <div class="hub-portal-hero__main">
-      <div class="hub-portal-eyebrow">
-        <i class="bi bi-suit-spade-fill"></i>
-        <span>DANH BAI / TIEN LEN MIEN NAM</span>
+  <section class="card shadow-sm theme-box mb-3">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div>
+        <div class="small text-muted">Cards / Tien Len + Blackjack</div>
+        <h1 class="h3 theme-text mb-1">
+          <span th:text="${game != null ? game.displayName : 'Danh bai'}">Danh bai</span>
+        </h1>
+        <p class="small text-muted mb-2">Chon nhanh Tien Len online, room bot rieng hoac nhay sang Blackjack ma khong qua cac khoi gioi thieu dai.</p>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="hub-portal-chip is-live"><i class="bi bi-people-fill"></i> Tien Len 4 nguoi</span>
+          <span class="hub-portal-chip"><i class="bi bi-cpu-fill"></i> Bot tap luyen</span>
+          <span class="hub-portal-chip"><i class="bi bi-suit-club-fill"></i> Blackjack realtime</span>
+        </div>
       </div>
-
-      <h1 class="hub-portal-title">
-        <span th:text="${game != null ? game.displayName : 'Danh bai'}">Danh bai</span>
-        Tien Len Mien Nam truc tuyen va dau voi bot
-      </h1>
-
-      <p class="hub-portal-subtitle">
-        Vao ban TLMN nhanh: truc tuyen 4 nguoi hoac dau voi bot tap luyen.
-      </p>
-
-      <div class="hub-portal-chip-row">
-        <span class="hub-portal-chip is-live"><i class="bi bi-broadcast"></i> Loi choi TLMN nang cao</span>
-        <span class="hub-portal-chip"><i class="bi bi-people-fill"></i> Truc tuyen 4 nguoi</span>
-        <span class="hub-portal-chip"><i class="bi bi-cpu-fill"></i> Bot muc de / muc kho</span>
-        <span class="hub-portal-chip"><i class="bi bi-chat-dots-fill"></i> Tin nhan / diem / phat</span>
-      </div>
-
-      <div class="hub-portal-action-grid">
-        <a th:href="@{/games/cards/rooms}" class="hub-portal-action hub-portal-action--primary">
-          <span class="hub-portal-action__icon"><i class="bi bi-globe2"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Mo sanh phong</strong>
-            <small>Tao / tim phong 4 nguoi</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <button type="button"
-                class="hub-portal-action hub-portal-action--accent js-quick-random-room"
-                data-game="cards">
-          <span class="hub-portal-action__icon"><i class="bi bi-shuffle"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Vao nhanh random</strong>
-            <small>Tu dong vao phong cho hoac tao phong moi</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </button>
-
-        <a th:href="@{/games/cards/rooms}" class="hub-portal-action hub-portal-action--accent">
-          <span class="hub-portal-action__icon"><i class="bi bi-broadcast-pin"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Mo ban truc tuyen</strong>
-            <small>Nhap ma phong hoac doi bat dau trong phong</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:href="@{/game-mode/bot(game='cards')}" class="hub-portal-action hub-portal-action--soft">
-          <span class="hub-portal-action__icon"><i class="bi bi-cpu"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Chon bot</strong>
-            <small>De / Kho tren cung thiet bi</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:href="@{/games/blackjack/rooms}" class="hub-portal-action hub-portal-action--primary">
-            <span class="hub-portal-action__icon"><i class="bi bi-suit-club-fill"></i></span>
-            <span class="hub-portal-action__text">
-                <strong>Mo Blackjack</strong>
-                <small>Dat cuoc va dau voi nha cai theo luat blackjack</small>
-            </span>
-            <i class="bi bi-arrow-right"></i>
-        </a>
+      <div class="small text-md-end">
+        <div><strong>Room route:</strong> /cards/tien-len/rooms</div>
+        <div><strong>Mode:</strong> Online / bot / spectate</div>
+        <div><strong>Flow:</strong> lobby tach rieng cho tung game</div>
       </div>
     </div>
-
-    <aside class="hub-portal-hero__side">
-      <section class="hub-portal-panel">
-        <div class="hub-portal-panel__head">
-          <div>
-            <div class="hub-portal-panel__label">Xem nhanh van bai</div>
-            <div class="hub-portal-panel__title">Toan canh van TLMN</div>
-          </div>
-          <span class="hub-portal-pill">Diem + phat</span>
-        </div>
-
-        <div class="hub-portal-preview">
-          <div class="hub-portal-preview-grid" aria-hidden="true">
-            <div class="hub-portal-preview-cell is-accent-a">A</div>
-            <div class="hub-portal-preview-cell">2</div>
-            <div class="hub-portal-preview-cell is-accent-b">K</div>
-            <div class="hub-portal-preview-cell">Q</div>
-            <div class="hub-portal-preview-cell is-accent-a">J</div>
-            <div class="hub-portal-preview-cell">10</div>
-            <div class="hub-portal-preview-cell">TT</div>
-            <div class="hub-portal-preview-cell is-accent-b">4DT</div>
-            <div class="hub-portal-preview-cell">+5</div>
-            <div class="hub-portal-preview-cell is-accent-a">CONG</div>
-            <div class="hub-portal-preview-cell">CHAT</div>
-            <div class="hub-portal-preview-cell is-accent-b">WIN</div>
-          </div>
-        </div>
-
-        <div class="hub-portal-meta-list">
-          <div class="hub-portal-meta-item"><span>Luat</span><strong>Tien Len Mien Nam</strong></div>
-          <div class="hub-portal-meta-item"><span>Truc tuyen</span><strong>4 nguoi / phong</strong></div>
-          <div class="hub-portal-meta-item"><span>Tong ket</span><strong>Diem + phat theo van</strong></div>
-        </div>
-      </section>
-
-    </aside>
   </section>
 
-  <section class="hub-portal-highlights">
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-trophy-fill"></i></div>
-      <div>
-        <h2>TLMN toi trang</h2>
-        <p>Toi trang va ket qua van da hoan chinh.</p>
-      </div>
-    </article>
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-calculator-fill"></i></div>
-      <div>
-        <h2>Diem va phat theo van</h2>
-        <p>Diem va muc phat cap nhat theo vong.</p>
-      </div>
-    </article>
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-broadcast-pin"></i></div>
-      <div>
-        <h2>Dong bo giua truc tuyen va bot</h2>
-        <p>Luat va HUD thong nhat giua cac mode.</p>
-      </div>
-    </article>
-  </section>
+  <section class="hub-portal-card">
+    <div class="hub-portal-action-grid">
+      <a th:href="@{/cards/tien-len/rooms}" class="hub-portal-action hub-portal-action--primary">
+        <span class="hub-portal-action__icon"><i class="bi bi-globe2"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Mo sanh Tien Len</strong>
+          <small>Tao / tim phong 4 nguoi va vao tran ngay</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
 
-  <section class="hub-portal-layout">
-    <div class="hub-portal-main">
-      <section class="hub-portal-card">
-        <div class="hub-portal-card__head">
-          <h2>Cac che do Tien Len</h2>
-          <span class="hub-portal-tag">Che do</span>
-        </div>
-        <div class="hub-portal-rule-grid">
-          <div class="hub-portal-rule-item"><strong>1.</strong><span>Mo sanh phong: tao/tim phong 4 nguoi.</span></div>
-          <div class="hub-portal-rule-item"><strong>2.</strong><span>Mo ban truc tuyen truc tiep theo ma phong.</span></div>
-          <div class="hub-portal-rule-item"><strong>3.</strong><span>Chon bot: muc de / muc kho de luyen tap.</span></div>
-          <div class="hub-portal-rule-item"><strong>4.</strong><span>Blackjack: vao ban dat cuoc va xem phong.</span></div>
-        </div>
-      </section>
+      <button type="button"
+              class="hub-portal-action hub-portal-action--accent js-quick-random-room"
+              data-game="cards">
+        <span class="hub-portal-action__icon"><i class="bi bi-shuffle"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Vao nhanh random</strong>
+          <small>Tu dong vao phong Tien Len dang cho</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </button>
 
-      <section class="hub-portal-card">
-        <div class="hub-portal-card__head">
-          <h2>Nhip gameplay TLMN + Blackjack</h2>
-          <span class="hub-portal-tag">Gameplay</span>
-        </div>
-        <ul class="hub-portal-bullet-list">
-          <li>TLMN online vao tran theo room 4 nguoi, chia bai va chay vong theo luot.</li>
-          <li>Bo bai hop le duoc kiem tra theo luat; he thong tu dong reset vong khi can.</li>
-          <li>Cuoi van cap nhat diem, phat va delta tung nguoi de vao van moi ngay.</li>
-          <li>Blackjack trong cards hub co nhip rieng: dat cuoc -> hit/stand/double -> chia tien.</li>
-        </ul>
-      </section>
+      <a th:href="@{/game-mode/bot(game='cards')}" class="hub-portal-action hub-portal-action--soft">
+        <span class="hub-portal-action__icon"><i class="bi bi-cpu"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Chon bot</strong>
+          <small>De / Kho tren cung thiet bi</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
 
-      <section class="hub-portal-card">
-        <div class="hub-portal-card__head">
-          <h2>Thanh tuu danh bai</h2>
-          <span class="hub-portal-tag">Achievement</span>
-        </div>
-        <ul class="hub-portal-bullet-list">
-          <li>Mo man TLMN: choi du tran online dau tien.</li>
-          <li>Day dai phong choi: ve nhat 3 van lien tiep.</li>
-          <li>Bung no diem so: dat moc +100 diem tong trong ngay.</li>
-          <li>Blackjack master: dat blackjack tu nhien 3 van.</li>
-        </ul>
-      </section>
+      <a th:href="@{/games/cards/blackjack}" class="hub-portal-action hub-portal-action--primary">
+        <span class="hub-portal-action__icon"><i class="bi bi-suit-club-fill"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Mo Blackjack</strong>
+          <small>Dat cuoc va dau voi nha cai theo luat blackjack</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
 
-      <section class="hub-portal-card" th:if="${game != null and game.roadmapItems != null}">
-        <div class="hub-portal-card__head">
-          <h2>Huong phat trien</h2>
-          <span class="hub-portal-tag">Ke hoach</span>
-        </div>
-        <ul class="hub-portal-bullet-list">
-          <li th:each="item : ${game.roadmapItems}" th:text="${item}">Muc tieu tiep theo</li>
-        </ul>
-      </section>
+      <a th:href="@{/games}" class="hub-portal-action hub-portal-action--soft">
+        <span class="hub-portal-action__icon"><i class="bi bi-grid"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Ve thu vien</strong>
+          <small>Quay lai catalog de doi game hoac mode</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
     </div>
-
-    <aside class="hub-portal-side">
-      <section class="hub-portal-card">
-        <h3>Vao che do nhanh</h3>
-        <div class="hub-portal-side-actions">
-          <a th:href="@{/games/cards/rooms}" class="hub-portal-side-action">
-            <i class="bi bi-globe2"></i>
-            <div><strong>Mo sanh phong</strong><small>Phong Tien Len 4 nguoi</small></div>
-          </a>
-          <a th:href="@{/games/cards/rooms}" class="hub-portal-side-action">
-            <i class="bi bi-broadcast-pin"></i>
-            <div><strong>Mo ban truc tuyen</strong><small>Vao phong truc tiep</small></div>
-          </a>
-          <a th:href="@{/game-mode/bot(game='cards')}" class="hub-portal-side-action">
-            <i class="bi bi-cpu"></i>
-            <div><strong>Chon bot</strong><small>De / Kho</small></div>
-          </a>
-          <a th:href="@{/games/blackjack/rooms}" class="hub-portal-side-action">
-            <i class="bi bi-suit-club-fill"></i>
-            <div><strong>Mo Blackjack</strong><small>Dat cuoc va theo doi van</small></div>
-          </a>
-        </div>
-      </section>
-
-      <section class="hub-portal-card">
-        <h3>Game lien quan</h3>
-        <div class="hub-portal-related-list">
-          <a th:each="g : ${allGames}"
-             th:if="${g.code != game.code}"
-             th:href="@{/games/{code}(code=${g.code})}"
-             class="hub-portal-related-item"
-             th:attr="data-code=${g.code}">
-            <i class="bi" th:classappend="${g.iconClass}"></i>
-            <div>
-              <strong th:text="${g.displayName}">Game</strong>
-              <small th:text="${g.description}">Mo ta</small>
-            </div>
-          </a>
-        </div>
-      </section>
-    </aside>
   </section>
 </main>
 

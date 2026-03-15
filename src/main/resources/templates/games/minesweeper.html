@@ -5,220 +5,67 @@
 <div th:replace="~{fragments :: appShell('games-minesweeper')}"></div>
 
 <main class="hub-portal-shell hub-portal-theme-minesweeper">
-  <section class="hub-portal-hero">
-    <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
-    <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
-
-    <div class="hub-portal-hero__main">
-      <div class="hub-portal-eyebrow">
-        <i class="bi bi-asterisk"></i>
-        <span>DO MIN / CO DIEN</span>
+  <section class="card shadow-sm theme-box mb-3">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div>
+        <div class="small text-muted">Do min / Chon muc do</div>
+        <h1 class="h3 theme-text mb-1">
+          <span th:text="${game != null ? game.displayName : 'Minesweeper'}">Minesweeper</span>
+        </h1>
+        <p class="small text-muted mb-2">Chon muc do va vao ban ngay. Trang mode nay giu lai action chinh thay vi cac khoi mo ta dai.</p>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="hub-portal-chip is-live"><i class="bi bi-check-circle-fill"></i> Offline san sang</span>
+          <span class="hub-portal-chip"><i class="bi bi-sliders"></i> Tuy bien hang / cot</span>
+          <span class="hub-portal-chip"><i class="bi bi-graph-up-arrow"></i> Do kho tang dan</span>
+          <span class="hub-portal-chip"><i class="bi bi-phone"></i> Hop mobile</span>
+        </div>
       </div>
-
-      <h1 class="hub-portal-title">
-        <span th:text="${game != null ? game.displayName : 'Minesweeper'}">Minesweeper</span>
-        do min cung may voi che do leo thang
-      </h1>
-
-      <p class="hub-portal-subtitle">
-        Quet min nhip nhanh: chon muc do, vao ban, leo do kho lien tuc.
-      </p>
-
-      <div class="hub-portal-chip-row">
-        <span class="hub-portal-chip is-live"><i class="bi bi-check-circle-fill"></i> Che do cung may san sang</span>
-        <span class="hub-portal-chip"><i class="bi bi-sliders"></i> Tuy bien hang / cot</span>
-        <span class="hub-portal-chip"><i class="bi bi-graph-up-arrow"></i> Do kho tang dan</span>
-        <span class="hub-portal-chip"><i class="bi bi-phone"></i> Nhan giu tren mobile</span>
-      </div>
-
-      <div class="hub-portal-action-grid">
-        <a th:href="@{/minesweeper(level='beginner')}" class="hub-portal-action hub-portal-action--primary">
-          <span class="hub-portal-action__icon"><i class="bi bi-play-fill"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Choi de</strong>
-            <small>9x9 / 10 min, lan dau an toan</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:href="@{/minesweeper(level='intermediate')}" class="hub-portal-action hub-portal-action--accent">
-          <span class="hub-portal-action__icon"><i class="bi bi-speedometer2"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Choi vua</strong>
-            <small>16x16 / 40 min</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:href="@{/minesweeper(level='expert')}" class="hub-portal-action hub-portal-action--soft">
-          <span class="hub-portal-action__icon"><i class="bi bi-fire"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Choi kho</strong>
-            <small>16x30 / 99 min</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
-
-        <a th:href="@{/games}" class="hub-portal-action hub-portal-action--soft">
-          <span class="hub-portal-action__icon"><i class="bi bi-grid"></i></span>
-          <span class="hub-portal-action__text">
-            <strong>Thu vien game</strong>
-            <small>Quay lai danh sach game</small>
-          </span>
-          <i class="bi bi-arrow-right"></i>
-        </a>
+      <div class="small text-md-end">
+        <div><strong>Flow:</strong> Chon muc do -> vao ban</div>
+        <div><strong>Difficulty:</strong> Beginner / Intermediate / Expert</div>
+        <div><strong>Support:</strong> First click safe</div>
       </div>
     </div>
-
-    <aside class="hub-portal-hero__side">
-      <section class="hub-portal-panel">
-        <div class="hub-portal-panel__head">
-          <div>
-            <div class="hub-portal-panel__label">Preview luot choi</div>
-            <div class="hub-portal-panel__title">Tuong tac ban co co dien</div>
-          </div>
-          <span class="hub-portal-pill">Chord + tu danh dau</span>
-        </div>
-
-        <div class="hub-portal-preview">
-          <div class="hub-portal-preview-grid" aria-hidden="true">
-            <div class="hub-portal-preview-cell">1</div>
-            <div class="hub-portal-preview-cell is-accent-a">F</div>
-            <div class="hub-portal-preview-cell">?</div>
-            <div class="hub-portal-preview-cell is-accent-b">*</div>
-            <div class="hub-portal-preview-cell">2</div>
-            <div class="hub-portal-preview-cell">.</div>
-            <div class="hub-portal-preview-cell is-accent-a">3</div>
-            <div class="hub-portal-preview-cell">F</div>
-            <div class="hub-portal-preview-cell">?</div>
-            <div class="hub-portal-preview-cell is-accent-b">X</div>
-            <div class="hub-portal-preview-cell">0</div>
-            <div class="hub-portal-preview-cell">1</div>
-          </div>
-        </div>
-
-        <div class="hub-portal-meta-list">
-          <div class="hub-portal-meta-item"><span>Loi choi</span><strong>Do min co dien</strong></div>
-          <div class="hub-portal-meta-item"><span>Ban tuy bien</span><strong>Hang + cot + mat do min</strong></div>
-          <div class="hub-portal-meta-item"><span>Trai nghiem mobile</span><strong>Nhan giu = click phai</strong></div>
-        </div>
-      </section>
-
-    </aside>
   </section>
 
-  <section class="hub-portal-highlights">
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-graph-up-arrow"></i></div>
-      <div>
-        <h2>Do kho tang dan theo van</h2>
-        <p>Thang van -> ban sau kho hon.</p>
-      </div>
-    </article>
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-sliders2"></i></div>
-      <div>
-        <h2>Tuy bien theo 2 huong</h2>
-        <p>Tuy bien hang/cot va mat do min.</p>
-      </div>
-    </article>
-    <article class="hub-portal-highlight">
-      <div class="hub-portal-highlight__icon"><i class="bi bi-phone-fill"></i></div>
-      <div>
-        <h2>Loi choi hop mobile</h2>
-        <p>Nhan giu, chord va tu danh dau tren mobile.</p>
-      </div>
-    </article>
-  </section>
+  <section class="hub-portal-card">
+    <div class="hub-portal-action-grid">
+      <a th:href="@{/minesweeper(level='beginner')}" class="hub-portal-action hub-portal-action--primary">
+        <span class="hub-portal-action__icon"><i class="bi bi-play-fill"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Choi de</strong>
+          <small>9x9 / 10 min, lan dau an toan</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
 
-  <section class="hub-portal-layout">
-    <div class="hub-portal-main">
-      <section class="hub-portal-card">
-        <div class="hub-portal-card__head">
-        <h2>Chon muc do nhanh</h2>
-          <span class="hub-portal-tag">Muc do</span>
-        </div>
-        <div class="hub-portal-rule-grid">
-          <div class="hub-portal-rule-item"><strong>1.</strong><span>De: 9x9 / 10 min (bat dau nhanh).</span></div>
-          <div class="hub-portal-rule-item"><strong>2.</strong><span>Vua: 16x16 / 40 min.</span></div>
-          <div class="hub-portal-rule-item"><strong>3.</strong><span>Kho: 16x30 / 99 min.</span></div>
-          <div class="hub-portal-rule-item"><strong>4.</strong><span>Tuy bien + do kho tang dan trong trang choi.</span></div>
-        </div>
-      </section>
+      <a th:href="@{/minesweeper(level='intermediate')}" class="hub-portal-action hub-portal-action--accent">
+        <span class="hub-portal-action__icon"><i class="bi bi-speedometer2"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Choi vua</strong>
+          <small>16x16 / 40 min</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
 
-      <section class="hub-portal-card">
-        <div class="hub-portal-card__head">
-          <h2>Nhip gameplay Do min</h2>
-          <span class="hub-portal-tag">Gameplay</span>
-        </div>
-        <ul class="hub-portal-bullet-list">
-          <li>Bam luot dau an toan, mo map va bat dau dem gio ngay lap tuc.</li>
-          <li>Co che flag -> ? -> clear ho tro danh dau nhip nhanh khi quet map.</li>
-          <li>Chord reveal va auto-mark giup rut ngan thao tac o map day min.</li>
-          <li>Thang map se leo do kho, thua map hien vi tri sai de rut kinh nghiem.</li>
-        </ul>
-      </section>
+      <a th:href="@{/minesweeper(level='expert')}" class="hub-portal-action hub-portal-action--soft">
+        <span class="hub-portal-action__icon"><i class="bi bi-fire"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Choi kho</strong>
+          <small>16x30 / 99 min</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
 
-      <section class="hub-portal-card">
-        <div class="hub-portal-card__head">
-          <h2>Thanh tuu Do min</h2>
-          <span class="hub-portal-tag">Achievement</span>
-        </div>
-        <ul class="hub-portal-bullet-list">
-          <li>Nhap mon an toan: qua man De dau tien.</li>
-          <li>Toc do on dinh: qua man De duoi 60 giay.</li>
-          <li>Ban do sac net: qua man Vua khong cam sai co.</li>
-          <li>Tho san min: thang 3 man lien tiep o che do Kho.</li>
-        </ul>
-      </section>
-
-      <section class="hub-portal-card" th:if="${game != null and game.roadmapItems != null}">
-        <div class="hub-portal-card__head">
-          <h2>Huong phat trien</h2>
-          <span class="hub-portal-tag">Ke hoach</span>
-        </div>
-        <ul class="hub-portal-bullet-list">
-          <li th:each="item : ${game.roadmapItems}" th:text="${item}">Muc tieu tiep theo</li>
-        </ul>
-      </section>
+      <a th:href="@{/games}" class="hub-portal-action hub-portal-action--soft">
+        <span class="hub-portal-action__icon"><i class="bi bi-grid"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Ve thu vien</strong>
+          <small>Quay lai danh sach game</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
     </div>
-
-    <aside class="hub-portal-side">
-      <section class="hub-portal-card">
-        <h3>Chon muc do</h3>
-        <div class="hub-portal-side-actions">
-          <a th:href="@{/minesweeper(level='beginner')}" class="hub-portal-side-action">
-            <i class="bi bi-play-fill"></i>
-            <div><strong>De</strong><small>9x9 / 10 min</small></div>
-          </a>
-          <a th:href="@{/minesweeper(level='intermediate')}" class="hub-portal-side-action">
-            <i class="bi bi-speedometer2"></i>
-            <div><strong>Vua</strong><small>16x16 / 40 min</small></div>
-          </a>
-          <a th:href="@{/minesweeper(level='expert')}" class="hub-portal-side-action">
-            <i class="bi bi-fire"></i>
-            <div><strong>Kho</strong><small>16x30 / 99 min</small></div>
-          </a>
-        </div>
-      </section>
-
-      <section class="hub-portal-card">
-        <h3>Game lien quan</h3>
-        <div class="hub-portal-related-list">
-          <a th:each="g : ${allGames}"
-             th:if="${g.code != game.code}"
-             th:href="@{/games/{code}(code=${g.code})}"
-             class="hub-portal-related-item"
-             th:attr="data-code=${g.code}">
-            <i class="bi" th:classappend="${g.iconClass}"></i>
-            <div>
-              <strong th:text="${g.displayName}">Game</strong>
-              <small th:text="${g.description}">Mo ta</small>
-            </div>
-          </a>
-        </div>
-      </section>
-    </aside>
   </section>
 </main>
 
