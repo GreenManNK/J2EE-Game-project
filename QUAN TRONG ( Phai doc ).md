@@ -42,6 +42,7 @@ He thong khong chi la mot game don le. Day la mot hub co 3 lop:
 ### 3.1 Frontend / portal
 
 - Trang chu dang storefront, co game rail, feed bai viet, card hinh anh, CTA nhanh.
+- Card art trang chu da duoc cap nhat rieng cho `Minesweeper` va `Quiz`.
 - Catalog `/games` va detail page cho tung game.
 - Theme light/dark dong bo giua shell va cac trang.
 - Ho tro chuyen doi ngon ngu `vi/en`.
@@ -82,14 +83,14 @@ He thong khong chi la mot game don le. Day la mot hub co 3 lop:
 
 | Game / module | Route chinh | Che do da co | Ghi chu hien tai |
 | --- | --- | --- | --- |
-| Caro | `/Game/games/caro` | offline 2 nguoi, bot Easy/Hard, online room, guest | Co realtime move/chat/spectate, lich su tran, room invite |
-| Chess | `/Game/games/chess` | offline, bot, online 1v1 | Dong bo nuoc di realtime, room/spectate |
-| Xiangqi | `/Game/games/xiangqi` | offline, bot, online 1v1 | Dong bo nuoc di realtime, room/spectate |
+| Caro | `/Game/games/caro` | offline 2 nguoi, bot Easy/Hard, online room, guest | Co realtime move/chat/spectate, lich su tran, room invite, room page rieng |
+| Chess | `/Game/games/chess` | offline, bot, online 1v1 | Dong bo nuoc di realtime, room/spectate, ban co da refresh giao dien |
+| Xiangqi | `/Game/games/xiangqi` | offline, bot, online 1v1 | Dong bo nuoc di realtime, room/spectate, ban co da refresh giao dien |
 | Cards hub | `/Game/games/cards` | hub dieu huong | Gom Tien Len va Blackjack |
-| Tien Len | `/Game/games/cards/tien-len` | online 4 nguoi, bot | Ban bai 4 huong, room realtime |
-| Blackjack | `/Game/games/cards/blackjack` | realtime room, spectate | Dat cuoc, hit, stand, double co ban |
-| Quiz | `/Game/games/quiz` | room, spectate, highscores | Ho tro single / multiple / typed question |
-| Typing Battle | `/Game/games/typing` | room realtime | Theo doi progress + accuracy + winner |
+| Tien Len | `/Game/games/cards/tien-len` | online 4 nguoi, bot | Ban bai 4 huong, room realtime, room page rieng |
+| Blackjack | `/Game/games/cards/blackjack` | realtime room, spectate | Dat cuoc, hit, stand, double co ban, room page rieng |
+| Quiz | `/Game/games/quiz` | room, spectate, highscores | Ho tro single / multiple / typed question, room page rieng |
+| Typing Battle | `/Game/games/typing` | room realtime | Theo doi progress + accuracy + winner, room page rieng |
 | Minesweeper | `/Game/games/minesweeper` | offline | Beginner / Intermediate / Expert, flag, first-click safe, win award |
 | Puzzle Pack | `/Game/games/puzzle` | offline | Gom Jigsaw, Sliding, Sudoku, Word Puzzle |
 | Monopoly / Co ty phu | `/Game/games/monopoly` | local 2-4 nguoi, room mode MVP | Ban co 40 o, chance/community, rent, nha/hotel, mortgage, jail, bankruptcy, room create/join/token/start |
@@ -183,6 +184,8 @@ Du an dang dung 2 kieu realtime:
 Ngoai ra:
 
 - route chuan vao room cua game la `/Game/games/{code}/rooms`
+- tat ca room page hien uu tien trang choi rieng, tach khoi lobby/catalog
+- trang room chi giu ban choi, danh sach nguoi choi, thao tac can thiet va trang thai tran
 - game co page room rieng se redirect ve page native
 - game chua co room engine rieng co the di qua room hub chung
 
@@ -311,7 +314,7 @@ Tai lieu run/deploy:
 
 Neu ban moi vao du an, thu tu doc/soi code nen la:
 
-1. Doc `README.md` nay de nam pham vi chung.
+1. Doc file `QUAN TRONG ( Phai doc ).md` nay de nam pham vi chung.
 2. Doc `docs/HUONG_DAN_CHAY_THU_CONG.md` de chay du an.
 3. Doc `src/main/resources/application.yml` de nam env/runtime.
 4. Doc `src/main/java/com/game/hub/controller/HomeController.java` va `GameCatalogController.java` de nam flow storefront + catalog.
@@ -326,6 +329,7 @@ Neu ban moi vao du an, thu tu doc/soi code nen la:
 - Context path `/Game` can duoc tinh toi khi them route/frontend asset.
 - Public runtime co logic whitelist WebSocket origin, can can nhac khi them domain/tunnel moi.
 - Monopoly la module dang mo rong nhanh, nen check ky test + state transition truoc khi chinh.
+- Test websocket `Blackjack` da duoc co dinh deck trong test de tranh flaky do random shuffle; neu sua luong chia bai thi cap nhat ca test deck.
 - External module registry co the override game native neu manifest bat `overrideExisting`.
 
 ## 14. Moc lich su phat trien
@@ -359,11 +363,17 @@ Neu ban moi vao du an, thu tu doc/soi code nen la:
   - them Monopoly gameplay
   - them Monopoly room support
   - thong nhat route `/games/{code}/rooms`
+- `2026-03-14 -> 2026-03-15`
+  - tach lobby va room page rieng cho cac game online chinh
+  - lam moi giao dien ban co `Chess` va `Xiangqi`
+  - cap nhat anh gioi thieu `Minesweeper` va `Quiz`
+  - on dinh test websocket `Blackjack` de loai flaky do deck ngau nhien
 
 ### 14.2 Raw commit timeline
 
 Ben duoi la timeline commit de de truy vet theo hash:
 
+- 2026-03-15 `2e914a0` Refine dedicated game room pages and board visuals
 - 2026-03-14 `99e11d5` Add Monopoly room support and per-game room routes
 - 2026-03-14 `3bfe621` Add Monopoly gameplay and refresh game portal
 - 2026-03-13 `78c83d7` Sync storefront styling across site

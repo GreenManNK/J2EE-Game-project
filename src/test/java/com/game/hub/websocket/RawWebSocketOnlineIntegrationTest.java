@@ -3,6 +3,10 @@ package com.game.hub.websocket;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.game.hub.games.cards.blackjack.logic.BlackjackRoom;
+import com.game.hub.games.cards.blackjack.model.Card;
+import com.game.hub.games.cards.blackjack.model.Deck;
+import com.game.hub.games.cards.blackjack.model.Rank;
+import com.game.hub.games.cards.blackjack.model.Suit;
 import com.game.hub.games.cards.blackjack.service.BlackjackService;
 import com.game.hub.games.quiz.logic.QuizRoom;
 import com.game.hub.games.quiz.service.QuizService;
@@ -20,6 +24,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
@@ -319,6 +325,9 @@ class RawWebSocketOnlineIntegrationTest {
             socket.sendText("{\"action\":\"create\"}", true).join();
             Map<String, Object> createdState = listener.awaitJson();
             String roomId = String.valueOf(createdState.get("id"));
+            BlackjackRoom room = blackjackService.getRoom(roomId);
+            assertNotNull(room);
+            seedBlackjackTurnRoom(room);
 
             socket.sendText("{\"action\":\"bet\",\"amount\":100}", true).join();
             Map<String, Object> roundState = listener.awaitJsonMatching(json ->
@@ -357,9 +366,15 @@ class RawWebSocketOnlineIntegrationTest {
             assertFalse(roomId.isBlank());
             assertEquals("WAITING", String.valueOf(createdState.get("gameState")));
             assertEquals(1, ((Number) createdState.get("playerCount")).intValue());
+            BlackjackRoom room = blackjackService.getRoom(roomId);
+            assertNotNull(room);
+            seedBlackjackTurnRoom(room);
 
             socket.sendText("{\"action\":\"bet\",\"amount\":100}", true).join();
-            Map<String, Object> roundState = listener.awaitJson();
+            Map<String, Object> roundState = listener.awaitJsonMatching(json ->
+                roomId.equals(json.get("id"))
+                    && "PLAYER_TURN".equals(String.valueOf(json.get("gameState")))
+            );
 
             assertEquals(roomId, roundState.get("id"));
             assertEquals("PLAYER_TURN", String.valueOf(roundState.get("gameState")));
@@ -463,6 +478,16 @@ class RawWebSocketOnlineIntegrationTest {
         ).join();
     }
 
+    private void seedBlackjackTurnRoom(BlackjackRoom room) {
+        ReflectionTestUtils.setField(room, "deck", new FixedDeck(List.of(
+            new Card(Suit.HEARTS, Rank.FIVE),
+            new Card(Suit.CLUBS, Rank.SIX),
+            new Card(Suit.SPADES, Rank.SEVEN),
+            new Card(Suit.DIAMONDS, Rank.EIGHT),
+            new Card(Suit.HEARTS, Rank.TWO)
+        )));
+    }
+
     private final class TestSocketListener implements WebSocket.Listener {
         private final BlockingQueue<String> messages = new LinkedBlockingQueue<>();
         private final StringBuilder partialMessage = new StringBuilder();
@@ -508,6 +533,27 @@ class RawWebSocketOnlineIntegrationTest {
         @Override
         public void onError(WebSocket webSocket, Throwable error) {
             messages.add("{\"error\":\"" + String.valueOf(error.getMessage()) + "\"}");
+        }
+    }
+
+    private static final class FixedDeck extends Deck {
+        private List<Card> scriptedCards;
+
+        private FixedDeck(List<Card> scriptedCards) {
+            this.scriptedCards = new ArrayList<>(scriptedCards);
+        }
+
+        @Override
+        public void reset() {
+        }
+
+        @Override
+        public void shuffle() {
+        }
+
+        @Override
+        public Card deal() {
+            return scriptedCards.remove(0);
         }
     }
 }

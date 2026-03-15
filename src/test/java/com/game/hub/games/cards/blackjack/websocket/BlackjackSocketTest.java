@@ -4,7 +4,11 @@ import com.game.hub.games.cards.blackjack.logic.Dealer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.game.hub.games.cards.blackjack.logic.BlackjackRoom;
+import com.game.hub.games.cards.blackjack.model.Card;
 import com.game.hub.games.cards.blackjack.model.BlackjackPlayer;
+import com.game.hub.games.cards.blackjack.model.Deck;
+import com.game.hub.games.cards.blackjack.model.Rank;
+import com.game.hub.games.cards.blackjack.model.Suit;
 import com.game.hub.games.cards.blackjack.service.BlackjackService;
 import com.game.hub.service.AchievementService;
 import org.junit.jupiter.api.Test;
@@ -15,6 +19,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +50,13 @@ class BlackjackSocketTest {
 
         socket.handleTextMessage(session, new TextMessage("{\"action\":\"create\"}"));
         BlackjackRoom room = blackjackService.getAvailableRooms().stream().findFirst().orElseThrow();
+        ReflectionTestUtils.setField(room, "deck", new FixedDeck(List.of(
+            new Card(Suit.HEARTS, Rank.FIVE),
+            new Card(Suit.CLUBS, Rank.SIX),
+            new Card(Suit.SPADES, Rank.SEVEN),
+            new Card(Suit.DIAMONDS, Rank.EIGHT),
+            new Card(Suit.HEARTS, Rank.TWO)
+        )));
 
         socket.handleTextMessage(session, new TextMessage("{\"action\":\"bet\",\"amount\":100}"));
 
@@ -137,5 +149,26 @@ class BlackjackSocketTest {
 
     private Map<String, Object> payload(TextMessage message) throws Exception {
         return objectMapper.readValue(message.getPayload(), new TypeReference<>() {});
+    }
+
+    private static final class FixedDeck extends Deck {
+        private List<Card> scriptedCards;
+
+        private FixedDeck(List<Card> scriptedCards) {
+            this.scriptedCards = new ArrayList<>(scriptedCards);
+        }
+
+        @Override
+        public void reset() {
+        }
+
+        @Override
+        public void shuffle() {
+        }
+
+        @Override
+        public Card deal() {
+            return scriptedCards.remove(0);
+        }
     }
 }
