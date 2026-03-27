@@ -13,13 +13,13 @@
           <span>Quan ly / Quan ly tai khoan</span>
         </div>
         <h1 class="gx-page-title theme-text mt-2">Quan ly - Tai khoan</h1>
-        <p class="gx-page-subtitle">Quan ly co the loc danh sach, tao tai khoan quyen Nguoi choi va chinh sua nhanh thong tin co ban.</p>
+        <p class="gx-page-subtitle">Quan ly co the loc danh sach, tao tai khoan quyen Nguoi choi va chinh sua nhanh thong tin co ban. Xuat du lieu da duoc khoa ve admin-only.</p>
       </div>
       <div class="gx-page-badge">
         <i class="bi bi-people-fill"></i>
         <span th:text="${totalItems} + ' tai khoan'">0 tai khoan</span>
       </div>
-      <div class="gx-inline-actions">
+      <div class="gx-inline-actions" th:if="${canExportManagedUsers}">
         <a class="btn theme-outline-btn"
            th:href="@{/manager/export-users-csv(searchTerm=${searchTerm},banFilter=${banFilter},page=${page},size=${size},scope='page')}">
           Xuat CSV trang nay
@@ -32,6 +32,9 @@
            th:href="@{/manager/export-users-excel(searchTerm=${searchTerm},banFilter=${banFilter},page=${page},size=${size},scope='all')}">
           Xuat Excel tat ca da loc
         </a>
+      </div>
+      <div class="alert alert-warning mb-0" th:if="${!canExportManagedUsers}">
+        Chi admin moi duoc xuat du lieu tai khoan. Manager van duoc loc, tao va sua user, nhung khong duoc tai file CSV/Excel.
       </div>
     </div>
   </section>
@@ -49,8 +52,10 @@
     </article>
     <article class="theme-box rounded cg-detail-strip__card">
       <span class="cg-detail-strip__eyebrow">Exports</span>
-      <strong>CSV / Excel giu nguyen bo loc</strong>
-      <p>Export du lieu quan ly theo trang hoac all duoc giu thong nhat voi phan paging va filter.</p>
+      <strong th:text="${canExportManagedUsers ? 'CSV / Excel giu nguyen bo loc' : 'Export chi mo cho admin'}">Export chi mo cho admin</strong>
+      <p th:text="${canExportManagedUsers ? 'Export du lieu quan ly theo trang hoac all duoc giu thong nhat voi phan paging va filter.' : 'Tai khoan manager khong con duoc truy cap route export, ke ca khi goi truc tiep URL.'}">
+        Tai khoan manager khong con duoc truy cap route export, ke ca khi goi truc tiep URL.
+      </p>
     </article>
   </section>
 

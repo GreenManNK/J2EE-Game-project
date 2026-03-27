@@ -1,6 +1,8 @@
 package com.game.hub.controller;
 
 import com.game.hub.entity.UserAccount;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import com.game.hub.repository.UserAccountRepository;
 import com.game.hub.support.UserExportSupport;
 import org.springframework.http.HttpHeaders;
@@ -39,6 +41,7 @@ public class ManagerController {
                             @RequestParam(required = false) String banFilter,
                             @RequestParam(defaultValue = "0") int page,
                             @RequestParam(defaultValue = "10") int size,
+                            HttpServletRequest request,
                             Model model) {
         List<UserAccount> filtered = filterUsers(searchTerm, banFilter);
         PageSlice<UserAccount> slice = paginate(filtered, page, size);
@@ -49,6 +52,8 @@ public class ManagerController {
         model.addAttribute("size", slice.size());
         model.addAttribute("totalPages", slice.totalPages());
         model.addAttribute("totalItems", filtered.size());
+        model.addAttribute("viewerRole", safe(sessionRole(request)));
+        model.addAttribute("canExportManagedUsers", isAdminRole(sessionRole(request)));
         return "manager/users";
     }
 
@@ -155,7 +160,12 @@ public class ManagerController {
                                             @RequestParam(required = false) String banFilter,
                                             @RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "10") int size,
-                                            @RequestParam(defaultValue = "page") String scope) {
+                                            @RequestParam(defaultValue = "page") String scope,
+                                            HttpServletRequest request) {
+        ResponseEntity<byte[]> denied = ensureAdminExportAccess(request);
+        if (denied != null) {
+            return denied;
+        }
         List<UserAccount> users = resolveUsersForExport(searchTerm, banFilter, page, size, scope);
         byte[] body = UserExportSupport.toCsv(users);
         String filename = "manager-users-" + exportSuffix(scope, page) + ".csv";
@@ -170,7 +180,12 @@ public class ManagerController {
                                               @RequestParam(required = false) String banFilter,
                                               @RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "10") int size,
-                                              @RequestParam(defaultValue = "page") String scope) {
+                                              @RequestParam(defaultValue = "page") String scope,
+                                              HttpServletRequest request) {
+        ResponseEntity<byte[]> denied = ensureAdminExportAccess(request);
+        if (denied != null) {
+            return denied;
+        }
         List<UserAccount> users = resolveUsersForExport(searchTerm, banFilter, page, size, scope);
         byte[] body = UserExportSupport.toExcel(users);
         String filename = "manager-users-" + exportSuffix(scope, page) + ".xlsx";
@@ -179,6 +194,17 @@ public class ManagerController {
             .contentType(MediaType.parseMediaType(
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
             .body(body);
+    }
+
+    private ResponseEntity<byte[]> ensureAdminExportAccess(HttpServletRequest request) {
+        String role = sessionRole(request);
+        if (role == null) {
+            return ResponseEntity.status(401).build();
+        }
+        if (!isAdminRole(role)) {
+            return ResponseEntity.status(403).build();
+        }
+        return null;
     }
 
     private List<UserAccount> filterUsers(String searchTerm, String banFilter) {
@@ -232,6 +258,27 @@ public class ManagerController {
         }
         int safePage = Math.max(page, 0);
         return "page-" + (safePage + 1);
+    }
+
+    private String sessionRole(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        Object value = session.getAttribute("AUTH_ROLE");
+        String role = value == null ? null : String.valueOf(value).trim();
+        return role == null || role.isEmpty() ? null : role;
+    }
+
+    private boolean isAdminRole(String role) {
+        return "Admin".equalsIgnoreCase(role);
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
     }
 
     public record CreateUserRequest(String email, String displayName, String password, int score, String role, String avatarPath) {

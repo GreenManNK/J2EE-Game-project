@@ -51,6 +51,15 @@ public class RoleGuardInterceptor implements HandlerInterceptor {
         if (path.startsWith("/account/users")) {
             return Set.of("Admin");
         }
+        if (path.startsWith("/history/export-csv") || path.startsWith("/history/export-excel")) {
+            return Set.of("Admin");
+        }
+        if (path.startsWith("/leaderboard/export-csv") || path.startsWith("/leaderboard/export-excel")) {
+            return Set.of("Admin");
+        }
+        if (path.startsWith("/manager/export-users-csv") || path.startsWith("/manager/export-users-excel")) {
+            return Set.of("Admin");
+        }
         if (path.startsWith("/manager")) {
             return Set.of("Manager", "Admin");
         }

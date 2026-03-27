@@ -1,6 +1,8 @@
 package com.game.hub.controller;
 
 import com.game.hub.entity.UserAccount;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import com.game.hub.repository.UserAccountRepository;
 import com.game.hub.support.TabularExportSupport;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +31,7 @@ public class LeaderboardController {
                        @RequestParam(required = false) Integer minScore,
                        @RequestParam(defaultValue = "0") int page,
                        @RequestParam(defaultValue = "20") int size,
+                       HttpServletRequest request,
                        Model model) {
         List<LeaderboardItem> filtered = applyFilters(buildItems(), q, minScore);
         PageSlice<LeaderboardItem> slice = paginate(filtered, page, size);
@@ -39,6 +42,8 @@ public class LeaderboardController {
         model.addAttribute("size", slice.size());
         model.addAttribute("totalPages", slice.totalPages());
         model.addAttribute("totalItems", filtered.size());
+        model.addAttribute("viewerRole", safe(sessionRole(request)));
+        model.addAttribute("canExportLeaderboard", isAdminRole(sessionRole(request)));
         return "leaderboard/index";
     }
 
@@ -54,7 +59,12 @@ public class LeaderboardController {
                                             @RequestParam(required = false) Integer minScore,
                                             @RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "20") int size,
-                                            @RequestParam(defaultValue = "all") String scope) {
+                                            @RequestParam(defaultValue = "all") String scope,
+                                            HttpServletRequest request) {
+        ResponseEntity<byte[]> denied = ensureAdminExportAccess(request);
+        if (denied != null) {
+            return denied;
+        }
         List<LeaderboardItem> filtered = applyFilters(buildItems(), q, minScore);
         boolean pageScope = "page".equalsIgnoreCase(scope);
         List<LeaderboardItem> rows = pageScope ? paginate(filtered, page, size).items() : filtered;
@@ -75,7 +85,12 @@ public class LeaderboardController {
                                               @RequestParam(required = false) Integer minScore,
                                               @RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "20") int size,
-                                              @RequestParam(defaultValue = "all") String scope) {
+                                              @RequestParam(defaultValue = "all") String scope,
+                                              HttpServletRequest request) {
+        ResponseEntity<byte[]> denied = ensureAdminExportAccess(request);
+        if (denied != null) {
+            return denied;
+        }
         List<LeaderboardItem> filtered = applyFilters(buildItems(), q, minScore);
         boolean pageScope = "page".equalsIgnoreCase(scope);
         List<LeaderboardItem> rows = pageScope ? paginate(filtered, page, size).items() : filtered;
@@ -90,6 +105,17 @@ public class LeaderboardController {
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=leaderboard-" + exportSuffix(scope, page) + ".xlsx")
             .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
             .body(body);
+    }
+
+    private ResponseEntity<byte[]> ensureAdminExportAccess(HttpServletRequest request) {
+        String role = sessionRole(request);
+        if (role == null) {
+            return ResponseEntity.status(401).build();
+        }
+        if (!isAdminRole(role)) {
+            return ResponseEntity.status(403).build();
+        }
+        return null;
     }
 
     private List<LeaderboardItem> buildItems() {
@@ -165,6 +191,23 @@ public class LeaderboardController {
 
     private String nullSafe(String value) {
         return value == null ? "" : value;
+    }
+
+    private String sessionRole(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        Object value = session.getAttribute("AUTH_ROLE");
+        String role = value == null ? null : String.valueOf(value).trim();
+        return role == null || role.isEmpty() ? null : role;
+    }
+
+    private boolean isAdminRole(String role) {
+        return "Admin".equalsIgnoreCase(role);
     }
 
     public record LeaderboardItem(String userId, String displayName, int score, String avatarPath) {

@@ -15,6 +15,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -52,7 +53,9 @@ class HistoryControllerTest {
 
         when(request.getSession(false)).thenReturn(session);
         when(session.getAttribute("AUTH_USER_ID")).thenReturn("u1");
+        when(session.getAttribute("AUTH_ROLE")).thenReturn("User");
         when(gameHistoryRepository.findByPlayer1IdOrPlayer2IdOrderByPlayedAtDesc("u1", "u1")).thenReturn(List.of(history));
+        when(userAccountRepository.findById("u1")).thenReturn(java.util.Optional.of(playerOne));
         when(userAccountRepository.findAllById(any())).thenReturn(List.of(playerOne, playerTwo));
 
         HistoryController controller = new HistoryController(
@@ -79,5 +82,53 @@ class HistoryControllerTest {
         assertEquals("Player One", row.player1Name());
         assertEquals("Player Two", row.player2Name());
         assertEquals("Thang", row.result());
+        assertEquals("Player One", model.getAttribute("historyOwnerName"));
+        assertEquals(Boolean.FALSE, model.getAttribute("canExportHistory"));
+        assertEquals(Boolean.FALSE, model.getAttribute("canSwitchHistoryUser"));
+
+        HistoryController.HistorySummaryView summary =
+            (HistoryController.HistorySummaryView) model.getAttribute("historySummary");
+        assertEquals(1, summary.totalMatches());
+        assertEquals(1, summary.wins());
+        assertEquals(0, summary.losses());
+        assertEquals(18, summary.totalMoves());
+    }
+
+    @Test
+    void adminViewerShouldBeAbleToExportAndSwitchTargetUser() {
+        GameHistoryRepository gameHistoryRepository = mock(GameHistoryRepository.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+
+        UserAccount target = new UserAccount();
+        target.setId("u2");
+        target.setDisplayName("Target User");
+
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("AUTH_USER_ID")).thenReturn("admin-1");
+        when(session.getAttribute("AUTH_ROLE")).thenReturn("Admin");
+        when(gameHistoryRepository.findByPlayer1IdOrPlayer2IdOrderByPlayedAtDesc("u2", "u2")).thenReturn(List.of());
+        when(userAccountRepository.findById("u2")).thenReturn(java.util.Optional.of(target));
+        when(userAccountRepository.findAllById(any())).thenReturn(List.of());
+
+        HistoryController controller = new HistoryController(
+            gameHistoryRepository,
+            userAccountRepository,
+            new GameCatalogService()
+        );
+
+        ConcurrentModel model = new ConcurrentModel();
+        String viewName = controller.page("u2", null, null, null, null, 0, 20, request, model);
+
+        assertEquals("history/index", viewName);
+        assertEquals(Boolean.TRUE, model.getAttribute("canExportHistory"));
+        assertEquals(Boolean.TRUE, model.getAttribute("canSwitchHistoryUser"));
+        assertEquals("Target User", model.getAttribute("historyOwnerName"));
+
+        @SuppressWarnings("unchecked")
+        List<HistoryController.GameBreakdownView> breakdown =
+            (List<HistoryController.GameBreakdownView>) model.getAttribute("historyGameBreakdown");
+        assertTrue(breakdown.isEmpty());
     }
 }

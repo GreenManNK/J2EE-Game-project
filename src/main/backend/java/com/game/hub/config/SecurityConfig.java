@@ -49,6 +49,9 @@ public class SecurityConfig {
                 .accessDeniedHandler(accessDeniedHandler()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin/**", "/notification-admin/**", "/account/users").hasRole("ADMIN")
+                .requestMatchers("/history/export-csv", "/history/export-excel").hasRole("ADMIN")
+                .requestMatchers("/leaderboard/export-csv", "/leaderboard/export-excel").hasRole("ADMIN")
+                .requestMatchers("/manager/export-users-csv", "/manager/export-users-excel").hasRole("ADMIN")
                 .requestMatchers("/manager/**").hasAnyRole("MANAGER", "ADMIN")
                 .anyRequest().permitAll());
 

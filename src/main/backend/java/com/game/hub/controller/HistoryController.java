@@ -23,7 +23,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,8 +65,11 @@ public class HistoryController {
 
         List<GameHistoryView> filtered = applyFilters(buildHistories(effectiveUserId), gameCode, result, fromDate, toDate);
         PageSlice<GameHistoryView> slice = paginate(filtered, page, size);
+        String viewerRole = sessionRole(request);
 
         model.addAttribute("userId", effectiveUserId);
+        model.addAttribute("historyOwnerId", effectiveUserId);
+        model.addAttribute("historyOwnerName", resolveUserDisplayName(effectiveUserId));
         model.addAttribute("gameCode", safe(gameCode));
         model.addAttribute("result", safe(result));
         model.addAttribute("fromDate", safe(fromDate));
@@ -74,6 +79,11 @@ public class HistoryController {
         model.addAttribute("totalPages", slice.totalPages());
         model.addAttribute("totalItems", filtered.size());
         model.addAttribute("histories", slice.items());
+        model.addAttribute("historySummary", summarize(filtered));
+        model.addAttribute("historyGameBreakdown", buildGameBreakdown(filtered));
+        model.addAttribute("viewerRole", safe(viewerRole));
+        model.addAttribute("canExportHistory", isAdminRole(viewerRole));
+        model.addAttribute("canSwitchHistoryUser", canInspectOtherUsers(viewerRole));
         return "history/index";
     }
 
@@ -102,6 +112,10 @@ public class HistoryController {
                                             @RequestParam(defaultValue = "20") int size,
                                             @RequestParam(defaultValue = "all") String scope,
                                             HttpServletRequest request) {
+        ResponseEntity<byte[]> denied = ensureAdminExportAccess(request);
+        if (denied != null) {
+            return denied;
+        }
         List<GameHistoryView> rows = resolveRowsForExport(userId, gameCode, result, fromDate, toDate, page, size, scope, request);
         byte[] body = TabularExportSupport.toCsv(
             new String[]{"Game", "GameCode", "Match", "Location", "At", "P1", "P2", "First", "Moves", "Winner", "Result", "OpenUrl"},
@@ -123,6 +137,10 @@ public class HistoryController {
                                               @RequestParam(defaultValue = "20") int size,
                                               @RequestParam(defaultValue = "all") String scope,
                                               HttpServletRequest request) {
+        ResponseEntity<byte[]> denied = ensureAdminExportAccess(request);
+        if (denied != null) {
+            return denied;
+        }
         List<GameHistoryView> rows = resolveRowsForExport(userId, gameCode, result, fromDate, toDate, page, size, scope, request);
         byte[] body = TabularExportSupport.toExcel(
             "History",
@@ -177,6 +195,17 @@ public class HistoryController {
             nullSafe(item.result()),
             nullSafe(item.locationHref())
         )).toList();
+    }
+
+    private ResponseEntity<byte[]> ensureAdminExportAccess(HttpServletRequest request) {
+        String role = sessionRole(request);
+        if (role == null) {
+            return ResponseEntity.status(401).build();
+        }
+        if (!isAdminRole(role)) {
+            return ResponseEntity.status(403).build();
+        }
+        return null;
     }
 
     private List<GameHistoryView> applyFilters(List<GameHistoryView> source,
@@ -234,7 +263,7 @@ public class HistoryController {
         }
         String sessionRole = sessionRole(request);
         if (sessionRole != null
-            && ("Admin".equalsIgnoreCase(sessionRole) || "Manager".equalsIgnoreCase(sessionRole))) {
+            && canInspectOtherUsers(sessionRole)) {
             return normalizedRequested;
         }
         return sessionUserId;
@@ -267,6 +296,14 @@ public class HistoryController {
         Object value = session.getAttribute("AUTH_ROLE");
         String role = value == null ? null : String.valueOf(value).trim();
         return role == null || role.isEmpty() ? null : role;
+    }
+
+    private boolean canInspectOtherUsers(String role) {
+        return isAdminRole(role) || "Manager".equalsIgnoreCase(role);
+    }
+
+    private boolean isAdminRole(String role) {
+        return "Admin".equalsIgnoreCase(role);
     }
 
     private List<GameHistoryView> buildHistories(String userId) {
@@ -304,6 +341,75 @@ public class HistoryController {
         }).toList();
     }
 
+    private String resolveUserDisplayName(String userId) {
+        String normalizedUserId = trimToNull(userId);
+        if (normalizedUserId == null) {
+            return "";
+        }
+        return userAccountRepository.findById(normalizedUserId)
+            .map(user -> {
+                String displayName = trimToNull(user.getDisplayName());
+                return displayName == null ? normalizedUserId : displayName;
+            })
+            .orElse(normalizedUserId);
+    }
+
+    private HistorySummaryView summarize(List<GameHistoryView> source) {
+        int wins = 0;
+        int losses = 0;
+        int draws = 0;
+        int totalMoves = 0;
+        LocalDateTime lastPlayedAt = null;
+
+        for (GameHistoryView item : source) {
+            if ("Thang".equalsIgnoreCase(item.result())) {
+                wins++;
+            } else if ("Thua".equalsIgnoreCase(item.result())) {
+                losses++;
+            } else {
+                draws++;
+            }
+            totalMoves += Math.max(item.totalMoves(), 0);
+            if (item.playedAt() != null && (lastPlayedAt == null || item.playedAt().isAfter(lastPlayedAt))) {
+                lastPlayedAt = item.playedAt();
+            }
+        }
+
+        return new HistorySummaryView(source.size(), wins, losses, draws, totalMoves, lastPlayedAt);
+    }
+
+    private List<GameBreakdownView> buildGameBreakdown(List<GameHistoryView> source) {
+        Map<String, GameBreakdownAccumulator> buckets = new LinkedHashMap<>();
+        for (GameHistoryView item : source) {
+            String key = nullSafe(item.gameCode()) + "|" + nullSafe(item.gameName());
+            GameBreakdownAccumulator bucket = buckets.computeIfAbsent(key,
+                ignored -> new GameBreakdownAccumulator(item.gameCode(), item.gameName(), item.gameIconClass()));
+            bucket.matches++;
+            if ("Thang".equalsIgnoreCase(item.result())) {
+                bucket.wins++;
+            } else if ("Thua".equalsIgnoreCase(item.result())) {
+                bucket.losses++;
+            } else {
+                bucket.draws++;
+            }
+        }
+
+        return buckets.values().stream()
+            .map(bucket -> new GameBreakdownView(
+                bucket.gameCode,
+                bucket.gameName,
+                bucket.gameIconClass,
+                bucket.matches,
+                bucket.wins,
+                bucket.losses,
+                bucket.draws
+            ))
+            .sorted(Comparator.comparingLong(GameBreakdownView::matches).reversed()
+                .thenComparing(item -> nullSafe(item.gameName()), String.CASE_INSENSITIVE_ORDER))
+            .limit(4)
+            .toList();
+    }
+
     private <T> PageSlice<T> paginate(List<T> source, int page, int size) {
         int safeSize = Math.max(1, Math.min(size, 100));
         int totalItems = source.size();
@@ -334,6 +440,39 @@ public class HistoryController {
                                   String winnerName,
                                   LocalDateTime playedAt,
                                   String result) {
+    }
+
+    public record HistorySummaryView(int totalMatches,
+                                     int wins,
+                                     int losses,
+                                     int draws,
+                                     int totalMoves,
+                                     LocalDateTime lastPlayedAt) {
+    }
+
+    public record GameBreakdownView(String gameCode,
+                                    String gameName,
+                                    String gameIconClass,
+                                    long matches,
+                                    int wins,
+                                    int losses,
+                                    int draws) {
+    }
+
+    private static final class GameBreakdownAccumulator {
+        private final String gameCode;
+        private final String gameName;
+        private final String gameIconClass;
+        private long matches;
+        private int wins;
+        private int losses;
+        private int draws;
+
+        private GameBreakdownAccumulator(String gameCode, String gameName, String gameIconClass) {
+            this.gameCode = gameCode;
+            this.gameName = gameName;
+            this.gameIconClass = gameIconClass;
+        }
     }
 
     private String trimToNull(String value) {

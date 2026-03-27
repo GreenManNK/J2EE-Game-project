@@ -1,52 +1,459 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Lich su dau')}"></head>
 <body>
 <div th:replace="~{fragments :: appShell('history')}"></div>
+<style>
+  .history-page {
+    display: grid;
+    gap: 18px;
+  }
+  .history-command-center {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    gap: 18px;
+    background:
+      radial-gradient(circle at top right, rgba(84, 195, 255, 0.22), transparent 30%),
+      linear-gradient(145deg, rgba(6, 23, 40, 0.96), rgba(10, 33, 54, 0.88));
+    border: 1px solid rgba(122, 191, 255, 0.22);
+  }
+  .history-command-center::after {
+    content: "";
+    position: absolute;
+    inset: auto -12% -45% auto;
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba(255, 184, 77, 0.18), transparent 66%);
+    pointer-events: none;
+  }
+  .history-command-center__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .history-command-center__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #d8ebff;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .history-command-center__title {
+    margin: 12px 0 8px;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.05;
+  }
+  .history-command-center__subtitle {
+    max-width: 66ch;
+    margin: 0;
+    color: rgba(226, 238, 255, 0.84);
+  }
+  .history-viewer-card {
+    min-width: min(100%, 320px);
+    max-width: 360px;
+    padding: 18px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  .history-viewer-card__label {
+    display: block;
+    margin-bottom: 8px;
+    color: rgba(193, 214, 236, 0.76);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .history-viewer-card__owner {
+    font-size: 1.2rem;
+    font-weight: 800;
+  }
+  .history-viewer-card__meta {
+    margin-top: 10px;
+    display: grid;
+    gap: 8px;
+    color: rgba(225, 237, 252, 0.86);
+    font-size: 0.93rem;
+  }
+  .history-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+  }
+  .history-kpi {
+    padding: 16px;
+    border-radius: 20px;
+    background: rgba(8, 23, 38, 0.68);
+    border: 1px solid rgba(121, 171, 206, 0.2);
+  }
+  .history-kpi__label {
+    display: block;
+    color: rgba(193, 214, 236, 0.72);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .history-kpi__value {
+    display: block;
+    margin-top: 8px;
+    font-size: 1.65rem;
+    font-weight: 800;
+  }
+  .history-kpi__sub {
+    display: block;
+    margin-top: 6px;
+    color: rgba(225, 237, 252, 0.76);
+    font-size: 0.92rem;
+  }
+  .history-filters {
+    display: grid;
+    gap: 16px;
+  }
+  .history-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .history-filter-grid > div {
+    grid-column: span 12;
+  }
+  .history-filter-grid .history-field--wide {
+    grid-column: span 12;
+  }
+  .history-filter-grid .history-field--action {
+    display: flex;
+    align-items: end;
+  }
+  .history-filter-grid .history-field--action .btn {
+    min-height: 46px;
+  }
+  .history-owner-lock {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    border-radius: 16px;
+    background: rgba(10, 28, 44, 0.78);
+    border: 1px dashed rgba(121, 171, 206, 0.3);
+    color: rgba(214, 231, 248, 0.86);
+  }
+  .history-export-panel {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(8, 29, 46, 0.86), rgba(7, 19, 31, 0.82));
+    border: 1px solid rgba(121, 171, 206, 0.2);
+  }
+  .history-export-panel__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 800;
+  }
+  .history-export-panel__text {
+    margin: 0;
+    color: rgba(214, 231, 248, 0.76);
+    font-size: 0.94rem;
+  }
+  .history-export-panel__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .history-export-panel--locked {
+    background: linear-gradient(180deg, rgba(45, 22, 18, 0.86), rgba(31, 14, 12, 0.8));
+    border-color: rgba(255, 159, 122, 0.22);
+  }
+  .history-breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+  }
+  .history-breakdown-card {
+    padding: 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(121, 171, 206, 0.18);
+    background: rgba(8, 24, 39, 0.72);
+  }
+  .history-breakdown-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .history-breakdown-card__title {
+    font-weight: 800;
+  }
+  .history-breakdown-card__code {
+    color: rgba(193, 214, 236, 0.72);
+    font-size: 0.84rem;
+  }
+  .history-breakdown-card__stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    font-size: 0.92rem;
+    color: rgba(214, 231, 248, 0.84);
+  }
+  .history-feed {
+    display: grid;
+    gap: 14px;
+  }
+  .history-match-card {
+    padding: 18px;
+    border-radius: 24px;
+    border: 1px solid rgba(121, 171, 206, 0.16);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)),
+      rgba(7, 19, 31, 0.88);
+    box-shadow: 0 18px 32px rgba(3, 10, 19, 0.16);
+  }
+  .history-match-card__head,
+  .history-match-card__route,
+  .history-match-card__footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .history-match-card__game {
+    display: grid;
+    gap: 4px;
+  }
+  .history-match-card__game-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.08rem;
+    font-weight: 800;
+    color: inherit;
+    text-decoration: none;
+  }
+  .history-match-card__game-name:hover {
+    color: #9ed4ff;
+  }
+  .history-match-card__context {
+    color: rgba(193, 214, 236, 0.72);
+    font-size: 0.9rem;
+  }
+  .history-result-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 86px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .history-result-pill--win {
+    background: rgba(89, 201, 165, 0.16);
+    color: #81f2ca;
+  }
+  .history-result-pill--lose {
+    background: rgba(255, 120, 114, 0.16);
+    color: #ffb3ad;
+  }
+  .history-result-pill--draw {
+    background: rgba(255, 198, 92, 0.16);
+    color: #ffd38b;
+  }
+  .history-match-card__time {
+    display: grid;
+    justify-items: end;
+    gap: 5px;
+    text-align: right;
+  }
+  .history-match-card__time time {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .history-match-card__match-code {
+    color: rgba(193, 214, 236, 0.72);
+    font-size: 0.88rem;
+  }
+  .history-match-card__route {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(121, 171, 206, 0.14);
+  }
+  .history-match-card__route-label {
+    display: block;
+    color: rgba(193, 214, 236, 0.72);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .history-match-card__route-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    color: inherit;
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .history-match-card__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .history-fact {
+    padding: 12px 14px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(121, 171, 206, 0.12);
+  }
+  .history-fact__label {
+    display: block;
+    color: rgba(193, 214, 236, 0.68);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .history-fact__value {
+    display: block;
+    margin-top: 6px;
+    font-weight: 700;
+  }
+  .history-match-card__footer {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(121, 171, 206, 0.14);
+    align-items: center;
+  }
+  .history-match-card__index {
+    color: rgba(193, 214, 236, 0.72);
+    font-size: 0.88rem;
+  }
+  .history-pager {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  @media (min-width: 768px) {
+    .history-filter-grid > div {
+      grid-column: span 6;
+    }
+    .history-filter-grid .history-field--action {
+      grid-column: span 3;
+    }
+  }
+  @media (min-width: 1200px) {
+    .history-filter-grid .history-field--owner { grid-column: span 3; }
+    .history-filter-grid .history-field--game { grid-column: span 2; }
+    .history-filter-grid .history-field--result { grid-column: span 2; }
+    .history-filter-grid .history-field--date { grid-column: span 2; }
+    .history-filter-grid .history-field--size { grid-column: span 1; }
+    .history-filter-grid .history-field--action { grid-column: span 2; }
+  }
+</style>
 
-<main class="gx-page-shell theme-text">
-  <section class="gx-page-hero theme-box">
-    <div class="gx-page-hero__head">
+<main class="gx-page-shell theme-text history-page">
+  <section class="gx-page-hero theme-box history-command-center">
+    <div class="history-command-center__head">
       <div>
-        <div class="home-dashboard__eyebrow">
+        <div class="history-command-center__eyebrow">
           <i class="bi bi-clock-history"></i>
-          <span>Lich su dau</span>
+          <span>Lich su thi dau</span>
         </div>
-        <h1 class="gx-page-title theme-text mt-2">Lich su dau</h1>
-        <p class="gx-page-subtitle">Tra cuu nguoi choi da choi game gi, tran nao, o dau va luc may gio, kem bo loc va xuat du lieu nhanh.</p>
+        <h1 class="history-command-center__title theme-text">Ban do tran dau cua nguoi choi</h1>
+        <p class="history-command-center__subtitle">
+          Theo doi nguoi choi da vao game nao, dung tran nao, choi tai dau va vao luc may gio.
+          Giao dien nay uu tien doc nhanh tung tran thay vi chi nhin bang du lieu tho.
+        </p>
       </div>
-      <div class="gx-page-badge">
-        <i class="bi bi-person-badge"></i>
-        <span th:text="${(userId != null and !#strings.isEmpty(userId)) ? userId : 'Chua chon tai khoan'}">Chua chon tai khoan</span>
+
+      <aside class="history-viewer-card">
+        <span class="history-viewer-card__label">Tai khoan dang xem</span>
+        <div class="history-viewer-card__owner" th:text="${historyOwnerName}">Nguoi choi</div>
+        <div class="history-viewer-card__meta">
+          <div><strong>ID:</strong> <span th:text="${historyOwnerId}">user-1</span></div>
+          <div><strong>Vai tro hien tai:</strong> <span th:text="${#strings.isEmpty(viewerRole) ? 'Nguoi choi' : viewerRole}">User</span></div>
+          <div th:if="${canExportHistory}"><strong>Export:</strong> Ban dang co quyen xuat du lieu lich su.</div>
+          <div th:if="${!canExportHistory}"><strong>Export:</strong> Chi admin moi duoc xuat du lieu lich su.</div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="history-kpi-grid" th:with="summary=${historySummary}">
+      <article class="history-kpi">
+        <span class="history-kpi__label">Tong tran</span>
+        <strong class="history-kpi__value" th:text="${summary.totalMatches}">0</strong>
+        <span class="history-kpi__sub">Ban ghi phu hop bo loc hien tai</span>
+      </article>
+      <article class="history-kpi">
+        <span class="history-kpi__label">Thang / Thua / Hoa</span>
+        <strong class="history-kpi__value" th:text="${summary.wins + ' / ' + summary.losses + ' / ' + summary.draws}">0 / 0 / 0</strong>
+        <span class="history-kpi__sub">Tom tat nhin nhanh phong do cua nguoi choi</span>
+      </article>
+      <article class="history-kpi">
+        <span class="history-kpi__label">Tong nuoc di</span>
+        <strong class="history-kpi__value" th:text="${summary.totalMoves}">0</strong>
+        <span class="history-kpi__sub">Cong don so nuoc di trong tap tran da loc</span>
+      </article>
+      <article class="history-kpi">
+        <span class="history-kpi__label">Tran gan nhat</span>
+        <strong class="history-kpi__value" th:text="${summary.lastPlayedAt != null ? #temporals.format(summary.lastPlayedAt, 'dd/MM HH:mm') : '--'}">--</strong>
+        <span class="history-kpi__sub">Moc thoi gian moi nhat tim thay trong lich su</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="gx-section-card theme-box history-filters">
+    <div class="gx-section-card__head">
+      <div>
+        <h2 class="gx-section-card__title theme-text mb-0">Bo loc va dieu huong</h2>
+        <div class="gx-section-card__meta">Loc theo game, ket qua va ngay choi. Manager/Admin moi co quyen doi tai khoan dang xem.</div>
       </div>
     </div>
 
-    <form method="get" th:action="@{/history}" class="row g-2 align-items-end">
-      <div class="col-12 col-md-4 col-lg-3">
+    <form method="get" th:action="@{/history}" class="history-filter-grid">
+      <div class="history-field--owner" th:if="${canSwitchHistoryUser}">
         <label class="form-label" for="userId">Ma tai khoan</label>
-        <input id="userId" class="form-control" name="userId" th:value="${userId}" placeholder="Nhap ma tai khoan">
+        <input id="userId" class="form-control" name="userId" th:value="${userId}" placeholder="Nhap ma tai khoan can xem lich su">
       </div>
-      <div class="col-6 col-md-4 col-lg-2">
+      <div class="history-field--owner" th:if="${!canSwitchHistoryUser}">
+        <label class="form-label">Ma tai khoan</label>
+        <div class="history-owner-lock" th:text="${historyOwnerId}">user-1</div>
+        <input type="hidden" name="userId" th:value="${userId}">
+      </div>
+      <div class="history-field--game">
         <label class="form-label" for="gameCode">Game</label>
-        <input id="gameCode" class="form-control" name="gameCode" th:value="${gameCode}" placeholder="Vi du: caro, chess, quiz">
+        <input id="gameCode" class="form-control" name="gameCode" th:value="${gameCode}" placeholder="caro, chess, quiz...">
       </div>
-      <div class="col-6 col-md-4 col-lg-2">
+      <div class="history-field--result">
         <label class="form-label" for="result">Ket qua</label>
         <select id="result" name="result" class="form-select">
           <option value="" th:selected="${result == null || result == ''}">Tat ca</option>
           <option value="Thang" th:selected="${result == 'Thang'}">Thang</option>
           <option value="Thua" th:selected="${result == 'Thua'}">Thua</option>
+          <option value="Hoa" th:selected="${result == 'Hoa'}">Hoa</option>
         </select>
       </div>
-      <div class="col-6 col-md-4 col-lg-2">
+      <div class="history-field--date">
         <label class="form-label" for="fromDate">Tu ngay</label>
         <input id="fromDate" class="form-control" type="date" name="fromDate" th:value="${fromDate}">
       </div>
-      <div class="col-6 col-md-4 col-lg-2">
+      <div class="history-field--date">
         <label class="form-label" for="toDate">Den ngay</label>
         <input id="toDate" class="form-control" type="date" name="toDate" th:value="${toDate}">
       </div>
-      <div class="col-6 col-md-4 col-lg-1">
+      <div class="history-field--size">
         <label class="form-label" for="size">So dong</label>
         <select id="size" name="size" class="form-select">
           <option value="10" th:selected="${size == 10}">10</option>
@@ -56,132 +463,151 @@
         </select>
       </div>
       <input type="hidden" name="page" value="0">
-      <div class="col-12 col-md-4 col-lg-2">
-        <button type="submit" class="btn btn-primary w-100">Ap dung loc</button>
-      </div>
-
-      <div class="col-12 d-flex flex-wrap gap-2 justify-content-md-end mt-2">
-        <a class="btn theme-outline-btn"
-           th:href="@{/history/export-csv(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page},size=${size},scope='page')}">
-          Xuat CSV trang nay
-        </a>
-        <a class="btn theme-outline-btn"
-           th:href="@{/history/export-excel(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page},size=${size},scope='page')}">
-          Xuat Excel trang nay
-        </a>
-        <a class="btn theme-outline-btn"
-           th:href="@{/history/export-excel(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page},size=${size},scope='all')}">
-          Xuat Excel tat ca da loc
-        </a>
+      <div class="history-field--action">
+        <button type="submit" class="btn btn-primary w-100">Cap nhat lich su</button>
       </div>
     </form>
 
-    <div class="gx-chip-row mt-2">
-      <span class="gx-chip"><i class="bi bi-list-ul"></i> <span th:text="${totalItems} + ' ban ghi'">0 ban ghi</span></span>
-      <span class="gx-chip"><i class="bi bi-file-earmark-spreadsheet"></i> Co ho tro xuat CSV/Excel</span>
-    </div>
-  </section>
-
-  <section class="cg-detail-strip" aria-label="Tong quan lich su">
-    <article class="theme-box rounded cg-detail-strip__card">
-      <span class="cg-detail-strip__eyebrow">Owner</span>
-      <strong th:text="${userId}">user</strong>
-      <p>Lich su duoc khoa theo tai khoan dang xem de luu mot luong tra cuu rieng cho tung nguoi choi.</p>
-    </article>
-    <article class="theme-box rounded cg-detail-strip__card">
-      <span class="cg-detail-strip__eyebrow">Filters</span>
-      <strong>Game + result + date range</strong>
-      <p>Ban ghi co the loc theo game, ket qua va khoang ngay truoc khi duyet bang du lieu chi tiet cua tung tran.</p>
-    </article>
-    <article class="theme-box rounded cg-detail-strip__card">
-      <span class="cg-detail-strip__eyebrow">Records</span>
-      <strong><span th:text="${totalItems}">0</span> tran phu hop bo loc</strong>
-      <p>Moi dong gom game, match, vi tri choi va moc thoi gian de nhin ra tran dau nhanh hon.</p>
-    </article>
-  </section>
-
-  <div class="gx-empty-state" th:if="${#lists.isEmpty(histories)}">Khong co du lieu lich su phu hop bo loc.</div>
-
-  <section class="gx-section-card theme-box gx-table-card" th:if="${!#lists.isEmpty(histories)}">
-    <div class="gx-section-card__head">
-      <h2 class="gx-section-card__title theme-text mb-0">Danh sach tran dau</h2>
-      <div class="gx-section-card__meta">
-        Trang <span th:text="${page + 1}">1</span>/<span th:text="${totalPages}">1</span>
+    <section class="history-export-panel" th:if="${canExportHistory}">
+      <h3 class="history-export-panel__title">Xuat du lieu lich su</h3>
+      <p class="history-export-panel__text">Chi admin moi co quyen tai CSV/Excel tu tap lich su dang xem. Cac tai khoan khac se bi khoa truy cap vao route export.</p>
+      <div class="history-export-panel__actions">
+        <a class="btn theme-outline-btn"
+           th:href="@{/history/export-csv(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page},size=${size},scope='page')}">
+          Xuat CSV trang hien tai
+        </a>
+        <a class="btn theme-outline-btn"
+           th:href="@{/history/export-excel(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page},size=${size},scope='page')}">
+          Xuat Excel trang hien tai
+        </a>
+        <a class="btn theme-outline-btn"
+           th:href="@{/history/export-excel(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page},size=${size},scope='all')}">
+          Xuat Excel toan bo ket qua da loc
+        </a>
       </div>
-    </div>
+    </section>
 
-    <div class="table-responsive">
-      <table class="table table-bordered table-hover align-middle mb-0">
-        <thead>
-        <tr class="theme-table-header">
-          <th>#</th>
-          <th>Game</th>
-          <th>Tran</th>
-          <th>O dau</th>
-          <th>Nguoi choi 1</th>
-          <th>Nguoi choi 2</th>
-          <th>Di truoc</th>
-          <th>So nuoc</th>
-          <th>Nguoi thang</th>
-          <th>Ket qua</th>
-          <th>Luc choi</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="h, i : ${histories}">
-          <td th:text="${page * size + i.count}"></td>
-          <td>
-            <div class="d-flex flex-column gap-1">
-              <div class="fw-semibold">
-                <i class="bi me-1" th:classappend="' ' + ${h.gameIconClass}"></i>
-                <a th:if="${h.gameHref != null and !#strings.isEmpty(h.gameHref)}"
-                   th:href="@{${h.gameHref}}"
-                   th:text="${h.gameName}">Game</a>
-                <span th:if="${h.gameHref == null or #strings.isEmpty(h.gameHref)}"
-                      th:text="${h.gameName}">Game</span>
-              </div>
-              <small class="text-muted">
-                <span th:text="${h.gameCode}">caro</span>
-                <span th:if="${h.contextLabel != null and !#strings.isEmpty(h.contextLabel)}"
-                      th:text="${' Â· ' + h.contextLabel}"> Â· Online</span>
-              </small>
-            </div>
-          </td>
-          <td>
-            <div class="fw-semibold" th:text="${h.matchCode}">TRAN-1</div>
-          </td>
-          <td>
-            <a th:if="${h.locationHref != null and !#strings.isEmpty(h.locationHref)}"
-               th:href="@{${h.locationHref}}"
-               th:text="${h.locationLabel}">Phong online</a>
-            <span th:if="${h.locationHref == null or #strings.isEmpty(h.locationHref)}"
-                  th:text="${h.locationLabel}">Phong online</span>
-          </td>
-          <td th:text="${h.player1Name}"></td>
-          <td th:text="${h.player2Name}"></td>
-          <td th:text="${h.firstPlayerName}"></td>
-          <td th:text="${h.totalMoves}"></td>
-          <td th:text="${h.winnerName}"></td>
-          <td th:text="${h.result}"></td>
-          <td>
-            <time th:if="${h.playedAt != null}"
-                  th:text="${#temporals.format(h.playedAt, 'dd/MM/yyyy HH:mm')}">27/03/2026 10:30</time>
-            <span th:if="${h.playedAt == null}">Chua ro</span>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
+    <section class="history-export-panel history-export-panel--locked" th:if="${!canExportHistory}">
+      <h3 class="history-export-panel__title">Xuat du lieu bi khoa</h3>
+      <p class="history-export-panel__text">Chi admin moi duoc xuat du lieu lich su. Moi tai khoan khac deu khong duoc truy cap vao file CSV/Excel, ke ca khi goi truc tiep URL export.</p>
+    </section>
   </section>
 
-  <div class="gx-inline-actions">
+  <section class="history-breakdown-grid" th:if="${!#lists.isEmpty(historyGameBreakdown)}">
+    <article class="history-breakdown-card theme-box" th:each="game : ${historyGameBreakdown}">
+      <div class="history-breakdown-card__head">
+        <div>
+          <div class="history-breakdown-card__title">
+            <i class="bi me-1" th:classappend="' ' + ${game.gameIconClass}"></i>
+            <span th:text="${game.gameName}">Caro</span>
+          </div>
+          <div class="history-breakdown-card__code" th:text="${game.gameCode}">caro</div>
+        </div>
+        <strong th:text="${game.matches + ' tran'}">0 tran</strong>
+      </div>
+      <div class="history-breakdown-card__stats">
+        <div><strong>Thang:</strong> <span th:text="${game.wins}">0</span></div>
+        <div><strong>Thua:</strong> <span th:text="${game.losses}">0</span></div>
+        <div><strong>Hoa:</strong> <span th:text="${game.draws}">0</span></div>
+        <div><strong>Tap trung:</strong> <span th:text="${game.matches > 1 ? 'Dang choi nhieu' : 'Moi xuat hien'}">Moi xuat hien</span></div>
+      </div>
+    </article>
+  </section>
+
+  <div class="gx-empty-state" th:if="${#lists.isEmpty(histories)}">Khong co tran dau nao phu hop bo loc hien tai.</div>
+
+  <section class="history-feed" th:if="${!#lists.isEmpty(histories)}">
+    <article class="history-match-card theme-box" th:each="h, i : ${histories}">
+      <div class="history-match-card__head">
+        <div class="history-match-card__game">
+          <a th:if="${h.gameHref != null and !#strings.isEmpty(h.gameHref)}"
+             th:href="@{${h.gameHref}}"
+             class="history-match-card__game-name">
+            <i class="bi" th:classappend="' ' + ${h.gameIconClass}"></i>
+            <span th:text="${h.gameName}">Game</span>
+          </a>
+          <div th:if="${h.gameHref == null or #strings.isEmpty(h.gameHref)}" class="history-match-card__game-name">
+            <i class="bi" th:classappend="' ' + ${h.gameIconClass}"></i>
+            <span th:text="${h.gameName}">Game</span>
+          </div>
+          <div class="history-match-card__context">
+            <span th:text="${h.gameCode}">caro</span>
+            <span th:if="${h.contextLabel != null and !#strings.isEmpty(h.contextLabel)}" th:text="${' · ' + h.contextLabel}"> · Online</span>
+          </div>
+        </div>
+
+        <div class="history-match-card__time">
+          <span class="history-result-pill"
+                th:classappend="${h.result == 'Thang' ? ' history-result-pill--win' : (h.result == 'Thua' ? ' history-result-pill--lose' : ' history-result-pill--draw')}"
+                th:text="${h.result}">Thang</span>
+          <time th:if="${h.playedAt != null}" th:text="${#temporals.format(h.playedAt, 'dd/MM/yyyy HH:mm')}">27/03/2026 10:30</time>
+          <span th:if="${h.playedAt == null}">Chua ro thoi gian</span>
+          <span class="history-match-card__match-code" th:text="${h.matchCode}">MATCH-001</span>
+        </div>
+      </div>
+
+      <div class="history-match-card__route">
+        <div>
+          <span class="history-match-card__route-label">Tran nao va o dau</span>
+          <a th:if="${h.locationHref != null and !#strings.isEmpty(h.locationHref)}"
+             th:href="@{${h.locationHref}}"
+             class="history-match-card__route-value">
+            <i class="bi bi-geo-alt"></i>
+            <span th:text="${h.locationLabel}">Phong online</span>
+          </a>
+          <div th:if="${h.locationHref == null or #strings.isEmpty(h.locationHref)}"
+               class="history-match-card__route-value">
+            <i class="bi bi-geo-alt"></i>
+            <span th:text="${h.locationLabel}">Phong online</span>
+          </div>
+        </div>
+        <a th:if="${h.locationHref != null and !#strings.isEmpty(h.locationHref)}"
+           class="btn btn-sm theme-outline-btn"
+           th:href="@{${h.locationHref}}">Mo lai diem den</a>
+      </div>
+
+      <div class="history-match-card__facts">
+        <div class="history-fact">
+          <span class="history-fact__label">Nguoi choi 1</span>
+          <span class="history-fact__value" th:text="${h.player1Name}">Player 1</span>
+        </div>
+        <div class="history-fact">
+          <span class="history-fact__label">Nguoi choi 2</span>
+          <span class="history-fact__value" th:text="${h.player2Name}">Player 2</span>
+        </div>
+        <div class="history-fact">
+          <span class="history-fact__label">Di truoc</span>
+          <span class="history-fact__value" th:text="${h.firstPlayerName}">Player 1</span>
+        </div>
+        <div class="history-fact">
+          <span class="history-fact__label">So nuoc</span>
+          <span class="history-fact__value" th:text="${h.totalMoves}">18</span>
+        </div>
+        <div class="history-fact">
+          <span class="history-fact__label">Nguoi thang</span>
+          <span class="history-fact__value" th:text="${h.winnerName}">Player 1</span>
+        </div>
+        <div class="history-fact">
+          <span class="history-fact__label">Ket luan</span>
+          <span class="history-fact__value" th:text="${h.result}">Thang</span>
+        </div>
+      </div>
+
+      <div class="history-match-card__footer">
+        <span class="history-match-card__index" th:text="${'Ban ghi #' + (page * size + i.count)}">Ban ghi #1</span>
+        <span class="history-match-card__index" th:text="${h.gameCode + ' · ' + h.matchCode}">caro · MATCH</span>
+      </div>
+    </article>
+  </section>
+
+  <div class="gx-inline-actions history-pager" th:if="${!#lists.isEmpty(histories)}">
     <a class="btn btn-sm btn-outline-secondary"
        th:if="${page > 0}"
-       th:href="@{/history(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page-1},size=${size})}">Truoc</a>
-    <span class="small">Trang <span th:text="${page+1}"></span>/<span th:text="${totalPages}"></span></span>
+       th:href="@{/history(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page-1},size=${size})}">Trang truoc</a>
+    <span class="small">Trang <span th:text="${page + 1}">1</span>/<span th:text="${totalPages}">1</span></span>
     <a class="btn btn-sm btn-outline-secondary"
-       th:if="${page+1 < totalPages}"
-       th:href="@{/history(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page+1},size=${size})}">Sau</a>
+       th:if="${page + 1 < totalPages}"
+       th:href="@{/history(userId=${userId},gameCode=${gameCode},result=${result},fromDate=${fromDate},toDate=${toDate},page=${page+1},size=${size})}">Trang sau</a>
   </div>
 
   <div class="gx-inline-actions">
@@ -192,4 +618,3 @@
 <th:block th:replace="~{fragments :: appScripts('history')}"></th:block>
 </body>
 </html>
-

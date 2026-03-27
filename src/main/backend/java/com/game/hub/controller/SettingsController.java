@@ -35,9 +35,12 @@ public class SettingsController {
                         @RequestParam(required = false) String socialLinked,
                         @RequestParam(required = false) String socialError) {
         String authUserId = resolveAuthenticatedUserId(request);
+        String authRole = resolveAuthenticatedRole(request);
         UserAccount settingsUser = authUserId == null ? null : userAccountRepository.findById(authUserId).orElse(null);
 
         model.addAttribute("authUserId", authUserId == null ? "" : authUserId);
+        model.addAttribute("authRole", authRole == null ? "" : authRole);
+        model.addAttribute("isAdminViewer", "Admin".equalsIgnoreCase(authRole));
         model.addAttribute("isAuthenticated", settingsUser != null);
         model.addAttribute("settingsUser", settingsUser);
         model.addAttribute("googleLoginEnabled", hasText(googleClientId));
@@ -89,6 +92,26 @@ public class SettingsController {
         }
 
         return authUserId;
+    }
+
+    private String resolveAuthenticatedRole(HttpServletRequest request) {
+        HttpSession session = request == null ? null : request.getSession(false);
+        String sessionRole = session == null ? null : toTrimmed(session.getAttribute("AUTH_ROLE"));
+        if (sessionRole != null) {
+            return sessionRole;
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        return authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .filter(value -> value != null && value.startsWith("ROLE_"))
+            .map(value -> value.substring("ROLE_".length()))
+            .findFirst()
+            .orElse(null);
     }
 
     private boolean hasText(String value) {

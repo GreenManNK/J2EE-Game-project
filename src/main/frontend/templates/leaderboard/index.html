@@ -13,7 +13,7 @@
           <span>Bang xep hang</span>
         </div>
         <h1 class="gx-page-title theme-text mt-2">Bang xep hang</h1>
-        <p class="gx-page-subtitle">Tim kiem tai khoan, loc nguong diem va xuat bao cao nhanh.</p>
+        <p class="gx-page-subtitle">Tim kiem tai khoan, loc nguong diem va theo doi vi tri. Xuat du lieu chi danh cho admin.</p>
       </div>
       <div class="gx-page-badge">
         <i class="bi bi-people-fill"></i>
@@ -44,13 +44,18 @@
         <button type="submit" class="btn btn-primary w-100">Ap dung</button>
       </div>
 
-      <div class="col-12 d-flex flex-wrap gap-2 justify-content-md-end mt-2">
+      <div class="col-12 d-flex flex-wrap gap-2 justify-content-md-end mt-2" th:if="${canExportLeaderboard}">
         <a class="btn theme-outline-btn"
            th:href="@{/leaderboard/export-csv(q=${q},minScore=${minScore},page=${page},size=${size},scope='page')}">Xuat CSV trang nay</a>
         <a class="btn theme-outline-btn"
            th:href="@{/leaderboard/export-excel(q=${q},minScore=${minScore},page=${page},size=${size},scope='page')}">Xuat Excel trang nay</a>
         <a class="btn theme-outline-btn"
            th:href="@{/leaderboard/export-excel(q=${q},minScore=${minScore},page=${page},size=${size},scope='all')}">Xuat Excel tat ca da loc</a>
+      </div>
+      <div class="col-12 mt-2" th:if="${!canExportLeaderboard}">
+        <div class="alert alert-warning mb-0">
+          Chi admin moi duoc xuat du lieu bang xep hang. Moi tai khoan khac se bi khoa truy cap vao CSV/Excel.
+        </div>
       </div>
     </form>
 
@@ -73,8 +78,10 @@
     </article>
     <article class="theme-box rounded cg-detail-strip__card">
       <span class="cg-detail-strip__eyebrow">Export</span>
-      <strong>CSV / Excel theo trang hoac toan bo</strong>
-      <p>Data leaderboard duoc giu cung mot luong voi giao dien de chuyen tu browse sang bao cao nhanh hon.</p>
+      <strong th:text="${canExportLeaderboard ? 'CSV / Excel theo trang hoac toan bo' : 'Export chi mo cho admin'}">Export chi mo cho admin</strong>
+      <p th:text="${canExportLeaderboard ? 'Data leaderboard duoc giu cung mot luong voi giao dien de chuyen tu browse sang bao cao nhanh hon.' : 'Tai khoan thuong va manager chi duoc xem du lieu tren trang, khong duoc tai file export.'}">
+        Tai khoan thuong va manager chi duoc xem du lieu tren trang, khong duoc tai file export.
+      </p>
     </article>
   </section>
 

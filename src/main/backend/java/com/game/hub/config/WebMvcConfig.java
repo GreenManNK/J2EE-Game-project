@@ -78,7 +78,17 @@ public class WebMvcConfig implements WebMvcConfigurer {
             );
 
         registry.addInterceptor(roleGuardInterceptor)
-            .addPathPatterns("/admin/**", "/manager/**", "/notification-admin/**");
+            .addPathPatterns(
+                "/admin/**",
+                "/manager/**",
+                "/notification-admin/**",
+                "/history/export-csv",
+                "/history/export-excel",
+                "/leaderboard/export-csv",
+                "/leaderboard/export-excel",
+                "/manager/export-users-csv",
+                "/manager/export-users-excel"
+            );
     }
 
     @Override
