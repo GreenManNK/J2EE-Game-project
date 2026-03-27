@@ -33,5 +33,5 @@ if [[ "$FOREGROUND" -eq 1 ]]; then
 else
   compose_exec up -d
   echo "[OK] Docker app da chay: http://127.0.0.1:8080/Game"
-  echo "[INFO] Dung app: ./scripts/manual-start.cmd stop --docker"
+  echo "[INFO] Dung app: ./scripts/manual-start.cmd stop"
 fi

@@ -325,9 +325,8 @@ Khi can verify online flow ngoai pham vi test trong JVM, nen chay them mot dot s
 ### 11.5 Chay bang script tong
 
 ```powershell
-.\scripts\manual-start.cmd start --local
-.\scripts\manual-start.cmd start --public
-.\scripts\manual-start.cmd start --docker
+.\scripts\manual-start.cmd
+.\scripts\manual-start.cmd stop
 ```
 
 ### 11.6 Docker

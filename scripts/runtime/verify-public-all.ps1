@@ -258,26 +258,8 @@ Write-Step "Kiem tra nut bam IntelliJ (.run)"
 Invoke-Check "IntelliJ Start (Default Public)" {
     Assert-IntelliJRunConfig "Start (Default Public).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' '--no-pause'
 } | Out-Null
-Invoke-Check "IntelliJ Start Public (Quick Tunnel)" {
-    Assert-IntelliJRunConfig "Start Public (Quick Tunnel).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'start --public --no-pause'
-} | Out-Null
-Invoke-Check "IntelliJ Start Public (MySQL Standard)" {
-    Assert-IntelliJRunConfig "Start Public (MySQL Standard).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'start --public --mysql --no-pause'
-} | Out-Null
-Invoke-Check "IntelliJ Start Public (PostgreSQL)" {
-    Assert-IntelliJRunConfig "Start Public (PostgreSQL).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'start --public --postgres --no-pause'
-} | Out-Null
-Invoke-Check "IntelliJ Start Local (J2EE)" {
-    Assert-IntelliJRunConfig "Start Local (J2EE).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'start --local --no-pause'
-} | Out-Null
-Invoke-Check "IntelliJ Status (App + Tunnel)" {
-    Assert-IntelliJRunConfig "Status (App + Tunnel).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'status --no-pause'
-} | Out-Null
-Invoke-Check "IntelliJ Stop All (App + Tunnel)" {
-    Assert-IntelliJRunConfig "Stop All (App + Tunnel).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'stop --no-pause'
-} | Out-Null
-Invoke-Check "IntelliJ Verify Public (All-in-One)" {
-    Assert-IntelliJRunConfig "Verify Public (All-in-One).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'verify --no-pause'
+Invoke-Check "IntelliJ Stop (All)" {
+    Assert-IntelliJRunConfig "Stop (All).run.xml" '$PROJECT_DIR$/scripts/manual-start.cmd' 'stop --no-pause'
 } | Out-Null
 
 Write-Step "Kiem tra nut bam VS Code tasks"
@@ -288,15 +270,7 @@ Invoke-Check "VS Code tasks.json public task mappings" {
     }
     $tasksDoc = Get-Content -Path $tasksPath -Raw | ConvertFrom-Json
     Assert-VsCodeTask $tasksDoc.tasks "Game: Start (Default Public)" @("/c", "scripts\manual-start.cmd", "--no-pause")
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Start Public (Quick Tunnel)" @("/c", "scripts\manual-start.cmd", "start", "--public", "--no-pause")
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Start Public (MySQL Standard)" @("/c", "scripts\manual-start.cmd", "start", "--public", "--mysql", "--no-pause")
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Start Public (PostgreSQL)" @("/c", "scripts\manual-start.cmd", "start", "--public", "--postgres", "--no-pause")
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Start Local (J2EE)" @("/c", "scripts\manual-start.cmd", "start", "--local", "--no-pause")
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Status (App + Tunnel)" @("/c", "scripts\manual-start.cmd", "status", "--no-pause")
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Stop All (App + Tunnel)" @("/c", "scripts\manual-start.cmd", "stop", "--no-pause")
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Start Docker" @("/c", "scripts\manual-start.cmd", "start", "--docker", "--no-pause")
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Stop Docker" @("/c", "scripts\manual-start.cmd", "stop", "--docker", "--no-pause")
-    Assert-VsCodeTask $tasksDoc.tasks "Game: Verify Public (All-in-One)" @("/c", "scripts\manual-start.cmd", "verify", "--no-pause")
+    Assert-VsCodeTask $tasksDoc.tasks "Game: Stop (All)" @("/c", "scripts\manual-start.cmd", "stop", "--no-pause")
 } | Out-Null
 
 if (-not $NoLive) {
@@ -309,8 +283,8 @@ if (-not $NoLive) {
             Invoke-CmdScript "scripts/manual-start.cmd" @("stop") | Out-Null
         } | Out-Null
 
-        $startOk = Invoke-Check "Manual start public (scripts/manual-start.cmd start --public)" {
-            Invoke-CmdScript "scripts/manual-start.cmd" @("start", "--public") | Out-Null
+        $startOk = Invoke-Check "Manual start default public (scripts/manual-start.cmd)" {
+            Invoke-CmdScript "scripts/manual-start.cmd" @() | Out-Null
             $script:started = $true
         }
 
@@ -342,8 +316,8 @@ if (-not $NoLive) {
                 Assert-True (Test-HttpOk $publicWsUrl 10) ("Khong truy cap duoc public ws/info: $publicWsUrl")
             } | Out-Null
 
-            Invoke-Check "Manual status (scripts/manual-start.cmd status) hien thong tin dang chay" {
-                $statusLines = Invoke-CmdScript "scripts/manual-start.cmd" @("status") -CaptureOutput
+            Invoke-Check "Runtime status khi dang chay hien thong tin app + tunnel" {
+                $statusLines = powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $repoRoot "scripts/runtime/print-runtime-status.ps1") -NoHints
                 $status = Parse-StatusOutput $statusLines
                 Ensure-StatusValue $status "APP_PROCESS_ALIVE" "1"
                 Ensure-StatusValue $status "APP_LISTEN_8080" "1"
@@ -372,8 +346,8 @@ if (-not $NoLive) {
             Assert-True (Wait-ProcessesStopped 25) "App/tunnel chua dung sau scripts/manual-start.cmd stop"
         } | Out-Null
 
-        Invoke-Check "Manual status sau khi stop hien process=0" {
-            $statusLines = Invoke-CmdScript "scripts/manual-start.cmd" @("status") -CaptureOutput
+        Invoke-Check "Runtime status sau khi stop hien process=0" {
+            $statusLines = powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $repoRoot "scripts/runtime/print-runtime-status.ps1") -NoHints
             $status = Parse-StatusOutput $statusLines
             Ensure-StatusValue $status "APP_PROCESS_ALIVE" "0"
             Ensure-StatusValue $status "QUICK_TUNNEL_PROCESS_ALIVE" "0"

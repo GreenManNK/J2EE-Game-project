@@ -1,10 +1,4 @@
 param(
-    [ValidateSet("auto", "local", "public", "docker")]
-    [string]$Mode = "auto",
-    [ValidateSet("auto", "h2", "mysql", "postgres")]
-    [string]$Db = "auto",
-    [ValidateSet("auto", "named", "quick", "runlocal", "localtunnel")]
-    [string]$TunnelMode = "auto",
     [switch]$ForceBootstrap,
     [switch]$SkipBootstrap
 )
@@ -13,15 +7,8 @@ $ErrorActionPreference = "Stop"
 
 $scriptsRoot = Split-Path -Parent $PSScriptRoot
 $repoRoot = Split-Path -Parent $scriptsRoot
-$dockerHelper = Join-Path $PSScriptRoot "docker-cli-helper.ps1"
 $bootstrapScript = Join-Path $scriptsRoot "dev-env-bootstrap.ps1"
-$localStartScript = Join-Path $PSScriptRoot "start-prod-app.ps1"
 $publicStartScript = Join-Path $PSScriptRoot "start-remote-public-session.ps1"
-$dockerStartScript = Join-Path $PSScriptRoot "dev-run-docker.ps1"
-
-if (Test-Path $dockerHelper) {
-    . $dockerHelper
-}
 
 function Test-CommandExists([string]$Name) {
     return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
@@ -53,29 +40,8 @@ function Test-BuildToolAvailable {
     return (Test-CommandExists "mvn") -or (Test-CommandExists "gradle")
 }
 
-function Test-LocalRuntimeAvailable {
-    return (Test-CommandExists "java") -and (Test-BuildToolAvailable)
-}
-
 function Test-FallbackTunnelAvailable {
     return (Test-CommandExists "npx") -or (Test-CommandExists "npx.cmd")
-}
-
-function Test-PublicRuntimeAvailable {
-    if (-not (Test-LocalRuntimeAvailable)) {
-        return $false
-    }
-    if (-not [string]::IsNullOrWhiteSpace((Get-CloudflaredCommandPath))) {
-        return $true
-    }
-    if (Test-FallbackTunnelAvailable) {
-        return $true
-    }
-    return ($env:OS -eq "Windows_NT")
-}
-
-function Test-DockerRuntimeAvailable {
-    return (-not [string]::IsNullOrWhiteSpace((Get-DockerCliCommand)))
 }
 
 function Read-EnvFileMap([string]$RelativePath) {
@@ -149,69 +115,37 @@ function Test-TcpReachable([string]$HostName, [string]$PortText) {
     }
 }
 
-function Resolve-ModeSelection([string]$RequestedMode) {
-    if ($RequestedMode -ne "auto") {
-        return @{
-            mode = $RequestedMode
-            reason = "Dung mode duoc chi dinh thu cong"
-        }
-    }
-
-    if (Test-PublicRuntimeAvailable) {
-        return @{
-            mode = "public"
-            reason = "Phat hien Java + build tool + cloudflared, uu tien session public mac dinh"
-        }
-    }
-
-    if (Test-LocalRuntimeAvailable) {
-        return @{
-            mode = "local"
-            reason = "Phat hien Java + build tool, fallback ve local"
-        }
-    }
-
-    if (Test-DockerRuntimeAvailable) {
-        return @{
-            mode = "docker"
-            reason = "Khong du tool local/public, fallback ve Docker"
-        }
-    }
-
-    throw "Khong tim thay moi truong chay phu hop. Can Java + build tool de chay local/public, hoac Docker de chay container."
-}
-
-function Resolve-DbSelection([string]$RequestedDb, [string]$SelectedMode) {
+function Resolve-DbSelection {
     $sharedEnv = Read-EnvFileMap ".env.public.local"
     $mysqlEnv = Read-EnvFileMap ".env.public.mysql.local"
     $postgresEnv = Read-EnvFileMap ".env.public.postgres.local"
     $processDbKind = Normalize-DbKind ([Environment]::GetEnvironmentVariable("APP_DATASOURCE_KIND", "Process"))
 
-    if ($SelectedMode -eq "docker") {
+    if ($processDbKind -eq "postgres") {
         return @{
-            kind = "h2"
-            reason = "Docker mode hien tai duoc toi uu cho H2 noi bo"
+            kind = "postgres"
+            reason = "Dung DB theo APP_DATASOURCE_KIND trong moi truong hien tai"
             envFile = ".env.public.local"
-            overlayEnvFile = ""
+            overlayEnvFile = ".env.public.postgres.local"
             explicit = $false
         }
     }
 
-    if ($RequestedDb -ne "auto") {
+    if ($processDbKind -eq "mysql") {
         return @{
-            kind = $RequestedDb
-            reason = "Dung DB duoc chi dinh thu cong"
-            envFile = if ($RequestedDb -eq "postgres") { ".env.public.postgres.local" } elseif ($RequestedDb -eq "mysql") { ".env.public.mysql.local" } else { ".env.public.local" }
-            overlayEnvFile = ""
-            explicit = $true
+            kind = "mysql"
+            reason = "Dung DB theo APP_DATASOURCE_KIND trong moi truong hien tai"
+            envFile = ".env.public.local"
+            overlayEnvFile = if (Test-Path (Join-Path $repoRoot ".env.public.mysql.local")) { ".env.public.mysql.local" } else { "" }
+            explicit = $false
         }
     }
 
-    if ($processDbKind -ne "auto") {
+    if ($processDbKind -eq "h2") {
         return @{
-            kind = $processDbKind
+            kind = "h2"
             reason = "Dung DB theo APP_DATASOURCE_KIND trong moi truong hien tai"
-            envFile = if ($processDbKind -eq "postgres") { ".env.public.postgres.local" } elseif ($processDbKind -eq "mysql") { ".env.public.mysql.local" } else { ".env.public.local" }
+            envFile = ".env.public.local"
             overlayEnvFile = ""
             explicit = $false
         }
@@ -287,38 +221,40 @@ function Apply-EnvMapToProcess($Map) {
     }
 }
 
-function Apply-DbSelection($DbInfo, [string]$SelectedMode) {
+function Assert-PublicRuntimeAvailable {
+    if (-not (Test-CommandExists "java")) {
+        throw "Khong tim thay Java. Chay scripts/dev-env-setup.ps1 hoac cai Java 17+ roi thu lai."
+    }
+    if (-not (Test-BuildToolAvailable)) {
+        throw "Khong tim thay Maven/Gradle wrapper hay build tool he thong. Can mvnw/gradlew, mvn hoac gradle."
+    }
+    if ([string]::IsNullOrWhiteSpace((Get-CloudflaredCommandPath)) -and -not (Test-FallbackTunnelAvailable)) {
+        throw "Khong tim thay public tunnel tool. Can cloudflared hoac npx de mo public session."
+    }
+}
+
+function Apply-DbSelection($DbInfo) {
     if (-not [string]::IsNullOrWhiteSpace([string]$DbInfo.overlayEnvFile)) {
         Apply-EnvMapToProcess (Read-EnvFileMap ([string]$DbInfo.overlayEnvFile))
     }
 
     Set-ProcessEnvValue -Name "APP_DATASOURCE_KIND" -Value $DbInfo.kind
+    Set-ProcessEnvValue -Name "APP_DATASOURCE_H2_FILE" -Value ".data/game-public"
 
     if ($DbInfo.kind -eq "h2") {
         Set-ProcessEnvValue -Name "APP_DATASOURCE_ALLOW_H2_FALLBACK" -Value "true"
-    } elseif ($DbInfo.explicit) {
-        Set-ProcessEnvValue -Name "APP_DATASOURCE_ALLOW_H2_FALLBACK" -Value "false"
     } else {
         Set-ProcessEnvValue -Name "APP_DATASOURCE_ALLOW_H2_FALLBACK" -Value "true"
     }
-
-    if ($SelectedMode -eq "local") {
-        Set-ProcessEnvValue -Name "APP_DATASOURCE_H2_FILE" -Value ".data/game-local"
-    } elseif ($SelectedMode -eq "public") {
-        Set-ProcessEnvValue -Name "APP_DATASOURCE_H2_FILE" -Value ".data/game-public"
-    }
 }
 
-function Run-Bootstrap([string]$SelectedMode, [string]$ResolvedDbKind, [switch]$Force) {
+function Run-Bootstrap([string]$ResolvedDbKind, [switch]$Force) {
     if ($SkipBootstrap) {
-        return
-    }
-    if ($SelectedMode -eq "docker") {
         return
     }
 
     $args = @{
-        Mode = $SelectedMode
+        Mode = "public"
         Db = $ResolvedDbKind
     }
     if ($Force) {
@@ -337,38 +273,21 @@ function Require-Script([string]$Path) {
     }
 }
 
-Require-Script $localStartScript
-Require-Script $publicStartScript
-Require-Script $dockerStartScript
 Require-Script $bootstrapScript
+Require-Script $publicStartScript
 
-$modeInfo = Resolve-ModeSelection -RequestedMode $Mode
-$dbInfo = Resolve-DbSelection -RequestedDb $Db -SelectedMode $modeInfo.mode
+$dbInfo = Resolve-DbSelection
 
-Write-Output "LAUNCH_MODE=$($modeInfo.mode)"
-Write-Output "LAUNCH_MODE_REASON=$($modeInfo.reason)"
+Write-Output "LAUNCH_MODE=public"
+Write-Output "LAUNCH_MODE_REASON=Chi giu Start (Default Public) lam cach chay mac dinh"
 Write-Output "RESOLVED_DB=$($dbInfo.kind)"
 Write-Output "RESOLVED_DB_REASON=$($dbInfo.reason)"
 Write-Output "APP_ENV_FILE=$($dbInfo.envFile)"
-Write-Output "TUNNEL_MODE_REQUESTED=$TunnelMode"
+Write-Output "TUNNEL_MODE_REQUESTED=auto"
 
-Run-Bootstrap -SelectedMode $modeInfo.mode -ResolvedDbKind $dbInfo.kind -Force:$ForceBootstrap
-Apply-DbSelection -DbInfo $dbInfo -SelectedMode $modeInfo.mode
+Run-Bootstrap -ResolvedDbKind $dbInfo.kind -Force:$ForceBootstrap
+Assert-PublicRuntimeAvailable
+Apply-DbSelection -DbInfo $dbInfo
 
-switch ($modeInfo.mode) {
-    "local" {
-        & $localStartScript -AutoBuild -Port 8080 -EnvFile $dbInfo.envFile -EnableH2Fallback -WaitSeconds 45
-        exit $LASTEXITCODE
-    }
-    "public" {
-        & $publicStartScript -AutoBuild -Port 8080 -AppEnvFile $dbInfo.envFile -TunnelMode $TunnelMode -SkipBootstrap -WaitSeconds 30
-        exit $LASTEXITCODE
-    }
-    "docker" {
-        & $dockerStartScript
-        exit $LASTEXITCODE
-    }
-    default {
-        throw "Mode khong duoc ho tro: $($modeInfo.mode)"
-    }
-}
+& $publicStartScript -AutoBuild -Port 8080 -AppEnvFile $dbInfo.envFile -TunnelMode auto -SkipBootstrap -WaitSeconds 30
+exit $LASTEXITCODE

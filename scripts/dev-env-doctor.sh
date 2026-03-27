@@ -396,19 +396,11 @@ fi
 
 title "Quick Start"
 echo "Windows auto launcher: cmd /c scripts\\manual-start.cmd"
-echo "Windows local only:    cmd /c scripts\\manual-start.cmd start --local"
-echo "Windows public only:   cmd /c scripts\\manual-start.cmd start --public"
-echo "Windows docker only:   cmd /c scripts\\manual-start.cmd start --docker"
-echo "Windows status:        cmd /c scripts\\manual-start.cmd status"
 echo "Windows stop all:      cmd /c scripts\\manual-start.cmd stop"
-echo "Windows (PowerShell): .\\scripts\\manual-start.cmd start --local"
-echo "macOS/Linux (bash):  bash ./scripts/runtime/dev-run-local.sh"
+echo "Windows (PowerShell): .\\scripts\\manual-start.cmd --no-pause"
 echo "Maven wrapper: .\\mvnw.cmd spring-boot:run (Windows) | ./mvnw spring-boot:run (macOS/Linux)"
 echo "Gradle wrapper: .\\gradlew.bat bootRun (Windows) | ./gradlew bootRun (macOS/Linux)"
-echo "Docker: .\\scripts\\manual-start.cmd start --docker"
-if [[ "$MODE" == "public" ]]; then
-  echo "Public mode (Windows): cmd /c scripts\\manual-start.cmd start --public"
-fi
+echo "macOS/Linux (manual run): bash ./scripts/runtime/dev-run-local.sh"
 
 if [[ ${#required_failures[@]} -gt 0 ]]; then
   title "Result"

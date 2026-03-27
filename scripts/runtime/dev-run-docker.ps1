@@ -25,7 +25,7 @@ try {
         $code = Invoke-DockerCompose @("up", "-d")
         if ($code -eq 0) {
             Write-Host "Docker app da chay: http://127.0.0.1:8080/Game" -ForegroundColor Green
-            Write-Host "Dung app: .\scripts\manual-start.cmd stop --docker" -ForegroundColor Gray
+            Write-Host "Dung app: .\scripts\manual-start.cmd stop" -ForegroundColor Gray
             if (Test-Path $statusScript) {
                 Write-Host ""
                 & $statusScript -Title "DOCKER STATUS" -NoHints | Out-Host

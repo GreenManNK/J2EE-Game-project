@@ -591,17 +591,11 @@ if ($Db -eq "postgres") {
 
 Write-Title "Quick Start"
 Write-Host "Windows auto launcher: cmd /c scripts\manual-start.cmd" -ForegroundColor White
-Write-Host "Windows local only:    cmd /c scripts\manual-start.cmd --local" -ForegroundColor White
-Write-Host "Windows public only:   cmd /c scripts\manual-start.cmd --public" -ForegroundColor White
-Write-Host "Windows docker only:   cmd /c scripts\manual-start.cmd --docker" -ForegroundColor White
-Write-Host "Windows (PowerShell): .\scripts\manual-start.cmd start --local" -ForegroundColor White
-Write-Host "macOS/Linux (bash):  bash ./scripts/runtime/dev-run-local.sh" -ForegroundColor White
+Write-Host "Windows stop all:      cmd /c scripts\manual-start.cmd stop" -ForegroundColor White
+Write-Host "Windows (PowerShell): .\scripts\manual-start.cmd --no-pause" -ForegroundColor White
 Write-Host "Maven wrapper: ./mvnw spring-boot:run (macOS/Linux) | .\mvnw.cmd spring-boot:run (Windows)" -ForegroundColor White
 Write-Host "Gradle wrapper: ./gradlew bootRun (macOS/Linux) | .\gradlew.bat bootRun (Windows)" -ForegroundColor White
-Write-Host "Docker: .\scripts\manual-start.cmd start --docker" -ForegroundColor White
-if ($Mode -eq "public") {
-    Write-Host "Public mode (Windows): cmd /c scripts\manual-start.cmd --public" -ForegroundColor White
-}
+Write-Host "macOS/Linux (manual run): bash ./scripts/runtime/dev-run-local.sh" -ForegroundColor White
 
 if ($requiredFailures.Count -gt 0) {
     Write-Title "Result"
