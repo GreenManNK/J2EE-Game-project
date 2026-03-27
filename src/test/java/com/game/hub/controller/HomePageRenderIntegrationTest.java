@@ -311,7 +311,7 @@ class HomePageRenderIntegrationTest {
         mockMvc.perform(get("/profile").param("userId", "profile-user").sessionAttr("AUTH_USER_ID", "profile-user"))
             .andExpect(status().isOk())
             .andExpect(view().name("profile/index"))
-            .andExpect(model().attributeExists("user", "favoriteGameCount", "recentActivity", "memberDays"));
+            .andExpect(model().attributeExists("user", "favoriteGameCount", "recentActivity", "memberDays", "practiceStatCards", "practiceProgressCount"));
     }
 
     @Test

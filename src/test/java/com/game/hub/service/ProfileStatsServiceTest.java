@@ -32,6 +32,21 @@ class ProfileStatsServiceTest {
         user.setId("user-1");
         user.setDisplayName("Player One");
         user.setGamesBrowserFavoritesJson("[\"caro\",\"quiz\"]");
+        user.setChessOfflineStatsJson("""
+            {"whiteWins":4,"blackWins":2,"draws":1}
+            """);
+        user.setXiangqiOfflineStatsJson("""
+            {"redWins":3,"blackWins":1,"draws":2}
+            """);
+        user.setMinesweeperStatsJson("""
+            {"totalGames":6,"wins":4,"losses":2,"bestTimes":{"preset:beginner":38,"preset:expert":121}}
+            """);
+        user.setQuizPracticeStatsJson("""
+            {"totalGames":5,"wins":3,"losses":1,"draws":1,"bestScore":18,"perfectRounds":2}
+            """);
+        user.setTypingPracticeStatsJson("""
+            {"totalGames":4,"wins":2,"losses":1,"draws":1,"bestWpm":77,"bestAccuracy":98.2,"completedQuotes":3}
+            """);
 
         GameHistory win = new GameHistory();
         win.setId(15L);
@@ -90,6 +105,22 @@ class ProfileStatsServiceTest {
         assertEquals("Normal_ABC123-1743041234567", recentActivity.get(0).matchCode());
         assertEquals("Phong thuong Caro", recentActivity.get(0).locationLabel());
         assertEquals("/game/room/Normal_ABC123", recentActivity.get(0).locationHref());
+
+        @SuppressWarnings("unchecked")
+        List<ProfileStatsService.PracticeStatCard> practiceStatCards =
+            (List<ProfileStatsService.PracticeStatCard>) profile.get("practiceStatCards");
+        assertEquals(5, practiceStatCards.size());
+        assertEquals("chess-offline", practiceStatCards.get(0).code());
+        assertEquals("4/2", practiceStatCards.get(0).primaryValue());
+        assertEquals("xiangqi-offline", practiceStatCards.get(1).code());
+        assertEquals("3/1", practiceStatCards.get(1).primaryValue());
+        assertEquals("minesweeper", practiceStatCards.get(2).code());
+        assertEquals("38s", practiceStatCards.get(2).secondaryValue());
+        assertEquals("quiz-practice", practiceStatCards.get(3).code());
+        assertEquals("18", practiceStatCards.get(3).primaryValue());
+        assertEquals("typing-practice", practiceStatCards.get(4).code());
+        assertEquals("77", practiceStatCards.get(4).primaryValue());
+        assertEquals(5L, profile.get("practiceProgressCount"));
     }
 
     @Test
