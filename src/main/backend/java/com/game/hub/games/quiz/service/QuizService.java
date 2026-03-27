@@ -59,6 +59,12 @@ public class QuizService {
         return highScoreRepository.findTop10ByOrderByScoreDesc();
     }
 
+    public List<PracticeQuestion> getPracticeQuestions() {
+        return questions.stream()
+            .map(this::toPracticeQuestion)
+            .toList();
+    }
+
     private List<Question> loadQuestions() {
         List<Question> questions = new ArrayList<>();
         questions.add(new SingleCorrectQuestion("What is the capital of France?", Arrays.asList("Berlin", "Madrid", "Paris", "Rome"), 2));
@@ -66,5 +72,47 @@ public class QuizService {
         questions.add(new MultipleCorrectQuestion("Which of the following are primary colors?", Arrays.asList("Red", "Green", "Blue", "Yellow"), Arrays.asList(0, 2, 3)));
         questions.add(new TypedAnswerQuestion("What is the name of the largest planet in our solar system?", "Jupiter"));
         return questions;
+    }
+
+    private PracticeQuestion toPracticeQuestion(Question question) {
+        if (question instanceof SingleCorrectQuestion singleCorrectQuestion) {
+            return new PracticeQuestion(
+                singleCorrectQuestion.getQuestionType(),
+                singleCorrectQuestion.getQuestion(),
+                singleCorrectQuestion.getOptions(),
+                singleCorrectQuestion.getCorrectAnswer(),
+                List.of(),
+                null
+            );
+        }
+        if (question instanceof MultipleCorrectQuestion multipleCorrectQuestion) {
+            return new PracticeQuestion(
+                multipleCorrectQuestion.getQuestionType(),
+                multipleCorrectQuestion.getQuestion(),
+                multipleCorrectQuestion.getOptions(),
+                null,
+                List.copyOf(multipleCorrectQuestion.getCorrectAnswers()),
+                null
+            );
+        }
+        if (question instanceof TypedAnswerQuestion typedAnswerQuestion) {
+            return new PracticeQuestion(
+                typedAnswerQuestion.getQuestionType(),
+                typedAnswerQuestion.getQuestion(),
+                List.of(),
+                null,
+                List.of(),
+                typedAnswerQuestion.getCorrectAnswer()
+            );
+        }
+        throw new IllegalArgumentException("Unsupported practice question type: " + question.getClass().getName());
+    }
+
+    public record PracticeQuestion(String type,
+                                   String question,
+                                   List<String> options,
+                                   Integer correctAnswer,
+                                   List<Integer> correctAnswers,
+                                   String correctText) {
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -14,6 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class TypingService {
+    private static final List<String> PRACTICE_FALLBACK_TEXTS = List.of(
+        "The quick brown fox jumps over the lazy dog.",
+        "Typing practice rewards accuracy before raw speed.",
+        "A steady rhythm usually beats frantic corrections in the final stretch.",
+        "Keep your eyes on the source text and let your fingers learn the pattern."
+    );
+
     private final Map<String, TypingRoom> rooms = new ConcurrentHashMap<>();
     private final TypingTextRepository textRepository;
 
@@ -53,11 +61,34 @@ public class TypingService {
         return room;
     }
 
+    public List<String> getPracticeTexts() {
+        LinkedHashSet<String> texts = new LinkedHashSet<>();
+        String randomText = trimToNull(pickRandomText());
+        if (randomText != null) {
+            texts.add(randomText);
+        }
+        for (String fallbackText : PRACTICE_FALLBACK_TEXTS) {
+            String normalized = trimToNull(fallbackText);
+            if (normalized != null) {
+                texts.add(normalized);
+            }
+        }
+        return List.copyOf(texts);
+    }
+
     private String pickRandomText() {
         TypingText randomText = textRepository.findRandomText();
         if (randomText == null || randomText.getContent() == null || randomText.getContent().isBlank()) {
             return "The quick brown fox jumps over the lazy dog.";
         }
         return randomText.getContent();
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

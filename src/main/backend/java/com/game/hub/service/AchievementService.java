@@ -182,7 +182,9 @@ public class AchievementService {
     }
 
     private PlayerStats buildStats(String userId) {
-        List<GameHistory> games = gameHistoryRepository.findByPlayer1IdOrPlayer2IdOrderByPlayedAtDesc(userId, userId);
+        List<GameHistory> games = gameHistoryRepository.findByPlayer1IdOrPlayer2IdOrderByPlayedAtDesc(userId, userId).stream()
+            .filter(this::countsTowardCompetitiveStats)
+            .toList();
         int totalGames = games.size();
         int totalWins = (int) games.stream().filter(g -> userId.equals(g.getWinnerId())).count();
         double winRate = totalGames == 0 ? 0.0 : (totalWins * 100.0) / totalGames;
@@ -201,6 +203,14 @@ public class AchievementService {
         }
 
         return new PlayerStats(totalGames, totalWins, winRate, currentWinStreak, currentLoseStreak);
+    }
+
+    private boolean countsTowardCompetitiveStats(GameHistory game) {
+        if (game == null || game.getGameCode() == null) {
+            return true;
+        }
+        String normalized = game.getGameCode().trim().toLowerCase();
+        return !(normalized.endsWith("-bot") || normalized.endsWith("_bot"));
     }
 
     private void grantRepeat(String userId, String baseName, int milestone) {

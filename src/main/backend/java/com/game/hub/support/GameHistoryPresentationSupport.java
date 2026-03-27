@@ -30,9 +30,9 @@ public class GameHistoryPresentationSupport {
         String contextLabel = resolveContextLabel(storedGameCode, roomId);
         String gameName = resolveGameName(canonicalGameCode, storedGameCode);
         String gameIconClass = resolveGameIconClass(canonicalGameCode);
-        String gameHref = resolveGameHref(canonicalGameCode);
+        String gameHref = resolveGameHref(canonicalGameCode, storedGameCode);
         String locationLabel = resolveLocationLabel(history, canonicalGameCode, storedGameCode, roomId);
-        String locationHref = resolveLocationHref(history, canonicalGameCode, roomId, contextLabel);
+        String locationHref = resolveLocationHref(history, canonicalGameCode, storedGameCode, roomId, contextLabel);
         return new ViewMetadata(
             canonicalGameCode,
             gameName,
@@ -54,14 +54,20 @@ public class GameHistoryPresentationSupport {
         }
         return switch (storedGameCode) {
             case "caro" -> "caro";
+            case "caro-bot", "caro_bot", "carobot" -> "caro";
             case "cards", "tienlen", "tien-len" -> "cards";
+            case "cards-bot", "cards_bot", "cardsbot", "tienlen-bot", "tienlen_bot", "tienlenbot" -> "cards";
             case "blackjack" -> "blackjack";
+            case "blackjack-bot", "blackjack_bot", "blackjackbot" -> "blackjack";
             case "chess", "chess-offline", "chess_offline", "chessoffline" -> "chess";
+            case "chess-bot", "chess_bot", "chessbot" -> "chess";
             case "xiangqi", "xiangqi-offline", "xiangqi_offline", "xiangqioffline" -> "xiangqi";
-            case "typing" -> "typing";
-            case "quiz" -> "quiz";
+            case "xiangqi-bot", "xiangqi_bot", "xiangqibot" -> "xiangqi";
+            case "typing", "typing-bot", "typing_bot", "typingbot" -> "typing";
+            case "quiz", "quiz-bot", "quiz_bot", "quizbot" -> "quiz";
             case "minesweeper" -> "minesweeper";
             case "monopoly" -> "monopoly";
+            case "monopoly-bot", "monopoly_bot", "monopolybot" -> "monopoly";
             case "sudoku", "jigsaw", "sliding", "word", "puzzle" -> "puzzle";
             default -> storedGameCode;
         };
@@ -91,6 +97,9 @@ public class GameHistoryPresentationSupport {
     private String resolveContextLabel(String storedGameCode, String roomId) {
         if (roomId != null || isLegacyCaroMatchCode(storedGameCode)) {
             return "Online";
+        }
+        if (isBotGameCode(storedGameCode)) {
+            return "Bot";
         }
         if (storedGameCode.endsWith("-offline") || storedGameCode.endsWith("_offline") || storedGameCode.endsWith("offline")) {
             return "Offline";
@@ -135,7 +144,20 @@ public class GameHistoryPresentationSupport {
         };
     }
 
-    private String resolveGameHref(String canonicalGameCode) {
+    private String resolveGameHref(String canonicalGameCode, String storedGameCode) {
+        if (isBotGameCode(storedGameCode)) {
+            return switch (canonicalGameCode) {
+                case "caro" -> "/game-mode/bot?game=caro";
+                case "cards" -> "/cards/tien-len/bot";
+                case "blackjack" -> "/games/cards/blackjack/bot";
+                case "chess" -> "/chess/bot";
+                case "xiangqi" -> "/xiangqi/bot";
+                case "quiz" -> "/games/quiz/bot";
+                case "typing" -> "/games/typing/bot";
+                case "monopoly" -> "/games/monopoly/bot";
+                default -> "/history";
+            };
+        }
         GameCatalogItem item = catalogByCode.get(canonicalGameCode);
         String catalogHref = item == null ? null : trimToNull(item.primaryActionUrl());
         if (catalogHref != null) {
@@ -173,6 +195,9 @@ public class GameHistoryPresentationSupport {
         if (storedGameCode.endsWith("-offline") || storedGameCode.endsWith("_offline") || storedGameCode.endsWith("offline")) {
             return "Che do offline";
         }
+        if (isBotGameCode(storedGameCode)) {
+            return "Che do bot";
+        }
         return switch (canonicalGameCode) {
             case "minesweeper", "monopoly", "puzzle" -> "Ban local";
             case "cards", "blackjack", "chess", "xiangqi", "typing", "quiz", "caro" -> "Trang game";
@@ -182,6 +207,7 @@ public class GameHistoryPresentationSupport {
 
     private String resolveLocationHref(GameHistory history,
                                        String canonicalGameCode,
+                                       String storedGameCode,
                                        String roomId,
                                        String contextLabel) {
         String explicitPath = trimToNull(history == null ? null : history.getLocationPath());
@@ -191,7 +217,7 @@ public class GameHistoryPresentationSupport {
         if (roomId != null && "Online".equalsIgnoreCase(contextLabel)) {
             return roomPathFor(canonicalGameCode, roomId);
         }
-        return resolveGameHref(canonicalGameCode);
+        return resolveGameHref(canonicalGameCode, storedGameCode);
     }
 
     private String roomLabelFor(String canonicalGameCode, String roomIdOrLegacyCode) {
@@ -229,7 +255,7 @@ public class GameHistoryPresentationSupport {
             case "xiangqi" -> "/xiangqi/online/room/" + encodedRoomId;
             case "typing" -> "/games/typing/room/" + encodedRoomId;
             case "quiz" -> "/games/quiz/room/" + encodedRoomId;
-            default -> resolveGameHref(canonicalGameCode);
+            default -> resolveGameHref(canonicalGameCode, canonicalGameCode);
         };
     }
 
@@ -238,6 +264,12 @@ public class GameHistoryPresentationSupport {
             || storedGameCode.startsWith("normal_")
             || storedGameCode.startsWith("challenge_")
             || storedGameCode.startsWith("game_");
+    }
+
+    private boolean isBotGameCode(String storedGameCode) {
+        return storedGameCode.endsWith("-bot")
+            || storedGameCode.endsWith("_bot")
+            || storedGameCode.endsWith("bot");
     }
 
     private String trimToNull(String value) {

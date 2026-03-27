@@ -38,6 +38,38 @@ class QuizControllerTest {
     }
 
     @Test
+    void quizLocalAndBotPagesShouldRenderPracticeTemplate() {
+        QuizController controller = new QuizController();
+        ReflectionTestUtils.setField(controller, "gameCatalogService", new GameCatalogService());
+
+        ConcurrentModel localModel = new ConcurrentModel();
+        ConcurrentModel botModel = new ConcurrentModel();
+
+        assertEquals("games/quiz-practice", controller.quizLocalPage(localModel));
+        assertEquals(Boolean.TRUE, localModel.getAttribute("localPage"));
+        assertEquals(Boolean.FALSE, localModel.getAttribute("botPage"));
+
+        assertEquals("games/quiz-practice", controller.quizBotPage("hard", botModel));
+        assertEquals(Boolean.FALSE, botModel.getAttribute("localPage"));
+        assertEquals(Boolean.TRUE, botModel.getAttribute("botPage"));
+        assertEquals("hard", botModel.getAttribute("botDifficulty"));
+    }
+
+    @Test
+    void getPracticeQuestionsShouldExposeStructuredQuestions() {
+        QuizService quizService = new QuizService();
+        QuizController controller = new QuizController();
+        ReflectionTestUtils.setField(controller, "quizService", quizService);
+
+        Map<String, Object> payload = controller.getPracticeQuestions();
+
+        assertTrue(payload.containsKey("questions"));
+        Object questions = payload.get("questions");
+        assertTrue(questions instanceof List<?>);
+        assertTrue(((List<?>) questions).size() >= 4);
+    }
+
+    @Test
     void getAvailableRoomsShouldReturnRoomsWithPlayersOrSpectatorsOnly() {
         QuizService quizService = new QuizService();
         QuizRoom emptyRoom = quizService.createRoom();

@@ -98,6 +98,55 @@ class MonopolyGameEngineTest {
         assertEquals("Lui 3 o.", ((Map<?, ?>) result.gameState().get("lastCard")).get("label"));
     }
 
+    @Test
+    void tradeOfferAndAcceptShouldSwapAssetsAndCash() {
+        MonopolyGameEngine engine = new MonopolyGameEngine();
+        Map<String, Object> state = createState(engine);
+        state.put("phase", "await_end_turn");
+        setPlayerMoney(state, 0, 1500);
+        setPlayerMoney(state, 1, 1500);
+        setTileOwner(state, 1, "p1");
+        setTileOwner(state, 6, "p2");
+
+        MonopolyGameEngine.ActionResult offer = engine.applyAction(
+            state,
+            "p1",
+            "trade_offer",
+            null,
+            null,
+            "p2",
+            100,
+            50,
+            List.of(1),
+            List.of(6),
+            new Random(7)
+        );
+
+        MonopolyGameEngine.ActionResult accept = engine.applyAction(
+            offer.gameState(),
+            "p2",
+            "trade_accept",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            new Random(7)
+        );
+
+        assertTrue(offer.success());
+        assertEquals("trade", offer.gameState().get("phase"));
+        assertTrue(accept.success());
+        assertEquals("await_end_turn", accept.gameState().get("phase"));
+        assertNull(accept.gameState().get("tradeOffer"));
+        assertEquals(1450, playerMoney(accept.gameState(), 0));
+        assertEquals(1550, playerMoney(accept.gameState(), 1));
+        assertEquals("p2", tileOwner(accept.gameState(), 1));
+        assertEquals("p1", tileOwner(accept.gameState(), 6));
+    }
+
     private Map<String, Object> createState(MonopolyGameEngine engine) {
         return engine.createInitialState(
             List.of(
@@ -143,6 +192,21 @@ class MonopolyGameEngineTest {
 
     private int playerMoney(Map<String, Object> state, int playerIndex) {
         return ((Number) player(state, playerIndex).get("money")).intValue();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void setPlayerMoney(Map<String, Object> state, int playerIndex, int money) {
+        ((List<Map<String, Object>>) state.get("players")).get(playerIndex).put("money", money);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void setTileOwner(Map<String, Object> state, int tileIndex, String ownerId) {
+        ((List<Map<String, Object>>) state.get("board")).get(tileIndex).put("ownerId", ownerId);
+    }
+
+    @SuppressWarnings("unchecked")
+    private String tileOwner(Map<String, Object> state, int tileIndex) {
+        return String.valueOf(((List<Map<String, Object>>) state.get("board")).get(tileIndex).get("ownerId"));
     }
 
     private static final class FixedRandom extends Random {

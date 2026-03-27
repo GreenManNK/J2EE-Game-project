@@ -64,6 +64,7 @@
       ? window.CaroUrl.path
       : (value) => value;
     const ui = window.CaroUi || {};
+    const historyApi = window.CaroHistory || {};
     const mode = /*[[${mode}]]*/ 'easy';
     const boardSize = 15;
     const board = Array.from({ length: boardSize }, () => Array(boardSize).fill(''));
@@ -74,6 +75,45 @@
     let gameOver = false;
     let currentWinLine = [];
     let lastMove = null;
+    let currentMatchCode = createMatchCode();
+    let historyRecorded = false;
+
+    function createMatchCode() {
+      return typeof historyApi.newMatchCode === 'function'
+        ? historyApi.newMatchCode('caro-bot-' + mode)
+        : ('BOT-CARO-' + Date.now());
+    }
+
+    function countMoves() {
+      let moves = 0;
+      for (let x = 0; x < boardSize; x++) {
+        for (let y = 0; y < boardSize; y++) {
+          if (board[x][y]) {
+            moves += 1;
+          }
+        }
+      }
+      return moves;
+    }
+
+    async function recordHistory(outcome) {
+      if (historyRecorded || typeof historyApi.recordBotMatch !== 'function') {
+        return;
+      }
+      historyRecorded = true;
+      try {
+        await historyApi.recordBotMatch({
+          gameCode: 'caro',
+          difficulty: mode,
+          outcome,
+          totalMoves: countMoves(),
+          firstPlayerRole: 'player',
+          matchCode: currentMatchCode
+        });
+      } catch (_) {
+        historyRecorded = false;
+      }
+    }
 
     function cellId(x, y) {
       return 'bot-cell-' + x + '-' + y;
@@ -156,6 +196,8 @@
       gameOver = false;
       currentWinLine = [];
       lastMove = null;
+      historyRecorded = false;
+      currentMatchCode = createMatchCode();
       for (let x = 0; x < boardSize; x++) {
         for (let y = 0; y < boardSize; y++) {
           board[x][y] = '';
@@ -214,18 +256,21 @@
           gameOver = true;
           statusEl.textContent = 'Ban thang!';
           ui.toast?.('Ban thang!', { type: 'success' });
+          recordHistory('win');
           return;
         }
         if (data.botWin) {
           gameOver = true;
           statusEl.textContent = 'Bot thang!';
           ui.toast?.('Bot thang!', { type: 'warning' });
+          recordHistory('loss');
           return;
         }
         if (data.draw) {
           gameOver = true;
           statusEl.textContent = 'Hoa co!';
           ui.toast?.('Van dau hoa!', { type: 'info' });
+          recordHistory('draw');
           return;
         }
 
@@ -251,6 +296,7 @@
       setWinLine([]);
       statusEl.textContent = 'Ban da dau hang! Bot thang.';
       ui.toast?.('Ban da dau hang!', { type: 'warning' });
+      recordHistory('loss');
       renderBoard();
     });
 

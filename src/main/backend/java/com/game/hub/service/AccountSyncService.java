@@ -36,10 +36,14 @@ public class AccountSyncService {
     private static final String GAME_CODE_CHESS_OFFLINE = "chess-offline";
     private static final String GAME_CODE_XIANGQI_OFFLINE = "xiangqi-offline";
     private static final String GAME_CODE_MINESWEEPER = "minesweeper";
+    private static final String GAME_CODE_QUIZ_PRACTICE = "quiz-practice";
+    private static final String GAME_CODE_TYPING_PRACTICE = "typing-practice";
     private static final List<String> SUPPORTED_GAME_CODES = List.of(
         GAME_CODE_CHESS_OFFLINE,
         GAME_CODE_XIANGQI_OFFLINE,
-        GAME_CODE_MINESWEEPER
+        GAME_CODE_MINESWEEPER,
+        GAME_CODE_QUIZ_PRACTICE,
+        GAME_CODE_TYPING_PRACTICE
     );
 
     private final UserAccountRepository userAccountRepository;
@@ -659,6 +663,8 @@ public class AccountSyncService {
         payload.put(GAME_CODE_CHESS_OFFLINE, normalizeChessStats(readStatsForGameCode(user, GAME_CODE_CHESS_OFFLINE)));
         payload.put(GAME_CODE_XIANGQI_OFFLINE, normalizeXiangqiStats(readStatsForGameCode(user, GAME_CODE_XIANGQI_OFFLINE)));
         payload.put(GAME_CODE_MINESWEEPER, normalizeMinesweeperStats(readStatsForGameCode(user, GAME_CODE_MINESWEEPER)));
+        payload.put(GAME_CODE_QUIZ_PRACTICE, normalizeQuizPracticeStats(readStatsForGameCode(user, GAME_CODE_QUIZ_PRACTICE)));
+        payload.put(GAME_CODE_TYPING_PRACTICE, normalizeTypingPracticeStats(readStatsForGameCode(user, GAME_CODE_TYPING_PRACTICE)));
         return payload;
     }
 
@@ -721,6 +727,10 @@ public class AccountSyncService {
             rawJson = user.getXiangqiOfflineStatsJson();
         } else if (GAME_CODE_MINESWEEPER.equals(gameCode)) {
             rawJson = user.getMinesweeperStatsJson();
+        } else if (GAME_CODE_QUIZ_PRACTICE.equals(gameCode)) {
+            rawJson = user.getQuizPracticeStatsJson();
+        } else if (GAME_CODE_TYPING_PRACTICE.equals(gameCode)) {
+            rawJson = user.getTypingPracticeStatsJson();
         } else {
             rawJson = null;
         }
@@ -739,6 +749,14 @@ public class AccountSyncService {
         }
         if (GAME_CODE_MINESWEEPER.equals(gameCode)) {
             user.setMinesweeperStatsJson(json);
+            return;
+        }
+        if (GAME_CODE_QUIZ_PRACTICE.equals(gameCode)) {
+            user.setQuizPracticeStatsJson(json);
+            return;
+        }
+        if (GAME_CODE_TYPING_PRACTICE.equals(gameCode)) {
+            user.setTypingPracticeStatsJson(json);
             return;
         }
         throw new IllegalArgumentException("Unsupported gameCode: " + gameCode);
@@ -761,6 +779,20 @@ public class AccountSyncService {
         if ("minesweeper".equals(lowered)) {
             return GAME_CODE_MINESWEEPER;
         }
+        if ("quiz-practice".equals(lowered) || "quiz_practice".equals(lowered)
+            || "quizpractice".equals(lowered) || "quiz-local".equals(lowered)
+            || "quiz_local".equals(lowered) || "quizlocal".equals(lowered)
+            || "quiz-bot".equals(lowered) || "quiz_bot".equals(lowered)
+            || "quizbot".equals(lowered) || "quiz".equals(lowered)) {
+            return GAME_CODE_QUIZ_PRACTICE;
+        }
+        if ("typing-practice".equals(lowered) || "typing_practice".equals(lowered)
+            || "typingpractice".equals(lowered) || "typing-local".equals(lowered)
+            || "typing_local".equals(lowered) || "typinglocal".equals(lowered)
+            || "typing-bot".equals(lowered) || "typing_bot".equals(lowered)
+            || "typingbot".equals(lowered) || "typing".equals(lowered)) {
+            return GAME_CODE_TYPING_PRACTICE;
+        }
         return null;
     }
 
@@ -774,6 +806,12 @@ public class AccountSyncService {
         }
         if (GAME_CODE_MINESWEEPER.equals(gameCode)) {
             return normalizeMinesweeperStats(source);
+        }
+        if (GAME_CODE_QUIZ_PRACTICE.equals(gameCode)) {
+            return normalizeQuizPracticeStats(source);
+        }
+        if (GAME_CODE_TYPING_PRACTICE.equals(gameCode)) {
+            return normalizeTypingPracticeStats(source);
         }
         return Map.of();
     }
@@ -789,6 +827,12 @@ public class AccountSyncService {
         }
         if (GAME_CODE_MINESWEEPER.equals(gameCode)) {
             return mergeMinesweeperStats(existing, incoming);
+        }
+        if (GAME_CODE_QUIZ_PRACTICE.equals(gameCode)) {
+            return mergeQuizPracticeStats(existing, incoming);
+        }
+        if (GAME_CODE_TYPING_PRACTICE.equals(gameCode)) {
+            return mergeTypingPracticeStats(existing, incoming);
         }
         return Map.of();
     }
@@ -827,6 +871,46 @@ public class AccountSyncService {
         result.put("wins", wins);
         result.put("losses", losses);
         result.put("bestTimes", bestTimes);
+        return result;
+    }
+
+    private Map<String, Object> normalizeQuizPracticeStats(Map<String, Object> source) {
+        int totalGames = Math.max(0, toInt(source.get("totalGames"), 0));
+        int wins = Math.max(0, toInt(source.get("wins"), 0));
+        int losses = Math.max(0, toInt(source.get("losses"), 0));
+        int draws = Math.max(0, toInt(source.get("draws"), 0));
+        int bestScore = Math.max(0, toInt(source.get("bestScore"), 0));
+        int perfectRounds = Math.max(0, toInt(source.get("perfectRounds"), 0));
+        totalGames = Math.max(totalGames, wins + losses + draws);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("totalGames", totalGames);
+        result.put("wins", wins);
+        result.put("losses", losses);
+        result.put("draws", draws);
+        result.put("bestScore", bestScore);
+        result.put("perfectRounds", perfectRounds);
+        return result;
+    }
+
+    private Map<String, Object> normalizeTypingPracticeStats(Map<String, Object> source) {
+        int totalGames = Math.max(0, toInt(source.get("totalGames"), 0));
+        int wins = Math.max(0, toInt(source.get("wins"), 0));
+        int losses = Math.max(0, toInt(source.get("losses"), 0));
+        int draws = Math.max(0, toInt(source.get("draws"), 0));
+        int bestWpm = Math.max(0, toInt(source.get("bestWpm"), 0));
+        double bestAccuracy = normalizePercentage(source.get("bestAccuracy"));
+        int completedQuotes = Math.max(0, toInt(source.get("completedQuotes"), 0));
+        totalGames = Math.max(totalGames, wins + losses + draws);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("totalGames", totalGames);
+        result.put("wins", wins);
+        result.put("losses", losses);
+        result.put("draws", draws);
+        result.put("bestWpm", bestWpm);
+        result.put("bestAccuracy", bestAccuracy);
+        result.put("completedQuotes", completedQuotes);
         return result;
     }
 
@@ -873,6 +957,35 @@ public class AccountSyncService {
         result.put("losses", losses);
         result.put("bestTimes", mergedBestTimes);
         return result;
+    }
+
+    private Map<String, Object> mergeQuizPracticeStats(Map<String, Object> existing, Map<String, Object> incoming) {
+        Map<String, Object> safeExisting = normalizeQuizPracticeStats(asStringObjectMap(existing));
+        Map<String, Object> safeIncoming = normalizeQuizPracticeStats(asStringObjectMap(incoming));
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("totalGames", Math.max(toInt(safeExisting.get("totalGames"), 0), toInt(safeIncoming.get("totalGames"), 0)));
+        result.put("wins", Math.max(toInt(safeExisting.get("wins"), 0), toInt(safeIncoming.get("wins"), 0)));
+        result.put("losses", Math.max(toInt(safeExisting.get("losses"), 0), toInt(safeIncoming.get("losses"), 0)));
+        result.put("draws", Math.max(toInt(safeExisting.get("draws"), 0), toInt(safeIncoming.get("draws"), 0)));
+        result.put("bestScore", Math.max(toInt(safeExisting.get("bestScore"), 0), toInt(safeIncoming.get("bestScore"), 0)));
+        result.put("perfectRounds", Math.max(toInt(safeExisting.get("perfectRounds"), 0), toInt(safeIncoming.get("perfectRounds"), 0)));
+        return normalizeQuizPracticeStats(result);
+    }
+
+    private Map<String, Object> mergeTypingPracticeStats(Map<String, Object> existing, Map<String, Object> incoming) {
+        Map<String, Object> safeExisting = normalizeTypingPracticeStats(asStringObjectMap(existing));
+        Map<String, Object> safeIncoming = normalizeTypingPracticeStats(asStringObjectMap(incoming));
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("totalGames", Math.max(toInt(safeExisting.get("totalGames"), 0), toInt(safeIncoming.get("totalGames"), 0)));
+        result.put("wins", Math.max(toInt(safeExisting.get("wins"), 0), toInt(safeIncoming.get("wins"), 0)));
+        result.put("losses", Math.max(toInt(safeExisting.get("losses"), 0), toInt(safeIncoming.get("losses"), 0)));
+        result.put("draws", Math.max(toInt(safeExisting.get("draws"), 0), toInt(safeIncoming.get("draws"), 0)));
+        result.put("bestWpm", Math.max(toInt(safeExisting.get("bestWpm"), 0), toInt(safeIncoming.get("bestWpm"), 0)));
+        result.put("bestAccuracy", Math.max(normalizePercentage(safeExisting.get("bestAccuracy")), normalizePercentage(safeIncoming.get("bestAccuracy"))));
+        result.put("completedQuotes", Math.max(toInt(safeExisting.get("completedQuotes"), 0), toInt(safeIncoming.get("completedQuotes"), 0)));
+        return normalizeTypingPracticeStats(result);
     }
 
     private Map<String, Integer> normalizeBestTimesMap(Object raw) {
@@ -947,6 +1060,28 @@ public class AccountSyncService {
         } catch (NumberFormatException ex) {
             return fallback;
         }
+    }
+
+    private double normalizePercentage(Object value) {
+        if (value == null) {
+            return 0.0;
+        }
+        double parsed;
+        if (value instanceof Number number) {
+            parsed = number.doubleValue();
+        } else {
+            String text = String.valueOf(value).trim();
+            if (text.isEmpty()) {
+                return 0.0;
+            }
+            try {
+                parsed = Double.parseDouble(text);
+            } catch (NumberFormatException ex) {
+                return 0.0;
+            }
+        }
+        double clamped = Math.max(0.0, Math.min(100.0, parsed));
+        return Math.round(clamped * 10.0) / 10.0;
     }
 
     private int valueOrZero(Integer value) {

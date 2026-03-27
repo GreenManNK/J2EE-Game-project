@@ -42,6 +42,15 @@ class BlackjackControllerTest {
     }
 
     @Test
+    void blackjackLocalPageShouldRenderDedicatedLocalTemplate() {
+        BlackjackController controller = new BlackjackController();
+        ConcurrentModel model = new ConcurrentModel();
+
+        assertEquals("games/cards/blackjack-local", controller.blackjackLocalPage(model));
+        assertEquals(Boolean.TRUE, model.getAttribute("localPage"));
+    }
+
+    @Test
     void getAvailableRoomsShouldReturnRoomsWithPlayersOrSpectatorsOnly() {
         BlackjackService blackjackService = new BlackjackService();
         BlackjackRoom emptyRoom = blackjackService.createRoom();

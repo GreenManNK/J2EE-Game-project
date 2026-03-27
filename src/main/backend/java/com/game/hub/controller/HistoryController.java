@@ -505,9 +505,50 @@ public class HistoryController {
         }
         String displayName = userNameMap.get(userId);
         if (displayName == null || displayName.isBlank()) {
-            return userId;
+            String synthetic = syntheticDisplayNameFor(userId);
+            return synthetic == null ? userId : synthetic;
         }
         return displayName;
+    }
+
+    private String syntheticDisplayNameFor(String rawUserId) {
+        String userId = trimToNull(rawUserId);
+        if (userId == null) {
+            return null;
+        }
+        String normalized = userId.toLowerCase();
+        if (normalized.startsWith("guest-")) {
+            String suffix = userId.length() <= 4 ? userId : userId.substring(userId.length() - 4);
+            return "Guest " + suffix.toUpperCase();
+        }
+        if (normalized.startsWith("bot-caro-")) {
+            return "Bot Caro " + titleCase(normalized.substring("bot-caro-".length()));
+        }
+        if (normalized.startsWith("bot-chess-")) {
+            return "Bot Co vua " + titleCase(normalized.substring("bot-chess-".length()));
+        }
+        if (normalized.startsWith("bot-xiangqi-")) {
+            return "Bot Co tuong " + titleCase(normalized.substring("bot-xiangqi-".length()));
+        }
+        if (normalized.startsWith("bot-tienlen-")) {
+            return "3 Bot Tien Len " + titleCase(normalized.substring("bot-tienlen-".length()));
+        }
+        if (normalized.startsWith("bot-blackjack")) {
+            return "Dealer Blackjack";
+        }
+        if (normalized.startsWith("bot-monopoly-")) {
+            return "Bot Monopoly " + titleCase(normalized.substring("bot-monopoly-".length()));
+        }
+        return null;
+    }
+
+    private String titleCase(String value) {
+        String normalized = trimToNull(value);
+        if (normalized == null) {
+            return "";
+        }
+        String safe = normalized.toLowerCase();
+        return Character.toUpperCase(safe.charAt(0)) + safe.substring(1);
     }
 
     private String winnerNameFor(Map<String, String> userNameMap, String winnerId) {

@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blackjack vs. Bot</title>
+    <th:block th:replace="~{fragments :: appHead('Blackjack vs. Bot')}"></th:block>
     <link rel="stylesheet" th:href="@{/css/blackjack-style.css}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
 
@@ -60,6 +57,7 @@
     </div>
 </div>
 
+<th:block th:replace="~{fragments :: appScripts('blackjack-bot')}"></th:block>
 <script th:src="@{/js/blackjack-bot.js}"></script>
 
 </body>

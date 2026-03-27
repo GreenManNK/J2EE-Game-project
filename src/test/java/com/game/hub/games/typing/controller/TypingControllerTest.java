@@ -32,6 +32,40 @@ class TypingControllerTest {
     }
 
     @Test
+    void typingPracticeAndBotPagesShouldRenderPracticeTemplate() {
+        TypingController controller = new TypingController();
+        ReflectionTestUtils.setField(controller, "gameCatalogService", new GameCatalogService());
+
+        ConcurrentModel practiceModel = new ConcurrentModel();
+        ConcurrentModel botModel = new ConcurrentModel();
+
+        assertEquals("games/typing-practice", controller.typingPracticePage(practiceModel));
+        assertEquals(Boolean.TRUE, practiceModel.getAttribute("practicePage"));
+        assertEquals(Boolean.FALSE, practiceModel.getAttribute("botPage"));
+
+        assertEquals("games/typing-practice", controller.typingBotPage("hard", botModel));
+        assertEquals(Boolean.TRUE, botModel.getAttribute("botPage"));
+        assertEquals("hard", botModel.getAttribute("botDifficulty"));
+    }
+
+    @Test
+    void getPracticeTextsShouldExposeFallbackPack() {
+        TypingTextRepository textRepository = mock(TypingTextRepository.class);
+        when(textRepository.findRandomText()).thenReturn(null);
+
+        TypingService typingService = new TypingService(textRepository);
+        TypingController controller = new TypingController();
+        ReflectionTestUtils.setField(controller, "typingService", typingService);
+
+        Map<String, Object> payload = controller.getPracticeTexts();
+
+        assertTrue(payload.containsKey("texts"));
+        Object texts = payload.get("texts");
+        assertTrue(texts instanceof List<?>);
+        assertTrue(((List<?>) texts).size() >= 4);
+    }
+
+    @Test
     void getAvailableRoomsShouldOnlyReturnRoomsWithPlayers() {
         TypingTextRepository textRepository = mock(TypingTextRepository.class);
         when(textRepository.findRandomText()).thenReturn(null);

@@ -127,6 +127,23 @@ class AccountSyncApiControllerIntegrationTest {
                   "bestTimes": {
                     "easy": 40
                   }
+                },
+                "quiz-practice": {
+                  "totalGames": 5,
+                  "wins": 2,
+                  "losses": 2,
+                  "draws": 1,
+                  "bestScore": 16,
+                  "perfectRounds": 1
+                },
+                "typing-practice": {
+                  "totalGames": 4,
+                  "wins": 1,
+                  "losses": 2,
+                  "draws": 1,
+                  "bestWpm": 68,
+                  "bestAccuracy": 97.4,
+                  "completedQuotes": 3
                 }
               },
               "gamesBrowserState": {
@@ -194,6 +211,8 @@ class AccountSyncApiControllerIntegrationTest {
             .andExpect(jsonPath("$.data.account.email").value("player-sync@test.com"))
             .andExpect(jsonPath("$.data.account.preferences.themeMode").value("dark"))
             .andExpect(jsonPath("$.data.account.gameStats['chess-offline'].whiteWins").value(5))
+            .andExpect(jsonPath("$.data.account.gameStats['quiz-practice'].bestScore").value(16))
+            .andExpect(jsonPath("$.data.account.gameStats['typing-practice'].bestWpm").value(68))
             .andExpect(jsonPath("$.data.account.gamesBrowserState.favorites[0]").value("caro"))
             .andExpect(jsonPath("$.data.account.gamesBrowserState.recentGames[0].code").value("chess"))
             .andExpect(jsonPath("$.data.account.puzzleCatalogState.favorites[0]").value("sudoku"))
@@ -217,6 +236,8 @@ class AccountSyncApiControllerIntegrationTest {
         assertFalse(syncedUser.isShowOfflineFriendsInSidebar());
         assertEquals(10000, syncedUser.getFriendListRefreshMs());
         assertTrue(syncedUser.getChessOfflineStatsJson().contains("\"whiteWins\":5"));
+        assertTrue(syncedUser.getQuizPracticeStatsJson().contains("\"bestScore\":16"));
+        assertTrue(syncedUser.getTypingPracticeStatsJson().contains("\"bestWpm\":68"));
         assertTrue(syncedUser.getGamesBrowserFavoritesJson().contains("\"caro\""));
         assertTrue(syncedUser.getGamesBrowserRecentJson().contains("\"code\":\"chess\""));
         assertTrue(syncedUser.getPuzzleCatalogFavoritesJson().contains("\"sudoku\""));
@@ -245,6 +266,8 @@ class AccountSyncApiControllerIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.userId").value(syncedUserId))
             .andExpect(jsonPath("$.data.gameStats['minesweeper'].bestTimes.easy").value(40))
+            .andExpect(jsonPath("$.data.gameStats['quiz-practice'].perfectRounds").value(1))
+            .andExpect(jsonPath("$.data.gameStats['typing-practice'].bestAccuracy").value(97.4))
             .andExpect(jsonPath("$.data.gameHistory[0].matchCode").value("Normal_SYNC01-1743041234567"))
             .andExpect(jsonPath("$.data.gameHistory[0].roomId").value("Normal_SYNC01"))
             .andExpect(jsonPath("$.data.gamesBrowserState.recentGames[0].code").value("chess"))
@@ -291,6 +314,14 @@ class AccountSyncApiControllerIntegrationTest {
                       "whiteWins": 2,
                       "blackWins": 1,
                       "draws": 0
+                    },
+                    "quiz": {
+                      "totalGames": 2,
+                      "wins": 1,
+                      "losses": 1,
+                      "draws": 0,
+                      "bestScore": 12,
+                      "perfectRounds": 0
                     }
                   },
                   "replaceRelatedData": true
@@ -339,6 +370,7 @@ class AccountSyncApiControllerIntegrationTest {
             .andExpect(jsonPath("$.data.results[0].account.userId").value("bulk-a"))
             .andExpect(jsonPath("$.data.results[0].account.gamesBrowserState.favorites[0]").value("caro"))
             .andExpect(jsonPath("$.data.results[0].account.puzzleCatalogState.favorites[0]").value("word"))
+            .andExpect(jsonPath("$.data.results[0].account.gameStats['quiz-practice'].bestScore").value(12))
             .andExpect(jsonPath("$.data.results[1].account.friendships[0].addresseeId").value("bulk-a"));
 
         UserAccount bulkA = userAccountRepository.findById("bulk-a").orElseThrow();
@@ -347,6 +379,7 @@ class AccountSyncApiControllerIntegrationTest {
         assertTrue(passwordEncoder.matches("Pass@123", bulkB.getPassword()));
         assertTrue(bulkA.getGamesBrowserFavoritesJson().contains("\"caro\""));
         assertTrue(bulkA.getPuzzleCatalogFavoritesJson().contains("\"word\""));
+        assertTrue(bulkA.getQuizPracticeStatsJson().contains("\"bestScore\":12"));
 
         Friendship friendship = friendshipRepository.findByRequesterIdOrAddresseeId("bulk-b", "bulk-b")
             .stream()
@@ -372,6 +405,7 @@ class AccountSyncApiControllerIntegrationTest {
             .andExpect(jsonPath("$.data.accounts[0].userId").value("bulk-a"))
             .andExpect(jsonPath("$.data.accounts[0].gamesBrowserState.favorites[0]").value("caro"))
             .andExpect(jsonPath("$.data.accounts[0].puzzleCatalogState.favorites[0]").value("word"))
+            .andExpect(jsonPath("$.data.accounts[0].gameStats['quiz-practice'].wins").value(1))
             .andExpect(jsonPath("$.data.accounts[1].gameHistory[0].matchCode").value("Ranked_BULK01-1743041200000"))
             .andExpect(jsonPath("$.data.accounts[1].userId").value("bulk-b"));
     }

@@ -44,11 +44,37 @@ public class TypingController {
         return renderTypingPage(model, roomId, true);
     }
 
+    @GetMapping("/practice")
+    public String typingPracticePage(Model model) {
+        return renderPracticePage(model, false, "easy");
+    }
+
+    @GetMapping("/bot")
+    public String typingBotPage(@RequestParam(defaultValue = "easy") String difficulty, Model model) {
+        return renderPracticePage(model, true, normalizeDifficulty(difficulty));
+    }
+
+    @GetMapping("/practice/texts")
+    @ResponseBody
+    public Map<String, Object> getPracticeTexts() {
+        return Map.of(
+            "texts", typingService.getPracticeTexts()
+        );
+    }
+
     private String renderTypingPage(Model model, String roomId, boolean roomPage) {
         populateCatalogModel(model);
         model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
         model.addAttribute("roomPage", roomPage);
         return "games/typing";
+    }
+
+    private String renderPracticePage(Model model, boolean botPage, String botDifficulty) {
+        populateCatalogModel(model);
+        model.addAttribute("practicePage", !botPage);
+        model.addAttribute("botPage", botPage);
+        model.addAttribute("botDifficulty", botDifficulty);
+        return "games/typing-practice";
     }
 
     private void populateCatalogModel(Model model) {
@@ -77,5 +103,9 @@ public class TypingController {
         summary.put("raceStartedAtEpochMs", room.getRaceStartedAtEpochMs());
         summary.put("raceEndsAtEpochMs", room.getRaceEndsAtEpochMs());
         return summary;
+    }
+
+    private String normalizeDifficulty(String difficulty) {
+        return "hard".equalsIgnoreCase(difficulty) ? "hard" : "easy";
     }
 }

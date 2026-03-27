@@ -57,6 +57,24 @@ public class QuizController {
         return renderQuizPage(model, roomId, true, true);
     }
 
+    @GetMapping("/local")
+    public String quizLocalPage(Model model) {
+        return renderPracticePage(model, false, "easy");
+    }
+
+    @GetMapping("/bot")
+    public String quizBotPage(@RequestParam(defaultValue = "easy") String difficulty, Model model) {
+        return renderPracticePage(model, true, normalizeDifficulty(difficulty));
+    }
+
+    @GetMapping("/practice/questions")
+    @ResponseBody
+    public Map<String, Object> getPracticeQuestions() {
+        return Map.of(
+            "questions", quizService.getPracticeQuestions()
+        );
+    }
+
     private String renderQuizPage(Model model,
                                   String roomId,
                                   boolean spectateMode,
@@ -66,6 +84,16 @@ public class QuizController {
         model.addAttribute("spectateMode", spectateMode);
         model.addAttribute("roomPage", roomPage);
         return "games/quiz";
+    }
+
+    private String renderPracticePage(Model model,
+                                      boolean botPage,
+                                      String botDifficulty) {
+        populateCatalogModel(model);
+        model.addAttribute("botPage", botPage);
+        model.addAttribute("localPage", !botPage);
+        model.addAttribute("botDifficulty", botDifficulty);
+        return "games/quiz-practice";
     }
 
     private void populateCatalogModel(Model model) {
@@ -113,5 +141,9 @@ public class QuizController {
         summary.put("questionDeadlineEpochMs", room.getQuestionDeadlineEpochMs());
         summary.put("questionDurationSeconds", room.getQuestionDurationSeconds());
         return summary;
+    }
+
+    private String normalizeDifficulty(String difficulty) {
+        return "hard".equalsIgnoreCase(difficulty) ? "hard" : "easy";
     }
 }

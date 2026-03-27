@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const appPath = (window.CaroUrl && typeof window.CaroUrl.path === "function")
     ? window.CaroUrl.path
     : (value) => value;
+  const historyApi = window.CaroHistory || {};
   const root = document.getElementById("monopolyPage") || document.getElementById("monopolyApp");
   if (!root) {
     return;
@@ -67,6 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const MAX_LOG_ITEMS = 28;
   const ROOM_POLL_MS = 2600;
   const ROOM_STATE_DEBOUNCE_MS = 140;
+  const BOT_ACTION_DELAY_MS = 540;
+  const BOT_ACTION_DELAY_HARD_MS = 340;
   const ROOM_STORAGE_KEY = "monopolyRoomProfile.v2";
   const PLAYER_COLORS = ["#f97316", "#22c55e", "#38bdf8", "#f43f5e"];
   const TOKEN_CATALOG = [
@@ -171,6 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
     offeredTileIndices: [],
     requestedTileIndices: []
   };
+  let botTurnTimer = 0;
+  let botTurnKey = "";
 
   bindStaticEvents();
   bindRoomEvents();
@@ -217,6 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
       freeParkingPot: 0,
       round: 1,
       turnNumber: 1,
+      botTradeTurnKey: "",
       winnerId: null,
       settings: {
         passGoAmount: PASS_GO_AMOUNT
@@ -257,10 +263,18 @@ document.addEventListener("DOMContentLoaded", () => {
         setRoomStatus("Nhap muc gia hop le truoc khi dat gia.", true);
         return;
       }
-      void runRoomAction("auction_bid", null, amount);
+      if (isRoomAttached()) {
+        void runRoomAction("auction_bid", null, amount);
+        return;
+      }
+      handleLocalAuctionBid(amount);
     });
     refs.auctionPassBtn?.addEventListener("click", () => {
-      void runRoomAction("auction_pass");
+      if (isRoomAttached()) {
+        void runRoomAction("auction_pass");
+        return;
+      }
+      handleLocalAuctionPass();
     });
     refs.tradePanel?.addEventListener("change", (event) => {
       const target = event.target;
@@ -309,9 +323,17 @@ document.addEventListener("DOMContentLoaded", () => {
       if (action === "offer") {
         sendTradeOffer();
       } else if (action === "accept") {
-        void runRoomAction("trade_accept");
+        if (isRoomAttached()) {
+          void runRoomAction("trade_accept");
+          return;
+        }
+        acceptLocalTradeOffer();
       } else if (action === "reject") {
-        void runRoomAction("trade_reject");
+        if (isRoomAttached()) {
+          void runRoomAction("trade_reject");
+          return;
+        }
+        rejectLocalTradeOffer();
       }
     });
 
@@ -392,11 +414,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!refs.playerSlots.length) {
       return;
     }
-    const activeCount = Number(refs.playerCount?.value || 4);
+    const activeCount = Math.max(2, Math.min(4, Number(refs.playerCount?.value || 4)));
     refs.playerSlots.forEach((slot) => {
       const index = Number(slot.getAttribute("data-player-slot"));
       slot.classList.toggle("is-hidden", index > activeCount);
     });
+    syncBotSetupFields(activeCount);
   }
 
   function startNewGame(confirmIfRunning) {
@@ -417,6 +440,27 @@ document.addEventListener("DOMContentLoaded", () => {
   function readSetupConfig() {
     const playerCount = Math.max(2, Math.min(4, Number(refs.playerCount?.value || 4)));
     const startingCash = Math.max(800, Number(refs.startingCash?.value || 1500));
+    if (isBotPage()) {
+      const players = [{
+        name: sanitizeName(refs.playerInputs[0]?.value, "Nguoi choi"),
+        isBot: false
+      }];
+      for (let slot = 2; slot <= playerCount; slot += 1) {
+        players.push({
+          name: defaultBotName(slot - 1),
+          isBot: true,
+          botDifficulty: normalizeBotDifficulty()
+        });
+      }
+      return {
+        playerCount,
+        startingCash,
+        passGoAmount: PASS_GO_AMOUNT,
+        botEnabled: true,
+        botDifficulty: normalizeBotDifficulty(),
+        players
+      };
+    }
     const players = refs.playerInputs
       .slice(0, playerCount)
       .map((input, index) => sanitizeName(input?.value, "Ty phu " + (index + 1)));
@@ -432,6 +476,10 @@ document.addEventListener("DOMContentLoaded", () => {
     state = createEmptyState();
     state.settings.passGoAmount = Math.max(50, Number(config.passGoAmount || PASS_GO_AMOUNT));
     state.players = config.players.map((player, index) => createPlayerState(player.name, index, config.startingCash, player));
+    state.botEnabled = Boolean(config.botEnabled);
+    state.botDifficulty = normalizeBotDifficulty(config.botDifficulty);
+    state.historyRecorded = false;
+    state.historyMatchCode = state.botEnabled ? newBotMatchCode() : "";
     state.phase = state.players[0]?.inJail ? "jail" : "await_roll";
     state.log = [];
     state.round = 1;
@@ -449,6 +497,8 @@ document.addEventListener("DOMContentLoaded", () => {
       color: extra.color || PLAYER_COLORS[index],
       token: extra.token || null,
       turnOrder: Number.isFinite(extra.turnOrder) ? Number(extra.turnOrder) : index,
+      isBot: Boolean(extra.isBot),
+      botDifficulty: normalizeBotDifficulty(extra.botDifficulty),
       money: startingCash,
       position: 0,
       bankrupt: false,
@@ -463,6 +513,41 @@ document.addEventListener("DOMContentLoaded", () => {
   function sanitizeName(value, fallback) {
     const normalized = String(value || "").replace(/\s+/g, " ").trim();
     return (normalized || fallback).slice(0, 18);
+  }
+
+  function syncBotSetupFields(activeCount) {
+    refs.playerInputs.forEach((input, index) => {
+      if (!input) {
+        return;
+      }
+      const slotNumber = index + 1;
+      if (!isBotPage()) {
+        input.readOnly = false;
+        input.classList.remove("is-monopoly-bot");
+        return;
+      }
+      if (slotNumber === 1) {
+        input.readOnly = false;
+        input.classList.remove("is-monopoly-bot");
+        return;
+      }
+      input.readOnly = true;
+      input.classList.add("is-monopoly-bot");
+      input.value = defaultBotName(slotNumber - 1);
+      if (slotNumber > activeCount) {
+        input.value = defaultBotName(slotNumber - 1);
+      }
+    });
+  }
+
+  function defaultBotName(botIndex) {
+    return "Bot " + (normalizeBotDifficulty() === "hard" ? "Kho" : "De") + " " + botIndex;
+  }
+
+  function newBotMatchCode() {
+    return typeof historyApi.newMatchCode === "function"
+      ? historyApi.newMatchCode("monopoly-bot")
+      : ("BOT-MONOPOLY-" + Date.now());
   }
 
   function shuffle(items) {
@@ -539,6 +624,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderControls();
     renderRoomPanels();
     renderSetupAvailability();
+    maybeQueueLocalBotTurn();
     maybeQueueRoomStatePublish();
   }
 
@@ -705,7 +791,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!refs.tradePanel) {
       return;
     }
-    if (!isRoomAttached() || !roomSession.room || roomSession.room.status !== "PLAYING") {
+    if (isRoomAttached() && (!roomSession.room || roomSession.room.status !== "PLAYING")) {
       refs.tradePanel.hidden = true;
       refs.tradePanel.innerHTML = "";
       return;
@@ -787,18 +873,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const toPlayer = getPlayerById(tradeOffer.toPlayerId);
     const offeredAssets = (tradeOffer.offeredTileIndices || []).map((index) => getBoardSpace(index)).filter(Boolean);
     const requestedAssets = (tradeOffer.requestedTileIndices || []).map((index) => getBoardSpace(index)).filter(Boolean);
-    const isTarget = roomSession.playerId === tradeOffer.toPlayerId;
-    const isProposer = roomSession.playerId === tradeOffer.fromPlayerId;
+    const localTrade = !isRoomAttached();
+    const isTarget = localTrade
+      ? Boolean(toPlayer && !toPlayer.isBot)
+      : roomSession.playerId === tradeOffer.toPlayerId;
+    const isProposer = localTrade ? false : roomSession.playerId === tradeOffer.fromPlayerId;
     return `
       <h3>De nghi trade dang mo</h3>
       <div class="monopoly-trade-summary">
         <strong>${escapeHtml(fromPlayer ? fromPlayer.name : "Nguoi choi")} -> ${escapeHtml(toPlayer ? toPlayer.name : "Nguoi choi")}</strong>
         <span>Ban gui: ${formatTradeSummary(tradeOffer.offeredCash, offeredAssets)}</span>
         <span>Ban nhan: ${formatTradeSummary(tradeOffer.requestedCash, requestedAssets)}</span>
+        ${localTrade && toPlayer && !toPlayer.isBot ? '<span>Trao may cho ' + escapeHtml(toPlayer.name) + ' de quyet dinh chap nhan hay tu choi.</span>' : ""}
+        ${localTrade && toPlayer && toPlayer.isBot ? '<span>' + escapeHtml(toPlayer.name) + ' dang danh gia de nghi trade...</span>' : ""}
       </div>
       <div class="monopoly-trade-actions">
         ${isTarget ? '<button type="button" class="hub-portal-inline-btn primary" data-trade-action="accept">Chap nhan</button>' : ""}
-        ${(isTarget || isProposer) ? '<button type="button" class="hub-portal-inline-btn" data-trade-action="reject">' + (isProposer ? "Huy de nghi" : "Tu choi") + '</button>' : ""}
+        ${(isTarget || isProposer || (localTrade && toPlayer && !toPlayer.isBot)) ? '<button type="button" class="hub-portal-inline-btn" data-trade-action="reject">' + (isProposer ? "Huy de nghi" : "Tu choi") + '</button>' : ""}
       </div>
     `;
   }
@@ -899,6 +990,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (player.token) {
         badges.push('<span class="monopoly-player-badge">' + escapeHtml(resolveTokenLabel(player.token)) + "</span>");
+      }
+      if (player.isBot) {
+        badges.push('<span class="monopoly-player-badge">Bot ' + escapeHtml(player.botDifficulty === "hard" ? "Kho" : "De") + "</span>");
       }
       if (isRoomAttached() && isRoomHostPlayer(player.id)) {
         badges.push('<span class="monopoly-player-badge">Host</span>');
@@ -1242,6 +1336,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentPlayer.isDisconnected) {
       return currentPlayer.name + " dang tam mat ket noi. Cho nguoi choi nay vao lai room de tiep tuc luot.";
     }
+    if (!isRoomAttached() && currentPlayer.isBot && state.phase !== "ended") {
+      return currentPlayer.name + " dang tu xu ly luot theo chien luoc bot.";
+    }
     if (isRoomAttached() && !canUseTurnControls() && roomSession.room && roomSession.room.status === "PLAYING") {
       return "Dang cho " + currentPlayer.name + " thao tac va dong bo luot.";
     }
@@ -1259,6 +1356,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (state.tradeOffer && state.phase === "trade") {
       const target = state.tradeOffer.toPlayerId ? getPlayerById(state.tradeOffer.toPlayerId) : null;
+      if (!isRoomAttached() && target && target.isBot) {
+        return target.name + " dang danh gia de nghi trade.";
+      }
+      if (!isRoomAttached() && target) {
+        return "Dang mo trade voi " + target.name + ". Trao may cho nguoi choi nay de chap nhan hoac tu choi.";
+      }
       return "Dang mo trade voi " + (target ? target.name : "nguoi choi khac") + ". Cho chap nhan hoac tu choi de tiep tuc luot.";
     }
     if (state.pendingPurchase) {
@@ -1479,9 +1582,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     const tile = getBoardSpace(state.pendingPurchase.tileIndex);
-    logAction("Bo qua", getCurrentPlayer().name + " bo qua quyen mua " + tile.name + ".");
     state.pendingPurchase = null;
-    finishStepAfterResolution();
+    if (!startLocalAuction(tile, getCurrentPlayer())) {
+      logAction("Bo qua", getCurrentPlayer().name + " bo qua quyen mua " + tile.name + ".");
+      finishStepAfterResolution();
+    }
   }
 
   function handleEndTurn() {
@@ -1544,6 +1649,143 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     bankruptCurrentPlayer("Khong the can bang no.");
+  }
+
+  function startLocalAuction(tile, actor) {
+    const participants = state.players
+      .filter((player) => !player.bankrupt && player.money > 0)
+      .map((player) => player.id);
+    if (!tile || participants.length < 2) {
+      return false;
+    }
+    state.auction = {
+      tileIndex: tile.index,
+      currentBid: 0,
+      leaderId: null,
+      participantIds: participants.slice(),
+      passedPlayerIds: [],
+      activePlayerId: actor && participants.includes(actor.id) ? actor.id : participants[0],
+      minIncrement: 10
+    };
+    state.phase = "auction";
+    state.selectedTileIndex = tile.index;
+    logAction("Mo dau gia", (actor ? actor.name : "Nguoi choi hien tai") + " bo qua " + tile.name + ". Phien dau gia da duoc mo.");
+    renderAll();
+    return true;
+  }
+
+  function handleLocalAuctionBid(amount) {
+    const auction = state.auction;
+    if (!auction || state.phase !== "auction") {
+      return;
+    }
+    const bidder = auction.activePlayerId ? getPlayerById(auction.activePlayerId) : null;
+    if (!bidder || bidder.bankrupt) {
+      handleLocalAuctionPass();
+      return;
+    }
+    const minimumBid = Math.max(1, Number(auction.currentBid || 0) + Number(auction.minIncrement || 10));
+    if (!Number.isFinite(amount) || amount < minimumBid || bidder.money < amount) {
+      return;
+    }
+    auction.currentBid = amount;
+    auction.leaderId = bidder.id;
+    auction.passedPlayerIds = Array.isArray(auction.passedPlayerIds)
+      ? auction.passedPlayerIds.filter((playerId) => playerId !== bidder.id)
+      : [];
+    logAction("Dat gia", bidder.name + " nang gia " + getBoardSpace(auction.tileIndex).name + " len " + formatMoney(amount) + ".");
+    const nextBidder = nextAuctionResponder(bidder.id);
+    if (!nextBidder) {
+      completeLocalAuction();
+      return;
+    }
+    auction.activePlayerId = nextBidder;
+    renderAll();
+  }
+
+  function handleLocalAuctionPass() {
+    const auction = state.auction;
+    if (!auction || state.phase !== "auction") {
+      return;
+    }
+    const passer = auction.activePlayerId ? getPlayerById(auction.activePlayerId) : null;
+    if (!passer) {
+      cancelLocalAuction();
+      return;
+    }
+    if (!Array.isArray(auction.passedPlayerIds)) {
+      auction.passedPlayerIds = [];
+    }
+    if (!auction.passedPlayerIds.includes(passer.id)) {
+      auction.passedPlayerIds.push(passer.id);
+    }
+    logAction("Bo luot dau gia", passer.name + " bo luot dau gia.");
+    const nextBidder = nextAuctionResponder(passer.id);
+    if (auction.leaderId && !nextBidder) {
+      completeLocalAuction();
+      return;
+    }
+    if (!auction.leaderId && !nextBidder) {
+      cancelLocalAuction();
+      return;
+    }
+    auction.activePlayerId = nextBidder;
+    renderAll();
+  }
+
+  function nextAuctionResponder(afterPlayerId) {
+    const auction = state.auction;
+    if (!auction || !Array.isArray(auction.participantIds) || auction.participantIds.length === 0) {
+      return null;
+    }
+    const startIndex = auction.participantIds.indexOf(afterPlayerId);
+    const minimumBid = Math.max(1, Number(auction.currentBid || 0) + Number(auction.minIncrement || 10));
+    for (let step = 1; step <= auction.participantIds.length; step += 1) {
+      const index = startIndex < 0
+        ? step - 1
+        : (startIndex + step) % auction.participantIds.length;
+      const candidateId = auction.participantIds[index];
+      const candidate = getPlayerById(candidateId);
+      if (!candidate || candidate.bankrupt) {
+        continue;
+      }
+      if (candidateId === auction.leaderId) {
+        continue;
+      }
+      if (Array.isArray(auction.passedPlayerIds) && auction.passedPlayerIds.includes(candidateId)) {
+        continue;
+      }
+      if (candidate.money < minimumBid) {
+        continue;
+      }
+      return candidateId;
+    }
+    return null;
+  }
+
+  function completeLocalAuction() {
+    const auction = state.auction;
+    const tile = auction ? getBoardSpace(auction.tileIndex) : null;
+    const leader = auction && auction.leaderId ? getPlayerById(auction.leaderId) : null;
+    if (!auction || !tile || !leader || !Number.isFinite(auction.currentBid) || auction.currentBid <= 0 || leader.money < auction.currentBid) {
+      cancelLocalAuction();
+      return;
+    }
+    leader.money -= auction.currentBid;
+    tile.ownerId = leader.id;
+    tile.houses = 0;
+    tile.mortgaged = false;
+    state.auction = null;
+    logAction("Ket qua dau gia", leader.name + " thang dau gia " + tile.name + " voi gia " + formatMoney(auction.currentBid) + ".");
+    finishStepAfterResolution();
+  }
+
+  function cancelLocalAuction() {
+    const auction = state.auction;
+    const tile = auction ? getBoardSpace(auction.tileIndex) : null;
+    state.auction = null;
+    logAction("Huy dau gia", "Khong ai mua " + (tile ? tile.name : "tai san") + ". Luot duoc tiep tuc.");
+    finishStepAfterResolution();
   }
 
   function buildHouse(tileIndex) {
@@ -1965,6 +2207,439 @@ document.addEventListener("DOMContentLoaded", () => {
       logAction("Ket van", reason);
     }
     renderAll();
+    void recordBotMatchIfNeeded();
+  }
+
+  function maybeQueueLocalBotTurn() {
+    if (botTurnTimer) {
+      window.clearTimeout(botTurnTimer);
+      botTurnTimer = 0;
+    }
+    const activeBotPlayer = getLocalBotActor();
+    if (!activeBotPlayer || isRoomAttached() || state.phase === "setup" || state.phase === "ended" || !activeBotPlayer.isBot || activeBotPlayer.bankrupt) {
+      botTurnKey = "";
+      return;
+    }
+    const nextKey = [
+      state.turnNumber,
+      state.phase,
+      activeBotPlayer.id,
+      state.pendingPurchase ? state.pendingPurchase.tileIndex : "none",
+      state.auction ? [state.auction.tileIndex, state.auction.activePlayerId, state.auction.currentBid || 0].join(":") : "no-auction",
+      state.debt ? state.debt.amount : "no-debt"
+    ].join("|");
+    botTurnKey = nextKey;
+    const delay = activeBotPlayer.botDifficulty === "hard" ? BOT_ACTION_DELAY_HARD_MS : BOT_ACTION_DELAY_MS;
+    botTurnTimer = window.setTimeout(() => {
+      botTurnTimer = 0;
+      if (botTurnKey !== nextKey) {
+        return;
+      }
+      botTurnKey = "";
+      runLocalBotTurn();
+    }, delay);
+  }
+
+  function runLocalBotTurn() {
+    const currentPlayer = getLocalBotActor();
+    if (!currentPlayer || !currentPlayer.isBot || isRoomAttached() || state.phase === "setup" || state.phase === "ended" || currentPlayer.bankrupt) {
+      return;
+    }
+    if (state.debt && state.debt.playerId === currentPlayer.id) {
+      if (tryBotResolveDebt(currentPlayer)) {
+        return;
+      }
+      handleDeclareBankruptcy();
+      return;
+    }
+    if (state.phase === "auction" && state.auction && state.auction.activePlayerId === currentPlayer.id) {
+      const bid = chooseBotAuctionBid(currentPlayer, getBoardSpace(state.auction.tileIndex));
+      if (bid == null) {
+        handleLocalAuctionPass();
+      } else {
+        handleLocalAuctionBid(bid);
+      }
+      return;
+    }
+    if (state.phase === "trade" && state.tradeOffer && state.tradeOffer.toPlayerId === currentPlayer.id) {
+      if (shouldBotAcceptTrade(currentPlayer, state.tradeOffer)) {
+        acceptLocalTradeOffer();
+      } else {
+        rejectLocalTradeOffer();
+      }
+      return;
+    }
+    if (state.phase === "await_purchase" && state.pendingPurchase) {
+      const tile = getBoardSpace(state.pendingPurchase.tileIndex);
+      if (tile && shouldBotBuyTile(currentPlayer, tile)) {
+        handleBuyProperty();
+      } else {
+        handleSkipPurchase();
+      }
+      return;
+    }
+    if (state.phase === "jail") {
+      if (currentPlayer.escapeCards > 0 && shouldBotUseEscapeCard(currentPlayer)) {
+        handleUseEscapeCard();
+      } else if (shouldBotPayBail(currentPlayer)) {
+        handlePayBail();
+      } else {
+        handleRoll();
+      }
+      return;
+    }
+    if (state.phase === "await_end_turn") {
+      if (tryBotManageAssets(currentPlayer)) {
+        return;
+      }
+      handleEndTurn();
+      return;
+    }
+    if (state.phase === "await_roll") {
+      handleRoll();
+    }
+  }
+
+  function getLocalBotActor() {
+    if (state.phase === "trade" && state.tradeOffer && state.tradeOffer.toPlayerId) {
+      return getPlayerById(state.tradeOffer.toPlayerId);
+    }
+    if (state.phase === "auction" && state.auction && state.auction.activePlayerId) {
+      return getPlayerById(state.auction.activePlayerId);
+    }
+    return getCurrentPlayer();
+  }
+
+  function tryBotResolveDebt(player) {
+    const sellableTile = state.board
+      .filter((tile) => tile.ownerId === player.id && tile.houses > 0 && canSellHouse(tile.index))
+      .sort((left, right) => {
+        if (right.houseCost !== left.houseCost) {
+          return Number(right.houseCost || 0) - Number(left.houseCost || 0);
+        }
+        return right.houses - left.houses;
+      })[0];
+    if (sellableTile) {
+      sellHouse(sellableTile.index);
+      return true;
+    }
+    const mortgagableTile = state.board
+      .filter((tile) => tile.ownerId === player.id && canMortgage(tile.index))
+      .sort((left, right) => Number(right.mortgage || 0) - Number(left.mortgage || 0))[0];
+    if (mortgagableTile) {
+      mortgageProperty(mortgagableTile.index);
+      return true;
+    }
+    return false;
+  }
+
+  function tryBotManageAssets(player) {
+    if (!player || state.debt || state.pendingPurchase || state.auction || state.tradeOffer) {
+      return false;
+    }
+    if (tryBotOpenTrade(player)) {
+      return true;
+    }
+    const unmortgageCandidate = state.board
+      .filter((tile) => tile.ownerId === player.id && canUnmortgage(tile.index))
+      .sort((left, right) => getUnmortgageCost(left) - getUnmortgageCost(right))[0];
+    if (unmortgageCandidate && player.money - getUnmortgageCost(unmortgageCandidate) >= reserveCashForBot(player)) {
+      unmortgageProperty(unmortgageCandidate.index);
+      return true;
+    }
+    const buildCandidate = state.board
+      .filter((tile) => tile.ownerId === player.id && canBuildHouse(tile.index))
+      .sort((left, right) => scoreBotBuildCandidate(player, right) - scoreBotBuildCandidate(player, left))[0];
+    if (buildCandidate && player.money - buildCandidate.houseCost >= reserveCashForBot(player)) {
+      buildHouse(buildCandidate.index);
+      return true;
+    }
+    return false;
+  }
+
+  function tryBotOpenTrade(player) {
+    if (!player || !player.isBot || state.phase !== "await_end_turn") {
+      return false;
+    }
+    const turnKey = player.id + ":" + String(state.turnNumber || 0);
+    if (state.botTradeTurnKey === turnKey) {
+      return false;
+    }
+    state.botTradeTurnKey = turnKey;
+
+    const offer = buildBotTradeOffer(player);
+    if (!offer) {
+      return false;
+    }
+    return createLocalTradeOffer(offer) == null;
+  }
+
+  function buildBotTradeOffer(player) {
+    const opportunities = state.board
+      .filter((tile) => isBotTradeTarget(player, tile))
+      .map((tile) => scoreBotTradeOpportunity(player, tile))
+      .filter(Boolean)
+      .sort((left, right) => right.score - left.score);
+    if (!opportunities.length) {
+      return null;
+    }
+    return opportunities[0].payload;
+  }
+
+  function isBotTradeTarget(player, tile) {
+    if (!player || !tile || tile.ownerId === player.id || !tile.ownerId || tile.mortgaged) {
+      return false;
+    }
+    if (!["property", "railroad", "utility"].includes(tile.type)) {
+      return false;
+    }
+    const owner = getPlayerById(tile.ownerId);
+    if (!owner || owner.bankrupt) {
+      return false;
+    }
+    return validateLocalTradeTiles(owner.id, [tile.index], false) == null;
+  }
+
+  function scoreBotTradeOpportunity(player, requestedTile) {
+    const owner = getPlayerById(requestedTile.ownerId);
+    if (!owner) {
+      return null;
+    }
+    const strategicScore = estimateBotTradePriority(player, requestedTile);
+    if (strategicScore <= 0) {
+      return null;
+    }
+
+    const reserve = reserveCashForBot(player);
+    const availableCash = Math.max(0, player.money - reserve);
+    const targetValue = calculateTileValue(requestedTile);
+    const targetMultiplier = strategicScore >= 260
+      ? (player.botDifficulty === "hard" ? 1.55 : 1.3)
+      : (player.botDifficulty === "hard" ? 1.15 : 0.95);
+    let offeredCash = Math.min(availableCash, Math.max(0, Math.round(targetValue * targetMultiplier)));
+    const offeredTileIndices = [];
+    let outgoingValue = offeredCash;
+
+    if (outgoingValue < Math.round(targetValue * 0.85)) {
+      const sweetener = chooseBotTradeSweetener(player, requestedTile.index);
+      if (sweetener) {
+        offeredTileIndices.push(sweetener.index);
+        outgoingValue += calculateTileValue(sweetener);
+      }
+    }
+
+    if (outgoingValue <= 0) {
+      return null;
+    }
+    if (player.botDifficulty !== "hard" && outgoingValue < Math.round(targetValue * 0.9)) {
+      return null;
+    }
+    if (player.botDifficulty === "hard" && outgoingValue < Math.round(targetValue * 0.75)) {
+      return null;
+    }
+
+    const payload = {
+      targetPlayerId: owner.id,
+      offeredCash: offeredCash,
+      requestedCash: 0,
+      offeredTileIndices: offeredTileIndices,
+      requestedTileIndices: [requestedTile.index]
+    };
+    return {
+      score: strategicScore + outgoingValue - targetValue,
+      payload: payload
+    };
+  }
+
+  function estimateBotTradePriority(player, tile) {
+    if (!player || !tile) {
+      return 0;
+    }
+    if (tile.type === "property") {
+      const group = groupTiles(tile.group);
+      const ownedCount = group.filter((space) => space.ownerId === player.id).length;
+      if (ownedCount >= group.length - 1) {
+        return 280 + Number(tile.houseCost || tile.price || 0);
+      }
+      if (player.botDifficulty === "hard" && ownedCount === group.length - 2) {
+        return 145 + Number(tile.price || 0);
+      }
+      return 0;
+    }
+    if (tile.type === "railroad") {
+      const railroadCount = getRailroadCount(player.id);
+      if (railroadCount >= 2) {
+        return 170 + (railroadCount * 30);
+      }
+      if (player.botDifficulty === "hard" && railroadCount >= 1) {
+        return 105 + (railroadCount * 20);
+      }
+      return 0;
+    }
+    if (tile.type === "utility") {
+      const utilityCount = getUtilityCount(player.id);
+      if (utilityCount >= 1) {
+        return player.botDifficulty === "hard" ? 115 : 90;
+      }
+    }
+    return 0;
+  }
+
+  function chooseBotTradeSweetener(player, requestedTileIndex) {
+    return state.board
+      .filter((tile) => {
+        if (!tile || tile.index === requestedTileIndex || tile.ownerId !== player.id || tile.mortgaged) {
+          return false;
+        }
+        if (!["property", "railroad", "utility"].includes(tile.type)) {
+          return false;
+        }
+        if (validateLocalTradeTiles(player.id, [tile.index], true) != null) {
+          return false;
+        }
+        if (tile.type === "property" && playerOwnsFullSet(player.id, tile.group)) {
+          return false;
+        }
+        return true;
+      })
+      .sort((left, right) => scoreBotOutgoingTradeTile(player, left) - scoreBotOutgoingTradeTile(player, right))[0] || null;
+  }
+
+  function scoreBotOutgoingTradeTile(player, tile) {
+    let score = calculateTileValue(tile);
+    if (tile.type === "property") {
+      const groupOwned = groupTiles(tile.group).filter((space) => space.ownerId === player.id).length;
+      score += groupOwned * 35;
+    } else if (tile.type === "railroad") {
+      score += getRailroadCount(player.id) * 28;
+    } else if (tile.type === "utility") {
+      score += getUtilityCount(player.id) * 22;
+    }
+    return score;
+  }
+
+  function scoreBotBuildCandidate(player, tile) {
+    const projectedRent = Number(tile.rent?.[Math.min(5, tile.houses + 1)] || 0);
+    const currentRent = Number(tile.rent?.[Math.min(5, tile.houses)] || 0);
+    const fullSetBonus = playerOwnsFullSet(player.id, tile.group) ? 80 : 0;
+    return (projectedRent - currentRent) + fullSetBonus - Number(tile.houseCost || 0) / 6;
+  }
+
+  function chooseBotAuctionBid(player, tile) {
+    if (!state.auction || !tile) {
+      return null;
+    }
+    const minimumBid = Math.max(1, Number(state.auction.currentBid || 0) + Number(state.auction.minIncrement || 10));
+    const limit = estimateBotTileLimit(player, tile);
+    if (minimumBid > limit || minimumBid > player.money) {
+      return null;
+    }
+    const step = player.botDifficulty === "hard" ? 20 : 10;
+    return Math.min(limit, minimumBid + (player.botDifficulty === "hard" ? step : 0));
+  }
+
+  function shouldBotBuyTile(player, tile) {
+    if (!player || !tile || !Number.isFinite(tile.price) || tile.price <= 0 || player.money < tile.price) {
+      return false;
+    }
+    const remainingCash = player.money - tile.price;
+    const reserve = reserveCashForBot(player);
+    if (remainingCash < Math.max(80, reserve - 120)) {
+      return false;
+    }
+    const strategicValue = estimateBotTileLimit(player, tile);
+    if (player.botDifficulty === "hard") {
+      return tile.price <= strategicValue;
+    }
+    return tile.price <= strategicValue && remainingCash >= reserve - 40;
+  }
+
+  function estimateBotTileLimit(player, tile) {
+    const basePrice = Number(tile.price || 0);
+    let multiplier = player.botDifficulty === "hard" ? 1.2 : 1.05;
+    if (tile.type === "railroad") {
+      multiplier += getRailroadCount(player.id) * 0.15;
+    } else if (tile.type === "utility") {
+      multiplier += getUtilityCount(player.id) * 0.12;
+    } else if (tile.type === "property" && playerOwnsFullSetAfterPurchase(player.id, tile.group, tile.index)) {
+      multiplier += player.botDifficulty === "hard" ? 0.65 : 0.35;
+    }
+    const reserve = reserveCashForBot(player);
+    return Math.max(basePrice, Math.min(player.money - Math.max(40, reserve / 2), Math.round(basePrice * multiplier)));
+  }
+
+  function playerOwnsFullSetAfterPurchase(playerId, groupName, tileIndex) {
+    const group = groupTiles(groupName);
+    return group.length > 0 && group.every((space) => space.ownerId === playerId || space.index === tileIndex);
+  }
+
+  function reserveCashForBot(player) {
+    if (!player) {
+      return 220;
+    }
+    return player.botDifficulty === "hard" ? 180 : 260;
+  }
+
+  function shouldBotAcceptTrade(botPlayer, tradeOffer) {
+    if (!botPlayer || !tradeOffer) {
+      return false;
+    }
+    const proposer = getPlayerById(tradeOffer.fromPlayerId);
+    if (!proposer || proposer.bankrupt || botPlayer.money < (tradeOffer.requestedCash || 0) || proposer.money < (tradeOffer.offeredCash || 0)) {
+      return false;
+    }
+    const offeredError = validateLocalTradeTiles(proposer.id, tradeOffer.offeredTileIndices || [], true);
+    const requestedError = validateLocalTradeTiles(botPlayer.id, tradeOffer.requestedTileIndices || [], false);
+    if (offeredError || requestedError) {
+      return false;
+    }
+    const offeredAssets = (tradeOffer.offeredTileIndices || []).map((index) => getBoardSpace(index)).filter(Boolean);
+    const requestedAssets = (tradeOffer.requestedTileIndices || []).map((index) => getBoardSpace(index)).filter(Boolean);
+    const incomingValue = Number(tradeOffer.offeredCash || 0) + offeredAssets.reduce((total, tile) => total + calculateTileValue(tile), 0);
+    const outgoingValue = Number(tradeOffer.requestedCash || 0) + requestedAssets.reduce((total, tile) => total + calculateTileValue(tile), 0);
+    const threshold = botPlayer.botDifficulty === "hard" ? 1.05 : 0.85;
+    return incomingValue >= Math.round(outgoingValue * threshold);
+  }
+
+  function shouldBotUseEscapeCard(player) {
+    return Boolean(player && player.botDifficulty === "hard");
+  }
+
+  function shouldBotPayBail(player) {
+    if (!player) {
+      return false;
+    }
+    const reserve = reserveCashForBot(player);
+    if (player.botDifficulty === "hard") {
+      return player.money - JAIL_BAIL >= Math.max(120, reserve - 40);
+    }
+    return player.money - JAIL_BAIL >= Math.max(180, reserve);
+  }
+
+  async function recordBotMatchIfNeeded() {
+    if (!Boolean(state.botEnabled) || state.historyRecorded || state.phase !== "ended" || typeof historyApi.recordBotMatch !== "function") {
+      return;
+    }
+    const humanPlayer = state.players.find((player) => !player.isBot) || null;
+    if (!humanPlayer) {
+      return;
+    }
+    state.historyRecorded = true;
+    const outcome = !state.winnerId
+      ? "draw"
+      : (state.winnerId === humanPlayer.id ? "win" : "loss");
+    try {
+      await historyApi.recordBotMatch({
+        gameCode: "monopoly",
+        difficulty: normalizeBotDifficulty(state.botDifficulty),
+        outcome,
+        totalMoves: Math.max(1, Number(state.turnNumber || 1)),
+        firstPlayerRole: state.players[0]?.isBot ? "bot" : "player",
+        matchCode: state.historyMatchCode || newBotMatchCode()
+      });
+    } catch (_) {
+      state.historyRecorded = false;
+    }
   }
 
   function createRoomSession() {
@@ -2059,8 +2734,17 @@ document.addEventListener("DOMContentLoaded", () => {
     return Boolean(boot.localPage) || /\/games\/monopoly\/local\/?$/i.test(String(window.location.pathname || ""));
   }
 
+  function isBotPage() {
+    return Boolean(boot.botPage) || /\/games\/monopoly\/bot\/?$/i.test(String(window.location.pathname || ""));
+  }
+
+  function normalizeBotDifficulty(rawValue) {
+    const source = rawValue == null ? boot.botDifficulty : rawValue;
+    return String(source || "").toLowerCase() === "hard" ? "hard" : "easy";
+  }
+
   function shouldBootLocalBoard() {
-    return isLocalPage();
+    return isLocalPage() || isBotPage();
   }
 
   function hasRoomUi() {
@@ -2121,6 +2805,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (roomSession.room && roomSession.room.roomId) {
       return "Room " + roomSession.room.roomId;
     }
+    if (isBotPage()) {
+      return "Bot Monopoly / " + (normalizeBotDifficulty() === "hard" ? "Hard" : "Easy");
+    }
     return "Local Monopoly";
   }
 
@@ -2131,7 +2818,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function canUseTurnControls() {
     if (!isRoomAttached()) {
-      return true;
+      if (state.phase === "auction" && state.auction) {
+        const activeBidder = state.auction.activePlayerId ? getPlayerById(state.auction.activePlayerId) : null;
+        return !activeBidder || !activeBidder.isBot;
+      }
+      const currentPlayer = getCurrentPlayer();
+      return !currentPlayer || !currentPlayer.isBot;
     }
     if (!roomSession.room || roomSession.room.status !== "PLAYING") {
       return false;
@@ -2151,8 +2843,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!currentPlayer || currentPlayer.bankrupt || !canUseTurnControls()) {
       return false;
     }
-    return isRoomAttached()
-      && !state.tradeOffer
+    return !state.tradeOffer
       && !state.auction
       && !state.debt
       && !state.pendingPurchase
@@ -2193,15 +2884,174 @@ document.addEventListener("DOMContentLoaded", () => {
   function sendTradeOffer() {
     const currentPlayer = getCurrentPlayer();
     if (!currentPlayer || !tradeDraft.targetPlayerId) {
-      setRoomStatus("Chon doi tac trade truoc khi gui de nghi.", true);
+      reportTradeIssue("Chon doi tac trade truoc khi gui de nghi.");
       return;
     }
-    void runRoomAction("trade_offer", null, null, {
+    const payload = {
       targetPlayerId: tradeDraft.targetPlayerId,
       offeredCash: Math.max(0, Number(tradeDraft.offeredCash || 0)),
       requestedCash: Math.max(0, Number(tradeDraft.requestedCash || 0)),
       offeredTileIndices: tradeDraft.offeredTileIndices.slice(),
       requestedTileIndices: tradeDraft.requestedTileIndices.slice()
+    };
+    if (isRoomAttached()) {
+      void runRoomAction("trade_offer", null, null, payload);
+      return;
+    }
+    const error = createLocalTradeOffer(payload);
+    if (error) {
+      reportTradeIssue(error);
+      return;
+    }
+    resetTradeDraft();
+    renderAll();
+  }
+
+  function reportTradeIssue(message) {
+    if (isRoomAttached()) {
+      setRoomStatus(message, true);
+      return;
+    }
+    logAction("Trade", message);
+    renderAll();
+  }
+
+  function createLocalTradeOffer(payload) {
+    const currentPlayer = getCurrentPlayer();
+    const targetPlayer = getPlayerById(payload?.targetPlayerId);
+    if (!currentPlayer || !targetPlayer || currentPlayer.id === targetPlayer.id || targetPlayer.bankrupt) {
+      return "Nguoi nhan trade khong hop le";
+    }
+    const offeredCash = Math.max(0, Number(payload?.offeredCash || 0));
+    const requestedCash = Math.max(0, Number(payload?.requestedCash || 0));
+    const offeredTileIndices = normalizeTradeTileIndices(payload?.offeredTileIndices);
+    const requestedTileIndices = normalizeTradeTileIndices(payload?.requestedTileIndices);
+    if (offeredCash <= 0 && requestedCash <= 0 && offeredTileIndices.length === 0 && requestedTileIndices.length === 0) {
+      return "De nghi trade dang rong";
+    }
+    if (currentPlayer.money < offeredCash) {
+      return "Ban khong du tien mat de dua vao trade";
+    }
+    if (targetPlayer.money < requestedCash) {
+      return "Doi tac khong du tien mat theo de nghi";
+    }
+    const offeredError = validateLocalTradeTiles(currentPlayer.id, offeredTileIndices, true);
+    if (offeredError) {
+      return offeredError;
+    }
+    const requestedError = validateLocalTradeTiles(targetPlayer.id, requestedTileIndices, false);
+    if (requestedError) {
+      return requestedError;
+    }
+    state.tradeOffer = {
+      fromPlayerId: currentPlayer.id,
+      toPlayerId: targetPlayer.id,
+      offeredCash,
+      requestedCash,
+      offeredTileIndices,
+      requestedTileIndices,
+      resumePhase: state.phase
+    };
+    state.phase = "trade";
+    logAction("De nghi trade", currentPlayer.name + " gui de nghi trao doi cho " + targetPlayer.name + ".");
+    return null;
+  }
+
+  function acceptLocalTradeOffer() {
+    const tradeOffer = state.tradeOffer;
+    if (!tradeOffer || state.phase !== "trade") {
+      return;
+    }
+    const proposer = getPlayerById(tradeOffer.fromPlayerId);
+    const target = getPlayerById(tradeOffer.toPlayerId);
+    if (!proposer || !target || proposer.bankrupt || target.bankrupt) {
+      reportTradeIssue("De nghi trade khong con hop le");
+      return;
+    }
+    if (proposer.money < tradeOffer.offeredCash || target.money < tradeOffer.requestedCash) {
+      reportTradeIssue("Mot trong hai ben khong con du tien de hoan tat trade");
+      return;
+    }
+    const offeredError = validateLocalTradeTiles(proposer.id, tradeOffer.offeredTileIndices || [], true);
+    if (offeredError) {
+      reportTradeIssue(offeredError);
+      return;
+    }
+    const requestedError = validateLocalTradeTiles(target.id, tradeOffer.requestedTileIndices || [], false);
+    if (requestedError) {
+      reportTradeIssue(requestedError);
+      return;
+    }
+    proposer.money -= tradeOffer.offeredCash || 0;
+    target.money += tradeOffer.offeredCash || 0;
+    target.money -= tradeOffer.requestedCash || 0;
+    proposer.money += tradeOffer.requestedCash || 0;
+    transferTradeTiles(tradeOffer.offeredTileIndices || [], proposer.id, target.id);
+    transferTradeTiles(tradeOffer.requestedTileIndices || [], target.id, proposer.id);
+    logAction("Trade thanh cong", proposer.name + " va " + target.name + " da thong qua mot giao dich.");
+    state.tradeOffer = null;
+    state.phase = tradeOffer.resumePhase || "await_end_turn";
+    renderAll();
+  }
+
+  function rejectLocalTradeOffer() {
+    const tradeOffer = state.tradeOffer;
+    if (!tradeOffer || state.phase !== "trade") {
+      return;
+    }
+    const proposer = getPlayerById(tradeOffer.fromPlayerId);
+    const target = getPlayerById(tradeOffer.toPlayerId);
+    logAction(
+      target && target.isBot ? "Bot tu choi trade" : "Tu choi trade",
+      (target ? target.name : "Nguoi choi") + " tu choi de nghi trade."
+    );
+    state.tradeOffer = null;
+    state.phase = tradeOffer.resumePhase || "await_end_turn";
+    renderAll();
+  }
+
+  function normalizeTradeTileIndices(indices) {
+    if (!Array.isArray(indices) || indices.length === 0) {
+      return [];
+    }
+    const normalized = [];
+    indices.forEach((index) => {
+      const value = Number(index);
+      if (!Number.isFinite(value) || normalized.includes(value)) {
+        return;
+      }
+      normalized.push(value);
+    });
+    return normalized;
+  }
+
+  function validateLocalTradeTiles(ownerId, tileIndices, proposerSide) {
+    for (const tileIndex of tileIndices) {
+      const tile = getBoardSpace(tileIndex);
+      if (!tile || tile.ownerId !== ownerId) {
+        return proposerSide
+          ? "Ban khong so huu day du cac tai san da chon"
+          : "Doi tac khong so huu day du cac tai san duoc yeu cau";
+      }
+      if (tile.type === "property") {
+        if (tile.houses > 0) {
+          return "Khong the trade tai san dang co nha/hotel";
+        }
+        if (groupTiles(tile.group).some((space) => space.houses > 0)) {
+          return "Phai ban het nha/hotel trong nhom truoc khi trade";
+        }
+      }
+    }
+    return null;
+  }
+
+  function transferTradeTiles(tileIndices, fromPlayerId, toPlayerId) {
+    tileIndices.forEach((tileIndex) => {
+      const tile = getBoardSpace(tileIndex);
+      if (!tile || tile.ownerId !== fromPlayerId) {
+        return;
+      }
+      tile.ownerId = toPlayerId;
     });
   }
 
@@ -2209,7 +3059,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!refs.localSetupCard) {
       return;
     }
-    refs.localSetupCard.hidden = !isLocalPage() || isRoomAttached();
+    refs.localSetupCard.hidden = (!isLocalPage() && !isBotPage()) || isRoomAttached();
   }
 
   function renderRoomPanels() {

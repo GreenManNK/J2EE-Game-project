@@ -55,6 +55,12 @@ public class BlackjackController {
         return "games/cards/blackjack-bot";
     }
 
+    @GetMapping("/local")
+    public String blackjackLocalPage(Model model) {
+        model.addAttribute("localPage", true);
+        return "games/cards/blackjack-local";
+    }
+
     private String renderBlackjackPage(Model model,
                                        String roomId,
                                        boolean spectateMode,

@@ -134,4 +134,116 @@ class HistoryControllerTest {
             (List<HistoryController.GameBreakdownView>) model.getAttribute("historyGameBreakdown");
         assertTrue(breakdown.isEmpty());
     }
+
+    @Test
+    void pageShouldHumanizeBotParticipantsAndBotContext() {
+        GameHistoryRepository gameHistoryRepository = mock(GameHistoryRepository.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+
+        GameHistory history = new GameHistory();
+        history.setId(109L);
+        history.setGameCode("chess-bot");
+        history.setMatchCode("BOT-CHESS-109");
+        history.setLocationLabel("Bot Co vua Hard");
+        history.setLocationPath("/chess/bot?difficulty=hard");
+        history.setPlayer1Id("u1");
+        history.setPlayer2Id("bot-chess-hard");
+        history.setFirstPlayerId("u1");
+        history.setWinnerId("bot-chess-hard");
+        history.setTotalMoves(32);
+        history.setPlayedAt(LocalDateTime.of(2026, 3, 27, 11, 45));
+
+        UserAccount player = new UserAccount();
+        player.setId("u1");
+        player.setDisplayName("Player One");
+
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("AUTH_USER_ID")).thenReturn("u1");
+        when(session.getAttribute("AUTH_ROLE")).thenReturn("User");
+        when(gameHistoryRepository.findByPlayer1IdOrPlayer2IdOrderByPlayedAtDesc("u1", "u1")).thenReturn(List.of(history));
+        when(userAccountRepository.findById("u1")).thenReturn(java.util.Optional.of(player));
+        when(userAccountRepository.findAllById(any())).thenReturn(List.of(player));
+
+        HistoryController controller = new HistoryController(
+            gameHistoryRepository,
+            userAccountRepository,
+            new GameCatalogService(),
+            mock(DataExportAuditService.class)
+        );
+
+        ConcurrentModel model = new ConcurrentModel();
+        String viewName = controller.page("u1", null, null, null, null, 0, 20, request, model);
+
+        assertEquals("history/index", viewName);
+        @SuppressWarnings("unchecked")
+        List<HistoryController.GameHistoryView> histories =
+            (List<HistoryController.GameHistoryView>) model.getAttribute("histories");
+        assertEquals(1, histories.size());
+
+        HistoryController.GameHistoryView row = histories.get(0);
+        assertEquals("chess", row.gameCode());
+        assertEquals("Bot", row.contextLabel());
+        assertEquals("Bot Co vua Hard", row.locationLabel());
+        assertEquals("/chess/bot?difficulty=hard", row.locationHref());
+        assertEquals("Player One", row.player1Name());
+        assertEquals("Bot Co vua Hard", row.player2Name());
+        assertEquals("Bot Co vua Hard", row.winnerName());
+        assertEquals("Thua", row.result());
+    }
+
+    @Test
+    void pageShouldHumanizeMonopolyBotParticipants() {
+        GameHistoryRepository gameHistoryRepository = mock(GameHistoryRepository.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+
+        GameHistory history = new GameHistory();
+        history.setId(120L);
+        history.setGameCode("monopoly-bot");
+        history.setMatchCode("BOT-MONOPOLY-120");
+        history.setLocationLabel("Ban Monopoly voi bot Hard");
+        history.setLocationPath("/games/monopoly/bot?difficulty=hard");
+        history.setPlayer1Id("u1");
+        history.setPlayer2Id("bot-monopoly-hard");
+        history.setFirstPlayerId("u1");
+        history.setWinnerId("u1");
+        history.setTotalMoves(27);
+        history.setPlayedAt(LocalDateTime.of(2026, 3, 27, 12, 0));
+
+        UserAccount player = new UserAccount();
+        player.setId("u1");
+        player.setDisplayName("Player One");
+
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("AUTH_USER_ID")).thenReturn("u1");
+        when(session.getAttribute("AUTH_ROLE")).thenReturn("User");
+        when(gameHistoryRepository.findByPlayer1IdOrPlayer2IdOrderByPlayedAtDesc("u1", "u1")).thenReturn(List.of(history));
+        when(userAccountRepository.findById("u1")).thenReturn(java.util.Optional.of(player));
+        when(userAccountRepository.findAllById(any())).thenReturn(List.of(player));
+
+        HistoryController controller = new HistoryController(
+            gameHistoryRepository,
+            userAccountRepository,
+            new GameCatalogService(),
+            mock(DataExportAuditService.class)
+        );
+
+        ConcurrentModel model = new ConcurrentModel();
+        String viewName = controller.page("u1", null, null, null, null, 0, 20, request, model);
+
+        assertEquals("history/index", viewName);
+        @SuppressWarnings("unchecked")
+        List<HistoryController.GameHistoryView> histories =
+            (List<HistoryController.GameHistoryView>) model.getAttribute("histories");
+        assertEquals(1, histories.size());
+        HistoryController.GameHistoryView row = histories.get(0);
+        assertEquals("monopoly", row.gameCode());
+        assertEquals("Bot", row.contextLabel());
+        assertEquals("Bot Monopoly Hard", row.player2Name());
+        assertEquals("Player One", row.winnerName());
+        assertEquals("Thang", row.result());
+    }
 }

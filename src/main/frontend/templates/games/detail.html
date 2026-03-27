@@ -94,6 +94,15 @@
             <i class="bi bi-arrow-right"></i>
           </a>
 
+          <a th:if="${game.code == 'monopoly'}" th:href="@{/game-mode/bot(game='monopoly')}" class="hub-portal-action hub-portal-action--soft">
+            <span class="hub-portal-action__icon"><i class="bi bi-cpu-fill"></i></span>
+            <span class="hub-portal-action__text">
+              <strong>Monopoly voi bot</strong>
+              <small>Vao ban local 1 nguoi va bot tu dong danh</small>
+            </span>
+            <i class="bi bi-arrow-right"></i>
+          </a>
+
           <div th:if="${game.primaryActionUrl == null or #strings.isEmpty(game.primaryActionUrl)}"
                class="hub-portal-action hub-portal-action--soft">
             <span class="hub-portal-action__icon"><i class="bi bi-hourglass-split"></i></span>

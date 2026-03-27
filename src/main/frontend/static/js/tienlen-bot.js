@@ -1,5 +1,6 @@
 ﻿(function () {
   const boot = window.TienLenBotBoot || {};
+  const historyApi = window.CaroHistory || {};
   const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
     ? window.CaroUrl.path
     : (value) => value;
@@ -61,7 +62,10 @@
     pendingHandDealAnim: false,
     pendingTrickAnim: false,
     pendingTurnFlashUserId: '',
-    lastActionType: ''
+    lastActionType: '',
+    historyMatchCode: '',
+    historyRecorded: false,
+    historyFirstPlayerRole: 'player'
   };
 
   const me = {
@@ -143,6 +147,9 @@
 
   function startNewGame() {
     clearBotTimer();
+    state.historyRecorded = false;
+    state.historyMatchCode = newMatchCode();
+    state.historyFirstPlayerRole = 'player';
 
     const deck = standardDeck();
     shuffleInPlace(deck);
@@ -174,11 +181,13 @@
       state.currentTurnId = null;
       state.controlUserId = null;
       state.lastActionType = 'GAME_OVER';
+      state.historyFirstPlayerRole = instantWin.player.isHuman ? 'player' : 'bot';
       applyRoundSettlementForWinner(instantWin.player.id);
       setStatus('Van dau ket thuc');
       setMessage(instantWin.player.name + ' toi trang (' + instantWin.rule.label + '). ' + (state.lastRoundSummary || ''));
       pushMoveLog('Ket thuc van dau: ' + instantWin.player.name + ' toi trang (' + instantWin.rule.label + ').');
       if (state.lastRoundSummary) pushMoveLog(state.lastRoundSummary);
+      recordBotHistory(instantWin.player.isHuman ? 'win' : 'loss');
       renderAll();
       return;
     }
@@ -187,6 +196,7 @@
     state.currentTurnId = firstPlayer.id;
     state.controlUserId = firstPlayer.id;
     state.pendingTurnFlashUserId = firstPlayer.id;
+    state.historyFirstPlayerRole = firstPlayer.isHuman ? 'player' : 'bot';
     state.lastActionType = 'GAME_STARTED';
     setStatus('Van moi da bat dau');
     setMessage(firstPlayer.name + ' giu 3S va danh truoc');
@@ -325,6 +335,7 @@
       pushMoveLog('Ket thuc van dau: ' + winner.name + ' thang (do dau hang).');
     }
     if (state.lastRoundSummary) pushMoveLog(state.lastRoundSummary);
+    recordBotHistory('loss');
     renderAll();
   }
 
@@ -515,6 +526,7 @@
       setMessage(player.name + ' da het bai va chien thang. ' + (state.lastRoundSummary || ''));
       pushMoveLog('Ket thuc van dau: ' + player.name + ' thang.');
       if (state.lastRoundSummary) pushMoveLog(state.lastRoundSummary);
+      recordBotHistory(player.isHuman ? 'win' : 'loss');
       return { ok: true, eventType: 'GAME_OVER' };
     }
 
@@ -1156,6 +1168,31 @@
     state.message = text || '-';
     if (els.messageText) {
       els.messageText.textContent = state.message;
+    }
+  }
+
+  function newMatchCode() {
+    return typeof historyApi.newMatchCode === 'function'
+      ? historyApi.newMatchCode('tienlen-bot-' + state.difficulty)
+      : ('BOT-TIENLEN-' + Date.now());
+  }
+
+  async function recordBotHistory(outcome) {
+    if (state.historyRecorded || typeof historyApi.recordBotMatch !== 'function') {
+      return;
+    }
+    state.historyRecorded = true;
+    try {
+      await historyApi.recordBotMatch({
+        gameCode: 'cards',
+        difficulty: state.difficulty,
+        outcome: outcome,
+        totalMoves: Number(state.playCount || 0),
+        firstPlayerRole: state.historyFirstPlayerRole || 'player',
+        matchCode: state.historyMatchCode || newMatchCode()
+      });
+    } catch (_) {
+      state.historyRecorded = false;
     }
   }
 

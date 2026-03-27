@@ -1,5 +1,6 @@
 ﻿(function () {
     const boot = window.ChessBoot || {};
+    const historyApi = window.CaroHistory || {};
     const BOARD_SIZE = 8;
     const CHESS_STATS_KEY = "caroChessOfflineStats.v1";
     const GAME_STATS_CODE = "chess-offline";
@@ -39,7 +40,9 @@
             whiteWins: 0,
             blackWins: 0,
             draws: 0
-        }
+        },
+        historyMatchCode: "",
+        historyRecorded: false
     };
 
     const PIECE_VALUES = {
@@ -90,8 +93,16 @@
         state.lastMove = null;
         state.botThinking = false;
         state.snapshots = [];
+        state.historyRecorded = false;
+        state.historyMatchCode = newMatchCode();
         renderAll();
         maybeQueueBotMove();
+    }
+
+    function newMatchCode() {
+        return typeof historyApi.newMatchCode === "function"
+            ? historyApi.newMatchCode("chess-bot-" + state.botDifficulty)
+            : ("BOT-CHESS-" + Date.now());
     }
 
     function normalizeStats(raw) {
@@ -205,6 +216,25 @@
         }
         writeStats();
         updateStatsUi();
+    }
+
+    async function recordBotHistory(outcome) {
+        if (!state.botEnabled || state.historyRecorded || typeof historyApi.recordBotMatch !== "function") {
+            return;
+        }
+        state.historyRecorded = true;
+        try {
+            await historyApi.recordBotMatch({
+                gameCode: "chess",
+                difficulty: state.botDifficulty,
+                outcome: outcome,
+                totalMoves: state.moveHistory.length,
+                firstPlayerRole: "player",
+                matchCode: state.historyMatchCode || newMatchCode()
+            });
+        } catch (_) {
+            state.historyRecorded = false;
+        }
     }
 
     function cloneMove(move) {
@@ -380,11 +410,13 @@
             state.resultText = "Chieu het - " + colorName(sideJustMoved) + " thang";
             setGameStatus("Chieu het! " + colorName(sideJustMoved) + " thang.");
             recordOutcome(sideJustMoved);
+            recordBotHistory(sideJustMoved === humanSide() ? "win" : "loss");
         } else if (!opponentHasMove) {
             state.gameOver = true;
             state.resultText = "Hoa";
             setGameStatus("The co - hoa.");
             recordOutcome("draw");
+            recordBotHistory("draw");
         } else if (opponentInCheck) {
             state.resultText = "Dang choi";
             setGameStatus(sideName + " dang bi chieu!");
@@ -529,6 +561,7 @@
         state.moveHistory.push(surrenderLabel + " dau hang");
         setGameStatus(messagePrefix + " da dau hang. " + winnerLabel + " thang.");
         recordOutcome(winnerSide);
+        recordBotHistory(winnerSide === humanSide() ? "win" : "loss");
         renderAll();
     }
 

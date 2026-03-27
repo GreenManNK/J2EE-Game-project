@@ -50,6 +50,15 @@ public class GameModeController {
         if ("cards".equalsIgnoreCase(item.code())) {
             return "redirect:/cards/tien-len/bot?difficulty=" + normalizedDifficulty;
         }
+        if ("quiz".equalsIgnoreCase(item.code())) {
+            return "redirect:/games/quiz/bot?difficulty=" + normalizedDifficulty;
+        }
+        if ("typing".equalsIgnoreCase(item.code())) {
+            return "redirect:/games/typing/bot?difficulty=" + normalizedDifficulty;
+        }
+        if ("monopoly".equalsIgnoreCase(item.code())) {
+            return "redirect:/games/monopoly/bot?difficulty=" + normalizedDifficulty;
+        }
         model.addAttribute("game", item);
         model.addAttribute("difficulty", normalizedDifficulty);
         model.addAttribute("difficultyLabel", "hard".equals(normalizedDifficulty) ? "Kho" : "De");
@@ -72,6 +81,15 @@ public class GameModeController {
         if ("cards".equalsIgnoreCase(gameCode)) {
             return "/cards/tien-len/bot?difficulty=" + d;
         }
+        if ("quiz".equalsIgnoreCase(gameCode)) {
+            return "/games/quiz/bot?difficulty=" + d;
+        }
+        if ("typing".equalsIgnoreCase(gameCode)) {
+            return "/games/typing/bot?difficulty=" + d;
+        }
+        if ("monopoly".equalsIgnoreCase(gameCode)) {
+            return "/games/monopoly/bot?difficulty=" + d;
+        }
         return "/game-mode/bot-play?game=" + gameCode + "&difficulty=" + d;
     }
 
@@ -79,7 +97,10 @@ public class GameModeController {
         return "caro".equalsIgnoreCase(gameCode)
             || "chess".equalsIgnoreCase(gameCode)
             || "xiangqi".equalsIgnoreCase(gameCode)
-            || "cards".equalsIgnoreCase(gameCode);
+            || "cards".equalsIgnoreCase(gameCode)
+            || "quiz".equalsIgnoreCase(gameCode)
+            || "typing".equalsIgnoreCase(gameCode)
+            || "monopoly".equalsIgnoreCase(gameCode);
     }
 
     private String onlinePlayUrl(String gameCode) {

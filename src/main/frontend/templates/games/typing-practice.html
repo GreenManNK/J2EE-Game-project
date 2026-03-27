@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Typing practice')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-typing-practice')}"></div>
+
+<main id="typing-practice-app"
+      class="hub-portal-shell hub-portal-theme-typing"
+      th:attr="data-bot-enabled=${botPage},data-bot-difficulty=${botDifficulty}">
+    <section class="card shadow-sm theme-box mb-3">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <div class="small text-muted">Typing / Practice</div>
+                <h1 class="h3 theme-text mb-1" th:text="${botPage} ? 'Typing race voi bot' : 'Typing practice local'">Typing practice local</h1>
+                <p class="small text-muted mb-2"
+                   th:text="${botPage}
+                       ? 'Giu nhip go, so WPM va progress bar de dua voi bot ngay tren cung may.'
+                       : 'Luyen accuracy va WPM khong can room, doi doan text moi sau moi lan ket thuc.'">
+                    Luyen accuracy va WPM.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="hub-portal-chip is-live"><i class="bi bi-keyboard-fill"></i> Practice line by line</span>
+                    <span class="hub-portal-chip" th:if="${botPage}"><i class="bi bi-cpu-fill"></i> <span th:text="${botDifficulty == 'hard'} ? 'Bot Hard' : 'Bot Easy'">Bot Easy</span></span>
+                    <span class="hub-portal-chip"><i class="bi bi-speedometer2"></i> WPM + accuracy</span>
+                    <span class="hub-portal-chip"><i class="bi bi-stopwatch-fill"></i> 60s / round</span>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column align-items-md-end gap-2">
+                <div class="small text-md-end">
+                    <div><strong>Mode:</strong> <span th:text="${botPage} ? 'Bot race' : 'Solo practice'">Solo practice</span></div>
+                    <div><strong>Difficulty:</strong> <span th:text="${botDifficulty == 'hard'} ? 'Hard' : 'Easy'">Easy</span></div>
+                </div>
+                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                    <a th:href="@{/games/typing}" class="btn btn-sm theme-outline-btn">Ve lobby typing</a>
+                    <a th:href="@{/game-mode/bot(game='typing')}" class="btn btn-sm theme-outline-btn" th:if="${!botPage}">Mo che do bot</a>
+                    <a th:href="@{/games/typing/practice}" class="btn btn-sm theme-outline-btn" th:if="${botPage}">Ve practice</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="typing-practice-grid">
+        <section class="typing-practice-card typing-practice-card--main">
+            <div class="typing-practice-stats">
+                <div class="typing-practice-stat"><span>Quote</span><strong id="typing-practice-progress">0 / 0</strong></div>
+                <div class="typing-practice-stat"><span>WPM</span><strong id="typing-practice-wpm">0</strong></div>
+                <div class="typing-practice-stat"><span>Accuracy</span><strong id="typing-practice-accuracy">0%</strong></div>
+                <div class="typing-practice-stat"><span>Timer</span><strong id="typing-practice-timer">60s</strong></div>
+            </div>
+
+            <div class="typing-practice-body">
+                <section class="typing-practice-target">
+                    <p class="typing-practice-label">Doan text</p>
+                    <div id="typing-practice-text" class="typing-practice-text">Dang tai du lieu...</div>
+                </section>
+
+                <textarea id="typing-practice-input" class="form-control typing-practice-input" rows="6" placeholder="Nhan Bat dau van hoac Choi quote tiep theo de bat dau..."></textarea>
+
+                <div id="typing-practice-lanes" class="typing-practice-lanes">
+                    <div class="typing-practice-lane typing-practice-lane--me">
+                        <div class="typing-practice-lane__head"><strong>Ban</strong><span id="typing-practice-player-meta">0 ky tu</span></div>
+                        <div class="typing-practice-lane__track"><div id="typing-practice-player-bar"></div></div>
+                    </div>
+                    <div class="typing-practice-lane" th:if="${botPage}">
+                        <div class="typing-practice-lane__head"><strong>Bot</strong><span id="typing-practice-bot-meta">0%</span></div>
+                        <div class="typing-practice-lane__track"><div id="typing-practice-bot-bar"></div></div>
+                    </div>
+                </div>
+
+                <div class="typing-practice-actions">
+                    <button id="typing-practice-start" class="hub-portal-action hub-portal-action--primary">Bat dau van</button>
+                    <button id="typing-practice-next" class="hub-portal-action">Quote tiep theo</button>
+                    <button id="typing-practice-restart" class="hub-portal-action">Lam lai quote nay</button>
+                </div>
+                <p id="typing-practice-feedback" class="typing-practice-note"></p>
+            </div>
+        </section>
+
+        <aside class="typing-practice-card typing-practice-card--side">
+            <div class="typing-practice-side-head">
+                <h2>Tong ket</h2>
+                <span class="hub-portal-tag">Practice</span>
+            </div>
+            <div class="typing-practice-summary">
+                <div class="typing-practice-summary__row"><span>Trang thai</span><strong id="typing-practice-status">Dang tai du lieu...</strong></div>
+                <div class="typing-practice-summary__row"><span>Ket qua</span><strong id="typing-practice-result">Chua bat dau</strong></div>
+                <div class="typing-practice-summary__row"><span>Tong van</span><strong id="typing-practice-stats-total">0</strong></div>
+                <div class="typing-practice-summary__row"><span>W/L/D</span><strong id="typing-practice-stats-record">0/0/0</strong></div>
+                <div class="typing-practice-summary__row"><span>Best WPM</span><strong id="typing-practice-stats-best-wpm">0</strong></div>
+                <div class="typing-practice-summary__row"><span>Best accuracy</span><strong id="typing-practice-stats-best-accuracy">0.0%</strong></div>
+                <div class="typing-practice-summary__row"><span>Completed</span><strong id="typing-practice-stats-completed">0</strong></div>
+            </div>
+            <ol id="typing-practice-history" class="typing-practice-history"></ol>
+        </aside>
+    </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-typing-practice')}"></th:block>
+<script th:src="@{/js/typing-practice.js}"></script>
+<style>
+    .typing-practice-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2.1fr) minmax(280px, 1fr);
+        gap: 1rem;
+    }
+
+    .typing-practice-card {
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(10, 24, 40, 0.44);
+        box-shadow: 0 20px 40px rgba(8, 15, 31, 0.22);
+        overflow: hidden;
+    }
+
+    .typing-practice-card--main {
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, 0.18), transparent 28%),
+            radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 34%),
+            linear-gradient(160deg, rgba(8, 47, 73, 0.94), rgba(5, 28, 53, 0.96));
+    }
+
+    .typing-practice-card--side {
+        padding: 1rem;
+        display: grid;
+        gap: 0.9rem;
+    }
+
+    .typing-practice-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.75rem;
+        padding: 1rem 1rem 0;
+    }
+
+    .typing-practice-stat,
+    .typing-practice-summary__row {
+        border-radius: 14px;
+        padding: 0.8rem 0.9rem;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        display: grid;
+        gap: 0.25rem;
+    }
+
+    .typing-practice-stat span,
+    .typing-practice-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        opacity: 0.78;
+    }
+
+    .typing-practice-body {
+        padding: 1rem;
+        display: grid;
+        gap: 0.95rem;
+    }
+
+    .typing-practice-target {
+        padding: 0.95rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .typing-practice-label {
+        margin: 0 0 0.45rem;
+    }
+
+    .typing-practice-text {
+        min-height: 76px;
+        line-height: 1.6;
+        word-break: break-word;
+        font-size: 1rem;
+    }
+
+    .typing-practice-text .typed-correct {
+        color: #86efac;
+    }
+
+    .typing-practice-text .typed-wrong {
+        color: #fecaca;
+        text-decoration: underline;
+    }
+
+    .typing-practice-text .typed-pending {
+        color: rgba(255, 255, 255, 0.88);
+    }
+
+    .typing-practice-input {
+        min-height: 160px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: inherit;
+    }
+
+    .typing-practice-lanes,
+    .typing-practice-summary,
+    .typing-practice-history {
+        display: grid;
+        gap: 0.8rem;
+    }
+
+    .typing-practice-lane {
+        padding: 0.78rem 0.84rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        display: grid;
+        gap: 0.45rem;
+    }
+
+    .typing-practice-lane__head {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .typing-practice-lane__track {
+        height: 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        overflow: hidden;
+    }
+
+    .typing-practice-lane__track > div {
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, #22d3ee, #3b82f6);
+        transition: width 0.18s ease;
+    }
+
+    .typing-practice-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .typing-practice-note {
+        margin: 0;
+        font-size: 0.92rem;
+        color: rgba(255, 255, 255, 0.84);
+    }
+
+    .typing-practice-note.error {
+        color: #fecaca;
+    }
+
+    .typing-practice-note.success {
+        color: #bbf7d0;
+    }
+
+    .typing-practice-side-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .typing-practice-side-head h2 {
+        margin: 0;
+        font-size: 1.05rem;
+    }
+
+    .typing-practice-history {
+        margin: 0;
+        padding-left: 1.2rem;
+        font-size: 0.92rem;
+    }
+
+    body:not(.dark-mode) .typing-practice-card {
+        border-color: rgba(89, 149, 218, 0.28);
+        background: rgba(244, 250, 255, 0.95);
+    }
+
+    body:not(.dark-mode) .typing-practice-card--main {
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, 0.16), transparent 28%),
+            radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 34%),
+            linear-gradient(160deg, rgba(250, 252, 255, 0.98), rgba(236, 246, 255, 0.98));
+    }
+
+    body:not(.dark-mode) .typing-practice-stat,
+    body:not(.dark-mode) .typing-practice-summary__row,
+    body:not(.dark-mode) .typing-practice-target,
+    body:not(.dark-mode) .typing-practice-input,
+    body:not(.dark-mode) .typing-practice-lane {
+        background: rgba(255, 255, 255, 0.82);
+        border-color: rgba(89, 149, 218, 0.24);
+    }
+
+    body:not(.dark-mode) .typing-practice-text .typed-pending,
+    body:not(.dark-mode) .typing-practice-note {
+        color: #4f6d90;
+    }
+
+    @media (max-width: 900px) {
+        .typing-practice-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</body>
+</html>

@@ -1,7 +1,9 @@
 package com.game.hub.service;
 
 import com.game.hub.entity.AchievementNotification;
+import com.game.hub.entity.GameHistory;
 import com.game.hub.entity.UserAchievement;
+import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.AchievementNotificationRepository;
 import com.game.hub.repository.GameHistoryRepository;
 import com.game.hub.repository.UserAchievementRepository;
@@ -101,5 +103,59 @@ class AchievementServiceTest {
         assertTrue(unlocked.contains("Bao trum Game Hub"));
         assertTrue(unlocked.contains("Hoan tat Puzzle Pack"));
         assertEquals(1L, savedAchievements.stream().filter(item -> "Bao trum Game Hub".equals(item.getAchievementName())).count());
+    }
+
+    @Test
+    void evaluateAfterMatchShouldIgnoreBotHistoriesForCompetitiveMilestones() {
+        UserAchievementRepository userAchievementRepository = mock(UserAchievementRepository.class);
+        AchievementNotificationRepository achievementNotificationRepository = mock(AchievementNotificationRepository.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        GameHistoryRepository gameHistoryRepository = mock(GameHistoryRepository.class);
+
+        List<UserAchievement> savedAchievements = new ArrayList<>();
+        when(userAchievementRepository.existsByUserIdAndAchievementName(anyString(), anyString())).thenReturn(false);
+        when(userAchievementRepository.save(any(UserAchievement.class))).thenAnswer(invocation -> {
+            UserAchievement achievement = invocation.getArgument(0, UserAchievement.class);
+            savedAchievements.add(achievement);
+            return achievement;
+        });
+        when(achievementNotificationRepository.save(any(AchievementNotification.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0, AchievementNotification.class));
+
+        UserAccount winner = new UserAccount();
+        winner.setId("winner-1");
+        winner.setScore(0);
+
+        UserAccount loser = new UserAccount();
+        loser.setId("loser-1");
+        loser.setScore(0);
+
+        when(userAccountRepository.findById("winner-1")).thenReturn(java.util.Optional.of(winner));
+        when(userAccountRepository.findById("loser-1")).thenReturn(java.util.Optional.of(loser));
+        when(userAccountRepository.existsById("winner-1")).thenReturn(true);
+        when(userAccountRepository.existsById("loser-1")).thenReturn(true);
+
+        List<GameHistory> winnerGames = new ArrayList<>();
+        for (int i = 0; i < 30; i++) {
+            GameHistory history = new GameHistory();
+            history.setGameCode("chess-bot");
+            history.setPlayer1Id("winner-1");
+            history.setPlayer2Id("bot-chess-hard");
+            history.setWinnerId("winner-1");
+            winnerGames.add(history);
+        }
+        when(gameHistoryRepository.findByPlayer1IdOrPlayer2IdOrderByPlayedAtDesc("winner-1", "winner-1")).thenReturn(winnerGames);
+        when(gameHistoryRepository.findByPlayer1IdOrPlayer2IdOrderByPlayedAtDesc("loser-1", "loser-1")).thenReturn(List.of());
+
+        AchievementService service = new AchievementService(
+            userAchievementRepository,
+            achievementNotificationRepository,
+            userAccountRepository,
+            gameHistoryRepository
+        );
+
+        service.evaluateAfterMatch("Normal_ROOM", "winner-1", "loser-1", 12, null, null, null);
+
+        assertTrue(savedAchievements.isEmpty());
     }
 }

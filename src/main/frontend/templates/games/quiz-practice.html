@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Quiz luyen tap')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-quiz-practice')}"></div>
+
+<main id="quiz-practice-app"
+      class="hub-portal-shell hub-portal-theme-quiz"
+      th:attr="data-bot-enabled=${botPage},data-bot-difficulty=${botDifficulty}">
+    <section class="card shadow-sm theme-box mb-3">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <div class="small text-muted">Quiz / Luyen tap</div>
+                <h1 class="h3 theme-text mb-1" th:text="${botPage} ? 'Quiz voi bot' : 'Quiz local'">Quiz local</h1>
+                <p class="small text-muted mb-2"
+                   th:text="${botPage}
+                       ? 'Tra loi tung cau, doi dau bot theo cung bo cau hoi va chot ket qua ngay trong trinh duyet.'
+                       : 'Chay bo cau hoi local de luyen tay, giu nhac tra loi va xem tong ket ngay tren may nay.'">
+                    Chay bo cau hoi local.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="hub-portal-chip is-live"><i class="bi bi-patch-question-fill"></i> Single / multi / typed</span>
+                    <span class="hub-portal-chip" th:if="${botPage}"><i class="bi bi-cpu-fill"></i> <span th:text="${botDifficulty == 'hard'} ? 'Bot Hard' : 'Bot Easy'">Bot Easy</span></span>
+                    <span class="hub-portal-chip" th:unless="${botPage}"><i class="bi bi-person-fill"></i> Local practice</span>
+                    <span class="hub-portal-chip"><i class="bi bi-stopwatch-fill"></i> Dong ho tung cau</span>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column align-items-md-end gap-2">
+                <div class="small text-md-end">
+                    <div><strong>Mode:</strong> <span th:text="${botPage} ? 'Bot duel' : 'Local drill'">Local drill</span></div>
+                    <div><strong>Difficulty:</strong> <span th:text="${botDifficulty == 'hard'} ? 'Hard' : 'Easy'">Easy</span></div>
+                </div>
+                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                    <a th:href="@{/games/quiz}" class="btn btn-sm theme-outline-btn">Ve lobby quiz</a>
+                    <a th:href="@{/game-mode/bot(game='quiz')}" class="btn btn-sm theme-outline-btn" th:if="${!botPage}">Mo che do bot</a>
+                    <a th:href="@{/games/quiz/local}" class="btn btn-sm theme-outline-btn" th:if="${botPage}">Ve local</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="quiz-practice-grid">
+        <section class="quiz-practice-card quiz-practice-card--main">
+            <div class="quiz-practice-stats">
+                <div class="quiz-practice-stat"><span>Cau hoi</span><strong id="quiz-practice-progress">0 / 0</strong></div>
+                <div class="quiz-practice-stat"><span>Diem ban</span><strong id="quiz-practice-player-score">0</strong></div>
+                <div class="quiz-practice-stat" th:if="${botPage}"><span>Diem bot</span><strong id="quiz-practice-bot-score">0</strong></div>
+                <div class="quiz-practice-stat"><span>Dong ho</span><strong id="quiz-practice-timer">15s</strong></div>
+            </div>
+
+            <div class="quiz-practice-body">
+                <p id="quiz-practice-mode-note" class="quiz-practice-note" th:text="${botPage} ? 'Bot se chot dap an theo do kho dang chon.' : 'Ban co the bo qua cau hoi de chuyen ngay sang cau tiep theo.'">Ban co the bo qua cau hoi.</p>
+                <h2 id="quiz-practice-question" class="quiz-practice-question">Dang tai bo cau hoi...</h2>
+                <div id="quiz-practice-options" class="quiz-practice-options"></div>
+                <div class="quiz-practice-actions">
+                    <button id="quiz-practice-submit" class="hub-portal-action hub-portal-action--primary">Gui dap an</button>
+                    <button id="quiz-practice-skip" class="hub-portal-action">Bo qua</button>
+                    <button id="quiz-practice-restart" class="hub-portal-action">Choi lai</button>
+                </div>
+                <p id="quiz-practice-feedback" class="quiz-practice-note"></p>
+            </div>
+        </section>
+
+        <aside class="quiz-practice-card quiz-practice-card--side">
+            <div class="quiz-practice-side-head">
+                <h2>Bang tong ket</h2>
+                <span class="hub-portal-tag">Local</span>
+            </div>
+            <div id="quiz-practice-summary" class="quiz-practice-summary">
+                <div class="quiz-practice-summary__row"><span>Trang thai</span><strong id="quiz-practice-status">Dang tai du lieu...</strong></div>
+                <div class="quiz-practice-summary__row"><span>Ket qua</span><strong id="quiz-practice-result">Chua bat dau</strong></div>
+                <div class="quiz-practice-summary__row"><span>Tong van</span><strong id="quiz-practice-stats-total">0</strong></div>
+                <div class="quiz-practice-summary__row"><span>W/L/D</span><strong id="quiz-practice-stats-record">0/0/0</strong></div>
+                <div class="quiz-practice-summary__row"><span>Best score</span><strong id="quiz-practice-stats-best">0</strong></div>
+                <div class="quiz-practice-summary__row"><span>Perfect runs</span><strong id="quiz-practice-stats-perfect">0</strong></div>
+            </div>
+            <ol id="quiz-practice-history" class="quiz-practice-history"></ol>
+        </aside>
+    </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-quiz-practice')}"></th:block>
+<script th:src="@{/js/quiz-practice.js}"></script>
+<style>
+    .quiz-practice-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2.1fr) minmax(280px, 1fr);
+        gap: 1rem;
+    }
+
+    .quiz-practice-card {
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(17, 24, 39, 0.42);
+        box-shadow: 0 20px 40px rgba(8, 15, 31, 0.22);
+        overflow: hidden;
+    }
+
+    .quiz-practice-card--main {
+        background:
+            radial-gradient(circle at top left, rgba(250, 204, 21, 0.18), transparent 30%),
+            radial-gradient(circle at top right, rgba(96, 165, 250, 0.18), transparent 34%),
+            linear-gradient(160deg, rgba(55, 19, 99, 0.94), rgba(28, 11, 65, 0.96));
+    }
+
+    .quiz-practice-card--side {
+        padding: 1rem;
+        display: grid;
+        gap: 0.9rem;
+    }
+
+    .quiz-practice-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.75rem;
+        padding: 1rem 1rem 0;
+    }
+
+    .quiz-practice-stat {
+        border-radius: 14px;
+        padding: 0.8rem 0.9rem;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        display: grid;
+        gap: 0.25rem;
+    }
+
+    .quiz-practice-stat span {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        opacity: 0.78;
+    }
+
+    .quiz-practice-stat strong {
+        font-size: 1.1rem;
+    }
+
+    .quiz-practice-body {
+        padding: 1rem;
+        display: grid;
+        gap: 0.95rem;
+    }
+
+    .quiz-practice-question {
+        margin: 0;
+        font-size: 1.22rem;
+        color: #f8ebff;
+    }
+
+    .quiz-practice-options {
+        display: grid;
+        gap: 0.7rem;
+    }
+
+    .quiz-practice-options.is-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .quiz-practice-option {
+        display: block;
+        cursor: pointer;
+    }
+
+    .quiz-practice-option input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .quiz-practice-option__body {
+        min-height: 52px;
+        padding: 0.72rem 0.88rem;
+        border-radius: 16px;
+        border: 1px solid rgba(250, 204, 21, 0.44);
+        background: rgba(255, 255, 255, 0.08);
+        display: flex;
+        gap: 0.65rem;
+        align-items: center;
+        transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .quiz-practice-option__key {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(125, 211, 252, 0.64);
+        color: #d7f2ff;
+        flex: 0 0 auto;
+        font-weight: 700;
+    }
+
+    .quiz-practice-option input:checked + .quiz-practice-option__body {
+        transform: translateY(-1px);
+        border-color: rgba(125, 211, 252, 0.88);
+        box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.18);
+    }
+
+    .quiz-practice-options.is-typed {
+        grid-template-columns: 1fr;
+    }
+
+    .quiz-practice-typed {
+        width: 100%;
+        border-radius: 999px;
+        border: 1px solid rgba(250, 204, 21, 0.44);
+        background: rgba(255, 255, 255, 0.08);
+        color: inherit;
+        padding: 0.78rem 0.95rem;
+    }
+
+    .quiz-practice-typed:focus {
+        outline: none;
+        border-color: rgba(125, 211, 252, 0.88);
+        box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.18);
+    }
+
+    .quiz-practice-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .quiz-practice-note {
+        margin: 0;
+        font-size: 0.92rem;
+        color: rgba(255, 255, 255, 0.84);
+    }
+
+    .quiz-practice-note.error {
+        color: #fecaca;
+    }
+
+    .quiz-practice-note.success {
+        color: #bbf7d0;
+    }
+
+    .quiz-practice-side-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .quiz-practice-side-head h2 {
+        margin: 0;
+        font-size: 1.05rem;
+    }
+
+    .quiz-practice-summary {
+        display: grid;
+        gap: 0.6rem;
+    }
+
+    .quiz-practice-summary__row {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: center;
+        padding: 0.7rem 0.75rem;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .quiz-practice-history {
+        margin: 0;
+        padding-left: 1.2rem;
+        display: grid;
+        gap: 0.55rem;
+        font-size: 0.92rem;
+    }
+
+    body:not(.dark-mode) .quiz-practice-card {
+        border-color: rgba(89, 149, 218, 0.28);
+        background: rgba(244, 250, 255, 0.95);
+    }
+
+    body:not(.dark-mode) .quiz-practice-card--main {
+        background:
+            radial-gradient(circle at top left, rgba(250, 204, 21, 0.18), transparent 30%),
+            radial-gradient(circle at top right, rgba(96, 165, 250, 0.18), transparent 34%),
+            linear-gradient(160deg, rgba(250, 248, 255, 0.98), rgba(236, 246, 255, 0.98));
+    }
+
+    body:not(.dark-mode) .quiz-practice-question {
+        color: #18355c;
+    }
+
+    body:not(.dark-mode) .quiz-practice-stat,
+    body:not(.dark-mode) .quiz-practice-summary__row,
+    body:not(.dark-mode) .quiz-practice-option__body,
+    body:not(.dark-mode) .quiz-practice-typed {
+        background: rgba(255, 255, 255, 0.82);
+        border-color: rgba(89, 149, 218, 0.24);
+    }
+
+    body:not(.dark-mode) .quiz-practice-note {
+        color: #4f6d90;
+    }
+
+    @media (max-width: 900px) {
+        .quiz-practice-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .quiz-practice-options.is-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</body>
+</html>

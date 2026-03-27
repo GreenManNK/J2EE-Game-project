@@ -146,35 +146,36 @@ public class GameCatalogService {
                 "blackjack",
                 "Blackjack",
                 "Blackjack",
-                "Blackjack realtime: tao/join/spectate room, dat cuoc va dau dealer.",
+                "Blackjack da co room realtime, dealer bot va ban local PvP cung may.",
                 "bi-suit-club-fill",
                 true,
                 true,
-                false,
+                true,
                 true,
                 "Mo Blackjack",
                 "/games/cards/blackjack",
                 List.of(
                     "Tao/join/spectate room blackjack.",
-                    "Dat cuoc + hit/stand/double theo luat co ban.",
-                    "Dong bo state realtime giua player va spectator."
+                    "Ban local 2-4 nguoi cung may voi dealer.",
+                    "Dat cuoc + hit/stand/double theo luat co ban."
                 )
             ),
             new GameCatalogItem(
                 "quiz",
                 "Quiz",
                 "Quiz",
-                "Quiz da ho tro tao room, join room, spectate va bang diem cao.",
+                "Quiz da co room realtime, luyen tap local va dau bot Easy/Hard.",
                 "bi-patch-question-fill",
                 true,
                 true,
-                false,
+                true,
                 true,
                 "Mo Quiz",
                 "/games/quiz",
                 List.of(
                     "Tao/join/spectate room quiz.",
                     "Nhieu dang cau hoi: single, multiple, typed.",
+                    "Luyen tap local va dau bot theo nhac cau hoi.",
                     "Theo doi high score."
                 )
             ),
@@ -182,17 +183,18 @@ public class GameCatalogService {
                 "typing",
                 "Typing Battle",
                 "Typing",
-                "Typing Battle realtime voi tao/join room, theo doi progress va accuracy.",
+                "Typing Battle da co room realtime, che do practice local va race voi bot.",
                 "bi-keyboard-fill",
                 true,
                 true,
-                false,
+                true,
                 true,
                 "Mo Typing Battle",
                 "/games/typing",
                 List.of(
                     "Tao/join room typing realtime.",
                     "Theo doi progress + accuracy cua tung nguoi choi.",
+                    "Practice local va race voi bot Easy/Hard.",
                     "Thong bao winner khi ket thuc."
                 )
             ),

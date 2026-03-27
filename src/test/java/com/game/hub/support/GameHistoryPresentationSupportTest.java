@@ -45,4 +45,63 @@ class GameHistoryPresentationSupportTest {
         assertEquals("/game/room/Normal_ABC123", metadata.locationHref());
         assertEquals("Online", metadata.contextLabel());
     }
+
+    @Test
+    void describeShouldNormalizeBotMatchesToBaseGameMetadata() {
+        GameHistory history = new GameHistory();
+        history.setId(29L);
+        history.setGameCode("chess-bot");
+
+        GameHistoryPresentationSupport support = new GameHistoryPresentationSupport(new GameCatalogService());
+        GameHistoryPresentationSupport.ViewMetadata metadata = support.describe(history);
+
+        assertEquals("chess", metadata.gameCode());
+        assertEquals("Co vua", metadata.gameName());
+        assertEquals("TRAN-29", metadata.matchCode());
+        assertEquals("Che do bot", metadata.locationLabel());
+        assertEquals("/chess/bot", metadata.locationHref());
+        assertEquals("/chess/bot", metadata.gameHref());
+        assertEquals("Bot", metadata.contextLabel());
+    }
+
+    @Test
+    void describeShouldNormalizeMonopolyBotMatchesToNativeBotRoute() {
+        GameHistory history = new GameHistory();
+        history.setId(41L);
+        history.setGameCode("monopoly-bot");
+
+        GameHistoryPresentationSupport support = new GameHistoryPresentationSupport(new GameCatalogService());
+        GameHistoryPresentationSupport.ViewMetadata metadata = support.describe(history);
+
+        assertEquals("monopoly", metadata.gameCode());
+        assertEquals("Co ty phu", metadata.gameName());
+        assertEquals("TRAN-41", metadata.matchCode());
+        assertEquals("Che do bot", metadata.locationLabel());
+        assertEquals("/games/monopoly/bot", metadata.locationHref());
+        assertEquals("/games/monopoly/bot", metadata.gameHref());
+        assertEquals("Bot", metadata.contextLabel());
+    }
+
+    @Test
+    void describeShouldNormalizeQuizAndTypingBotMatchesToPracticeRoutes() {
+        GameHistoryPresentationSupport support = new GameHistoryPresentationSupport(new GameCatalogService());
+
+        GameHistory quizHistory = new GameHistory();
+        quizHistory.setId(51L);
+        quizHistory.setGameCode("quiz-bot");
+        GameHistoryPresentationSupport.ViewMetadata quizMetadata = support.describe(quizHistory);
+        assertEquals("quiz", quizMetadata.gameCode());
+        assertEquals("/games/quiz/bot", quizMetadata.locationHref());
+        assertEquals("/games/quiz/bot", quizMetadata.gameHref());
+        assertEquals("Bot", quizMetadata.contextLabel());
+
+        GameHistory typingHistory = new GameHistory();
+        typingHistory.setId(52L);
+        typingHistory.setGameCode("typing-bot");
+        GameHistoryPresentationSupport.ViewMetadata typingMetadata = support.describe(typingHistory);
+        assertEquals("typing", typingMetadata.gameCode());
+        assertEquals("/games/typing/bot", typingMetadata.locationHref());
+        assertEquals("/games/typing/bot", typingMetadata.gameHref());
+        assertEquals("Bot", typingMetadata.contextLabel());
+    }
 }

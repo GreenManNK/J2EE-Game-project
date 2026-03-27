@@ -64,6 +64,12 @@ public class UserAccount {
     private String minesweeperStatsJson;
     @JsonIgnore
     @Column(length = 4000)
+    private String quizPracticeStatsJson;
+    @JsonIgnore
+    @Column(length = 4000)
+    private String typingPracticeStatsJson;
+    @JsonIgnore
+    @Column(length = 4000)
     private String puzzleCatalogFavoritesJson;
     @JsonIgnore
     @Column(length = 4000)
@@ -151,6 +157,10 @@ public class UserAccount {
     public void setXiangqiOfflineStatsJson(String xiangqiOfflineStatsJson) { this.xiangqiOfflineStatsJson = xiangqiOfflineStatsJson; }
     public String getMinesweeperStatsJson() { return minesweeperStatsJson; }
     public void setMinesweeperStatsJson(String minesweeperStatsJson) { this.minesweeperStatsJson = minesweeperStatsJson; }
+    public String getQuizPracticeStatsJson() { return quizPracticeStatsJson; }
+    public void setQuizPracticeStatsJson(String quizPracticeStatsJson) { this.quizPracticeStatsJson = quizPracticeStatsJson; }
+    public String getTypingPracticeStatsJson() { return typingPracticeStatsJson; }
+    public void setTypingPracticeStatsJson(String typingPracticeStatsJson) { this.typingPracticeStatsJson = typingPracticeStatsJson; }
     public String getPuzzleCatalogFavoritesJson() { return puzzleCatalogFavoritesJson; }
     public void setPuzzleCatalogFavoritesJson(String puzzleCatalogFavoritesJson) { this.puzzleCatalogFavoritesJson = puzzleCatalogFavoritesJson; }
     public String getPuzzleCatalogRatingsJson() { return puzzleCatalogRatingsJson; }

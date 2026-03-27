@@ -1,6 +1,7 @@
 package com.game.hub.service;
 
 import com.game.hub.entity.UserAccount;
+import com.game.hub.repository.UserAchievementRepository;
 import com.game.hub.repository.UserAvatarBinaryRepository;
 import com.game.hub.repository.UserAccountRepository;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,8 @@ class AccountServiceTest {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private UserAvatarBinaryRepository userAvatarBinaryRepository;
+    @Autowired
+    private UserAchievementRepository userAchievementRepository;
     @MockBean
     private EmailService emailService;
 
@@ -316,6 +319,109 @@ class AccountServiceTest {
         assertEquals(2, ((Number) stats.get("whiteWins")).intValue());
         assertEquals(4, ((Number) stats.get("blackWins")).intValue());
         assertEquals(3, ((Number) stats.get("draws")).intValue());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void updateGameStatsShouldPersistQuizPracticeStatsAndAwardQuizAchievement() {
+        UserAccount user = new UserAccount();
+        user.setEmail("quiz-stats@test.com");
+        user.setUsername("quiz-stats@test.com");
+        user.setDisplayName("Quiz Stats");
+        user.setPassword(passwordEncoder.encode("Pass@123"));
+        user.setEmailConfirmed(true);
+        userAccountRepository.save(user);
+
+        AccountService.ServiceResult updateResult = accountService.updateGameStats(
+            user.getId(),
+            "quiz-bot",
+            Map.of(
+                "totalGames", 4,
+                "wins", 2,
+                "losses", 1,
+                "draws", 1,
+                "bestScore", 14,
+                "perfectRounds", 1
+            ),
+            true
+        );
+
+        assertTrue(updateResult.success());
+
+        AccountService.ServiceResult readResult = accountService.getGameStats(user.getId(), "quiz-practice");
+        assertTrue(readResult.success());
+        Map<String, Object> payload = (Map<String, Object>) readResult.data();
+        Map<String, Object> stats = (Map<String, Object>) payload.get("stats");
+        assertEquals(4, ((Number) stats.get("totalGames")).intValue());
+        assertEquals(2, ((Number) stats.get("wins")).intValue());
+        assertEquals(14, ((Number) stats.get("bestScore")).intValue());
+        assertEquals(1, ((Number) stats.get("perfectRounds")).intValue());
+
+        UserAccount updated = userAccountRepository.findById(user.getId()).orElseThrow();
+        assertTrue(updated.getQuizPracticeStatsJson().contains("\"wins\":2"));
+        assertTrue(userAchievementRepository.findByUserId(user.getId()).stream()
+            .anyMatch(achievement -> "Winner - Quiz".equals(achievement.getAchievementName())));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void updateGameStatsShouldMergeTypingPracticeStatsWithoutLosingPersonalBest() {
+        UserAccount user = new UserAccount();
+        user.setEmail("typing-stats@test.com");
+        user.setUsername("typing-stats@test.com");
+        user.setDisplayName("Typing Stats");
+        user.setPassword(passwordEncoder.encode("Pass@123"));
+        user.setEmailConfirmed(true);
+        userAccountRepository.save(user);
+
+        AccountService.ServiceResult firstUpdate = accountService.updateGameStats(
+            user.getId(),
+            "typing-practice",
+            Map.of(
+                "totalGames", 2,
+                "wins", 1,
+                "losses", 1,
+                "draws", 0,
+                "bestWpm", 72,
+                "bestAccuracy", 98.4,
+                "completedQuotes", 1
+            ),
+            true
+        );
+        AccountService.ServiceResult secondUpdate = accountService.updateGameStats(
+            user.getId(),
+            "typing-bot",
+            Map.of(
+                "totalGames", 3,
+                "wins", 1,
+                "losses", 1,
+                "draws", 1,
+                "bestWpm", 65,
+                "bestAccuracy", 96.2,
+                "completedQuotes", 3
+            ),
+            true
+        );
+
+        assertTrue(firstUpdate.success());
+        assertTrue(secondUpdate.success());
+
+        AccountService.ServiceResult readResult = accountService.getGameStats(user.getId(), "typing-practice");
+        assertTrue(readResult.success());
+        Map<String, Object> payload = (Map<String, Object>) readResult.data();
+        Map<String, Object> stats = (Map<String, Object>) payload.get("stats");
+        assertEquals(3, ((Number) stats.get("totalGames")).intValue());
+        assertEquals(1, ((Number) stats.get("wins")).intValue());
+        assertEquals(1, ((Number) stats.get("losses")).intValue());
+        assertEquals(1, ((Number) stats.get("draws")).intValue());
+        assertEquals(72, ((Number) stats.get("bestWpm")).intValue());
+        assertEquals(98.4, ((Number) stats.get("bestAccuracy")).doubleValue(), 0.001);
+        assertEquals(3, ((Number) stats.get("completedQuotes")).intValue());
+
+        UserAccount updated = userAccountRepository.findById(user.getId()).orElseThrow();
+        assertTrue(updated.getTypingPracticeStatsJson().contains("\"bestWpm\":72"));
+        assertTrue(userAchievementRepository.findByUserId(user.getId()).stream()
+            .anyMatch(achievement -> "Winner - Typing".equals(achievement.getAchievementName())));
     }
 
     @Test

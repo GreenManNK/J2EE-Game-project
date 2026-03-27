@@ -58,7 +58,7 @@ class GameCatalogServiceTest {
         var blackjack = service.findByCode("blackjack").orElseThrow();
         assertTrue(blackjack.availableNow());
         assertTrue(blackjack.supportsOnline());
-        assertEquals(false, blackjack.supportsOffline());
+        assertTrue(blackjack.supportsOffline());
         assertEquals("/games/cards/blackjack", blackjack.primaryActionUrl());
 
         var xiangqi = service.findByCode("xiangqi").orElseThrow();
@@ -77,11 +77,13 @@ class GameCatalogServiceTest {
         var quiz = service.findByCode("quiz").orElseThrow();
         assertTrue(quiz.availableNow());
         assertTrue(quiz.supportsOnline());
+        assertTrue(quiz.supportsOffline());
         assertEquals("/games/quiz", quiz.primaryActionUrl());
 
         var typing = service.findByCode("typing").orElseThrow();
         assertTrue(typing.availableNow());
         assertTrue(typing.supportsOnline());
+        assertTrue(typing.supportsOffline());
         assertEquals("/games/typing", typing.primaryActionUrl());
 
         var puzzle = service.findByCode("puzzle").orElseThrow();

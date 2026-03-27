@@ -1,5 +1,6 @@
-(function () {
+﻿(function () {
     const boot = window.XiangqiBoot || {};
+    const historyApi = window.CaroHistory || {};
     const ROWS = 10;
     const COLS = 9;
     const XIANGQI_STATS_KEY = "caroXiangqiOfflineStats.v1";
@@ -46,7 +47,9 @@
             redWins: 0,
             blackWins: 0,
             draws: 0
-        }
+        },
+        historyMatchCode: "",
+        historyRecorded: false
     };
 
     let els = {};
@@ -87,8 +90,16 @@
         state.lastMove = null;
         state.botThinking = false;
         state.snapshots = [];
+        state.historyRecorded = false;
+        state.historyMatchCode = newMatchCode();
         renderAll();
         maybeQueueBotMove();
+    }
+
+    function newMatchCode() {
+        return typeof historyApi.newMatchCode === "function"
+            ? historyApi.newMatchCode("xiangqi-bot-" + state.botDifficulty)
+            : ("BOT-XIANGQI-" + Date.now());
     }
 
     function normalizeStats(raw) {
@@ -202,6 +213,25 @@
         }
         writeStats();
         updateStatsUi();
+    }
+
+    async function recordBotHistory(outcome) {
+        if (!state.botEnabled || state.historyRecorded || typeof historyApi.recordBotMatch !== "function") {
+            return;
+        }
+        state.historyRecorded = true;
+        try {
+            await historyApi.recordBotMatch({
+                gameCode: "xiangqi",
+                difficulty: state.botDifficulty,
+                outcome: outcome,
+                totalMoves: state.moveHistory.length,
+                firstPlayerRole: "player",
+                matchCode: state.historyMatchCode || newMatchCode()
+            });
+        } catch (_) {
+            state.historyRecorded = false;
+        }
     }
 
     function cloneMove(move) {
@@ -371,6 +401,7 @@
             state.resultText = colorName(sideJustMoved) + " thang";
             setGameStatus(colorName(sideJustMoved) + " da an Tuong va chien thang!");
             recordOutcome(sideJustMoved);
+            recordBotHistory(sideJustMoved === humanSide() ? "win" : "loss");
             renderAll();
             return;
         }
@@ -384,11 +415,13 @@
             state.resultText = "Chieu bi - " + colorName(sideJustMoved) + " thang";
             setGameStatus("Chieu bi! " + colorName(sideJustMoved) + " thang.");
             recordOutcome(sideJustMoved);
+            recordBotHistory(sideJustMoved === humanSide() ? "win" : "loss");
         } else if (!hasMove) {
             state.gameOver = true;
             state.resultText = "Hoa";
             setGameStatus("Het nuoc di hop le - hoa.");
             recordOutcome("draw");
+            recordBotHistory("draw");
         } else if (inCheck) {
             state.resultText = "Dang choi";
             setGameStatus(colorName(opponent) + " dang bi chieu!");
@@ -522,6 +555,7 @@
         state.moveHistory.push(surrenderLabel + " dau hang");
         setGameStatus(messagePrefix + " da dau hang. " + winnerLabel + " thang.");
         recordOutcome(winnerSide);
+        recordBotHistory(winnerSide === humanSide() ? "win" : "loss");
         renderAll();
     }
 

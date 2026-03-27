@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Blackjack local')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-blackjack-local')}"></div>
+
+<main id="blackjack-local-app" class="hub-portal-shell hub-portal-theme-blackjack">
+    <section class="card shadow-sm theme-box mb-3">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <div class="small text-muted">Blackjack / Local PvP</div>
+                <h1 class="h3 theme-text mb-1">Blackjack local 2-4 nguoi</h1>
+                <p class="small text-muted mb-2">Dat cuoc, chia bai va xoay luot truc tiep tren cung may. Dealer van giu luat 17+, con nguoi choi thay nhau hit, stand, double hoac surrender.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="hub-portal-chip is-live"><i class="bi bi-people-fill"></i> 2-4 nguoi cung may</span>
+                    <span class="hub-portal-chip"><i class="bi bi-cash-coin"></i> Bet / rebet / double</span>
+                    <span class="hub-portal-chip"><i class="bi bi-suit-club-fill"></i> Dealer 17+</span>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column align-items-md-end gap-2">
+                <div class="small text-md-end">
+                    <div><strong>Mode:</strong> Local PvP</div>
+                    <div><strong>Seats:</strong> 2-4</div>
+                </div>
+                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                    <a th:href="@{/games/cards/blackjack}" class="btn btn-sm theme-outline-btn">Ve lobby blackjack</a>
+                    <a th:href="@{/games/cards/blackjack/bot}" class="btn btn-sm theme-outline-btn">Qua dealer bot</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="blackjack-local-layout">
+        <section class="blackjack-local-card blackjack-local-card--table">
+            <div class="blackjack-local-settings">
+                <label for="blackjack-local-seat-count">So ghe</label>
+                <select id="blackjack-local-seat-count" class="form-select form-select-sm">
+                    <option value="2">2 nguoi</option>
+                    <option value="3">3 nguoi</option>
+                    <option value="4">4 nguoi</option>
+                </select>
+                <button id="blackjack-local-reset-table" class="hub-portal-action">Reset ban</button>
+                <button id="blackjack-local-start-round" class="hub-portal-action hub-portal-action--primary">Chia bai</button>
+                <button id="blackjack-local-rebet-all" class="hub-portal-action">Dat lai ca ban</button>
+            </div>
+
+            <div class="blackjack-local-dealer">
+                <div class="blackjack-local-section-head">
+                    <div>
+                        <span class="blackjack-local-label">Dealer</span>
+                        <strong>Nha cai</strong>
+                    </div>
+                    <span id="blackjack-local-dealer-value">0 diem</span>
+                </div>
+                <div id="blackjack-local-dealer-cards" class="blackjack-local-cards"></div>
+            </div>
+
+            <div id="blackjack-local-players" class="blackjack-local-players"></div>
+        </section>
+
+        <aside class="blackjack-local-card blackjack-local-card--side">
+            <div class="blackjack-local-side-head">
+                <h2>Dieu khien</h2>
+                <span class="hub-portal-tag">Local</span>
+            </div>
+
+            <div class="blackjack-local-summary">
+                <div class="blackjack-local-summary__row"><span>Trang thai</span><strong id="blackjack-local-status">Chon ghe va dat cuoc</strong></div>
+                <div class="blackjack-local-summary__row"><span>Ghe dang thao tac</span><strong id="blackjack-local-active-seat">Nguoi choi 1</strong></div>
+            </div>
+
+            <div class="blackjack-local-bet-box">
+                <label for="blackjack-local-bet-input" class="form-label">Tien cuoc cho ghe dang chon</label>
+                <div class="blackjack-local-bet-row">
+                    <input id="blackjack-local-bet-input" class="form-control" type="number" min="1" value="25">
+                    <button id="blackjack-local-place-bet" class="hub-portal-action hub-portal-action--primary">Dat cuoc</button>
+                </div>
+                <div class="blackjack-local-chip-row">
+                    <button class="hub-portal-action blackjack-local-chip" data-chip="10">+10</button>
+                    <button class="hub-portal-action blackjack-local-chip" data-chip="25">+25</button>
+                    <button class="hub-portal-action blackjack-local-chip" data-chip="50">+50</button>
+                    <button class="hub-portal-action blackjack-local-chip" data-chip="100">+100</button>
+                </div>
+                <button id="blackjack-local-clear-bet" class="hub-portal-action">Xoa cuoc ghe nay</button>
+            </div>
+
+            <div class="blackjack-local-action-box">
+                <button id="blackjack-local-hit" class="hub-portal-action" disabled>Hit</button>
+                <button id="blackjack-local-stand" class="hub-portal-action" disabled>Stand</button>
+                <button id="blackjack-local-double" class="hub-portal-action" disabled>Double</button>
+                <button id="blackjack-local-surrender" class="hub-portal-action" disabled>Surrender</button>
+            </div>
+
+            <ol id="blackjack-local-history" class="blackjack-local-history"></ol>
+        </aside>
+    </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-blackjack-local')}"></th:block>
+<script th:src="@{/js/blackjack-local.js}"></script>
+<style>
+    .blackjack-local-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 2.1fr) minmax(300px, 1fr);
+        gap: 1rem;
+    }
+
+    .blackjack-local-card {
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(9, 23, 15, 0.48);
+        box-shadow: 0 20px 40px rgba(8, 15, 31, 0.22);
+        overflow: hidden;
+    }
+
+    .blackjack-local-card--table {
+        padding: 1rem;
+        display: grid;
+        gap: 1rem;
+        background:
+            radial-gradient(circle at top, rgba(34, 197, 94, 0.18), transparent 28%),
+            linear-gradient(160deg, rgba(8, 50, 24, 0.94), rgba(3, 33, 18, 0.96));
+    }
+
+    .blackjack-local-card--side {
+        padding: 1rem;
+        display: grid;
+        gap: 1rem;
+    }
+
+    .blackjack-local-settings,
+    .blackjack-local-bet-row,
+    .blackjack-local-chip-row,
+    .blackjack-local-action-box,
+    .blackjack-local-section-head,
+    .blackjack-local-player__head,
+    .blackjack-local-player__meta,
+    .blackjack-local-side-head,
+    .blackjack-local-summary__row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.65rem;
+    }
+
+    .blackjack-local-settings label,
+    .blackjack-local-label {
+        font-size: 0.78rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        opacity: 0.78;
+    }
+
+    .blackjack-local-settings .form-select {
+        max-width: 130px;
+    }
+
+    .blackjack-local-dealer,
+    .blackjack-local-player,
+    .blackjack-local-bet-box,
+    .blackjack-local-summary__row {
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.08);
+        padding: 0.85rem;
+    }
+
+    .blackjack-local-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .blackjack-local-card-face,
+    .blackjack-local-card-back {
+        width: 58px;
+        height: 84px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        background: #f8fafc;
+        color: #0f172a;
+        box-shadow: 0 6px 14px rgba(2, 6, 23, 0.28);
+        padding: 0.3rem 0.34rem;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        font-weight: 700;
+    }
+
+    .blackjack-local-card-face.red {
+        color: #dc2626;
+    }
+
+    .blackjack-local-card-center {
+        display: grid;
+        place-items: center;
+        font-size: 1.15rem;
+    }
+
+    .blackjack-local-card-back {
+        background: linear-gradient(145deg, rgba(30, 64, 175, 0.95), rgba(37, 99, 235, 0.92));
+        color: #eff6ff;
+        place-items: center;
+        font-size: 1.2rem;
+    }
+
+    .blackjack-local-players {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.8rem;
+    }
+
+    .blackjack-local-player.active,
+    .blackjack-local-player.selected {
+        border-color: rgba(125, 211, 252, 0.8);
+        box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.18);
+    }
+
+    .blackjack-local-player.active {
+        border-color: rgba(250, 204, 21, 0.9);
+        box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.18);
+    }
+
+    .blackjack-local-player__head strong {
+        flex: 1 1 auto;
+    }
+
+    .blackjack-local-chip-row,
+    .blackjack-local-action-box {
+        gap: 0.55rem;
+    }
+
+    .blackjack-local-chip {
+        min-width: 68px;
+    }
+
+    .blackjack-local-history {
+        margin: 0;
+        padding-left: 1.2rem;
+        display: grid;
+        gap: 0.55rem;
+        font-size: 0.92rem;
+    }
+
+    body:not(.dark-mode) .blackjack-local-card {
+        border-color: rgba(89, 149, 218, 0.28);
+        background: rgba(244, 250, 255, 0.95);
+    }
+
+    body:not(.dark-mode) .blackjack-local-card--table {
+        background:
+            radial-gradient(circle at top, rgba(34, 197, 94, 0.14), transparent 28%),
+            linear-gradient(160deg, rgba(250, 252, 255, 0.98), rgba(236, 246, 255, 0.98));
+    }
+
+    body:not(.dark-mode) .blackjack-local-dealer,
+    body:not(.dark-mode) .blackjack-local-player,
+    body:not(.dark-mode) .blackjack-local-bet-box,
+    body:not(.dark-mode) .blackjack-local-summary__row {
+        background: rgba(255, 255, 255, 0.82);
+        border-color: rgba(89, 149, 218, 0.24);
+    }
+
+    @media (max-width: 920px) {
+        .blackjack-local-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</body>
+</html>

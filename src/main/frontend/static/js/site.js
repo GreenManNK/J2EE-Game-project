@@ -309,6 +309,62 @@
     }
   }
 
+  const BOT_HISTORY_MATCHES = new Set();
+
+  function newHistoryMatchCode(prefix) {
+    const safePrefix = String(prefix || 'bot-match')
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'BOT-MATCH';
+    let token = '';
+    try {
+      token = typeof window.crypto?.randomUUID === 'function'
+        ? window.crypto.randomUUID().replace(/-/g, '')
+        : '';
+    } catch (_) {
+      token = '';
+    }
+    if (!token) {
+      token = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    }
+    return safePrefix + '-' + Date.now() + '-' + token.slice(0, 10).toUpperCase();
+  }
+
+  async function recordBotMatch(payload) {
+    const body = payload && typeof payload === 'object' ? payload : {};
+    const matchCode = String(body.matchCode || '').trim();
+    const gameCode = String(body.gameCode || '').trim().toLowerCase();
+    const dedupeKey = gameCode + '|' + matchCode;
+
+    if (gameCode && matchCode && BOT_HISTORY_MATCHES.has(dedupeKey)) {
+      return {
+        success: true,
+        data: {
+          recorded: false,
+          skipped: 'client-duplicate',
+          matchCode: matchCode
+        }
+      };
+    }
+
+    const response = await fetch(toAppPath('/history/api/bot-match'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.ok && data && data.success && gameCode && matchCode) {
+      BOT_HISTORY_MATCHES.add(dedupeKey);
+    }
+    return data;
+  }
+
+  window.CaroHistory = {
+    recordBotMatch: recordBotMatch,
+    newMatchCode: newHistoryMatchCode
+  };
+
   const USER_KEY = 'caro_current_user';
   const USER_CHANGE_EVENT = 'caro:user-changed';
   const DEFAULT_AVATAR_PATH = '/uploads/avatars/default-avatar.jpg';
@@ -487,7 +543,9 @@
   const GUEST_DATA_KEYS = [
     { gameCode: 'chess-offline', storageKey: 'caroChessOfflineStats.v1' },
     { gameCode: 'xiangqi-offline', storageKey: 'caroXiangqiOfflineStats.v1' },
-    { gameCode: 'minesweeper', storageKey: 'caroMinesweeperStats.v1' }
+    { gameCode: 'minesweeper', storageKey: 'caroMinesweeperStats.v1' },
+    { gameCode: 'quiz-practice', storageKey: 'caroQuizPracticeStats.v1' },
+    { gameCode: 'typing-practice', storageKey: 'caroTypingPracticeStats.v1' }
   ];
   let guestDataMigrateInFlight = null;
 

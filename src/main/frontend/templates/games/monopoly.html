@@ -5,7 +5,7 @@
 <div th:replace="~{fragments :: appShell('games-monopoly')}"></div>
 
 <main id="monopolyPage" class="hub-portal-shell hub-portal-theme-monopoly">
-  <section th:if="${roomPage != true and localPage != true}" class="card shadow-sm theme-box mb-3">
+  <section th:if="${roomPage != true and localPage != true and botPage != true}" class="card shadow-sm theme-box mb-3">
     <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
       <div>
         <div class="small text-muted">Monopoly / Lobby</div>
@@ -28,13 +28,14 @@
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
           <a href="#monopolyTable" class="btn btn-sm theme-outline-btn">Mo sanh phong</a>
           <a th:href="@{/games/monopoly/local}" class="btn btn-sm theme-outline-btn">Choi local</a>
+          <a th:href="@{/game-mode/bot(game='monopoly')}" class="btn btn-sm theme-outline-btn">Dau voi bot</a>
           <a th:href="@{/games}" class="btn btn-sm theme-outline-btn">Ve thu vien</a>
         </div>
       </div>
     </div>
   </section>
 
-  <section th:if="${roomPage != true and localPage != true}"
+  <section th:if="${roomPage != true and localPage != true and botPage != true}"
            th:replace="~{fragments :: gameplayRail(
               gameName=${game != null ? game.displayName : 'Co ty phu'},
               summary='Lobby room va local page duoc giu trong cung mot gameplay loop de vao ban nhanh hon.',
@@ -57,7 +58,11 @@
         <h2>Ban choi Co ty phu local</h2>
         <p>Choi 2-4 nguoi tren cung thiet bi voi setup va bang xep hang tai cho.</p>
       </div>
-      <div th:if="${roomPage != true and localPage != true}">
+      <div th:if="${botPage == true}">
+        <h2>Ban Co ty phu voi bot</h2>
+        <p>Ban la nguoi choi that, cac ghe con lai duoc bot tu dong dieu khien theo muc de hoac muc kho.</p>
+      </div>
+      <div th:if="${roomPage != true and localPage != true and botPage != true}">
         <h2>Sanh phong Co ty phu</h2>
         <p>Chon ten, tao room, vao room dang mo hoac sang local mode neu muon choi cung may.</p>
       </div>
@@ -71,14 +76,19 @@
         <span class="monopoly-mini-chip"><i class="bi bi-cash-stack"></i> Starting cash tuy chon</span>
         <span class="monopoly-mini-chip"><i class="bi bi-trophy-fill"></i> BXH gia tri rong realtime</span>
       </div>
-      <div class="monopoly-surface__chips" th:if="${roomPage != true and localPage != true}">
+      <div class="monopoly-surface__chips" th:if="${botPage == true}">
+        <span class="monopoly-mini-chip"><i class="bi bi-cpu-fill"></i> 1 nguoi + 1-3 bot</span>
+        <span class="monopoly-mini-chip"><i class="bi bi-lightning-charge-fill"></i> Turn tu dong</span>
+        <span class="monopoly-mini-chip"><i class="bi bi-clock-history"></i> Luu vao lich su bot</span>
+      </div>
+      <div class="monopoly-surface__chips" th:if="${roomPage != true and localPage != true and botPage != true}">
         <span class="monopoly-mini-chip"><i class="bi bi-door-open-fill"></i> Lobby rieng</span>
         <span class="monopoly-mini-chip"><i class="bi bi-broadcast-pin"></i> Room page rieng</span>
         <span class="monopoly-mini-chip"><i class="bi bi-controller"></i> Local page rieng</span>
       </div>
     </div>
 
-    <section th:if="${roomPage != true and localPage != true}" class="hub-portal-card monopoly-room-card">
+    <section th:if="${roomPage != true and localPage != true and botPage != true}" class="hub-portal-card monopoly-room-card">
       <div class="hub-portal-card__head">
         <h2>Phong cho Monopoly</h2>
         <span class="hub-portal-tag">Room sync MVP</span>
@@ -180,15 +190,26 @@
       </div>
     </section>
 
-    <section th:if="${localPage == true}" id="monopolyLocalSetupCard" class="hub-portal-card monopoly-setup-card">
+    <section th:if="${localPage == true or botPage == true}" id="monopolyLocalSetupCard" class="hub-portal-card monopoly-setup-card">
       <div class="hub-portal-card__head">
-        <h2>Setup van local</h2>
-        <span class="hub-portal-tag">Offline / cung may</span>
+        <h2 th:text="${botPage == true} ? 'Setup ban voi bot' : 'Setup van local'">Setup van local</h2>
+        <span class="hub-portal-tag" th:text="${botPage == true} ? 'Bot / offline' : 'Offline / cung may'">Offline / cung may</span>
+      </div>
+
+      <p class="monopoly-note" th:if="${botPage == true}">
+        Ban la nguoi choi 1. Tong so ghe se quyet dinh so bot tham gia. Muc hien tai:
+        <strong th:text="${botDifficulty == 'hard'} ? 'Kho' : 'De'">De</strong>.
+      </p>
+
+      <div class="d-flex flex-wrap gap-2 mb-3" th:if="${botPage == true}">
+        <a th:href="@{/games/monopoly/bot(difficulty='easy')}" class="hub-portal-inline-btn">Bot de</a>
+        <a th:href="@{/games/monopoly/bot(difficulty='hard')}" class="hub-portal-inline-btn primary">Bot kho</a>
+        <a th:href="@{/games/monopoly/local}" class="hub-portal-inline-btn">Ve local thuong</a>
       </div>
 
       <div class="monopoly-setup-grid">
         <label class="monopoly-field">
-          <span>So nguoi choi</span>
+          <span th:text="${botPage == true} ? 'Tong so ghe trong ban' : 'So nguoi choi'">So nguoi choi</span>
           <select id="monopolyPlayerCount" class="form-select">
             <option value="2">2 nguoi</option>
             <option value="3">3 nguoi</option>
@@ -208,7 +229,7 @@
 
       <div class="monopoly-player-inputs">
         <label class="monopoly-field" data-player-slot="1">
-          <span>Nguoi choi 1</span>
+          <span th:text="${botPage == true} ? 'Ban' : 'Nguoi choi 1'">Nguoi choi 1</span>
           <input id="monopolyPlayer1" type="text" class="form-control" maxlength="18" value="Ty phu 1">
         </label>
         <label class="monopoly-field" data-player-slot="2">
@@ -225,12 +246,16 @@
         </label>
       </div>
 
+      <p class="small text-muted mb-0" th:if="${botPage == true}">
+        O che do bot, cac slot 2-4 se duoc khoa ten va doi thanh bot tu dong theo so ghe da chon.
+      </p>
+
       <div class="monopoly-setup-actions">
         <button id="monopolyStartBtn" type="button" class="hub-portal-action hub-portal-action--primary">
           <span class="hub-portal-action__icon"><i class="bi bi-stars"></i></span>
           <span class="hub-portal-action__text">
-            <strong>Bat dau van moi</strong>
-            <small>Tao ban choi moi theo setup phia tren</small>
+            <strong th:text="${botPage == true} ? 'Bat dau danh voi bot' : 'Bat dau van moi'">Bat dau van moi</strong>
+            <small th:text="${botPage == true} ? 'Tao van moi va de bot tiep quan cac ghe con lai' : 'Tao ban choi moi theo setup phia tren'">Tao ban choi moi theo setup phia tren</small>
           </span>
           <i class="bi bi-arrow-right"></i>
         </button>
@@ -245,7 +270,7 @@
       </div>
     </section>
 
-    <div th:if="${roomPage == true or localPage == true}" id="monopolyApp" class="monopoly-layout">
+    <div th:if="${roomPage == true or localPage == true or botPage == true}" id="monopolyApp" class="monopoly-layout">
       <section class="hub-portal-card monopoly-board-card">
         <div id="monopolyBoard" class="monopoly-board" aria-live="polite"></div>
       </section>
@@ -335,10 +360,12 @@
   window.MonopolyBoot = {
     defaultRoomId: /*[[${defaultRoomId}]]*/ '',
     roomPage: /*[[${roomPage == true}]]*/ false,
-    localPage: /*[[${localPage == true}]]*/ false
+    localPage: /*[[${localPage == true}]]*/ false,
+    botPage: /*[[${botPage == true}]]*/ false,
+    botDifficulty: /*[[${botDifficulty}]]*/ 'easy'
   };
 </script>
-<script th:src="@{/js/monopoly-game.js(v=20260315a)}"></script>
+<script th:src="@{/js/monopoly-game.js(v=20260327b)}"></script>
 <style>
   .monopoly-surface {
     display: grid;

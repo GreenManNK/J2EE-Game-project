@@ -126,12 +126,43 @@ class HomePageRenderIntegrationTest {
     }
 
     @Test
+    void quizLocalAndBotPagesShouldRenderDedicatedPracticeModes() throws Exception {
+        mockMvc.perform(get("/games/quiz/local"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/quiz-practice"))
+            .andExpect(model().attribute("localPage", true))
+            .andExpect(model().attribute("botPage", false));
+
+        mockMvc.perform(get("/games/quiz/bot").param("difficulty", "hard"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/quiz-practice"))
+            .andExpect(model().attribute("localPage", false))
+            .andExpect(model().attribute("botPage", true))
+            .andExpect(model().attribute("botDifficulty", "hard"));
+    }
+
+    @Test
     void typingDetailPageShouldRenderWithSharedCatalogModel() throws Exception {
         mockMvc.perform(get("/games/typing"))
             .andExpect(status().isOk())
             .andExpect(view().name("games/typing"))
             .andExpect(model().attributeExists("game", "allGames"))
             .andExpect(content().string(containsString("Gameplay rail /")));
+    }
+
+    @Test
+    void typingPracticeAndBotPagesShouldRenderDedicatedPracticeModes() throws Exception {
+        mockMvc.perform(get("/games/typing/practice"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/typing-practice"))
+            .andExpect(model().attribute("practicePage", true))
+            .andExpect(model().attribute("botPage", false));
+
+        mockMvc.perform(get("/games/typing/bot").param("difficulty", "hard"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/typing-practice"))
+            .andExpect(model().attribute("botPage", true))
+            .andExpect(model().attribute("botDifficulty", "hard"));
     }
 
     @Test
@@ -161,12 +192,33 @@ class HomePageRenderIntegrationTest {
     }
 
     @Test
+    void blackjackLocalPageShouldRenderDedicatedLocalMode() throws Exception {
+        mockMvc.perform(get("/games/cards/blackjack/local"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/cards/blackjack-local"))
+            .andExpect(model().attribute("localPage", true));
+    }
+
+    @Test
     void monopolyLocalPageShouldRenderDedicatedLocalMode() throws Exception {
         mockMvc.perform(get("/games/monopoly/local"))
             .andExpect(status().isOk())
             .andExpect(view().name("games/monopoly"))
             .andExpect(model().attribute("localPage", true))
-            .andExpect(model().attribute("roomPage", false));
+            .andExpect(model().attribute("roomPage", false))
+            .andExpect(model().attribute("botPage", false));
+    }
+
+    @Test
+    void monopolyBotPageShouldRenderDedicatedBotMode() throws Exception {
+        mockMvc.perform(get("/games/monopoly/bot").param("difficulty", "hard"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/monopoly"))
+            .andExpect(model().attribute("roomPage", false))
+            .andExpect(model().attribute("localPage", false))
+            .andExpect(model().attribute("botPage", true))
+            .andExpect(model().attribute("botDifficulty", "hard"))
+            .andExpect(content().string(containsString("bot tu dong")));
     }
 
     @Test
@@ -176,7 +228,8 @@ class HomePageRenderIntegrationTest {
             .andExpect(view().name("games/monopoly"))
             .andExpect(model().attribute("defaultRoomId", "MONO-1"))
             .andExpect(model().attribute("roomPage", true))
-            .andExpect(model().attribute("localPage", false));
+            .andExpect(model().attribute("localPage", false))
+            .andExpect(model().attribute("botPage", false));
     }
 
     @Test
