@@ -140,40 +140,6 @@
         <ol id="high-scores-list" class="hub-portal-bullet-list"></ol>
     </section>
 
-    <div id="quiz-container" class="quiz-shell" hidden>
-        <div class="quiz-room-tools">
-            <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
-            <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
-            <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
-        </div>
-
-        <div class="quiz-hud">
-            <div class="quiz-hud__item"><span>Phong</span><strong id="room-id-value">-</strong></div>
-            <div class="quiz-hud__item"><span>Nguoi choi</span><strong id="player-count-value">0</strong></div>
-            <div class="quiz-hud__item"><span>Nguoi xem</span><strong id="spectator-count-value">0</strong></div>
-            <div class="quiz-hud__item"><span>Thoi gian</span><strong id="timer">15s</strong></div>
-        </div>
-
-        <div class="quiz-progress">
-            <div class="quiz-progress__meta">
-                <span id="question-index">Cau hoi 0/0</span>
-                <span>Phim nhanh: 1-4, Enter</span>
-            </div>
-            <div class="quiz-progress__track">
-                <div id="quiz-progress-fill" class="quiz-progress__fill"></div>
-            </div>
-        </div>
-
-        <section class="quiz-question-card">
-            <h2 id="question" class="quiz-question">Dang cho chu phong bat dau...</h2>
-            <div id="options" class="quiz-options"></div>
-            <div class="quiz-actions">
-                <button id="submit-answer-btn" class="hub-portal-action hub-portal-action--primary">Gui dap an</button>
-                <button id="start-game-btn" class="hub-portal-action">Bat dau tran</button>
-            </div>
-            <p id="question-feedback" class="quiz-status-note"></p>
-        </section>
-    </div>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('games-quiz')}"></th:block>
@@ -186,6 +152,9 @@
 
     .quiz-room-stage {
         max-width: 1160px;
+        margin: 0 auto;
+        display: grid;
+        gap: 1rem;
     }
 
     .quiz-lobby-head {
@@ -229,6 +198,8 @@
     .quiz-shell {
         display: grid;
         gap: 1rem;
+        width: min(100%, 920px);
+        margin: 0 auto;
     }
 
     .quiz-room-tools {
@@ -860,7 +831,7 @@
         fetchRoomList(true);
     });
 
-    copyRoomBtn.addEventListener('click', async () => {
+    copyRoomBtn?.addEventListener('click', async () => {
         if (!currentRoomId) {
             setQuestionFeedback('Ma phong dang rong.', 'error');
             return;
@@ -869,7 +840,7 @@
         setQuestionFeedback(ok ? 'Da sao chep ma phong.' : 'Khong the sao chep ma phong.', ok ? 'success' : 'error');
     });
 
-    shareRoomBtn.addEventListener('click', async () => {
+    shareRoomBtn?.addEventListener('click', async () => {
         if (!currentRoomId) {
             setQuestionFeedback('Ma phong dang rong.', 'error');
             return;
@@ -879,17 +850,17 @@
         setQuestionFeedback(ok ? 'Da sao chep link moi.' : 'Khong the sao chep link moi.', ok ? 'success' : 'error');
     });
 
-    leaveRoomBtn.addEventListener('click', () => {
+    leaveRoomBtn?.addEventListener('click', () => {
         leaveRoom();
     });
 
-    startGameBtn.addEventListener('click', () => {
+    startGameBtn?.addEventListener('click', () => {
         if (safeSend({ action: 'start' })) {
             setQuestionFeedback('Chu phong da bat dau tran.', 'success');
         }
     });
 
-    submitAnswerBtn.addEventListener('click', () => {
+    submitAnswerBtn?.addEventListener('click', () => {
         submitCurrentAnswer(true);
     });
 
@@ -1452,6 +1423,9 @@
                 return response.json();
             })
             .then((data) => {
+                if (!highScoresList) {
+                    return;
+                }
                 highScoresList.innerHTML = '';
                 data.forEach((score) => {
                     const li = document.createElement('li');
@@ -1460,7 +1434,9 @@
                 });
             })
             .catch(() => {
-                highScoresList.innerHTML = '<li>Khong tai duoc bang xep hang.</li>';
+                if (highScoresList) {
+                    highScoresList.innerHTML = '<li>Khong tai duoc bang xep hang.</li>';
+                }
             });
     }
 </script>

@@ -126,33 +126,6 @@
         <div id="typing-room-list" class="typing-room-list"></div>
     </div>
 
-    <div id="game-container" class="typing-shell" hidden>
-        <div class="typing-room-tools">
-            <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
-            <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
-            <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
-            <button id="rematch-btn" class="hub-portal-action">Tai dau</button>
-        </div>
-
-        <div class="typing-hud">
-            <div class="typing-hud__item"><span>Phong</span><strong id="room-id-display">-</strong></div>
-            <div class="typing-hud__item"><span>Trang thai</span><strong id="race-status">Dang cho</strong></div>
-            <div class="typing-hud__item"><span>Dong ho</span><strong id="timer-value">--:--</strong></div>
-            <div class="typing-hud__item"><span>WPM</span><strong id="wpm-value">0</strong></div>
-            <div class="typing-hud__item"><span>Do chinh xac</span><strong id="accuracy-value">0%</strong></div>
-        </div>
-
-        <section class="typing-target-card">
-            <p class="typing-target-label">Cau mau</p>
-            <div id="text-to-type" class="typing-target-text"></div>
-        </section>
-
-        <textarea id="typing-input" class="form-control" rows="5" disabled placeholder="Dang cho tran bat dau..."></textarea>
-
-        <div id="players-progress" class="typing-progress-board"></div>
-        <div id="winner-display" class="typing-winner" hidden></div>
-        <p id="typing-status-note" class="typing-note"></p>
-    </div>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('games-typing')}"></th:block>
@@ -165,6 +138,9 @@
 
     .typing-room-stage {
         max-width: 1160px;
+        margin: 0 auto;
+        display: grid;
+        gap: 1rem;
     }
 
     .typing-lobby-head {
@@ -203,6 +179,8 @@
     .typing-shell {
         display: grid;
         gap: 1rem;
+        width: min(100%, 960px);
+        margin: 0 auto;
     }
 
     .typing-room-tools {
@@ -790,7 +768,7 @@
         fetchRoomList(true);
     });
 
-    copyRoomBtn.addEventListener('click', async () => {
+    copyRoomBtn?.addEventListener('click', async () => {
         if (!roomId) {
             setStatus('Ma phong dang rong.', 'error');
             return;
@@ -799,7 +777,7 @@
         setStatus(ok ? 'Da sao chep ma phong.' : 'Khong the sao chep ma phong.', ok ? 'success' : 'error');
     });
 
-    shareRoomBtn.addEventListener('click', async () => {
+    shareRoomBtn?.addEventListener('click', async () => {
         if (!roomId) {
             setStatus('Ma phong dang rong.', 'error');
             return;
@@ -809,11 +787,11 @@
         setStatus(ok ? 'Da sao chep link moi.' : 'Khong the sao chep link moi.', ok ? 'success' : 'error');
     });
 
-    leaveRoomBtn.addEventListener('click', () => {
+    leaveRoomBtn?.addEventListener('click', () => {
         leaveRoom();
     });
 
-    rematchBtn.addEventListener('click', () => {
+    rematchBtn?.addEventListener('click', () => {
         if (!roomId) {
             return;
         }
@@ -822,7 +800,7 @@
         }
     });
 
-    typingInput.addEventListener('input', () => {
+    typingInput?.addEventListener('input', () => {
         if (!latestRoom || effectiveGameState(latestRoom) !== 'PLAYING') {
             return;
         }
@@ -1177,7 +1155,9 @@
             .replaceAll("'", '&#39;');
     }
 
-    rematchBtn.disabled = true;
+    if (rematchBtn) {
+        rematchBtn.disabled = true;
+    }
     fetchRoomList(true);
     setupRoomPolling();
     applyAutoJoinFromUrl();

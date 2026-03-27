@@ -136,46 +136,6 @@
         <div id="blackjack-room-list" class="blackjack-room-list"></div>
     </div>
 
-    <div id="game-board" class="blackjack-shell" hidden>
-        <div class="blackjack-room-tools">
-            <button id="copy-room-btn" class="hub-portal-action">Sao chep ma phong</button>
-            <button id="share-room-btn" class="hub-portal-action">Sao chep link moi</button>
-            <button id="leave-room-btn" class="hub-portal-action">Roi phong</button>
-        </div>
-
-        <div class="blackjack-hud">
-            <div class="blackjack-hud__item"><span>Phong</span><strong id="room-id-label">-</strong></div>
-            <div class="blackjack-hud__item"><span>Trang thai</span><strong id="table-state-label">Dang cho</strong></div>
-            <div class="blackjack-hud__item"><span>Luot hien tai</span><strong id="current-turn-label">-</strong></div>
-            <div class="blackjack-hud__item"><span>So du cua ban</span><strong id="my-balance-label">-</strong></div>
-            <div class="blackjack-hud__item"><span>Muc cuoc</span><strong id="my-bet-label">-</strong></div>
-        </div>
-
-        <section class="blackjack-table">
-            <div id="dealer-panel" class="blackjack-hand-panel">
-                <div class="blackjack-hand-title">Nha cai <span id="dealer-value-label"></span></div>
-                <div id="dealer-cards" class="blackjack-cards"></div>
-            </div>
-            <div id="player-hands" class="blackjack-player-grid"></div>
-        </section>
-
-        <div id="controls" class="blackjack-controls">
-            <div class="blackjack-bet-row">
-                <label for="bet-amount" class="form-label">Tien cuoc</label>
-                <input type="number" id="bet-amount" min="1" value="10" class="form-control">
-                <button id="bet-btn" class="hub-portal-action hub-portal-action--primary">Dat cuoc</button>
-                <button id="rebet-btn" class="hub-portal-action">Dat lai</button>
-            </div>
-            <div class="blackjack-action-row">
-                <button id="hit-btn" class="hub-portal-action" disabled>Rut bai</button>
-                <button id="stand-btn" class="hub-portal-action" disabled>Dung bai</button>
-                <button id="double-btn" class="hub-portal-action" disabled>Gap doi</button>
-                <button id="surrender-btn" class="hub-portal-action" disabled>Bo bai</button>
-            </div>
-        </div>
-
-        <p id="blackjack-status-note" class="blackjack-note"></p>
-    </div>
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('games-blackjack')}"></th:block>
@@ -188,6 +148,9 @@
 
     .blackjack-room-stage {
         max-width: 1160px;
+        margin: 0 auto;
+        display: grid;
+        gap: 1rem;
     }
 
     .blackjack-lobby-head {
@@ -230,6 +193,13 @@
     .blackjack-shell {
         display: grid;
         gap: 1rem;
+        width: min(100%, 1040px);
+        margin: 0 auto;
+    }
+
+    .blackjack-room-stage .blackjack-table {
+        width: min(100%, 960px);
+        margin: 0 auto;
     }
 
     .blackjack-room-tools {
@@ -790,7 +760,7 @@
         fetchRoomList(true);
     });
 
-    copyRoomBtn.addEventListener('click', async () => {
+    copyRoomBtn?.addEventListener('click', async () => {
         if (!roomId) {
             setStatus('Ma phong dang rong.', 'error');
             return;
@@ -799,7 +769,7 @@
         setStatus(ok ? 'Da sao chep ma phong.' : 'Khong the sao chep ma phong.', ok ? 'success' : 'error');
     });
 
-    shareRoomBtn.addEventListener('click', async () => {
+    shareRoomBtn?.addEventListener('click', async () => {
         if (!roomId) {
             setStatus('Ma phong dang rong.', 'error');
             return;
@@ -809,11 +779,11 @@
         setStatus(ok ? 'Da sao chep link moi.' : 'Khong the sao chep link moi.', ok ? 'success' : 'error');
     });
 
-    leaveRoomBtn.addEventListener('click', () => {
+    leaveRoomBtn?.addEventListener('click', () => {
         leaveRoom();
     });
 
-    betBtn.addEventListener('click', () => {
+    betBtn?.addEventListener('click', () => {
         const amount = parseInt(betAmountInput.value, 10);
         if (!Number.isFinite(amount) || amount <= 0) {
             setStatus('Tien cuoc phai lon hon 0.', 'error');
@@ -824,7 +794,7 @@
         }
     });
 
-    rebetBtn.addEventListener('click', () => {
+    rebetBtn?.addEventListener('click', () => {
         const myPlayer = getCurrentPlayer();
         if (!myPlayer || !myPlayer.lastBet || myPlayer.lastBet <= 0) {
             setStatus('Khong co muc cuoc truoc de dat lai.', 'error');
@@ -835,25 +805,25 @@
         }
     });
 
-    hitBtn.addEventListener('click', () => {
+    hitBtn?.addEventListener('click', () => {
         if (safeSend({ action: 'hit', roomId })) {
             setStatus('Ban vua rut them 1 la.', '');
         }
     });
 
-    standBtn.addEventListener('click', () => {
+    standBtn?.addEventListener('click', () => {
         if (safeSend({ action: 'stand', roomId })) {
             setStatus('Ban da dung bai. Dang cho nha cai.', '');
         }
     });
 
-    doubleBtn.addEventListener('click', () => {
+    doubleBtn?.addEventListener('click', () => {
         if (safeSend({ action: 'double', roomId })) {
             setStatus('Da gui lenh gap doi.', '');
         }
     });
 
-    surrenderBtn.addEventListener('click', () => {
+    surrenderBtn?.addEventListener('click', () => {
         if (safeSend({ action: 'surrender', roomId })) {
             setStatus('Ban da chon bo bai va nhan lai nua cuoc.', '');
         }

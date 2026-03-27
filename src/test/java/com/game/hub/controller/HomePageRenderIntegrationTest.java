@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
@@ -229,7 +230,53 @@ class HomePageRenderIntegrationTest {
             .andExpect(model().attribute("defaultRoomId", "MONO-1"))
             .andExpect(model().attribute("roomPage", true))
             .andExpect(model().attribute("localPage", false))
-            .andExpect(model().attribute("botPage", false));
+            .andExpect(model().attribute("botPage", false))
+            .andExpect(content().string(containsString("Phong Co ty phu online")))
+            .andExpect(content().string(not(containsString("Sanh phong Co ty phu"))));
+    }
+
+    @Test
+    void tienLenRoomPageShouldRenderDedicatedRoomTemplate() throws Exception {
+        mockMvc.perform(get("/cards/tien-len/room/TL-1"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("cards/tien-len"))
+            .andExpect(model().attribute("defaultRoomId", "TL-1"))
+            .andExpect(model().attribute("roomPage", true))
+            .andExpect(content().string(containsString("Phong hien tai:")))
+            .andExpect(content().string(not(containsString("Danh sach phong dang cho"))));
+    }
+
+    @Test
+    void quizRoomPageShouldRenderDedicatedRoomTemplate() throws Exception {
+        mockMvc.perform(get("/games/quiz/room/QUIZ-1"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/quiz"))
+            .andExpect(model().attribute("defaultRoomId", "QUIZ-1"))
+            .andExpect(model().attribute("roomPage", true))
+            .andExpect(content().string(containsString("Quiz / Phong choi")))
+            .andExpect(content().string(not(containsString("Quiz / Lobby"))));
+    }
+
+    @Test
+    void typingRoomPageShouldRenderDedicatedRoomTemplate() throws Exception {
+        mockMvc.perform(get("/games/typing/room/TYP-1"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/typing"))
+            .andExpect(model().attribute("defaultRoomId", "TYP-1"))
+            .andExpect(model().attribute("roomPage", true))
+            .andExpect(content().string(containsString("Typing / Phong choi")))
+            .andExpect(content().string(not(containsString("Typing / Lobby"))));
+    }
+
+    @Test
+    void blackjackRoomPageShouldRenderDedicatedRoomTemplate() throws Exception {
+        mockMvc.perform(get("/games/cards/blackjack/room/BJ-1"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/cards/blackjack"))
+            .andExpect(model().attribute("defaultRoomId", "BJ-1"))
+            .andExpect(model().attribute("roomPage", true))
+            .andExpect(content().string(containsString("Blackjack / Phong choi")))
+            .andExpect(content().string(not(containsString("Blackjack / Lobby"))));
     }
 
     @Test
