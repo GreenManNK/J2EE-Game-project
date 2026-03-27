@@ -426,51 +426,24 @@
         <div class="d-flex flex-wrap gap-2">
           <th:block th:if="${isAdminViewer}">
             <a class="btn theme-outline-btn"
-               th:href="@{/history/export-csv(userId=${authUserId})}"
+               th:href="@{/admin/report-center(report='history',historyUserId=${authUserId})}"
                data-auth-only="true"
                data-admin-only="true"
                data-role-allowed="Admin">
-              Lich su CSV
+              Report center
             </a>
             <a class="btn theme-outline-btn"
-               th:href="@{/history/export-excel(userId=${authUserId})}"
+               th:href="@{/admin}"
                data-auth-only="true"
                data-admin-only="true"
                data-role-allowed="Admin">
-              Lich su Excel
-            </a>
-            <a class="btn theme-outline-btn"
-               th:href="@{/leaderboard/export-csv}"
-               data-auth-only="true"
-               data-admin-only="true"
-               data-role-allowed="Admin">
-              BXH CSV
-            </a>
-            <a class="btn theme-outline-btn"
-               th:href="@{/leaderboard/export-excel}"
-               data-auth-only="true"
-               data-admin-only="true"
-               data-role-allowed="Admin">
-              BXH Excel
-            </a>
-            <a class="btn theme-outline-btn"
-               th:href="@{/manager/export-users-excel(scope='all')}"
-               data-auth-only="true"
-               data-admin-only="true"
-               data-role-allowed="Admin">
-              Excel tai khoan
+              Trung tam quan tri
             </a>
           </th:block>
           <div class="alert alert-warning mb-0 flex-grow-1" th:if="${!isAdminViewer}">
-            Chi admin moi duoc tai cac file bao cao va export du lieu.
+            Chi admin moi duoc tai cac file bao cao va export du lieu trong report center.
           </div>
-          <a class="btn theme-outline-btn"
-             th:href="@{/admin}"
-             data-admin-only="true"
-             data-auth-only="true"
-             data-role-allowed="Admin">
-            Trung tam quan tri
-          </a>
+          
         </div>
       </section>
 

@@ -4,6 +4,7 @@ import com.game.hub.entity.GameHistory;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.GameHistoryRepository;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.DataExportAuditService;
 import com.game.hub.service.GameCatalogService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -61,7 +62,8 @@ class HistoryControllerTest {
         HistoryController controller = new HistoryController(
             gameHistoryRepository,
             userAccountRepository,
-            new GameCatalogService()
+            new GameCatalogService(),
+            mock(DataExportAuditService.class)
         );
 
         ConcurrentModel model = new ConcurrentModel();
@@ -115,7 +117,8 @@ class HistoryControllerTest {
         HistoryController controller = new HistoryController(
             gameHistoryRepository,
             userAccountRepository,
-            new GameCatalogService()
+            new GameCatalogService(),
+            mock(DataExportAuditService.class)
         );
 
         ConcurrentModel model = new ConcurrentModel();

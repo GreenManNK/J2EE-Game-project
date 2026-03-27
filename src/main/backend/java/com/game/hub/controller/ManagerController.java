@@ -4,6 +4,7 @@ import com.game.hub.entity.UserAccount;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.DataExportAuditService;
 import com.game.hub.support.UserExportSupport;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -30,10 +31,14 @@ import java.util.Map;
 public class ManagerController {
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DataExportAuditService dataExportAuditService;
 
-    public ManagerController(UserAccountRepository userAccountRepository, PasswordEncoder passwordEncoder) {
+    public ManagerController(UserAccountRepository userAccountRepository,
+                             PasswordEncoder passwordEncoder,
+                             DataExportAuditService dataExportAuditService) {
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
+        this.dataExportAuditService = dataExportAuditService;
     }
 
     @GetMapping("/users")
@@ -169,6 +174,7 @@ public class ManagerController {
         List<UserAccount> users = resolveUsersForExport(searchTerm, banFilter, page, size, scope);
         byte[] body = UserExportSupport.toCsv(users);
         String filename = "manager-users-" + exportSuffix(scope, page) + ".csv";
+        dataExportAuditService.recordExport(request, "managed-users", "Tai khoan manager", "csv", filename, scope, users.size(), null);
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
             .contentType(MediaType.parseMediaType("text/csv"))
@@ -189,6 +195,7 @@ public class ManagerController {
         List<UserAccount> users = resolveUsersForExport(searchTerm, banFilter, page, size, scope);
         byte[] body = UserExportSupport.toExcel(users);
         String filename = "manager-users-" + exportSuffix(scope, page) + ".xlsx";
+        dataExportAuditService.recordExport(request, "managed-users", "Tai khoan manager", "excel", filename, scope, users.size(), null);
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
             .contentType(MediaType.parseMediaType(

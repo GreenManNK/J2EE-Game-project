@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Bang xep hang')}"></head>
 <body>
@@ -46,15 +46,11 @@
 
       <div class="col-12 d-flex flex-wrap gap-2 justify-content-md-end mt-2" th:if="${canExportLeaderboard}">
         <a class="btn theme-outline-btn"
-           th:href="@{/leaderboard/export-csv(q=${q},minScore=${minScore},page=${page},size=${size},scope='page')}">Xuat CSV trang nay</a>
-        <a class="btn theme-outline-btn"
-           th:href="@{/leaderboard/export-excel(q=${q},minScore=${minScore},page=${page},size=${size},scope='page')}">Xuat Excel trang nay</a>
-        <a class="btn theme-outline-btn"
-           th:href="@{/leaderboard/export-excel(q=${q},minScore=${minScore},page=${page},size=${size},scope='all')}">Xuat Excel tat ca da loc</a>
+           th:href="@{/admin/report-center(report='leaderboard',leaderboardQ=${q},leaderboardMinScore=${minScore},leaderboardPage=${page},leaderboardSize=${size},leaderboardScope='page')}">Mo report center</a>
       </div>
       <div class="col-12 mt-2" th:if="${!canExportLeaderboard}">
         <div class="alert alert-warning mb-0">
-          Chi admin moi duoc xuat du lieu bang xep hang. Moi tai khoan khac se bi khoa truy cap vao CSV/Excel.
+          Chi admin moi duoc xuat du lieu bang xep hang. Moi tai khoan khac se bi khoa truy cap vao CSV/Excel va report center.
         </div>
       </div>
     </form>
@@ -78,8 +74,8 @@
     </article>
     <article class="theme-box rounded cg-detail-strip__card">
       <span class="cg-detail-strip__eyebrow">Export</span>
-      <strong th:text="${canExportLeaderboard ? 'CSV / Excel theo trang hoac toan bo' : 'Export chi mo cho admin'}">Export chi mo cho admin</strong>
-      <p th:text="${canExportLeaderboard ? 'Data leaderboard duoc giu cung mot luong voi giao dien de chuyen tu browse sang bao cao nhanh hon.' : 'Tai khoan thuong va manager chi duoc xem du lieu tren trang, khong duoc tai file export.'}">
+      <strong th:text="${canExportLeaderboard ? 'Export tap trung qua report center' : 'Export chi mo cho admin'}">Export chi mo cho admin</strong>
+      <p th:text="${canExportLeaderboard ? 'Admin se chuyen qua report center de tai file va de lai audit log tap trung.' : 'Tai khoan thuong va manager chi duoc xem du lieu tren trang, khong duoc tai file export.'}">
         Tai khoan thuong va manager chi duoc xem du lieu tren trang, khong duoc tai file export.
       </p>
     </article>

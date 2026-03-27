@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Nguoi dung quan ly')}"></head>
 <body>
@@ -21,20 +21,12 @@
       </div>
       <div class="gx-inline-actions" th:if="${canExportManagedUsers}">
         <a class="btn theme-outline-btn"
-           th:href="@{/manager/export-users-csv(searchTerm=${searchTerm},banFilter=${banFilter},page=${page},size=${size},scope='page')}">
-          Xuat CSV trang nay
-        </a>
-        <a class="btn theme-outline-btn"
-           th:href="@{/manager/export-users-excel(searchTerm=${searchTerm},banFilter=${banFilter},page=${page},size=${size},scope='page')}">
-          Xuat Excel trang nay
-        </a>
-        <a class="btn theme-outline-btn"
-           th:href="@{/manager/export-users-excel(searchTerm=${searchTerm},banFilter=${banFilter},page=${page},size=${size},scope='all')}">
-          Xuat Excel tat ca da loc
+           th:href="@{/admin/report-center(report='managed-users',managedSearchTerm=${searchTerm},managedBanFilter=${banFilter},managedPage=${page},managedSize=${size},managedScope='page')}">
+          Mo report center
         </a>
       </div>
       <div class="alert alert-warning mb-0" th:if="${!canExportManagedUsers}">
-        Chi admin moi duoc xuat du lieu tai khoan. Manager van duoc loc, tao va sua user, nhung khong duoc tai file CSV/Excel.
+        Chi admin moi duoc xuat du lieu tai khoan. Manager van duoc loc, tao va sua user, nhung khong duoc tai file CSV/Excel hoac report center.
       </div>
     </div>
   </section>

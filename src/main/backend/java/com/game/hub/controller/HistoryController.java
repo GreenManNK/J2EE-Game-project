@@ -4,6 +4,7 @@ import com.game.hub.entity.GameHistory;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.GameHistoryRepository;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.DataExportAuditService;
 import com.game.hub.service.GameCatalogService;
 import com.game.hub.support.TabularExportSupport;
 import com.game.hub.support.GameHistoryPresentationSupport;
@@ -39,13 +40,16 @@ public class HistoryController {
     private final GameHistoryRepository gameHistoryRepository;
     private final UserAccountRepository userAccountRepository;
     private final GameHistoryPresentationSupport gameHistoryPresentationSupport;
+    private final DataExportAuditService dataExportAuditService;
 
     public HistoryController(GameHistoryRepository gameHistoryRepository,
                              UserAccountRepository userAccountRepository,
-                             GameCatalogService gameCatalogService) {
+                             GameCatalogService gameCatalogService,
+                             DataExportAuditService dataExportAuditService) {
         this.gameHistoryRepository = gameHistoryRepository;
         this.userAccountRepository = userAccountRepository;
         this.gameHistoryPresentationSupport = new GameHistoryPresentationSupport(gameCatalogService);
+        this.dataExportAuditService = dataExportAuditService;
     }
 
     @GetMapping
@@ -121,8 +125,10 @@ public class HistoryController {
             new String[]{"Game", "GameCode", "Match", "Location", "At", "P1", "P2", "First", "Moves", "Winner", "Result", "OpenUrl"},
             toRows(rows)
         );
+        String filename = "history-" + exportSuffix(scope, page) + ".csv";
+        dataExportAuditService.recordExport(request, "history", "Lich su dau", "csv", filename, scope, rows.size(), effectiveUserId(userId, request));
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=history-" + exportSuffix(scope, page) + ".csv")
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
             .contentType(MediaType.parseMediaType("text/csv"))
             .body(body);
     }
@@ -147,8 +153,10 @@ public class HistoryController {
             new String[]{"Game", "GameCode", "Match", "Location", "At", "P1", "P2", "First", "Moves", "Winner", "Result", "OpenUrl"},
             toRows(rows)
         );
+        String filename = "history-" + exportSuffix(scope, page) + ".xlsx";
+        dataExportAuditService.recordExport(request, "history", "Lich su dau", "excel", filename, scope, rows.size(), effectiveUserId(userId, request));
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=history-" + exportSuffix(scope, page) + ".xlsx")
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
             .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
             .body(body);
     }

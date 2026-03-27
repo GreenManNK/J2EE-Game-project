@@ -4,6 +4,7 @@ import com.game.hub.entity.UserAccount;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.DataExportAuditService;
 import com.game.hub.support.TabularExportSupport;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -21,9 +22,12 @@ import java.util.List;
 @RequestMapping("/leaderboard")
 public class LeaderboardController {
     private final UserAccountRepository userAccountRepository;
+    private final DataExportAuditService dataExportAuditService;
 
-    public LeaderboardController(UserAccountRepository userAccountRepository) {
+    public LeaderboardController(UserAccountRepository userAccountRepository,
+                                 DataExportAuditService dataExportAuditService) {
         this.userAccountRepository = userAccountRepository;
+        this.dataExportAuditService = dataExportAuditService;
     }
 
     @GetMapping
@@ -74,8 +78,10 @@ public class LeaderboardController {
             new String[]{"Rank", "User ID", "Name", "Score"},
             toRows(rows, rankOffset)
         );
+        String filename = "leaderboard-" + exportSuffix(scope, page) + ".csv";
+        dataExportAuditService.recordExport(request, "leaderboard", "Bang xep hang", "csv", filename, scope, rows.size(), null);
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=leaderboard-" + exportSuffix(scope, page) + ".csv")
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
             .contentType(MediaType.parseMediaType("text/csv"))
             .body(body);
     }
@@ -101,8 +107,10 @@ public class LeaderboardController {
             new String[]{"Rank", "User ID", "Name", "Score"},
             toRows(rows, rankOffset)
         );
+        String filename = "leaderboard-" + exportSuffix(scope, page) + ".xlsx";
+        dataExportAuditService.recordExport(request, "leaderboard", "Bang xep hang", "excel", filename, scope, rows.size(), null);
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=leaderboard-" + exportSuffix(scope, page) + ".xlsx")
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
             .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
             .body(body);
     }

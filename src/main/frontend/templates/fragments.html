@@ -741,6 +741,12 @@
              data-admin-only="true"
              data-role-allowed="Admin"><i class="bi bi-shield-lock me-2"></i> Trung tâm quản trị</a>
           <a class="btn theme-outline-btn w-100 text-start theme-text"
+             th:href="@{/admin/report-center}"
+             data-active-match="starts-with"
+             data-auth-only="true"
+             data-admin-only="true"
+             data-role-allowed="Admin"><i class="bi bi-journal-arrow-down me-2"></i> Trung tâm báo cáo</a>
+          <a class="btn theme-outline-btn w-100 text-start theme-text"
              th:href="@{/account/login-page}"
              data-active-match="exact-path"
              data-guest-only="true"><i class="bi bi-box-arrow-in-right me-2"></i> Đăng nhập</a>

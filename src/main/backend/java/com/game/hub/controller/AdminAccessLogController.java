@@ -4,7 +4,9 @@ import com.game.hub.entity.PageAccessLog;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.PageAccessLogRepository;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.DataExportAuditService;
 import com.game.hub.support.TabularExportSupport;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,11 +34,14 @@ public class AdminAccessLogController {
 
     private final PageAccessLogRepository pageAccessLogRepository;
     private final UserAccountRepository userAccountRepository;
+    private final DataExportAuditService dataExportAuditService;
 
     public AdminAccessLogController(PageAccessLogRepository pageAccessLogRepository,
-                                    UserAccountRepository userAccountRepository) {
+                                    UserAccountRepository userAccountRepository,
+                                    DataExportAuditService dataExportAuditService) {
         this.pageAccessLogRepository = pageAccessLogRepository;
         this.userAccountRepository = userAccountRepository;
+        this.dataExportAuditService = dataExportAuditService;
     }
 
     @GetMapping
@@ -77,14 +82,17 @@ public class AdminAccessLogController {
                                             @RequestParam(required = false) String toDate,
                                             @RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "50") int size,
-                                            @RequestParam(defaultValue = "all") String scope) {
+                                            @RequestParam(defaultValue = "all") String scope,
+                                            HttpServletRequest request) {
         List<PageAccessLogView> rows = resolveRowsForExport(q, method, fromDate, toDate, page, size, scope);
         byte[] body = TabularExportSupport.toCsv(
             new String[]{"VisitedAt", "Method", "Path", "Query", "UserId", "DisplayName", "Role", "ClientIP", "UserAgent", "Referer"},
             toRows(rows)
         );
+        String filename = "access-logs-" + exportSuffix(scope, page) + ".csv";
+        dataExportAuditService.recordExport(request, "access-logs", "Access logs", "csv", filename, scope, rows.size(), null);
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=access-logs-" + exportSuffix(scope, page) + ".csv")
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
             .contentType(MediaType.parseMediaType("text/csv"))
             .body(body);
     }
@@ -96,15 +104,18 @@ public class AdminAccessLogController {
                                               @RequestParam(required = false) String toDate,
                                               @RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "50") int size,
-                                              @RequestParam(defaultValue = "all") String scope) {
+                                              @RequestParam(defaultValue = "all") String scope,
+                                              HttpServletRequest request) {
         List<PageAccessLogView> rows = resolveRowsForExport(q, method, fromDate, toDate, page, size, scope);
         byte[] body = TabularExportSupport.toExcel(
             "AccessLogs",
             new String[]{"VisitedAt", "Method", "Path", "Query", "UserId", "DisplayName", "Role", "ClientIP", "UserAgent", "Referer"},
             toRows(rows)
         );
+        String filename = "access-logs-" + exportSuffix(scope, page) + ".xlsx";
+        dataExportAuditService.recordExport(request, "access-logs", "Access logs", "excel", filename, scope, rows.size(), null);
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=access-logs-" + exportSuffix(scope, page) + ".xlsx")
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
             .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
             .body(body);
     }

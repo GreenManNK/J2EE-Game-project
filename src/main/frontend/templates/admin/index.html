@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: appHead('Quan tri he thong')}"></head>
 <body>
@@ -72,8 +72,8 @@
         <button id="adminUsersReloadBtn" type="button" class="btn btn-primary w-100">Tai lai</button>
       </div>
       <div class="col-md-2 d-grid gap-2">
-        <a id="adminUsersExportCsvPage" class="btn theme-outline-btn" href="#">Xuat CSV trang nay</a>
-        <a id="adminUsersExportExcelAll" class="btn theme-outline-btn" href="#">Xuat Excel tat ca</a>
+        <a class="btn theme-outline-btn" th:href="@{/admin/report-center(report='admin-users')}">Mo report center</a>
+        <div class="small text-muted">Export tai khoan da duoc gom ve trung tam bao cao.</div>
       </div>
     </div>
 
@@ -180,7 +180,7 @@
       <div class="col-lg-4">
         <div class="d-flex flex-wrap gap-2 align-items-center">
           <div class="small text-muted">Ap dung cho `Nhap tu URL` va `Nhap toan bo preview`.</div>
-          <a class="btn btn-sm theme-outline-btn" th:href="@{/admin/game-modules/api/export}">Tai backup registry</a>
+          <a class="btn btn-sm theme-outline-btn" th:href="@{/admin/report-center(report='module-registry')}">Tai backup registry trong report center</a>
         </div>
       </div>
     </div>
@@ -413,8 +413,7 @@
     </form>
 
     <div class="d-flex flex-wrap gap-2 mt-2">
-      <a id="adminLogsExportCsvPage" class="btn theme-outline-btn" href="#">Xuat CSV trang nay</a>
-      <a id="adminLogsExportExcelAll" class="btn theme-outline-btn" href="#">Xuat Excel tat ca</a>
+      <a class="btn theme-outline-btn" th:href="@{/admin/report-center(report='access-logs')}">Mo report center cho access logs</a>
     </div>
 
     <div class="row g-2 mt-2">

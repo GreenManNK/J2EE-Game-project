@@ -1,7 +1,9 @@
 package com.game.hub.controller;
 
 import com.game.hub.service.ExternalGameModuleConfig;
+import com.game.hub.service.DataExportAuditService;
 import com.game.hub.service.ExternalGameModuleService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,9 +25,12 @@ import java.util.Map;
 @RequestMapping("/admin/game-modules/api")
 public class AdminGameModuleController {
     private final ExternalGameModuleService externalGameModuleService;
+    private final DataExportAuditService dataExportAuditService;
 
-    public AdminGameModuleController(ExternalGameModuleService externalGameModuleService) {
+    public AdminGameModuleController(ExternalGameModuleService externalGameModuleService,
+                                     DataExportAuditService dataExportAuditService) {
         this.externalGameModuleService = externalGameModuleService;
+        this.dataExportAuditService = dataExportAuditService;
     }
 
     @GetMapping
@@ -37,10 +42,21 @@ public class AdminGameModuleController {
     }
 
     @GetMapping("/export")
-    public ResponseEntity<byte[]> exportRegistry() {
+    public ResponseEntity<byte[]> exportRegistry(HttpServletRequest request) {
         byte[] json = externalGameModuleService.exportRegistryJson();
+        String filename = "external-game-modules-backup.json";
+        dataExportAuditService.recordExport(
+            request,
+            "module-registry",
+            "Module registry",
+            "json",
+            filename,
+            "all",
+            externalGameModuleService.listConfigurations().size(),
+            null
+        );
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"external-game-modules-backup.json\"")
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
             .contentType(MediaType.APPLICATION_JSON)
             .body(json);
     }

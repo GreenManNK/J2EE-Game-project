@@ -73,7 +73,7 @@ class DataExportAdminOnlyIntegrationTest {
 
         mockMvc.perform(get("/leaderboard").session(session("export-admin-1", "Admin")))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("Xuat CSV trang nay")));
+            .andExpect(content().string(containsString("Mo report center")));
 
         mockMvc.perform(get("/manager/users").session(session("export-manager-1", "Manager")))
             .andExpect(status().isOk())
@@ -82,22 +82,20 @@ class DataExportAdminOnlyIntegrationTest {
 
         mockMvc.perform(get("/manager/users").session(session("export-admin-1", "Admin")))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("Xuat Excel tat ca da loc")));
+            .andExpect(content().string(containsString("Mo report center")));
     }
 
     @Test
     void settingsPageShouldHideExportShortcutsForNonAdmin() throws Exception {
         mockMvc.perform(get("/settings").session(session("export-user-1", "User")))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("Chi admin moi duoc tai cac file bao cao va export du lieu.")))
-            .andExpect(content().string(not(containsString("Lich su CSV"))))
-            .andExpect(content().string(not(containsString("BXH CSV"))));
+            .andExpect(content().string(containsString("Chi admin moi duoc tai cac file bao cao va export du lieu trong report center.")))
+            .andExpect(content().string(not(containsString("Report center"))));
 
         mockMvc.perform(get("/settings").session(session("export-admin-1", "Admin")))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("Lich su CSV")))
-            .andExpect(content().string(containsString("BXH CSV")))
-            .andExpect(content().string(containsString("Excel tai khoan")));
+            .andExpect(content().string(containsString("Report center")))
+            .andExpect(content().string(containsString("Trung tam quan tri")));
     }
 
     private void saveUser(String id, String email, String displayName, String role, int score) {

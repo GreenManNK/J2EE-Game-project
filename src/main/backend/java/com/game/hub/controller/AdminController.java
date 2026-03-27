@@ -4,7 +4,9 @@ import com.game.hub.entity.Friendship;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.FriendshipRepository;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.DataExportAuditService;
 import com.game.hub.support.UserExportSupport;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,13 +34,16 @@ public class AdminController {
     private final UserAccountRepository userAccountRepository;
     private final FriendshipRepository friendshipRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DataExportAuditService dataExportAuditService;
 
     public AdminController(UserAccountRepository userAccountRepository,
                            FriendshipRepository friendshipRepository,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           DataExportAuditService dataExportAuditService) {
         this.userAccountRepository = userAccountRepository;
         this.friendshipRepository = friendshipRepository;
         this.passwordEncoder = passwordEncoder;
+        this.dataExportAuditService = dataExportAuditService;
     }
 
     @GetMapping({"", "/"})
@@ -175,10 +180,12 @@ public class AdminController {
                                             @RequestParam(required = false) String banFilter,
                                             @RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "10") int size,
-                                            @RequestParam(defaultValue = "page") String scope) {
+                                            @RequestParam(defaultValue = "page") String scope,
+                                            HttpServletRequest request) {
         List<UserAccount> users = resolveUsersForExport(searchTerm, banFilter, page, size, scope);
         byte[] body = UserExportSupport.toCsv(users);
         String filename = "users-" + exportSuffix(scope, page) + ".csv";
+        dataExportAuditService.recordExport(request, "admin-users", "Tai khoan admin", "csv", filename, scope, users.size(), null);
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
             .contentType(MediaType.parseMediaType("text/csv"))
@@ -190,10 +197,12 @@ public class AdminController {
                                               @RequestParam(required = false) String banFilter,
                                               @RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "10") int size,
-                                              @RequestParam(defaultValue = "page") String scope) {
+                                              @RequestParam(defaultValue = "page") String scope,
+                                              HttpServletRequest request) {
         List<UserAccount> users = resolveUsersForExport(searchTerm, banFilter, page, size, scope);
         byte[] body = UserExportSupport.toExcel(users);
         String filename = "users-" + exportSuffix(scope, page) + ".xlsx";
+        dataExportAuditService.recordExport(request, "admin-users", "Tai khoan admin", "excel", filename, scope, users.size(), null);
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
             .contentType(MediaType.parseMediaType(

@@ -3,6 +3,7 @@ package com.game.hub.controller;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.FriendshipRepository;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.DataExportAuditService;
 import org.junit.jupiter.api.Test;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
@@ -28,7 +29,12 @@ class AdminManagerControllerTest {
         FriendshipRepository friendshipRepo = mock(FriendshipRepository.class);
         when(userRepo.findById("missing")).thenReturn(Optional.empty());
 
-        AdminController controller = new AdminController(userRepo, friendshipRepo, mock(org.springframework.security.crypto.password.PasswordEncoder.class));
+        AdminController controller = new AdminController(
+            userRepo,
+            friendshipRepo,
+            mock(org.springframework.security.crypto.password.PasswordEncoder.class),
+            mock(DataExportAuditService.class)
+        );
 
         assertEquals("admin/index", controller.adminCenterPage());
 
@@ -50,7 +56,11 @@ class AdminManagerControllerTest {
         UserAccountRepository userRepo = mock(UserAccountRepository.class);
         when(userRepo.findById("missing")).thenReturn(Optional.empty());
 
-        ManagerController controller = new ManagerController(userRepo, mock(org.springframework.security.crypto.password.PasswordEncoder.class));
+        ManagerController controller = new ManagerController(
+            userRepo,
+            mock(org.springframework.security.crypto.password.PasswordEncoder.class),
+            mock(DataExportAuditService.class)
+        );
 
         Object details = controller.details("missing");
         assertTrue(details instanceof Map<?, ?>);
@@ -75,7 +85,7 @@ class AdminManagerControllerTest {
         when(userRepo.findById("u1")).thenReturn(Optional.of(user));
         when(userRepo.save(any(UserAccount.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        ManagerController controller = new ManagerController(userRepo, passwordEncoder);
+        ManagerController controller = new ManagerController(userRepo, passwordEncoder, mock(DataExportAuditService.class));
         Object result = controller.edit("u1", new ManagerController.EditUserRequest("New", 99, "Admin", "/a.png"));
 
         assertTrue(result instanceof Map<?, ?>);
@@ -94,7 +104,7 @@ class AdminManagerControllerTest {
         when(passwordEncoder.encode("pw")).thenReturn("encoded");
         when(userRepo.save(any(UserAccount.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        ManagerController controller = new ManagerController(userRepo, passwordEncoder);
+        ManagerController controller = new ManagerController(userRepo, passwordEncoder, mock(DataExportAuditService.class));
         Object result = controller.create(new ManagerController.CreateUserRequest(
             "new@example.com", "New User", "pw", 0, "Admin", null
         ));

@@ -125,7 +125,7 @@ class HistoryExportAccessIntegrationTest {
                 .param("userId", "player-history-1")
                 .session(session("admin-history-1", "Admin")))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("Xuat CSV trang hien tai")))
+            .andExpect(content().string(containsString("Mo report center voi bo loc nay")))
             .andExpect(content().string(containsString("Ban do tran dau cua nguoi choi")));
     }
 

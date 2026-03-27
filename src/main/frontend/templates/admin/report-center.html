@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Trung tam bao cao')}" ></head>
+<body>
+<div th:replace="~{fragments :: appShell('admin-report-center')}"></div>
+<style>
+  .report-center-page {
+    display: grid;
+    gap: 18px;
+  }
+  .report-center-hero {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    gap: 16px;
+    background:
+      radial-gradient(circle at top right, rgba(255, 183, 77, 0.2), transparent 28%),
+      linear-gradient(145deg, rgba(18, 28, 45, 0.96), rgba(10, 19, 31, 0.9));
+    border: 1px solid rgba(255, 210, 130, 0.18);
+  }
+  .report-center-hero::after {
+    content: "";
+    position: absolute;
+    inset: auto auto -30% -8%;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(116, 216, 255, 0.16), transparent 68%);
+    pointer-events: none;
+  }
+  .report-center-summary,
+  .report-center-datasets,
+  .report-center-grid,
+  .report-center-audit-grid {
+    display: grid;
+    gap: 12px;
+  }
+  .report-center-summary {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  .report-center-datasets,
+  .report-center-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  .report-center-card,
+  .report-dataset-card,
+  .report-audit-card {
+    border-radius: 24px;
+    border: 1px solid rgba(126, 172, 214, 0.18);
+    background: rgba(8, 24, 39, 0.8);
+    padding: 18px;
+  }
+  .report-center-card.is-focus {
+    border-color: rgba(255, 204, 117, 0.42);
+    box-shadow: 0 0 0 1px rgba(255, 204, 117, 0.16), 0 18px 32px rgba(3, 10, 19, 0.18);
+  }
+  .report-card-head,
+  .report-audit-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: start;
+    margin-bottom: 12px;
+  }
+  .report-card-eyebrow,
+  .report-dataset-code {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #d8ebff;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .report-card-title,
+  .report-audit-title {
+    margin: 10px 0 6px;
+    font-size: 1.08rem;
+    font-weight: 800;
+  }
+  .report-card-text,
+  .report-dataset-text,
+  .report-center-hero p {
+    color: rgba(220, 233, 247, 0.8);
+    margin: 0;
+  }
+  .report-center-metrics strong,
+  .report-dataset-count,
+  .report-audit-kpi strong {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 800;
+  }
+  .report-center-form,
+  .report-center-form .row {
+    gap: 10px 0;
+  }
+  .report-center-form .form-label {
+    font-size: 0.86rem;
+  }
+  .report-center-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .report-audit-table td,
+  .report-audit-table th {
+    vertical-align: top;
+  }
+  .report-audit-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .report-audit-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    margin-bottom: 12px;
+  }
+</style>
+
+<main class="gx-page-shell theme-text report-center-page">
+  <section class="gx-page-hero theme-box report-center-hero">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-journal-arrow-down"></i>
+          <span>ADMIN REPORT CENTER</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Trung tam export va audit du lieu</h1>
+        <p>Toan bo export admin-only duoc gom ve mot noi. Admin chon bo loc, tai file va kiem tra ai da export gi, luc nao, tu route nao.</p>
+      </div>
+      <div class="gx-inline-actions">
+        <a class="btn theme-outline-btn" th:href="@{/admin}">
+          <i class="bi bi-shield-lock me-1"></i> Ve admin center
+        </a>
+      </div>
+    </div>
+
+    <div class="report-center-summary" th:with="summary=${reportSummary}">
+      <article class="report-center-card report-center-metrics">
+        <span class="report-card-eyebrow"><i class="bi bi-download"></i> Tong export</span>
+        <strong th:text="${summary.totalExports}">0</strong>
+        <p>So lan tai file da ghi audit.</p>
+      </article>
+      <article class="report-center-card report-center-metrics">
+        <span class="report-card-eyebrow"><i class="bi bi-calendar-day"></i> Hom nay</span>
+        <strong th:text="${summary.exportsToday}">0</strong>
+        <p>Luot export phat sinh trong ngay.</p>
+      </article>
+      <article class="report-center-card report-center-metrics">
+        <span class="report-card-eyebrow"><i class="bi bi-person-badge"></i> Admin tham gia</span>
+        <strong th:text="${summary.uniqueActors}">0</strong>
+        <p>So tai khoan admin da tai file.</p>
+      </article>
+      <article class="report-center-card report-center-metrics">
+        <span class="report-card-eyebrow"><i class="bi bi-bar-chart"></i> Dataset nong</span>
+        <strong th:text="${summary.hottestReport}">Chua co export</strong>
+        <p>Dataset duoc tai nhieu nhat trong tap audit hien co.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="report-center-datasets">
+    <article class="report-dataset-card theme-box" th:each="dataset : ${reportDatasets}">
+      <div class="report-card-head">
+        <div>
+          <div class="report-dataset-code" th:text="${dataset.code}">history</div>
+          <div class="report-card-title" th:text="${dataset.title}">Lich su dau</div>
+        </div>
+        <div class="text-end">
+          <span class="report-dataset-count" th:text="${dataset.rowCount}">0</span>
+          <small class="text-muted">ban ghi / doi tuong</small>
+        </div>
+      </div>
+      <p class="report-dataset-text" th:text="${dataset.description}">Mo ta dataset.</p>
+    </article>
+  </section>
+
+  <section class="report-center-grid">
+    <section id="report-history" class="report-center-card theme-box" th:classappend="${focusReport == 'history'} ? ' is-focus'">
+      <div class="report-card-head">
+        <div>
+          <span class="report-card-eyebrow"><i class="bi bi-clock-history"></i> History</span>
+          <h2 class="report-card-title">Export lich su dau</h2>
+        </div>
+        <span class="report-audit-pill">CSV / Excel</span>
+      </div>
+      <p class="report-card-text">Nhap user, game va moc thoi gian. Neu mo tu trang lich su, bo loc hien tai se duoc do san vao day.</p>
+      <form method="get" class="report-center-form row g-2">
+        <div class="col-md-4">
+          <label class="form-label" for="historyUserId">User ID</label>
+          <input id="historyUserId" class="form-control" name="userId" th:value="${historyUserId}" placeholder="player-1">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="historyGameCode">Game</label>
+          <input id="historyGameCode" class="form-control" name="gameCode" th:value="${historyGameCode}" placeholder="caro, chess, monopoly">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="historyResult">Ket qua</label>
+          <select id="historyResult" class="form-select" name="result">
+            <option value="" th:selected="${historyResult == ''}">Tat ca</option>
+            <option value="Thang" th:selected="${historyResult == 'Thang'}">Thang</option>
+            <option value="Thua" th:selected="${historyResult == 'Thua'}">Thua</option>
+            <option value="Hoa" th:selected="${historyResult == 'Hoa'}">Hoa</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="historyFromDate">Tu ngay</label>
+          <input id="historyFromDate" class="form-control" type="date" name="fromDate" th:value="${historyFromDate}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="historyToDate">Den ngay</label>
+          <input id="historyToDate" class="form-control" type="date" name="toDate" th:value="${historyToDate}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="historyPage">Page</label>
+          <input id="historyPage" class="form-control" type="number" min="0" name="page" th:value="${historyPage}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="historySize">Size</label>
+          <input id="historySize" class="form-control" type="number" min="1" max="100" name="size" th:value="${historySize}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="historyScope">Scope</label>
+          <select id="historyScope" class="form-select" name="scope">
+            <option value="all" th:selected="${historyScope == 'all'}">Tat ca</option>
+            <option value="page" th:selected="${historyScope == 'page'}">Trang hien tai</option>
+          </select>
+        </div>
+        <div class="col-12 report-center-actions">
+          <button class="btn btn-primary" type="submit" th:formaction="@{/history/export-csv}">Tai CSV</button>
+          <button class="btn theme-outline-btn" type="submit" th:formaction="@{/history/export-excel}">Tai Excel</button>
+          <a class="btn theme-outline-btn" th:href="@{/history(userId=${historyUserId},gameCode=${historyGameCode},result=${historyResult},fromDate=${historyFromDate},toDate=${historyToDate},page=${historyPage},size=${historySize})}">Mo trang lich su</a>
+        </div>
+      </form>
+    </section>
+
+    <section id="report-leaderboard" class="report-center-card theme-box" th:classappend="${focusReport == 'leaderboard'} ? ' is-focus'">
+      <div class="report-card-head">
+        <div>
+          <span class="report-card-eyebrow"><i class="bi bi-trophy"></i> Leaderboard</span>
+          <h2 class="report-card-title">Export bang xep hang</h2>
+        </div>
+        <span class="report-audit-pill">CSV / Excel</span>
+      </div>
+      <p class="report-card-text">Tai bang xep hang theo tu khoa, nguong diem va pham vi trang hoac toan bo.</p>
+      <form method="get" class="report-center-form row g-2">
+        <div class="col-md-4">
+          <label class="form-label" for="leaderboardQ">Tim kiem</label>
+          <input id="leaderboardQ" class="form-control" name="q" th:value="${leaderboardQ}" placeholder="ten hoac user id">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="leaderboardMinScore">Min score</label>
+          <input id="leaderboardMinScore" class="form-control" type="number" name="minScore" th:value="${leaderboardMinScore}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="leaderboardPage">Page</label>
+          <input id="leaderboardPage" class="form-control" type="number" min="0" name="page" th:value="${leaderboardPage}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="leaderboardSize">Size</label>
+          <input id="leaderboardSize" class="form-control" type="number" min="1" max="100" name="size" th:value="${leaderboardSize}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="leaderboardScope">Scope</label>
+          <select id="leaderboardScope" class="form-select" name="scope">
+            <option value="all" th:selected="${leaderboardScope == 'all'}">Tat ca</option>
+            <option value="page" th:selected="${leaderboardScope == 'page'}">Trang hien tai</option>
+          </select>
+        </div>
+        <div class="col-12 report-center-actions">
+          <button class="btn btn-primary" type="submit" th:formaction="@{/leaderboard/export-csv}">Tai CSV</button>
+          <button class="btn theme-outline-btn" type="submit" th:formaction="@{/leaderboard/export-excel}">Tai Excel</button>
+          <a class="btn theme-outline-btn" th:href="@{/leaderboard(q=${leaderboardQ},minScore=${leaderboardMinScore},page=${leaderboardPage},size=${leaderboardSize})}">Mo trang BXH</a>
+        </div>
+      </form>
+    </section>
+
+    <section id="report-managed-users" class="report-center-card theme-box" th:classappend="${focusReport == 'managed-users'} ? ' is-focus'">
+      <div class="report-card-head">
+        <div>
+          <span class="report-card-eyebrow"><i class="bi bi-people"></i> Manager Users</span>
+          <h2 class="report-card-title">Export du lieu tai khoan qua manager</h2>
+        </div>
+        <span class="report-audit-pill">CSV / Excel</span>
+      </div>
+      <p class="report-card-text">Day la bo export tu route manager. Van chi admin tai duoc, nhung bo loc giu giong trang manager/users.</p>
+      <form method="get" class="report-center-form row g-2">
+        <div class="col-md-4">
+          <label class="form-label" for="managedSearchTerm">Tim kiem</label>
+          <input id="managedSearchTerm" class="form-control" name="searchTerm" th:value="${managedSearchTerm}" placeholder="ten hoac email">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="managedBanFilter">Loc khoa</label>
+          <select id="managedBanFilter" class="form-select" name="banFilter">
+            <option value="" th:selected="${managedBanFilter == ''}">Tat ca</option>
+            <option value="active" th:selected="${managedBanFilter == 'active'}">Dang hoat dong</option>
+            <option value="banned" th:selected="${managedBanFilter == 'banned'}">Da khoa</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="managedPage">Page</label>
+          <input id="managedPage" class="form-control" type="number" min="0" name="page" th:value="${managedPage}">
+        </div>
+        <div class="col-md-1">
+          <label class="form-label" for="managedSize">Size</label>
+          <input id="managedSize" class="form-control" type="number" min="1" max="100" name="size" th:value="${managedSize}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="managedScope">Scope</label>
+          <select id="managedScope" class="form-select" name="scope">
+            <option value="page" th:selected="${managedScope == 'page'}">Trang hien tai</option>
+            <option value="all" th:selected="${managedScope == 'all'}">Tat ca</option>
+          </select>
+        </div>
+        <div class="col-12 report-center-actions">
+          <button class="btn btn-primary" type="submit" th:formaction="@{/manager/export-users-csv}">Tai CSV</button>
+          <button class="btn theme-outline-btn" type="submit" th:formaction="@{/manager/export-users-excel}">Tai Excel</button>
+          <a class="btn theme-outline-btn" th:href="@{/manager/users(searchTerm=${managedSearchTerm},banFilter=${managedBanFilter},page=${managedPage},size=${managedSize})}">Mo trang manager</a>
+        </div>
+      </form>
+    </section>
+
+    <section id="report-admin-users" class="report-center-card theme-box" th:classappend="${focusReport == 'admin-users'} ? ' is-focus'">
+      <div class="report-card-head">
+        <div>
+          <span class="report-card-eyebrow"><i class="bi bi-person-gear"></i> Admin Users</span>
+          <h2 class="report-card-title">Export dataset tai khoan tu admin center</h2>
+        </div>
+        <span class="report-audit-pill">CSV / Excel</span>
+      </div>
+      <p class="report-card-text">Bo export day du danh cho admin center, phu hop khi can backup nhanh danh sach tai khoan.</p>
+      <form method="get" class="report-center-form row g-2">
+        <div class="col-md-4">
+          <label class="form-label" for="adminSearchTerm">Tim kiem</label>
+          <input id="adminSearchTerm" class="form-control" name="searchTerm" th:value="${adminSearchTerm}" placeholder="ten hoac email">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="adminBanFilter">Loc khoa</label>
+          <select id="adminBanFilter" class="form-select" name="banFilter">
+            <option value="" th:selected="${adminBanFilter == ''}">Tat ca</option>
+            <option value="active" th:selected="${adminBanFilter == 'active'}">Dang hoat dong</option>
+            <option value="banned" th:selected="${adminBanFilter == 'banned'}">Da khoa</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="adminPage">Page</label>
+          <input id="adminPage" class="form-control" type="number" min="0" name="page" th:value="${adminPage}">
+        </div>
+        <div class="col-md-1">
+          <label class="form-label" for="adminSize">Size</label>
+          <input id="adminSize" class="form-control" type="number" min="1" max="100" name="size" th:value="${adminSize}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="adminScope">Scope</label>
+          <select id="adminScope" class="form-select" name="scope">
+            <option value="page" th:selected="${adminScope == 'page'}">Trang hien tai</option>
+            <option value="all" th:selected="${adminScope == 'all'}">Tat ca</option>
+          </select>
+        </div>
+        <div class="col-12 report-center-actions">
+          <button class="btn btn-primary" type="submit" th:formaction="@{/admin/export-users-csv}">Tai CSV</button>
+          <button class="btn theme-outline-btn" type="submit" th:formaction="@{/admin/export-users-excel}">Tai Excel</button>
+          <a class="btn theme-outline-btn" th:href="@{/admin}">Mo admin center</a>
+        </div>
+      </form>
+    </section>
+
+    <section id="report-access-logs" class="report-center-card theme-box" th:classappend="${focusReport == 'access-logs'} ? ' is-focus'">
+      <div class="report-card-head">
+        <div>
+          <span class="report-card-eyebrow"><i class="bi bi-activity"></i> Access Logs</span>
+          <h2 class="report-card-title">Export nhat ky truy cap</h2>
+        </div>
+        <span class="report-audit-pill">CSV / Excel</span>
+      </div>
+      <p class="report-card-text">Loc theo method, ngay, tu khoa truoc khi tai file audit request.</p>
+      <form method="get" class="report-center-form row g-2">
+        <div class="col-md-4">
+          <label class="form-label" for="logsQ">Tim kiem</label>
+          <input id="logsQ" class="form-control" name="q" th:value="${logsQ}" placeholder="path, user, ip">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="logsMethod">Method</label>
+          <select id="logsMethod" class="form-select" name="method">
+            <option value="" th:selected="${logsMethod == ''}">Tat ca</option>
+            <option value="GET" th:selected="${logsMethod == 'GET'}">GET</option>
+            <option value="POST" th:selected="${logsMethod == 'POST'}">POST</option>
+            <option value="PATCH" th:selected="${logsMethod == 'PATCH'}">PATCH</option>
+            <option value="PUT" th:selected="${logsMethod == 'PUT'}">PUT</option>
+            <option value="DELETE" th:selected="${logsMethod == 'DELETE'}">DELETE</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="logsFromDate">Tu ngay</label>
+          <input id="logsFromDate" class="form-control" type="date" name="fromDate" th:value="${logsFromDate}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="logsToDate">Den ngay</label>
+          <input id="logsToDate" class="form-control" type="date" name="toDate" th:value="${logsToDate}">
+        </div>
+        <div class="col-md-1">
+          <label class="form-label" for="logsPage">Page</label>
+          <input id="logsPage" class="form-control" type="number" min="0" name="page" th:value="${logsPage}">
+        </div>
+        <div class="col-md-1">
+          <label class="form-label" for="logsSize">Size</label>
+          <input id="logsSize" class="form-control" type="number" min="1" max="200" name="size" th:value="${logsSize}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="logsScope">Scope</label>
+          <select id="logsScope" class="form-select" name="scope">
+            <option value="all" th:selected="${logsScope == 'all'}">Tat ca</option>
+            <option value="page" th:selected="${logsScope == 'page'}">Trang hien tai</option>
+          </select>
+        </div>
+        <div class="col-12 report-center-actions">
+          <button class="btn btn-primary" type="submit" th:formaction="@{/admin/access-logs/export-csv}">Tai CSV</button>
+          <button class="btn theme-outline-btn" type="submit" th:formaction="@{/admin/access-logs/export-excel}">Tai Excel</button>
+          <a class="btn theme-outline-btn" th:href="@{/admin}">Mo admin logs</a>
+        </div>
+      </form>
+    </section>
+
+    <section id="report-module-registry" class="report-center-card theme-box" th:classappend="${focusReport == 'module-registry'} ? ' is-focus'">
+      <div class="report-card-head">
+        <div>
+          <span class="report-card-eyebrow"><i class="bi bi-boxes"></i> Module Registry</span>
+          <h2 class="report-card-title">Backup registry module game ngoai</h2>
+        </div>
+        <span class="report-audit-pill">JSON</span>
+      </div>
+      <p class="report-card-text">Tai mot ban backup JSON cua registry module game ngoai. Luot tai nay cung duoc ghi vao audit log.</p>
+      <div class="report-center-actions">
+        <a class="btn btn-primary" th:href="@{/admin/game-modules/api/export}">Tai registry backup</a>
+        <a class="btn theme-outline-btn" th:href="@{/admin}">Mo admin center</a>
+      </div>
+    </section>
+  </section>
+
+  <section class="theme-box report-audit-card">
+    <div class="report-audit-head">
+      <div>
+        <span class="report-card-eyebrow"><i class="bi bi-shield-check"></i> Export Audit</span>
+        <h2 class="report-audit-title">Nhat ky tai file gan day</h2>
+        <p class="report-card-text">M?i l?n admin tai file thanh cong se duoc ghi lai: dataset, format, row count, target user va request path.</p>
+      </div>
+    </div>
+
+    <div class="report-audit-grid" th:with="summary=${reportSummary}">
+      <div class="theme-box rounded p-2 report-audit-kpi"><small class="text-muted">Tong luot</small><strong th:text="${summary.totalExports}">0</strong></div>
+      <div class="theme-box rounded p-2 report-audit-kpi"><small class="text-muted">Hom nay</small><strong th:text="${summary.exportsToday}">0</strong></div>
+      <div class="theme-box rounded p-2 report-audit-kpi"><small class="text-muted">Admin</small><strong th:text="${summary.uniqueActors}">0</strong></div>
+      <div class="theme-box rounded p-2 report-audit-kpi"><small class="text-muted">Dataset nong</small><strong th:text="${summary.hottestReport}">Chua co export</strong></div>
+    </div>
+
+    <div class="gx-empty-state" th:if="${#lists.isEmpty(recentExportAudits)}">Chua co audit export nao.</div>
+
+    <div class="table-responsive" th:if="${!#lists.isEmpty(recentExportAudits)}">
+      <table class="table table-bordered table-hover align-middle mb-0 report-audit-table">
+        <thead>
+        <tr class="theme-table-header">
+          <th>Thoi gian</th>
+          <th>Dataset</th>
+          <th>File</th>
+          <th>Scope / rows</th>
+          <th>Target</th>
+          <th>Admin</th>
+          <th>Route / IP</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="log : ${recentExportAudits}">
+          <td>
+            <div th:text="${log.exportedAt != null ? #temporals.format(log.exportedAt, 'dd/MM/yyyy HH:mm:ss') : '--'}">27/03/2026 11:22:33</div>
+          </td>
+          <td>
+            <strong th:text="${log.reportLabel}">Lich su dau</strong>
+            <div class="text-muted small" th:text="${log.reportCode}">history</div>
+          </td>
+          <td>
+            <div><span class="report-audit-pill" th:text="${#strings.toUpperCase(log.fileFormat)}">CSV</span></div>
+            <div class="small mt-1" th:text="${log.filename}">history-all.csv</div>
+          </td>
+          <td>
+            <div><strong th:text="${log.scope}">all</strong></div>
+            <div class="text-muted small" th:text="${log.rowCount + ' dong'}">10 dong</div>
+          </td>
+          <td>
+            <span th:text="${#strings.isEmpty(log.targetUserId) ? 'Khong khoa theo user' : log.targetUserId}">player-1</span>
+          </td>
+          <td>
+            <div th:text="${#strings.isEmpty(log.actorDisplayName) ? log.actorUserId : log.actorDisplayName}">Export Admin</div>
+            <div class="text-muted small" th:text="${log.actorUserId + (#strings.isEmpty(log.actorRole) ? '' : ' · ' + log.actorRole)}">admin-1 · Admin</div>
+          </td>
+          <td>
+            <div th:text="${log.requestPath}">/history/export-csv</div>
+            <div class="text-muted small" th:text="${#strings.isEmpty(log.clientIp) ? '--' : log.clientIp}">127.0.0.1</div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('admin-report-center')}"></th:block>
+</body>
+</html>
