@@ -161,6 +161,10 @@ class AccountSyncApiControllerIntegrationTest {
               "gameHistory": [
                 {
                   "gameCode": "caro",
+                  "matchCode": "Normal_SYNC01-1743041234567",
+                  "roomId": "Normal_SYNC01",
+                  "locationLabel": "Phong thuong Caro",
+                  "locationPath": "/game/room/Normal_SYNC01",
                   "player1Id": "%s",
                   "player2Id": "%s",
                   "firstPlayerId": "%s",
@@ -225,6 +229,10 @@ class AccountSyncApiControllerIntegrationTest {
         GameHistory history = gameHistoryRepository.findByPlayer1IdOrPlayer2IdOrderByPlayedAtDesc(syncedUserId, syncedUserId)
             .stream().findFirst().orElseThrow();
         assertEquals("caro", history.getGameCode());
+        assertEquals("Normal_SYNC01-1743041234567", history.getMatchCode());
+        assertEquals("Normal_SYNC01", history.getRoomId());
+        assertEquals("Phong thuong Caro", history.getLocationLabel());
+        assertEquals("/game/room/Normal_SYNC01", history.getLocationPath());
         assertEquals(friend.getId(), history.getPlayer2Id());
 
         Friendship friendship = friendshipRepository.findByRequesterIdOrAddresseeId(syncedUserId, syncedUserId)
@@ -237,6 +245,8 @@ class AccountSyncApiControllerIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.userId").value(syncedUserId))
             .andExpect(jsonPath("$.data.gameStats['minesweeper'].bestTimes.easy").value(40))
+            .andExpect(jsonPath("$.data.gameHistory[0].matchCode").value("Normal_SYNC01-1743041234567"))
+            .andExpect(jsonPath("$.data.gameHistory[0].roomId").value("Normal_SYNC01"))
             .andExpect(jsonPath("$.data.gamesBrowserState.recentGames[0].code").value("chess"))
             .andExpect(jsonPath("$.data.puzzleCatalogState.recentCodes[0]").value("jigsaw"));
 
@@ -300,6 +310,10 @@ class AccountSyncApiControllerIntegrationTest {
                   "gameHistory": [
                     {
                       "gameCode": "caro",
+                      "matchCode": "Ranked_BULK01-1743041200000",
+                      "roomId": "Ranked_BULK01",
+                      "locationLabel": "Phong xep hang Caro",
+                      "locationPath": "/game/room/Ranked_BULK01",
                       "player1Id": "bulk-b",
                       "player2Id": "bulk-a",
                       "firstPlayerId": "bulk-b",
@@ -347,6 +361,8 @@ class AccountSyncApiControllerIntegrationTest {
             .findFirst()
             .orElseThrow();
         assertEquals("caro", history.getGameCode());
+        assertEquals("Ranked_BULK01-1743041200000", history.getMatchCode());
+        assertEquals("Ranked_BULK01", history.getRoomId());
 
         mockMvc.perform(get("/api/account-sync/accounts/export")
                 .header("X-API-Key", "test-sync-key")
@@ -356,6 +372,7 @@ class AccountSyncApiControllerIntegrationTest {
             .andExpect(jsonPath("$.data.accounts[0].userId").value("bulk-a"))
             .andExpect(jsonPath("$.data.accounts[0].gamesBrowserState.favorites[0]").value("caro"))
             .andExpect(jsonPath("$.data.accounts[0].puzzleCatalogState.favorites[0]").value("word"))
+            .andExpect(jsonPath("$.data.accounts[1].gameHistory[0].matchCode").value("Ranked_BULK01-1743041200000"))
             .andExpect(jsonPath("$.data.accounts[1].userId").value("bulk-b"));
     }
 

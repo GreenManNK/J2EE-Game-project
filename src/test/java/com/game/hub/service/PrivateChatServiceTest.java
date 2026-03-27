@@ -15,9 +15,11 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -57,11 +59,13 @@ class PrivateChatServiceTest {
         });
 
         PrivateChatService service = new PrivateChatService(userRepo, friendshipService, chatRepo);
-        PrivateChatService.SendResult result = service.saveMessage(" u1 ", "u2", "  hello  ");
+        PrivateChatService.SendResult result = service.saveMessage(" u1 ", "u2", "  hello  ", " cid-1 ");
 
         assertTrue(result.ok());
         assertEquals("u1__u2", result.roomKey());
         assertNotNull(result.payload());
+        assertEquals(10L, result.payload().get("messageId"));
+        assertEquals("cid-1", result.payload().get("clientMessageId"));
         assertEquals("PRIVATE_CHAT", result.payload().get("type"));
         assertEquals("hello", result.payload().get("message"));
         assertEquals("Alice", result.payload().get("senderName"));
@@ -73,6 +77,37 @@ class PrivateChatServiceTest {
         assertEquals("u1", saved.getFromUserId());
         assertEquals("u2", saved.getToUserId());
         assertEquals("hello", saved.getContent());
+        assertEquals("cid-1", saved.getClientMessageId());
+    }
+
+    @Test
+    void saveMessageShouldReuseExistingRecordForSameClientMessageId() {
+        UserAccountRepository userRepo = mock(UserAccountRepository.class);
+        FriendshipService friendshipService = mock(FriendshipService.class);
+        PrivateChatRecordRepository chatRepo = mock(PrivateChatRecordRepository.class);
+
+        when(userRepo.findById("u1")).thenReturn(Optional.of(user("u1", "Alice")));
+        when(userRepo.findById("u2")).thenReturn(Optional.of(user("u2", "Bob")));
+        when(friendshipService.areFriends("u1", "u2")).thenReturn(true);
+
+        PrivateChatRecord existing = new PrivateChatRecord();
+        existing.setId(15L);
+        existing.setRoomKey("u1__u2");
+        existing.setFromUserId("u1");
+        existing.setToUserId("u2");
+        existing.setSenderName("Alice");
+        existing.setContent("hello");
+        existing.setClientMessageId("cid-15");
+        existing.setSentAt(LocalDateTime.of(2026, 2, 23, 10, 2));
+        when(chatRepo.findFirstByRoomKeyAndClientMessageId("u1__u2", "cid-15")).thenReturn(Optional.of(existing));
+
+        PrivateChatService service = new PrivateChatService(userRepo, friendshipService, chatRepo);
+        PrivateChatService.SendResult result = service.saveMessage("u1", "u2", "hello", "cid-15");
+
+        assertTrue(result.ok());
+        assertEquals(15L, result.payload().get("messageId"));
+        assertEquals("cid-15", result.payload().get("clientMessageId"));
+        verify(chatRepo, never()).save(any(PrivateChatRecord.class));
     }
 
     @Test
@@ -112,6 +147,9 @@ class PrivateChatServiceTest {
         assertEquals(2, result.messages().size());
         Map<String, Object> first = result.messages().get(0);
         Map<String, Object> second = result.messages().get(1);
+        assertEquals(1L, first.get("messageId"));
+        assertEquals(2L, second.get("messageId"));
+        assertNull(first.get("clientMessageId"));
         assertEquals("old", first.get("message"));
         assertEquals("new", second.get("message"));
     }

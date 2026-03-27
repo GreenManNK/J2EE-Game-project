@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Ban be')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('friendship-index')}"></div>
+
+<main class="gx-page-shell cg-social-page theme-text" id="friendshipRoot" th:attr="data-current-user-id=${currentUserId}">
+  <section class="gx-page-hero theme-box cg-social-hero">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-people-fill"></i>
+          <span>Xa hoi / Ban be</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Trung tam ban be</h1>
+        <p class="gx-page-subtitle">
+          Gom danh sach ban, loi moi, tim kiem tai khoan va cac thao tac nhan tin vao cung mot surface de di chuyen nhanh hon.
+        </p>
+      </div>
+      <div class="gx-inline-actions">
+        <span class="gx-page-badge"><i class="bi bi-person-circle"></i><span th:text="${currentUserId}">user</span></span>
+        <a class="btn btn-primary" th:href="@{/friendship/notifications(currentUserId=${currentUserId})}">
+          <i class="bi bi-bell-fill me-1"></i> Thong bao
+        </a>
+        <a class="btn theme-outline-btn" th:href="@{/games/caro/rooms}">
+          <i class="bi bi-controller me-1"></i> Choi cung ban
+        </a>
+      </div>
+    </div>
+
+    <div class="cg-social-hero__grid" aria-label="Tong quan xa hoi">
+      <article class="cg-social-highlight">
+        <span class="cg-social-highlight__eyebrow">Network</span>
+        <strong><span th:text="${#lists.size(friendViews)}">0</span> ban dang ket noi</strong>
+        <p>Danh sach ban huu duoc giu sat trang thai online va nut chat rieng de khong phai mo qua nhieu man hinh.</p>
+      </article>
+      <article class="cg-social-highlight">
+        <span class="cg-social-highlight__eyebrow">Pending</span>
+        <strong><span th:text="${#lists.size(pendingRequestViews)}">0</span> loi moi dang cho</strong>
+        <p>Chap nhan, tu choi va xem profile duoc dat ngay trong cung lane xu ly.</p>
+      </article>
+      <article class="cg-social-highlight">
+        <span class="cg-social-highlight__eyebrow">Outgoing</span>
+        <strong><span th:text="${#lists.size(sentRequestViews)}">0</span> loi moi da gui</strong>
+        <p>Theo doi cac loi moi da gui va huy nhanh neu khong con can thiet.</p>
+      </article>
+    </div>
+  </section>
+
+  <div class="cg-social-layout">
+    <aside class="cg-social-rail">
+      <section class="theme-box cg-social-panel">
+        <div class="cg-social-panel__head">
+          <div>
+            <div class="cg-social-panel__eyebrow">Invite by email</div>
+            <h2 class="cg-social-panel__title theme-text mb-0">Gui loi moi bang email</h2>
+          </div>
+          <span class="cg-social-count">Nhanh</span>
+        </div>
+        <form id="sendByEmailForm" class="cg-social-search-form">
+          <div>
+            <label class="form-label" for="email">Email ban be</label>
+            <input id="email" class="form-control" placeholder="Nhap email ban">
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-send-fill me-1"></i> Gui loi moi
+          </button>
+        </form>
+        <div id="out" class="small mb-0 theme-text" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="theme-box cg-social-panel">
+        <div class="cg-social-panel__head">
+          <div>
+            <div class="cg-social-panel__eyebrow">Search</div>
+            <h2 class="cg-social-panel__title theme-text mb-0">Tim nguoi choi</h2>
+          </div>
+          <span class="cg-social-count">Live</span>
+        </div>
+        <form class="cg-social-search-form" method="get" th:action="@{/friendship/search}">
+          <input type="hidden" name="currentUserId" th:value="${currentUserId}">
+          <div>
+            <label class="form-label" for="friendshipPageSearch">Ten hien thi hoac email</label>
+            <input id="friendshipPageSearch" class="form-control" name="query" placeholder="Tim theo ten, email">
+          </div>
+          <button type="submit" class="btn theme-outline-btn w-100">
+            <i class="bi bi-search me-1"></i> Mo ket qua tim kiem
+          </button>
+        </form>
+      </section>
+
+      <section class="theme-box cg-social-panel">
+        <div class="cg-social-panel__head">
+          <div>
+            <div class="cg-social-panel__eyebrow">Quick access</div>
+            <h2 class="cg-social-panel__title theme-text mb-0">Dieu huong nhanh</h2>
+          </div>
+        </div>
+        <div class="cg-social-action-stack">
+          <a class="btn theme-outline-btn text-start" th:href="@{/friendship/notifications(currentUserId=${currentUserId})}">
+            <i class="bi bi-bell-fill me-2"></i> Mo khu thong bao
+          </a>
+          <a class="btn theme-outline-btn text-start" th:href="@{/profile(userId=${currentUserId})}">
+            <i class="bi bi-person-circle me-2"></i> Xem ho so cua toi
+          </a>
+          <a class="btn theme-outline-btn text-start" th:href="@{/games/caro/rooms}">
+            <i class="bi bi-controller me-2"></i> Tim phong dau
+          </a>
+        </div>
+      </section>
+    </aside>
+
+    <section class="cg-social-board">
+      <div class="cg-social-column-grid">
+        <section class="theme-box cg-social-panel">
+          <div class="cg-social-panel__head">
+            <div>
+              <div class="cg-social-panel__eyebrow">Friends</div>
+              <h2 class="cg-social-panel__title theme-text mb-0">Ban be hien co</h2>
+            </div>
+            <span class="cg-social-count" th:text="${#lists.size(friendViews)} + ' ban'">0 ban</span>
+          </div>
+          <ul class="list-group list-group-flush cg-social-list" id="friendsList">
+            <li class="list-group-item text-muted small" th:if="${#lists.isEmpty(friendViews)}">Chua co ban be.</li>
+            <li class="list-group-item"
+                th:each="f : ${friendViews}"
+                th:attr="data-friend-id=${f.userId}">
+              <article class="cg-social-card-row">
+                <div class="cg-social-card-row__header">
+                  <img th:src="@{${f.avatarPath}}"
+                       alt="Anh dai dien"
+                       width="52"
+                       height="52"
+                       class="cg-social-avatar rounded-circle border flex-shrink-0">
+                  <div class="cg-social-card-row__body">
+                    <div class="cg-social-card-row__topline">
+                      <strong th:text="${f.displayName}">Ten ban be</strong>
+                      <span class="cg-social-pill"
+                            th:classappend="${f.online ? ' is-positive' : ' is-muted'}"
+                            th:text="${f.online ? 'Truc tuyen' : 'Ngoai tuyen'}">Truc tuyen</span>
+                    </div>
+                    <div class="cg-social-meta-line">
+                      <span th:text="${f.email}">friend@example.com</span>
+                      <span>Diem <strong th:text="${f.score}">0</strong></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="cg-social-actions">
+                  <a class="btn btn-sm btn-outline-primary"
+                     th:href="@{/friendship/user-detail/{id}(id=${f.userId},currentUserId=${currentUserId})}">Xem</a>
+                  <a class="btn btn-sm btn-primary"
+                     th:href="@{/chat/private(currentUserId=${currentUserId},friendId=${f.userId})}">Nhan tin</a>
+                  <button class="remove-friend btn btn-sm btn-outline-danger"
+                          type="button"
+                          th:attr="data-friend-id=${f.userId}">Huy ban</button>
+                </div>
+              </article>
+            </li>
+          </ul>
+        </section>
+
+        <section class="theme-box cg-social-panel">
+          <div class="cg-social-panel__head">
+            <div>
+              <div class="cg-social-panel__eyebrow">Requests in</div>
+              <h2 class="cg-social-panel__title theme-text mb-0">Loi moi dang cho</h2>
+            </div>
+            <span class="cg-social-count" th:text="${#lists.size(pendingRequestViews)} + ' muc'">0 muc</span>
+          </div>
+          <ul class="list-group list-group-flush cg-social-list" id="pendingRequestsList">
+            <li class="list-group-item text-muted small" th:if="${#lists.isEmpty(pendingRequestViews)}">Khong co loi moi dang cho.</li>
+            <li class="list-group-item"
+                th:each="p : ${pendingRequestViews}"
+                th:attr="data-friendship-id=${p.friendshipId},data-requester-id=${p.requesterId}">
+              <article class="cg-social-card-row">
+                <div class="cg-social-card-row__header">
+                  <img th:src="@{${p.requesterAvatarPath}}"
+                       alt="Anh dai dien"
+                       width="52"
+                       height="52"
+                       class="cg-social-avatar rounded-circle border">
+                  <div class="cg-social-card-row__body">
+                    <div class="cg-social-card-row__topline">
+                      <strong th:text="${p.requesterName}">Nguoi gui</strong>
+                      <span class="cg-social-pill is-warm">Cho xu ly</span>
+                    </div>
+                    <div class="cg-social-meta-line">
+                      <span th:text="${p.requesterEmail}">email@example.com</span>
+                      <span>Muon ket noi va choi cung ban</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="cg-social-actions">
+                  <a class="btn btn-sm btn-outline-primary"
+                     th:href="@{/friendship/user-detail/{id}(id=${p.requesterId},currentUserId=${currentUserId})}">Xem</a>
+                  <button class="accept btn btn-sm btn-primary" type="button" th:attr="data-id=${p.friendshipId}">Chap nhan</button>
+                  <button class="decline btn btn-sm btn-outline-secondary" type="button" th:attr="data-id=${p.friendshipId}">Tu choi</button>
+                </div>
+              </article>
+            </li>
+          </ul>
+        </section>
+
+        <section class="theme-box cg-social-panel">
+          <div class="cg-social-panel__head">
+            <div>
+              <div class="cg-social-panel__eyebrow">Requests out</div>
+              <h2 class="cg-social-panel__title theme-text mb-0">Loi moi da gui</h2>
+            </div>
+            <span class="cg-social-count" th:text="${#lists.size(sentRequestViews)} + ' muc'">0 muc</span>
+          </div>
+          <ul class="list-group list-group-flush cg-social-list" id="sentRequestsList">
+            <li class="list-group-item text-muted small" th:if="${#lists.isEmpty(sentRequestViews)}">Khong co loi moi da gui.</li>
+            <li class="list-group-item"
+                th:each="s : ${sentRequestViews}"
+                th:attr="data-friendship-id=${s.friendshipId},data-friend-id=${s.addresseeId}">
+              <article class="cg-social-card-row">
+                <div class="cg-social-card-row__header">
+                  <img th:src="@{${s.addresseeAvatarPath}}"
+                       alt="Anh dai dien"
+                       width="52"
+                       height="52"
+                       class="cg-social-avatar rounded-circle border">
+                  <div class="cg-social-card-row__body">
+                    <div class="cg-social-card-row__topline">
+                      <strong th:text="${s.addresseeName}">Nguoi nhan</strong>
+                      <span class="cg-social-pill is-muted">Da gui</span>
+                    </div>
+                    <div class="cg-social-meta-line">
+                      <span th:text="${s.addresseeEmail}">target@example.com</span>
+                      <span>Dang cho phan hoi</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="cg-social-actions">
+                  <a class="btn btn-sm btn-outline-primary"
+                     th:href="@{/friendship/user-detail/{id}(id=${s.addresseeId},currentUserId=${currentUserId})}">Xem</a>
+                  <button class="cancel-sent btn btn-sm btn-outline-danger"
+                          type="button"
+                          th:attr="data-friend-id=${s.addresseeId}">Huy loi moi</button>
+                </div>
+              </article>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </section>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('friendship-index')}"></th:block>
+<script th:src="@{/js/friendship-index.js}"></script>
+</body>
+</html>

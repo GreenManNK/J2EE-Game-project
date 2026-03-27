@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Ho so nguoi choi')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('profile')}"></div>
+
+<main id="profilePageRoot"
+      class="gx-page-shell cg-profile-page theme-text"
+      th:attr="data-profile-url=@{/profile/{userId}(userId=${user.id})}">
+  <section class="cg-profile-hero theme-box">
+    <div class="cg-profile-hero__cover" aria-hidden="true">
+      <span class="cg-profile-hero__leaf cg-profile-hero__leaf--left"></span>
+      <span class="cg-profile-hero__leaf cg-profile-hero__leaf--right"></span>
+      <span class="cg-profile-hero__leaf cg-profile-hero__leaf--center"></span>
+    </div>
+
+    <div class="cg-profile-hero__body">
+      <div class="cg-profile-identity">
+        <div class="cg-profile-identity__avatar-wrap">
+          <img class="cg-profile-identity__avatar"
+               th:src="@{${user.avatarPath != null and !#strings.isEmpty(user.avatarPath) ? user.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
+               alt="Anh dai dien">
+        </div>
+
+        <div class="cg-profile-identity__copy">
+          <div class="home-dashboard__eyebrow">
+            <i class="bi bi-person-badge-fill"></i>
+            <span>Ho so nguoi choi</span>
+          </div>
+          <h1 class="cg-profile-identity__name"
+              th:text="${user.displayName != null and !#strings.isEmpty(user.displayName) ? user.displayName : user.id}">
+            Nguoi choi
+          </h1>
+          <div class="cg-profile-identity__meta">
+            <span>
+              <i class="bi bi-geo-alt"></i>
+              <span th:text="${user.country != null and !#strings.isEmpty(user.country) ? user.country : 'Viet Nam'}">Viet Nam</span>
+            </span>
+            <span>
+              <i class="bi bi-at"></i>
+              <span th:text="${user.username != null and !#strings.isEmpty(user.username) ? user.username : user.id}">player</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="cg-profile-identity__actions">
+          <a class="hub-portal-inline-btn primary"
+             th:if="${isOwner}"
+             th:href="@{/settings#settingsAccountPanel}">
+            <i class="bi bi-pencil-square"></i>
+            <span>Chinh sua ho so</span>
+          </a>
+          <a class="hub-portal-inline-btn primary"
+             th:if="${!isOwner}"
+             th:href="@{/leaderboard}">
+            <i class="bi bi-trophy-fill"></i>
+            <span>Xem bang xep hang</span>
+          </a>
+          <button type="button" class="hub-portal-inline-btn" data-profile-share-btn="true">
+            <i class="bi bi-share"></i>
+            <span>Chia se ho so</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="cg-profile-dashboard">
+        <aside class="cg-profile-side">
+          <article class="cg-profile-score-card">
+            <span class="cg-profile-score-card__eyebrow">Ban</span>
+            <strong th:text="${user.score}">0</strong>
+          </article>
+
+          <article class="cg-profile-side-card">
+            <div class="cg-profile-side-card__title">So lieu thong ke</div>
+            <div class="cg-profile-stat-list">
+              <div class="cg-profile-stat-row">
+                <span>Thanh vien trong</span>
+                <strong th:text="${memberDays} + ' ngay'">0 ngay</strong>
+              </div>
+              <div class="cg-profile-stat-row">
+                <span>Tro choi da thich</span>
+                <strong th:text="${favoriteGameCount}">0</strong>
+              </div>
+              <div class="cg-profile-stat-row">
+                <span>Playstreak</span>
+                <strong th:text="${currentStreak} + ' ngay'">0 ngay</strong>
+              </div>
+              <div class="cg-profile-stat-row cg-profile-stat-row--subtle">
+                <span>Cao nhat</span>
+                <strong th:text="${bestStreak} + ' ngay'">0 ngay</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="cg-profile-side-card">
+            <div class="cg-profile-side-card__title">Hoat dong</div>
+            <div class="cg-profile-activity-mini" th:if="${!#lists.isEmpty(recentActivity)}">
+              <div class="cg-profile-activity-mini__item" th:each="item : ${recentActivity}">
+                <div class="cg-profile-activity-mini__icon">
+                  <i class="bi" th:classappend="' ' + ${item.iconClass}"></i>
+                </div>
+                <div class="cg-profile-activity-mini__body">
+                  <strong th:text="${item.gameName}">Game</strong>
+                  <small th:text="${item.summary}">Tom tat tran dau</small>
+                </div>
+              </div>
+            </div>
+            <p class="cg-profile-empty-copy" th:if="${#lists.isEmpty(recentActivity)}">
+              Chua co tran dau nao de hien thi o day.
+            </p>
+          </article>
+        </aside>
+
+        <section class="cg-profile-main-card">
+          <div class="cg-profile-tabs" role="tablist" aria-label="Noi dung ho so">
+            <button type="button"
+                    class="cg-profile-tab is-active"
+                    data-profile-tab="leaderboard"
+                    aria-selected="true">
+              Bang xep hang
+            </button>
+            <button type="button"
+                    class="cg-profile-tab"
+                    data-profile-tab="favorites"
+                    aria-selected="false">
+              Tro choi yeu thich
+            </button>
+          </div>
+
+          <div class="cg-profile-panel is-active" data-profile-panel="leaderboard">
+            <div class="cg-profile-ranking-stage">
+              <div class="cg-profile-ranking-stage__badge">
+                <span class="cg-profile-ranking-stage__rank">#<span th:text="${rank}">1</span></span>
+              </div>
+              <h2>Cạnh tranh trên Bảng xếp hạng Game Hub</h2>
+              <p>
+                Theo doi hang, ti le thang va pace thi dau ngay trong ho so theo mot bo cuc giong trang account cua game portal.
+              </p>
+              <div class="cg-profile-ranking-stage__stats">
+                <div>
+                  <span>Ti le thang</span>
+                  <strong><span th:text="${winRate}">0</span>%</strong>
+                </div>
+                <div>
+                  <span>Tong tran</span>
+                  <strong th:text="${totalGames}">0</strong>
+                </div>
+                <div>
+                  <span>Thang xep hang nhanh</span>
+                  <strong th:text="${winFastRanked}">0</strong>
+                </div>
+              </div>
+              <div class="cg-profile-ranking-stage__actions">
+                <a class="hub-portal-inline-btn primary" th:href="@{/leaderboard}">
+                  <i class="bi bi-trophy-fill"></i>
+                  <span>Xem bang xep hang</span>
+                </a>
+                <a class="hub-portal-inline-btn" th:href="@{/history(userId=${user.id})}">
+                  <i class="bi bi-clock-history"></i>
+                  <span>Lich su thi dau</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="cg-profile-panel" data-profile-panel="favorites" hidden>
+            <div class="cg-profile-favorites-grid" th:if="${!#lists.isEmpty(favoriteGames)}">
+              <a class="cg-profile-favorite-card"
+                 th:each="game : ${favoriteGames}"
+                 th:href="@{${game.href}}">
+                <div class="cg-profile-favorite-card__icon">
+                  <i class="bi" th:classappend="' ' + ${game.iconClass}"></i>
+                </div>
+                <div class="cg-profile-favorite-card__body">
+                  <small th:text="${game.shortLabel}">Game</small>
+                  <strong th:text="${game.displayName}">Ten game</strong>
+                  <p th:text="${game.description}">Mo ta ngan</p>
+                </div>
+              </a>
+            </div>
+            <div class="cg-profile-empty-state" th:if="${#lists.isEmpty(favoriteGames)}">
+              <div class="cg-profile-empty-state__icon">
+                <i class="bi bi-heart"></i>
+              </div>
+              <h2>Chua co tro choi yeu thich</h2>
+              <p>Mo thu vien, danh dau yeu thich va quay lai day de xem danh sach duoc dong bo.</p>
+              <a class="hub-portal-inline-btn primary" th:href="@{/games(view='favorite')}">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+                <span>Mo thu vien game</span>
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="cg-profile-meta-grid">
+    <article class="theme-box cg-profile-meta-card">
+      <span class="cg-profile-meta-card__eyebrow">Tai khoan</span>
+      <strong th:text="${user.displayName != null and !#strings.isEmpty(user.displayName) ? user.displayName : user.id}">Nguoi choi</strong>
+      <small th:text="${user.username != null and !#strings.isEmpty(user.username) ? '@' + user.username : '@' + user.id}">@player</small>
+    </article>
+    <article class="theme-box cg-profile-meta-card">
+      <span class="cg-profile-meta-card__eyebrow">Email</span>
+      <strong th:text="${user.email != null and !#strings.isEmpty(user.email) ? user.email : 'Chua cap nhat'}">mail@example.com</strong>
+      <small th:text="${user.emailConfirmed} ? 'Da xac minh' : 'Chua xac minh'">Da xac minh</small>
+    </article>
+    <article class="theme-box cg-profile-meta-card">
+      <span class="cg-profile-meta-card__eyebrow">Thong tin ca nhan</span>
+      <strong th:text="${user.gender == 'male' ? 'Nam' : (user.gender == 'female' ? 'Nu' : (user.gender == 'other' ? 'Khac' : (user.gender == 'prefer_not_to_say' ? 'Khong muon chia se' : 'Chua cap nhat')))}">Chua cap nhat</strong>
+      <small th:text="${user.birthDate != null ? 'Sinh ngay ' + user.birthDate : 'Ngay sinh chua cap nhat'}">Ngay sinh</small>
+    </article>
+  </section>
+
+  <section class="cg-profile-activity-board theme-box">
+    <div class="cg-profile-section-head">
+      <div>
+        <span class="cg-profile-section-head__eyebrow">Activity feed</span>
+        <h2>Hoat dong gan day</h2>
+      </div>
+      <a class="hub-portal-inline-btn" th:href="@{/history(userId=${user.id})}">
+        <i class="bi bi-clock-history"></i>
+        <span>Xem toan bo</span>
+      </a>
+    </div>
+
+    <div class="cg-profile-activity-board__list" th:if="${!#lists.isEmpty(recentActivity)}">
+      <article class="cg-profile-activity-card"
+               th:each="item : ${recentActivity}"
+               th:classappend="${item.resultTone == 'win'} ? ' is-win' : (${item.resultTone == 'loss'} ? ' is-loss' : ' is-draw')">
+        <div class="cg-profile-activity-card__icon">
+          <i class="bi" th:classappend="' ' + ${item.iconClass}"></i>
+        </div>
+        <div class="cg-profile-activity-card__body">
+          <div class="cg-profile-activity-card__topline">
+            <strong th:text="${item.gameName}">Game</strong>
+            <span class="cg-profile-activity-card__result" th:text="${item.resultLabel}">Thang</span>
+          </div>
+          <p th:text="${item.summary}">Tom tat tran dau</p>
+          <a th:if="${item.locationHref != null and !#strings.isEmpty(item.locationHref)}"
+             th:href="@{${item.locationHref}}"
+             class="small text-decoration-none">
+            <span th:text="${item.locationLabel}">Phong online</span>
+          </a>
+        </div>
+        <time class="cg-profile-activity-card__time"
+              th:if="${item.playedAt != null}"
+              th:text="${#temporals.format(item.playedAt, 'dd/MM/yyyy HH:mm')}">
+          26/03/2026 23:59
+        </time>
+      </article>
+    </div>
+    <div class="cg-profile-empty-state cg-profile-empty-state--compact" th:if="${#lists.isEmpty(recentActivity)}">
+      <div class="cg-profile-empty-state__icon">
+        <i class="bi bi-activity"></i>
+      </div>
+      <h2>Chua co lich su hoat dong</h2>
+      <p>Khi bat dau choi game, cac tran dau moi nhat se duoc dua vao day.</p>
+    </div>
+  </section>
+
+  <div class="row g-3">
+    <div class="col-lg-4">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
+        <div class="cg-profile-section-head cg-profile-section-head--compact">
+          <div>
+            <span class="cg-profile-section-head__eyebrow">Achievements</span>
+            <h2>Danh hieu</h2>
+          </div>
+        </div>
+        <ul class="list-group list-group-flush" th:if="${!#lists.isEmpty(danhHieu)}">
+          <li class="list-group-item" th:each="d : ${danhHieu}" th:text="${d}"></li>
+        </ul>
+        <div class="text-muted small" th:if="${#lists.isEmpty(danhHieu)}">Chua mo khoa danh hieu noi bat.</div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
+        <div class="cg-profile-section-head cg-profile-section-head--compact">
+          <div>
+            <span class="cg-profile-section-head__eyebrow">Points</span>
+            <h2>Moc diem</h2>
+          </div>
+        </div>
+        <ul class="list-group list-group-flush" th:if="${showAchievements and !#lists.isEmpty(diemAchievements)}">
+          <li class="list-group-item" th:each="a : ${diemAchievements}" th:text="${a}"></li>
+        </ul>
+        <div class="text-muted small" th:if="${!showAchievements}">Chi hien thi cho tai khoan nguoi choi.</div>
+        <div class="text-muted small" th:if="${showAchievements and #lists.isEmpty(diemAchievements)}">Chua co moc diem duoc mo.</div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
+        <div class="cg-profile-section-head cg-profile-section-head--compact">
+          <div>
+            <span class="cg-profile-section-head__eyebrow">Overall</span>
+            <h2>Thanh tuu tong</h2>
+          </div>
+        </div>
+        <ul class="list-group list-group-flush" th:if="${showAchievements and !#lists.isEmpty(overallAchievements)}">
+          <li class="list-group-item" th:each="a : ${overallAchievements}" th:text="${a}"></li>
+        </ul>
+        <div class="text-muted small" th:if="${!showAchievements}">Chi hien thi cho tai khoan nguoi choi.</div>
+        <div class="text-muted small" th:if="${showAchievements and #lists.isEmpty(overallAchievements)}">Chua co thanh tuu tong.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-1">
+    <div class="col-lg-6">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
+        <div class="cg-profile-section-head cg-profile-section-head--compact">
+          <div>
+            <span class="cg-profile-section-head__eyebrow">Per game</span>
+            <h2>Thanh tuu theo game</h2>
+          </div>
+        </div>
+        <div th:if="${showAchievements and !#maps.isEmpty(gameAchievements)}" class="d-flex flex-column gap-3">
+          <div th:each="entry : ${gameAchievements}">
+            <div class="fw-semibold mb-2 theme-text" th:text="${entry.key}">Caro</div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"
+                  th:each="achievement : ${entry.value}"
+                  th:text="${achievement}"></li>
+            </ul>
+          </div>
+        </div>
+        <div class="text-muted small" th:if="${!showAchievements}">Chi hien thi cho tai khoan nguoi choi.</div>
+        <div class="text-muted small" th:if="${showAchievements and #maps.isEmpty(gameAchievements)}">Chua co thanh tuu theo game.</div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="theme-box rounded p-3 h-100 gx-section-card">
+        <div class="cg-profile-section-head cg-profile-section-head--compact">
+          <div>
+            <span class="cg-profile-section-head__eyebrow">Repeatable</span>
+            <h2>Thanh tuu lap lai</h2>
+          </div>
+        </div>
+        <ul class="list-group list-group-flush" th:if="${showAchievements and !#maps.isEmpty(repeatAchievements)}">
+          <li class="list-group-item"
+              th:each="entry : ${repeatAchievements}"
+              th:text="${entry.key + ' x' + entry.value}"></li>
+        </ul>
+        <div class="text-muted small" th:if="${!showAchievements}">Chi hien thi cho tai khoan nguoi choi.</div>
+        <div class="text-muted small" th:if="${showAchievements and #maps.isEmpty(repeatAchievements)}">Chua co thanh tuu lap lai.</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="theme-box rounded p-3 mt-3 gx-section-card">
+    <div class="cg-profile-section-head cg-profile-section-head--compact">
+      <div>
+        <span class="cg-profile-section-head__eyebrow">Progress</span>
+        <h2>Chua mo khoa</h2>
+      </div>
+    </div>
+    <ul class="list-group list-group-flush" th:if="${showAchievements and !#lists.isEmpty(lockedAchievements)}">
+      <li class="list-group-item" th:each="a : ${lockedAchievements}" th:text="${a}"></li>
+    </ul>
+    <div class="text-muted small" th:if="${!showAchievements}">Chi hien thi cho tai khoan nguoi choi.</div>
+    <div class="text-muted small" th:if="${showAchievements and #lists.isEmpty(lockedAchievements)}">Tat ca thanh tuu da mo khoa.</div>
+  </section>
+
+  <section class="theme-box rounded p-3 mt-3 gx-section-card"
+           th:if="${isOwner}"
+           id="profileOwnerRoot">
+    <div class="cg-profile-section-head cg-profile-section-head--compact">
+      <div>
+        <span class="cg-profile-section-head__eyebrow">Control center</span>
+        <h2>Quan ly tai khoan</h2>
+      </div>
+      <div class="gx-section-card__meta">Ho so, cai dat va lich su duoc gom ve mot luong thao tac duy nhat.</div>
+    </div>
+    <p class="mb-3">
+      Cap nhat ten hien thi, email, avatar va doi mat khau hien duoc thuc hien tap trung tai trang cai dat de giao dien va API thong nhat.
+    </p>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-primary" th:href="@{/settings}">
+        <i class="bi bi-gear-fill me-1"></i> Mo cai dat tai khoan
+      </a>
+      <a class="btn theme-outline-btn" th:href="@{/history(userId=${user.id})}">
+        <i class="bi bi-clock-history me-1"></i> Xem lich su
+      </a>
+    </div>
+  </section>
+
+  <div class="gx-inline-actions">
+    <a class="btn theme-outline-btn" th:href="@{/}">Ve trang chu</a>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('profile')}"></th:block>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const root = document.getElementById('profilePageRoot');
+    const shareBtn = document.querySelector('[data-profile-share-btn]');
+    const tabs = Array.from(document.querySelectorAll('[data-profile-tab]'));
+    const panels = Array.from(document.querySelectorAll('[data-profile-panel]'));
+    const profileUrl = root?.dataset.profileUrl || window.location.pathname;
+
+    const activateTab = (name) => {
+      tabs.forEach((tab) => {
+        const active = tab.dataset.profileTab === name;
+        tab.classList.toggle('is-active', active);
+        tab.setAttribute('aria-selected', String(active));
+      });
+      panels.forEach((panel) => {
+        const active = panel.dataset.profilePanel === name;
+        panel.classList.toggle('is-active', active);
+        panel.hidden = !active;
+      });
+    };
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => activateTab(tab.dataset.profileTab));
+    });
+
+    shareBtn?.addEventListener('click', async () => {
+      const targetUrl = window.location.origin + profileUrl;
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: document.title,
+            url: targetUrl
+          });
+          return;
+        }
+      } catch (_) {
+      }
+      try {
+        await navigator.clipboard.writeText(targetUrl);
+        window.CaroUi?.toast?.('Da sao chep lien ket ho so', { type: 'success' });
+      } catch (_) {
+        window.CaroUi?.toast?.(targetUrl, { type: 'info' });
+      }
+    });
+  });
+</script>
+</body>
+</html>

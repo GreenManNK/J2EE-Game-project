@@ -103,6 +103,59 @@ class ExternalGameModuleServiceTest {
         assertTrue(service.listConfigurations().isEmpty());
     }
 
+    @Test
+    void importFromManifestUrlShouldPreserveOverrideExistingFlag() throws Exception {
+        httpServer = HttpServer.create(new InetSocketAddress(0), 0);
+        httpServer.createContext("/manifest-override.json", exchange -> {
+            String body = """
+                {
+                  "modules": [
+                    {
+                      "code": "quiz",
+                      "displayName": "Quiz Override",
+                      "runtime": "python",
+                      "sourceType": "external-api",
+                      "detailMode": "redirect",
+                      "primaryActionUrl": "https://quiz.example.com/play",
+                      "apiBaseUrl": "https://quiz.example.com/api",
+                      "overrideExisting": true
+                    }
+                  ]
+                }
+                """;
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream outputStream = exchange.getResponseBody()) {
+                outputStream.write(bytes);
+            }
+        });
+        httpServer.start();
+
+        int port = httpServer.getAddress().getPort();
+        Path registryFile = Files.createTempFile("external-module-import-url", ".json");
+        Files.deleteIfExists(registryFile);
+        ExternalGameModuleService service = new ExternalGameModuleService(
+            new ObjectMapper(),
+            registryFile,
+            Duration.ofSeconds(5),
+            Duration.ofSeconds(5),
+            HttpClient.newHttpClient()
+        );
+
+        ExternalGameModuleService.GameModuleImportResult result = service.importFromManifestUrl(
+            "http://127.0.0.1:" + port + "/manifest-override.json",
+            false
+        );
+
+        assertEquals(1, result.importedModules());
+        assertEquals(1, service.listConfigurations().size());
+        assertTrue(Boolean.TRUE.equals(service.listConfigurations().get(0).overrideExisting()));
+
+        GameCatalogService catalogService = new GameCatalogService(service);
+        assertEquals("Quiz Override", catalogService.findByCode("quiz").orElseThrow().displayName());
+    }
+
     private void handleManifest(HttpExchange exchange) throws IOException {
         String body = """
             {

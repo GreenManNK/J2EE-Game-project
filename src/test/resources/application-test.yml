@@ -14,6 +14,8 @@ spring:
 app:
   api:
     sync-key: test-sync-key
+  blackjack:
+    fixed-deck-enabled: true
   runtime:
     canonical-url:
       enforce: false

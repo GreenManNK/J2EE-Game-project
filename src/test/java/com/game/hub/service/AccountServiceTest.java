@@ -1,6 +1,7 @@
 package com.game.hub.service;
 
 import com.game.hub.entity.UserAccount;
+import com.game.hub.repository.UserAvatarBinaryRepository;
 import com.game.hub.repository.UserAccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +11,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Map;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,6 +35,8 @@ class AccountServiceTest {
     private UserAccountRepository userAccountRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserAvatarBinaryRepository userAvatarBinaryRepository;
     @MockBean
     private EmailService emailService;
 
@@ -181,6 +186,98 @@ class AccountServiceTest {
         assertFalse(updated.isShowOfflineFriendsInSidebar());
         assertFalse(updated.isAutoRefreshFriendList());
         assertEquals(30000, updated.getFriendListRefreshMs());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void linkAndUnlinkSocialProviderShouldPersistProviderIds() {
+        UserAccount user = new UserAccount();
+        user.setEmail("social-link@test.com");
+        user.setUsername("social-link@test.com");
+        user.setDisplayName("Social Link");
+        user.setPassword(passwordEncoder.encode("Pass@123"));
+        user.setEmailConfirmed(true);
+        userAccountRepository.save(user);
+
+        AccountService.ServiceResult googleLink = accountService.linkOAuth2Provider(
+            user.getId(),
+            new AccountService.OAuth2LoginRequest("google", "google-123", "social-link@test.com", "Social Link")
+        );
+        AccountService.ServiceResult facebookLink = accountService.linkOAuth2Provider(
+            user.getId(),
+            new AccountService.OAuth2LoginRequest("facebook", "facebook-456", "social-link@test.com", "Social Link")
+        );
+
+        assertTrue(googleLink.success());
+        assertTrue(facebookLink.success());
+
+        UserAccount linked = userAccountRepository.findById(user.getId()).orElseThrow();
+        assertEquals("google-123", linked.getOauthGoogleId());
+        assertEquals("facebook-456", linked.getOauthFacebookId());
+
+        AccountService.ServiceResult socialLinks = accountService.getSocialLinks(user.getId());
+        assertTrue(socialLinks.success());
+        Map<String, Object> linksPayload = (Map<String, Object>) socialLinks.data();
+        assertEquals(Map.of("linked", true), linksPayload.get("google"));
+        assertEquals(Map.of("linked", true), linksPayload.get("facebook"));
+
+        AccountService.ServiceResult unlinkGoogle = accountService.unlinkSocialProvider(user.getId(), "google");
+        assertTrue(unlinkGoogle.success());
+
+        UserAccount unlinked = userAccountRepository.findById(user.getId()).orElseThrow();
+        assertNull(unlinked.getOauthGoogleId());
+        assertEquals("facebook-456", unlinked.getOauthFacebookId());
+    }
+
+    @Test
+    void updateAvatarBinaryShouldPersistBinaryContentInDatabase() {
+        UserAccount user = new UserAccount();
+        user.setEmail("avatar-db@test.com");
+        user.setUsername("avatar-db@test.com");
+        user.setDisplayName("Avatar DB");
+        user.setPassword(passwordEncoder.encode("Pass@123"));
+        user.setEmailConfirmed(true);
+        userAccountRepository.save(user);
+
+        byte[] avatarBytes = new byte[] {10, 20, 30, 40};
+        AccountService.ServiceResult result = accountService.updateAvatarBinary(
+            user.getId(),
+            AvatarStorageService.StoreResult.ok(avatarBytes, "image/png", "avatar.png", avatarBytes.length)
+        );
+
+        assertTrue(result.success());
+
+        UserAccount updatedUser = userAccountRepository.findById(user.getId()).orElseThrow();
+        assertEquals("/account/avatar/" + user.getId(), updatedUser.getAvatarPath());
+
+        var avatarBinary = userAvatarBinaryRepository.findById(user.getId()).orElseThrow();
+        assertArrayEquals(avatarBytes, avatarBinary.getBinaryData());
+        assertEquals("image/png", avatarBinary.getContentType());
+        assertEquals("avatar.png", avatarBinary.getOriginalFileName());
+        assertEquals(avatarBytes.length, avatarBinary.getSizeBytes());
+
+        AccountService.AvatarBinaryPayload payload = accountService.getAvatarBinary(user.getId());
+        assertNotNull(payload);
+        assertArrayEquals(avatarBytes, payload.binaryData());
+        assertEquals("image/png", payload.contentType());
+        assertEquals("avatar.png", payload.originalFileName());
+    }
+
+    @Test
+    void loginShouldRejectBannedUser() {
+        UserAccount user = new UserAccount();
+        user.setEmail("banned-login@test.com");
+        user.setUsername("banned-login@test.com");
+        user.setDisplayName("Banned User");
+        user.setPassword(passwordEncoder.encode("Pass@123"));
+        user.setEmailConfirmed(true);
+        user.setBannedUntil(LocalDateTime.now().plusHours(2));
+        userAccountRepository.save(user);
+
+        AccountService.ServiceResult result = accountService.login("banned-login@test.com", "Pass@123");
+
+        assertFalse(result.success());
+        assertTrue(result.error().contains("Account banned until"));
     }
 
     @Test

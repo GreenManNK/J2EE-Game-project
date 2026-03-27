@@ -57,6 +57,97 @@ function Wait-HttpOk([string]$Url, [int]$TimeoutSeconds) {
     return $false
 }
 
+function Invoke-HttpProbe([string]$Url,
+                          [string]$AcceptHeader = "",
+                          [string]$ExpectedBodyText = "",
+                          [int]$TimeoutSeconds = 6) {
+    $headers = @{}
+    if (-not [string]::IsNullOrWhiteSpace($AcceptHeader)) {
+        $headers["Accept"] = $AcceptHeader
+    }
+    # Browser-like UA helps avoid edge-specific behavior differences on public HTML routes.
+    $headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+
+    try {
+        $res = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec $TimeoutSeconds -Headers $headers -MaximumRedirection 5
+        $body = [string]$res.Content
+        $statusOk = ($res.StatusCode -ge 200 -and $res.StatusCode -lt 400)
+        $bodyOk = [string]::IsNullOrWhiteSpace($ExpectedBodyText) -or (($body -like ("*" + $ExpectedBodyText + "*")))
+        $bodySnippet = if ([string]::IsNullOrWhiteSpace($body)) {
+            ""
+        } elseif ($body.Length -gt 200) {
+            $body.Substring(0, 200)
+        } else {
+            $body
+        }
+        return @{
+            ok = ($statusOk -and $bodyOk)
+            statusCode = [int]$res.StatusCode
+            bodyMatched = $bodyOk
+            bodySnippet = ($bodySnippet -replace "\s+", " ").Trim()
+            error = ""
+        }
+    } catch {
+        $statusCode = 0
+        try {
+            if ($_.Exception.Response -and $_.Exception.Response.StatusCode) {
+                $statusCode = [int]$_.Exception.Response.StatusCode
+            }
+        } catch {
+        }
+        return @{
+            ok = $false
+            statusCode = $statusCode
+            bodyMatched = $false
+            bodySnippet = ""
+            error = $_.Exception.Message
+        }
+    }
+}
+
+function Wait-HttpProbe([string]$Url,
+                        [int]$TimeoutSeconds,
+                        [string]$AcceptHeader = "",
+                        [string]$ExpectedBodyText = "") {
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $lastProbe = @{
+        ok = $false
+        statusCode = 0
+        bodyMatched = $false
+        bodySnippet = ""
+        error = "No probe executed"
+    }
+    while ((Get-Date) -lt $deadline) {
+        $lastProbe = Invoke-HttpProbe -Url $Url -AcceptHeader $AcceptHeader -ExpectedBodyText $ExpectedBodyText
+        if ($lastProbe.ok) {
+            return $lastProbe
+        }
+        Start-Sleep -Milliseconds 900
+    }
+    return $lastProbe
+}
+
+function Format-ProbeDiagnostic([hashtable]$Probe, [string]$Url) {
+    if ($null -eq $Probe) {
+        return ("url={0}; status=unknown; error=no-probe" -f $Url)
+    }
+    $parts = New-Object System.Collections.Generic.List[string]
+    $parts.Add(("url={0}" -f $Url)) | Out-Null
+    if ($Probe.ContainsKey("statusCode") -and [int]$Probe["statusCode"] -gt 0) {
+        $parts.Add(("status={0}" -f $Probe["statusCode"])) | Out-Null
+    }
+    if ($Probe.ContainsKey("error") -and -not [string]::IsNullOrWhiteSpace([string]$Probe["error"])) {
+        $parts.Add(("error={0}" -f ([string]$Probe["error"]))) | Out-Null
+    }
+    if ($Probe.ContainsKey("bodyMatched")) {
+        $parts.Add(("bodyMatched={0}" -f ([int][bool]$Probe["bodyMatched"]))) | Out-Null
+    }
+    if ($Probe.ContainsKey("bodySnippet") -and -not [string]::IsNullOrWhiteSpace([string]$Probe["bodySnippet"])) {
+        $parts.Add(("body={0}" -f ([string]$Probe["bodySnippet"]))) | Out-Null
+    }
+    return ($parts -join "; ")
+}
+
 function Test-CommandExists([string]$Name) {
     return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
 }
@@ -323,14 +414,21 @@ try {
     $localGameUrl = "http://127.0.0.1:$Port/Game"
     $localPingUrl = "http://127.0.0.1:$Port/Game/api/connectivity/ping"
     $localWsInfoUrl = "http://127.0.0.1:$Port/Game/ws/info?t=1"
+    $localPageUrl = $localGameUrl
     $localAppOk = Wait-HttpOk -Url $localPingUrl -TimeoutSeconds $WaitSeconds
     $localWsOk = Wait-HttpOk -Url $localWsInfoUrl -TimeoutSeconds 10
+    $pageMarker = 'name="app-context-path"'
+    $localPageProbe = Wait-HttpProbe -Url $localPageUrl -TimeoutSeconds 20 -AcceptHeader "text/html,application/xhtml+xml" -ExpectedBodyText $pageMarker
+    $localPageOk = [bool]$localPageProbe.ok
 
     if (-not $localAppOk) {
         throw "App local khong san sang tai $localPingUrl"
     }
     if (-not $localWsOk) {
         throw "WebSocket endpoint local khong san sang tai $localWsInfoUrl"
+    }
+    if (-not $localPageOk) {
+        throw ("Trang landing local bi loi hoac khong truy cap duoc: {0} ({1})" -f $localPageUrl, (Format-ProbeDiagnostic -Probe $localPageProbe -Url $localPageUrl))
     }
 
     $resolvedTunnelMode = $TunnelMode
@@ -479,7 +577,9 @@ try {
     $publicProbeTimeoutSeconds = [Math]::Max($WaitSeconds, 75)
     $publicGameOk = Wait-HttpOk -Url $publicPingUrl -TimeoutSeconds $publicProbeTimeoutSeconds
     $publicWsOk = Wait-HttpOk -Url $publicWsInfoUrl -TimeoutSeconds ([Math]::Max(20, [Math]::Min(120, $publicProbeTimeoutSeconds + 15)))
-    $publicPageOk = Wait-HttpOk -Url $publicGameUrl -TimeoutSeconds 12
+    $publicPageProbeTimeoutSeconds = [Math]::Max(30, [Math]::Min(150, $publicProbeTimeoutSeconds + 20))
+    $publicPageProbe = Wait-HttpProbe -Url $publicGameUrl -TimeoutSeconds $publicPageProbeTimeoutSeconds -AcceptHeader "text/html,application/xhtml+xml" -ExpectedBodyText $pageMarker
+    $publicPageOk = [bool]$publicPageProbe.ok
     $tunnelPidCheckFile = switch ($resolvedTunnelMode) {
         "named" { $namedTunnelPidFile }
         "quick" { $tunnelPidFile }
@@ -522,6 +622,13 @@ try {
             throw "Tunnel URL public truy cap duoc web nhung endpoint ws/info chua san sang: $publicWsInfoUrl"
         }
     }
+    if (-not $publicPageOk) {
+        $pageHint = ""
+        if ($resolvedTunnelMode -eq "quick" -and $tunnelAlive -and $appAlive) {
+            $pageHint = " Quick tunnel/app van dang chay; day thuong la warm-up/edge delay, khong phai app da chet."
+        }
+        throw ("Tunnel URL public da tao nhung landing page khong render duoc: {0} ({1}){2}" -f $publicGameUrl, (Format-ProbeDiagnostic -Probe $publicPageProbe -Url $publicGameUrl), $pageHint)
+    }
 
     $publicUrlLines = @(
         "# Auto-generated by scripts/runtime/start-remote-public-session.ps1"
@@ -547,6 +654,7 @@ try {
     Write-Output "PUBLIC_PING_URL=$publicPingUrl"
     Write-Output "LOCAL_GAME_OK=$([int]$localAppOk)"
     Write-Output "LOCAL_WS_OK=$([int]$localWsOk)"
+    Write-Output "LOCAL_PAGE_OK=$([int]$localPageOk)"
     Write-Output "PUBLIC_DNS_PUBLIC_OK=$([int]$publicDnsOkOnPublicResolvers)"
     Write-Output "PUBLIC_DNS_LOCAL_OK=$([int]$publicDnsOkOnSystemResolver)"
     Write-Output "PUBLIC_GAME_OK=$([int]$publicGameOk)"

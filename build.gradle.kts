@@ -22,6 +22,18 @@ java {
     }
 }
 
+sourceSets {
+    named("main") {
+        java.setSrcDirs(listOf("src/main/backend/java"))
+        resources.setSrcDirs(
+            listOf(
+                "src/main/backend/resources",
+                "src/main/frontend",
+            )
+        )
+    }
+}
+
 configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())

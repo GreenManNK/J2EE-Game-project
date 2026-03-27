@@ -75,8 +75,9 @@ class GameCatalogControllerTest {
     void roomsShouldForwardSharedHubForGamesUsingSharedRoomPage() {
         GameCatalogController controller = new GameCatalogController(new GameCatalogService());
 
-        assertEquals("forward:/online-hub?game=caro&roomId=CARO-1", controller.rooms("caro", "CARO-1"));
-        assertEquals("forward:/online-hub?game=chess&roomId=CHESS-1", controller.rooms("chess", "CHESS-1"));
+        assertEquals("redirect:/game/room/CARO-1", controller.rooms("caro", "CARO-1"));
+        assertEquals("redirect:/chess/online/room/CHESS-1", controller.rooms("chess", "CHESS-1"));
+        assertEquals("redirect:/xiangqi/online/room/XQ-1", controller.rooms("xiangqi", "XQ-1"));
         assertEquals("forward:/online-hub?game=minesweeper&roomId=MINE-1", controller.rooms("minesweeper", "MINE-1"));
     }
 

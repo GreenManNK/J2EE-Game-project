@@ -249,14 +249,14 @@ Tai lieu chi tiet: [docs/ACCOUNT_SYNC_API.md](docs/ACCOUNT_SYNC_API.md)
 
 | Thu muc | Vai tro |
 | --- | --- |
-| `src/main/java/com/game/hub/config` | Security, datasource, WebSocket, MVC |
-| `src/main/java/com/game/hub/controller` | Page controller, API controller, admin, social, catalog |
-| `src/main/java/com/game/hub/games` | Tung game/module rieng |
-| `src/main/java/com/game/hub/service` | Service layer, catalog, external modules, achievements |
-| `src/main/java/com/game/hub/repository` | JPA repository |
-| `src/main/java/com/game/hub/entity` | Entity DB |
-| `src/main/resources/templates` | Thymeleaf pages |
-| `src/main/resources/static` | CSS, JS, images, PWA assets |
+| `src/main/backend/java/com/game/hub/config` | Security, datasource, WebSocket, MVC |
+| `src/main/backend/java/com/game/hub/controller` | Page controller, API controller, admin, social, catalog |
+| `src/main/backend/java/com/game/hub/games` | Tung game/module rieng |
+| `src/main/backend/java/com/game/hub/service` | Service layer, catalog, external modules, achievements |
+| `src/main/backend/java/com/game/hub/repository` | JPA repository |
+| `src/main/backend/java/com/game/hub/entity` | Entity DB |
+| `src/main/frontend/templates` | Thymeleaf pages |
+| `src/main/frontend/static` | CSS, JS, images, PWA assets |
 | `src/test/java` | Unit test, MVC test, integration test, websocket test |
 | `scripts` | launcher, build, runtime, tunnel, env bootstrap |
 | `docs` | tai lieu van hanh, account sync, deploy, external module |
@@ -281,8 +281,8 @@ Tai lieu chi tiet: [docs/ACCOUNT_SYNC_API.md](docs/ACCOUNT_SYNC_API.md)
 
 Main config:
 
-- [src/main/resources/application.yml](src/main/resources/application.yml)
-- [src/main/resources/application-prod.yml](src/main/resources/application-prod.yml)
+- [src/main/backend/resources/application.yml](src/main/backend/resources/application.yml)
+- [src/main/backend/resources/application-prod.yml](src/main/backend/resources/application-prod.yml)
 
 ## 11. Cach chay nhanh
 
@@ -347,10 +347,10 @@ Neu ban moi vao du an, thu tu doc/soi code nen la:
 
 1. Doc file `QUAN TRONG ( Phai doc ).md` nay de nam pham vi chung.
 2. Doc `docs/HUONG_DAN_CHAY_THU_CONG.md` de chay du an.
-3. Doc `src/main/resources/application.yml` de nam env/runtime.
-4. Doc `src/main/java/com/game/hub/controller/HomeController.java` va `GameCatalogController.java` de nam flow storefront + catalog.
-5. Doc game module ma ban sap sua trong `src/main/java/com/game/hub/games/...`.
-6. Doc template cung ten trong `src/main/resources/templates/...`.
+3. Doc `src/main/backend/resources/application.yml` de nam env/runtime.
+4. Doc `src/main/backend/java/com/game/hub/controller/HomeController.java` va `GameCatalogController.java` de nam flow storefront + catalog.
+5. Doc game module ma ban sap sua trong `src/main/backend/java/com/game/hub/games/...`.
+6. Doc template cung ten trong `src/main/frontend/templates/...`.
 7. Chay test lien quan truoc khi sua.
 
 ## 13. Cac diem can luu y khi tiep tuc phat trien
@@ -540,3 +540,4 @@ Neu can xem lich su day du hon nua, co the chay:
 ```powershell
 git log --date=short --pretty=format:"- %ad `%h` %s"
 ```
+

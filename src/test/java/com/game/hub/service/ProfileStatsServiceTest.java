@@ -31,8 +31,15 @@ class ProfileStatsServiceTest {
         UserAccount user = new UserAccount();
         user.setId("user-1");
         user.setDisplayName("Player One");
+        user.setGamesBrowserFavoritesJson("[\"caro\",\"quiz\"]");
 
         GameHistory win = new GameHistory();
+        win.setId(15L);
+        win.setGameCode("caro");
+        win.setMatchCode("Normal_ABC123-1743041234567");
+        win.setRoomId("Normal_ABC123");
+        win.setLocationLabel("Phong thuong Caro");
+        win.setLocationPath("/game/room/Normal_ABC123");
         win.setPlayer1Id("user-1");
         win.setPlayer2Id("user-2");
         win.setWinnerId("user-1");
@@ -74,6 +81,15 @@ class ProfileStatsServiceTest {
         assertTrue(lockedAchievements.contains("Winner - Chess"));
         assertTrue(lockedAchievements.contains("Bao trum Game Hub"));
         assertEquals(Boolean.TRUE, profile.get("showAchievements"));
+        assertEquals(2, profile.get("favoriteGameCount"));
+        assertEquals(1, profile.get("currentStreak"));
+
+        @SuppressWarnings("unchecked")
+        List<ProfileStatsService.ActivityItem> recentActivity =
+            (List<ProfileStatsService.ActivityItem>) profile.get("recentActivity");
+        assertEquals("Normal_ABC123-1743041234567", recentActivity.get(0).matchCode());
+        assertEquals("Phong thuong Caro", recentActivity.get(0).locationLabel());
+        assertEquals("/game/room/Normal_ABC123", recentActivity.get(0).locationHref());
     }
 
     @Test

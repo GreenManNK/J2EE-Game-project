@@ -1,0 +1,807 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Thu vien game')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games')}"></div>
+
+<main class="cg-browser-page">
+  <section class="hub-portal-panel cg-browser-hero">
+    <div class="cg-browser-hero__main">
+      <div class="cg-chip-row">
+        <span class="cg-chip is-live"><i class="bi bi-check-circle-fill"></i> <span th:text="${#lists.size(games)} + ' game san sang'">0 game san sang</span></span>
+        <span class="cg-chip"><i class="bi bi-lightning-charge-fill"></i> Vao game ngay tren browser</span>
+        <span class="cg-chip"><i class="bi bi-collection-play-fill"></i> Lane ngang + detail page</span>
+        <span class="cg-chip"><i class="bi bi-people-fill"></i> Online / local / bot</span>
+      </div>
+
+      <h1 class="cg-title">Thu vien game: tim nhanh, loc nhanh, vao choi ngay</h1>
+      <p class="cg-subtitle">Chon game, doi mode va nhay thang vao lobby hoac ban choi ma khong can qua nhieu man hinh dem.</p>
+
+      <div class="cg-browser-controls">
+        <label class="cg-control" aria-label="Tim game">
+          <i class="bi bi-search"></i>
+          <input id="gamesBrowserSearch" type="text" placeholder="Tim kiem tro choi va danh muc">
+        </label>
+
+        <label class="cg-control" aria-label="Sap xep">
+          <span>Sap xep</span>
+          <select id="gamesBrowserSort">
+            <option value="smart">De xuat</option>
+            <option value="popular">Pho bien</option>
+            <option value="new">Moi cap nhat</option>
+            <option value="favorite">Yeu thich truoc</option>
+            <option value="az">Ten A-Z</option>
+          </select>
+        </label>
+
+        <label class="cg-control" aria-label="Bo loc yeu thich">
+          <span>Loc</span>
+          <select id="gamesBrowserFilter">
+            <option value="all">Tat ca</option>
+            <option value="favorite">Chi yeu thich</option>
+          </select>
+        </label>
+
+        <button id="gamesClearRecentBtn" type="button" class="btn theme-outline-btn">Xoa gan day</button>
+      </div>
+
+      <div class="cg-browser-hero__actions">
+        <a th:href="@{/games/caro}" class="hub-portal-inline-btn primary">Spotlight Caro</a>
+        <a th:href="@{/games/chess}" class="hub-portal-inline-btn">Co vua</a>
+        <a th:href="@{/games/monopoly}" class="hub-portal-inline-btn">Co ty phu</a>
+        <a th:href="@{/games/cards}" class="hub-portal-inline-btn">Danh bai</a>
+        <a th:href="@{/games/cards/blackjack}" class="hub-portal-inline-btn">Blackjack</a>
+        <a th:href="@{/games/puzzle}" class="hub-portal-inline-btn">Puzzle</a>
+      </div>
+    </div>
+
+    <aside class="cg-browser-hero__side">
+      <section class="cg-browser-spotlight" aria-label="Spotlight catalog">
+        <div class="cg-browser-spotlight__topbar">
+          <span class="cg-browser-spotlight__pill is-live"><i class="bi bi-broadcast"></i> Featured</span>
+          <span class="cg-browser-spotlight__pill"><i class="bi bi-stars"></i> Discovery</span>
+        </div>
+
+        <div class="cg-browser-spotlight__screen">
+          <div class="cg-browser-spotlight__eyebrow">Quick launch</div>
+          <h2>Hub game day du mode</h2>
+          <p>Tu khu game tri tue toi board game va blackjack, tat ca diem vao chinh da duoc dat lai de nhay nhanh vao dung game.</p>
+
+          <div class="cg-browser-spotlight__mini-grid" aria-hidden="true">
+            <div class="cg-browser-spotlight__mini is-accent">
+              <i class="bi bi-grid-3x3-gap-fill"></i>
+              <span>Caro</span>
+            </div>
+            <div class="cg-browser-spotlight__mini">
+              <i class="bi bi-activity"></i>
+              <span>Chess</span>
+            </div>
+            <div class="cg-browser-spotlight__mini">
+              <i class="bi bi-suit-spade-fill"></i>
+              <span>Cards</span>
+            </div>
+            <div class="cg-browser-spotlight__mini">
+              <i class="bi bi-suit-club-fill"></i>
+              <span>Blackjack</span>
+            </div>
+            <div class="cg-browser-spotlight__mini">
+              <i class="bi bi-bank"></i>
+              <span>Monopoly</span>
+            </div>
+            <div class="cg-browser-spotlight__mini">
+              <i class="bi bi-puzzle-fill"></i>
+              <span>Puzzle</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cg-browser-spotlight__stats">
+          <div class="cg-browser-spotlight__stat">
+            <span>Primary flow</span>
+            <strong>Detail -> mode -> play</strong>
+          </div>
+          <div class="cg-browser-spotlight__stat">
+            <span>Signals</span>
+            <strong>Favorite + recent + popularity</strong>
+          </div>
+          <div class="cg-browser-spotlight__stat">
+            <span>Layout</span>
+            <strong>6 diem vao nhanh + lane ngang</strong>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </section>
+
+  <section id="gamesQuickState" class="cg-browser-state-grid">
+    <article class="hub-portal-panel cg-browser-state-card">
+      <div class="cg-browser-state-card__head">
+        <div>
+          <span class="cg-browser-state-card__eyebrow">Library memory</span>
+          <h2>Yeu thich</h2>
+        </div>
+        <small id="gamesFavoriteCount" class="text-muted">0</small>
+      </div>
+      <div id="gamesFavoriteList" class="cg-browser-pill-list"></div>
+    </article>
+
+    <article class="hub-portal-panel cg-browser-state-card">
+      <div class="cg-browser-state-card__head">
+        <div>
+          <span class="cg-browser-state-card__eyebrow">Continue</span>
+          <h2>Gan day</h2>
+        </div>
+        <small id="gamesRecentCount" class="text-muted">0</small>
+      </div>
+      <div id="gamesRecentList" class="cg-browser-pill-list"></div>
+    </article>
+
+    <article class="hub-portal-panel cg-browser-state-card">
+      <div class="cg-browser-state-card__head">
+        <div>
+          <span class="cg-browser-state-card__eyebrow">Fast browse</span>
+          <h2>Dieu huong nhanh</h2>
+        </div>
+        <small class="text-muted">6 diem vao nhanh</small>
+      </div>
+      <div class="cg-browser-shortcuts">
+        <a th:href="@{/games/caro}" class="cg-browser-shortcut" data-code="caro">
+          <i class="bi bi-grid-3x3-gap-fill"></i>
+          <span>Caro</span>
+        </a>
+        <a th:href="@{/games/chess}" class="cg-browser-shortcut" data-code="chess">
+          <i class="bi bi-activity"></i>
+          <span>Co vua</span>
+        </a>
+        <a th:href="@{/games/cards}" class="cg-browser-shortcut" data-code="cards">
+          <i class="bi bi-suit-spade-fill"></i>
+          <span>Danh bai</span>
+        </a>
+        <a th:href="@{/games/cards/blackjack}" class="cg-browser-shortcut" data-code="blackjack">
+          <i class="bi bi-suit-club-fill"></i>
+          <span>Blackjack</span>
+        </a>
+        <a th:href="@{/games/puzzle}" class="cg-browser-shortcut" data-code="puzzle">
+          <i class="bi bi-puzzle-fill"></i>
+          <span>Puzzle</span>
+        </a>
+        <a th:href="@{/games/monopoly}" class="cg-browser-shortcut" data-code="monopoly">
+          <i class="bi bi-bank"></i>
+          <span>Co ty phu</span>
+        </a>
+      </div>
+    </article>
+  </section>
+
+  <section class="hub-portal-panel cg-browser-state-card">
+    <div class="cg-section-head">
+      <div>
+        <h2>Feature grid</h2>
+        <small>Khoi card lon de mo thu vien theo nhac CrazyGames-inspired</small>
+      </div>
+      <a th:href="@{/}" class="hub-portal-inline-btn">Ve home</a>
+    </div>
+
+    <div class="cg-home-recommended-grid">
+      <a th:each="g,st : ${games}"
+         th:if="${g.code == 'caro' or g.code == 'chess' or g.code == 'cards' or g.code == 'blackjack' or g.code == 'puzzle' or g.code == 'monopoly'}"
+         th:href="@{'/games/' + ${g.code}}"
+         class="cg-recommended-card"
+         th:classappend="${g.code == 'caro'} ? ' is-feature' : (${g.code == 'monopoly'} ? ' is-wide' : '')"
+         th:attr="data-code=${g.code}">
+        <span class="cg-recommended-card__badge"
+              th:text="${g.supportsOnline} ? 'Online' : (g.supportsGuest ? 'Quick play' : 'Featured')">Featured</span>
+        <div class="cg-recommended-card__icon">
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-recommended-card__body">
+          <small th:text="${g.shortLabel}">Game</small>
+          <h2 th:text="${g.displayName}">Game</h2>
+          <p th:text="${g.description}">Mo ta</p>
+        </div>
+        <div class="cg-recommended-card__meta">
+          <span th:if="${g.supportsOnline}"><i class="bi bi-wifi"></i> Online</span>
+          <span th:if="${g.supportsOffline}"><i class="bi bi-display"></i> Local</span>
+          <span th:if="${g.supportsGuest}"><i class="bi bi-lightning-charge-fill"></i> Guest</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="cg-lane" data-lane-section>
+    <header class="cg-lane-head">
+      <h2>De xuat danh cho ban</h2>
+      <a th:href="@{/games}" class="cg-lane-more">Xem them</a>
+    </header>
+    <div class="cg-lane-track" data-lane-track>
+      <article class="cg-tile"
+               th:each="g,st : ${games}"
+               th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' || g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 70 : 35) + (g.supportsOnline ? 18 : 0) + (20 - st.index)},data-online=${g.supportsOnline},data-original=${!g.externalSource}">
+        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+          <span class="cg-tile-badge" th:text="${g.availableNow} ? 'San sang' : 'Sap co'">San sang</span>
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-tile-body">
+          <h3 th:text="${g.displayName}">Game</h3>
+          <p th:text="${g.description}">Mo ta game</p>
+          <div class="cg-tile-actions">
+            <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
+            <a th:if="${g.hasPrimaryAction() and !g.primaryActionIsExternal()}"
+               th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary">Choi</a>
+            <a th:if="${g.hasPrimaryAction() and g.primaryActionIsExternal()}"
+               th:href="${g.primaryActionUrl}"
+               target="_blank"
+               rel="noopener"
+               class="hub-portal-inline-btn primary">Choi</a>
+            <button type="button"
+                    class="hub-portal-inline-btn js-favorite-toggle"
+                    th:attr="data-game-code=${g.code},data-game-name=${g.displayName}">
+              <i class="bi bi-star"></i> Yeu thich
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="cg-lane" data-lane-section>
+    <header class="cg-lane-head">
+      <h2>Truc tuyen</h2>
+      <a th:href="@{/games/caro/rooms}" class="cg-lane-more">Xem them</a>
+    </header>
+    <div class="cg-lane-track" data-lane-track>
+      <article class="cg-tile"
+               th:each="g : ${games}"
+               th:if="${g.supportsOnline}"
+               th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' || g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 85 : 45)},data-online=${g.supportsOnline},data-original=${!g.externalSource}">
+        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+          <span class="cg-tile-badge">Truc tuyen</span>
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-tile-body">
+          <h3 th:text="${g.displayName}">Game</h3>
+          <p th:text="${g.description}">Mo ta game</p>
+          <div class="cg-tile-actions">
+            <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
+            <a th:if="${g.hasPrimaryAction() and !g.primaryActionIsExternal()}"
+               th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary">Choi</a>
+            <a th:if="${g.hasPrimaryAction() and g.primaryActionIsExternal()}"
+               th:href="${g.primaryActionUrl}"
+               target="_blank"
+               rel="noopener"
+               class="hub-portal-inline-btn primary">Choi</a>
+            <button type="button"
+                    class="hub-portal-inline-btn js-favorite-toggle"
+                    th:attr="data-game-code=${g.code},data-game-name=${g.displayName}">
+              <i class="bi bi-star"></i> Yeu thich
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="cg-lane" data-lane-section>
+    <header class="cg-lane-head">
+      <h2>Co dien va chien thuat</h2>
+      <a th:href="@{/games/chess}" class="cg-lane-more">Xem them</a>
+    </header>
+    <div class="cg-lane-track" data-lane-track>
+      <article class="cg-tile"
+               th:each="g : ${games}"
+               th:if="${g.code == 'caro' or g.code == 'chess' or g.code == 'xiangqi' or g.code == 'monopoly' or g.code == 'puzzle'}"
+               th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' or g.code == 'monopoly' ? 2026 : 2025},data-popularity=${(g.availableNow ? 74 : 40) + (g.supportsOnline ? 10 : 0)},data-online=${g.supportsOnline},data-original=${!g.externalSource}">
+        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+          <span class="cg-tile-badge">Noi bat</span>
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-tile-body">
+          <h3 th:text="${g.displayName}">Game</h3>
+          <p th:text="${g.description}">Mo ta game</p>
+          <div class="cg-tile-actions">
+            <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
+            <a th:if="${g.hasPrimaryAction() and !g.primaryActionIsExternal()}"
+               th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary">Choi</a>
+            <a th:if="${g.hasPrimaryAction() and g.primaryActionIsExternal()}"
+               th:href="${g.primaryActionUrl}"
+               target="_blank"
+               rel="noopener"
+               class="hub-portal-inline-btn primary">Choi</a>
+            <button type="button"
+                    class="hub-portal-inline-btn js-favorite-toggle"
+                    th:attr="data-game-code=${g.code},data-game-name=${g.displayName}">
+              <i class="bi bi-star"></i> Yeu thich
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="cg-lane" data-lane-section>
+    <header class="cg-lane-head">
+      <h2>Danh bai va game nhanh</h2>
+      <a th:href="@{/games/cards}" class="cg-lane-more">Xem them</a>
+    </header>
+    <div class="cg-lane-track" data-lane-track>
+      <article class="cg-tile"
+               th:each="g : ${games}"
+               th:if="${g.code == 'cards' or g.code == 'blackjack' or g.code == 'puzzle' or g.code == 'quiz' or g.code == 'typing' or g.code == 'minesweeper'}"
+               th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' or g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 65 : 42) + (g.supportsGuest ? 12 : 0)},data-online=${g.supportsOnline},data-original=${!g.externalSource}">
+        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+          <span class="cg-tile-badge">Moi</span>
+          <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
+        </div>
+        <div class="cg-tile-body">
+          <h3 th:text="${g.displayName}">Game</h3>
+          <p th:text="${g.description}">Mo ta game</p>
+          <div class="cg-tile-actions">
+            <a th:href="@{'/games/' + ${g.code}}" class="hub-portal-inline-btn">Chi tiet</a>
+            <a th:if="${g.hasPrimaryAction() and !g.primaryActionIsExternal()}"
+               th:href="@{${g.primaryActionUrl}}"
+               class="hub-portal-inline-btn primary">Choi</a>
+            <a th:if="${g.hasPrimaryAction() and g.primaryActionIsExternal()}"
+               th:href="${g.primaryActionUrl}"
+               target="_blank"
+               rel="noopener"
+               class="hub-portal-inline-btn primary">Choi</a>
+            <button type="button"
+                    class="hub-portal-inline-btn js-favorite-toggle"
+                    th:attr="data-game-code=${g.code},data-game-name=${g.displayName}">
+              <i class="bi bi-star"></i> Yeu thich
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <div id="gamesBrowserEmpty" class="cg-market-empty" hidden>Khong co game phu hop voi tu khoa hien tai.</div>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games')}"/>
+<script th:inline="javascript">
+  document.addEventListener('DOMContentLoaded', () => {
+    const FAVORITES_KEY = 'caroFavoriteGames.v1';
+    const RECENT_KEY = 'caroRecentlyPlayedGames.v1';
+    const RECENT_MAX_ITEMS = 20;
+
+    const toAppPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+      ? window.CaroUrl.path
+      : ((value) => value);
+    const ui = window.CaroUi || {};
+    const gamesBrowserApi = window.CaroGamesBrowserState || {};
+    const guestData = window.CaroGuestData || {};
+    const userStore = window.CaroUser || {};
+
+    const searchInput = document.getElementById('gamesBrowserSearch');
+    const sortSelect = document.getElementById('gamesBrowserSort');
+    const filterSelect = document.getElementById('gamesBrowserFilter');
+    const clearRecentBtn = document.getElementById('gamesClearRecentBtn');
+    const favoriteListEl = document.getElementById('gamesFavoriteList');
+    const recentListEl = document.getElementById('gamesRecentList');
+    const favoriteCountEl = document.getElementById('gamesFavoriteCount');
+    const recentCountEl = document.getElementById('gamesRecentCount');
+
+    const tracks = Array.from(document.querySelectorAll('[data-lane-track]'));
+    const emptyState = document.getElementById('gamesBrowserEmpty');
+    const allTiles = Array.from(document.querySelectorAll('.cg-tile'));
+    const favoriteButtons = Array.from(document.querySelectorAll('.js-favorite-toggle'));
+    let lastSaveErrorAt = 0;
+
+    if (tracks.length === 0) {
+      return;
+    }
+
+    const normalizeCode = (value) => String(value || '').trim().toLowerCase();
+    const normalizeName = (value, fallback) => {
+      const txt = String(value || '').trim();
+      return txt || String(fallback || '').trim() || 'Game';
+    };
+    const parseJsonArray = (key, fallback) => {
+      try {
+        const raw = window.localStorage.getItem(key);
+        if (!raw) {
+          return fallback;
+        }
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : fallback;
+      } catch (_) {
+        return fallback;
+      }
+    };
+    const writeJsonArray = (key, value) => {
+      try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+      } catch (_) {
+      }
+    };
+
+    const getCurrentUser = () => {
+      if (!userStore || typeof userStore.get !== 'function') {
+        return null;
+      }
+      return userStore.get();
+    };
+    const isAccountMode = () => {
+      const current = getCurrentUser();
+      return !!(current && current.userId);
+    };
+    const normalizeRecentGames = (value) => {
+      if (!Array.isArray(value)) {
+        return [];
+      }
+      const list = [];
+      const seen = new Set();
+      value.forEach((item) => {
+        const code = normalizeCode(item && item.code);
+        if (!code || seen.has(code)) {
+          return;
+        }
+        seen.add(code);
+        list.push({
+          code: code,
+          name: normalizeName(item && item.name, code),
+          at: Number.isFinite(Number(item && item.at)) ? Number(item && item.at) : Date.now()
+        });
+      });
+      return list.slice(0, RECENT_MAX_ITEMS);
+    };
+    const readLocalGamesBrowserState = () => ({
+      favorites: parseJsonArray(FAVORITES_KEY, [])
+        .map((item) => normalizeCode(item))
+        .filter(Boolean),
+      recentGames: normalizeRecentGames(parseJsonArray(RECENT_KEY, []))
+    });
+    const favoriteSet = new Set();
+    let recentGames = [];
+
+    const applyGamesBrowserState = (state) => {
+      const safeState = state && typeof state === 'object' ? state : {};
+      favoriteSet.clear();
+      (Array.isArray(safeState.favorites) ? safeState.favorites : []).forEach((item) => {
+        const code = normalizeCode(item);
+        if (code) {
+          favoriteSet.add(code);
+        }
+      });
+      recentGames = normalizeRecentGames(safeState.recentGames);
+    };
+
+    const buildGamesBrowserStatePayload = () => ({
+      favorites: Array.from(favoriteSet),
+      recentGames: normalizeRecentGames(recentGames)
+    });
+
+    const reportSaveError = () => {
+      const now = Date.now();
+      if (now - lastSaveErrorAt < 3000) {
+        return;
+      }
+      lastSaveErrorAt = now;
+      ui.toast?.('Khong the luu danh sach game theo tai khoan', { type: 'danger' });
+    };
+
+    const persistGamesBrowserState = (options) => {
+      if (!isAccountMode()) {
+        const payload = buildGamesBrowserStatePayload();
+        writeJsonArray(FAVORITES_KEY, payload.favorites);
+        writeJsonArray(RECENT_KEY, payload.recentGames);
+        return Promise.resolve(true);
+      }
+      if (!gamesBrowserApi || typeof gamesBrowserApi.save !== 'function') {
+        reportSaveError();
+        return Promise.resolve(false);
+      }
+      const opts = options || {};
+      return Promise.resolve(
+        gamesBrowserApi.save(buildGamesBrowserStatePayload(), false, { keepalive: opts.keepalive === true })
+      ).then((ok) => {
+        if (!ok && opts.keepalive !== true) {
+          reportSaveError();
+        }
+        return !!ok;
+      }).catch(() => {
+        if (opts.keepalive !== true) {
+          reportSaveError();
+        }
+        return false;
+      });
+    };
+
+    const loadInitialGamesBrowserState = async () => {
+      if (!isAccountMode()) {
+        applyGamesBrowserState(readLocalGamesBrowserState());
+        return;
+      }
+
+      try {
+        if (typeof guestData.migrateToAccount === 'function') {
+          await guestData.migrateToAccount();
+        }
+      } catch (_) {
+      }
+
+      try {
+        if (typeof gamesBrowserApi.get === 'function') {
+          const remoteState = await gamesBrowserApi.get();
+          if (remoteState && typeof remoteState === 'object') {
+            applyGamesBrowserState(remoteState);
+            return;
+          }
+        }
+      } catch (_) {
+      }
+
+      applyGamesBrowserState({ favorites: [], recentGames: [] });
+    };
+
+    const catalogByCode = new Map();
+    allTiles.forEach((tile) => {
+      const code = normalizeCode(tile.dataset.code);
+      if (!code || catalogByCode.has(code)) {
+        return;
+      }
+      const name = normalizeName(tile.dataset.name, code);
+      const detailLink = tile.querySelector('.cg-tile-actions a[href]');
+      const href = detailLink ? detailLink.getAttribute('href') : ('/games/' + code);
+      catalogByCode.set(code, { code, name, href: toAppPath(href) });
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryFromUrl = String(urlParams.get('q') || '').trim();
+    const viewFromUrl = String(urlParams.get('view') || '').trim().toLowerCase();
+    let queryFromGlobal = '';
+    try {
+      queryFromGlobal = String(window.sessionStorage.getItem('caroGlobalGameSearchQuery') || '').trim();
+      if (queryFromGlobal) {
+        window.sessionStorage.removeItem('caroGlobalGameSearchQuery');
+      }
+    } catch (_) {
+      queryFromGlobal = '';
+    }
+
+    const initialQuery = queryFromUrl || queryFromGlobal;
+    if (searchInput && initialQuery) {
+      searchInput.value = initialQuery;
+    }
+    if (sortSelect) {
+      if (viewFromUrl === 'new' || viewFromUrl === 'updated') {
+        sortSelect.value = 'new';
+      } else if (viewFromUrl === 'trending') {
+        sortSelect.value = 'popular';
+      } else if (viewFromUrl === 'favorite') {
+        sortSelect.value = 'favorite';
+      }
+    }
+    if (filterSelect && viewFromUrl === 'favorite') {
+      filterSelect.value = 'favorite';
+    }
+
+    const tileText = (tile) => (String(tile.dataset.name || '') + ' ' + String(tile.dataset.code || '') + ' ' + String(tile.textContent || '')).toLowerCase();
+    const isFavorite = (code) => favoriteSet.has(normalizeCode(code));
+    const isRecent = (code) => recentGames.some((item) => item.code === normalizeCode(code));
+    const favoriteMode = () => String(filterSelect?.value || 'all');
+    const matchesRouteView = (tile) => {
+      if (!tile) {
+        return false;
+      }
+      if (viewFromUrl === 'recent') {
+        return isRecent(tile.dataset.code);
+      }
+      if (viewFromUrl === 'online') {
+        return String(tile.dataset.online || '').toLowerCase() === 'true';
+      }
+      if (viewFromUrl === 'originals') {
+        return String(tile.dataset.original || '').toLowerCase() !== 'false';
+      }
+      if (viewFromUrl === 'new' || viewFromUrl === 'updated') {
+        return Number(tile.dataset.release || 0) >= 2026;
+      }
+      return true;
+    };
+
+    const sortTiles = (tiles, mode) => {
+      const arr = [...tiles];
+      if (mode === 'az') {
+        arr.sort((a, b) => String(a.dataset.name || '').localeCompare(String(b.dataset.name || ''), 'vi'));
+      } else if (mode === 'new') {
+        arr.sort((a, b) => Number(b.dataset.release || 0) - Number(a.dataset.release || 0));
+      } else if (mode === 'favorite') {
+        arr.sort((a, b) => {
+          const favDiff = Number(isFavorite(b.dataset.code)) - Number(isFavorite(a.dataset.code));
+          if (favDiff !== 0) {
+            return favDiff;
+          }
+          return Number(b.dataset.popularity || 0) - Number(a.dataset.popularity || 0);
+        });
+      } else {
+        arr.sort((a, b) => Number(b.dataset.popularity || 0) - Number(a.dataset.popularity || 0));
+      }
+      return arr;
+    };
+
+    const createQuickLink = (item, index, type) => {
+      const link = document.createElement('a');
+      link.className = 'badge rounded-pill text-bg-dark text-decoration-none px-3 py-2';
+      link.href = toAppPath(item.href || ('/games/' + item.code));
+      link.textContent = type === 'recent' ? ((index + 1) + '. ' + item.name) : item.name;
+      link.dataset.gameCode = item.code;
+      return link;
+    };
+
+    const renderQuickState = () => {
+      const favoriteItems = Array.from(favoriteSet)
+        .map((code) => catalogByCode.get(code) || { code, name: code.toUpperCase(), href: '/games/' + code })
+        .sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+      favoriteListEl.innerHTML = '';
+      if (favoriteItems.length === 0) {
+        favoriteListEl.innerHTML = '<small class="text-muted">Chua co game yeu thich.</small>';
+      } else {
+        favoriteItems.forEach((item, index) => favoriteListEl.appendChild(createQuickLink(item, index, 'favorite')));
+      }
+      if (favoriteCountEl) {
+        favoriteCountEl.textContent = String(favoriteItems.length);
+      }
+
+      const recentItems = recentGames
+        .map((entry) => {
+          const fromCatalog = catalogByCode.get(entry.code);
+          return fromCatalog
+            ? { ...fromCatalog, at: entry.at }
+            : { code: entry.code, name: normalizeName(entry.name, entry.code), href: '/games/' + entry.code, at: entry.at };
+        });
+      recentListEl.innerHTML = '';
+      if (recentItems.length === 0) {
+        recentListEl.innerHTML = '<small class="text-muted">Chua co game gan day.</small>';
+      } else {
+        recentItems.forEach((item, index) => recentListEl.appendChild(createQuickLink(item, index, 'recent')));
+      }
+      if (recentCountEl) {
+        recentCountEl.textContent = String(recentItems.length);
+      }
+    };
+
+    const syncFavoriteButtons = () => {
+      favoriteButtons.forEach((button) => {
+        const code = normalizeCode(button.dataset.gameCode);
+        const active = isFavorite(code);
+        button.classList.toggle('primary', active);
+        button.innerHTML = active
+          ? '<i class="bi bi-star-fill"></i> Bo yeu thich'
+          : '<i class="bi bi-star"></i> Yeu thich';
+      });
+      allTiles.forEach((tile) => {
+        tile.classList.toggle('is-favorite', isFavorite(tile.dataset.code));
+      });
+    };
+
+    const trackRecent = (code, name) => {
+      const normalizedCode = normalizeCode(code);
+      if (!normalizedCode) {
+        return;
+      }
+      recentGames = recentGames.filter((item) => item.code !== normalizedCode);
+      recentGames.unshift({
+        code: normalizedCode,
+        name: normalizeName(name, normalizedCode),
+        at: Date.now()
+      });
+      recentGames = recentGames.slice(0, RECENT_MAX_ITEMS);
+      void persistGamesBrowserState({ keepalive: true });
+      renderQuickState();
+    };
+
+    const applyState = () => {
+      const query = String(searchInput?.value || '').trim().toLowerCase();
+      const mode = String(sortSelect?.value || 'smart');
+      const activeFilter = favoriteMode();
+      let totalVisible = 0;
+
+      tracks.forEach((track) => {
+        const tiles = Array.from(track.querySelectorAll('.cg-tile'));
+        const filtered = tiles.filter((tile) => {
+          if (!matchesRouteView(tile)) {
+            return false;
+          }
+          if (activeFilter === 'favorite' && !isFavorite(tile.dataset.code)) {
+            return false;
+          }
+          if (!query) {
+            return true;
+          }
+          return tileText(tile).includes(query);
+        });
+
+        const ordered = sortTiles(filtered, mode);
+        const hiddenSet = new Set(tiles);
+
+        ordered.forEach((tile) => {
+          hiddenSet.delete(tile);
+          tile.hidden = false;
+          track.appendChild(tile);
+        });
+
+        hiddenSet.forEach((tile) => {
+          tile.hidden = true;
+        });
+
+        const section = track.closest('[data-lane-section]');
+        if (section) {
+          section.hidden = ordered.length === 0;
+        }
+
+        totalVisible += ordered.length;
+      });
+
+      if (emptyState) {
+        emptyState.hidden = totalVisible !== 0;
+      }
+    };
+
+    searchInput?.addEventListener('input', applyState);
+    sortSelect?.addEventListener('change', applyState);
+    filterSelect?.addEventListener('change', applyState);
+
+    clearRecentBtn?.addEventListener('click', () => {
+      recentGames = [];
+      void persistGamesBrowserState();
+      renderQuickState();
+    });
+
+    favoriteButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const code = normalizeCode(button.dataset.gameCode);
+        if (!code) {
+          return;
+        }
+        if (favoriteSet.has(code)) {
+          favoriteSet.delete(code);
+        } else {
+          favoriteSet.add(code);
+        }
+        void persistGamesBrowserState();
+        syncFavoriteButtons();
+        renderQuickState();
+        applyState();
+      });
+    });
+
+    allTiles.forEach((tile) => {
+      const code = normalizeCode(tile.dataset.code);
+      const name = normalizeName(tile.dataset.name, code);
+      tile.querySelectorAll('.cg-tile-actions a[href]').forEach((link) => {
+        link.addEventListener('click', () => {
+          trackRecent(code, name);
+        });
+      });
+    });
+
+    tracks.forEach((track) => {
+      track.addEventListener('wheel', (event) => {
+        if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
+          return;
+        }
+        event.preventDefault();
+        track.scrollBy({ left: event.deltaY, behavior: 'smooth' });
+      }, { passive: false });
+    });
+
+    const initializeGamesBrowser = async () => {
+      await loadInitialGamesBrowserState();
+      syncFavoriteButtons();
+      renderQuickState();
+      applyState();
+    };
+
+    void initializeGamesBrowser();
+  });
+</script>
+</body>
+</html>
+
+
+

@@ -24,10 +24,14 @@ compose_exec() {
 
 cd "$REPO_ROOT"
 
+if ! compose_exec pull; then
+  echo "[WARN] Khong pull duoc image Docker moi tu registry. Se thu chay bang image local neu da ton tai." >&2
+fi
+
 if [[ "$FOREGROUND" -eq 1 ]]; then
-  compose_exec up --build
+  compose_exec up
 else
-  compose_exec up --build -d
+  compose_exec up -d
   echo "[OK] Docker app da chay: http://127.0.0.1:8080/Game"
   echo "[INFO] Dung app: ./scripts/manual-start.cmd stop --docker"
 fi

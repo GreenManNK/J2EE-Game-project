@@ -121,6 +121,8 @@ Link sau khi start:
 - `http://127.0.0.1:8080/Game`
 
 Mac dinh Docker mode se dung profile `prod` + H2 fallback (du lieu luu o `./.data-docker`).
+Mac dinh se pull image `greenmannk/game-hub:latest` tu Docker Hub truoc khi chay.
+Neu can override tag/image khac, dat bien moi truong `GAME_IMAGE`.
 Neu can xem log:
 
 ```bash

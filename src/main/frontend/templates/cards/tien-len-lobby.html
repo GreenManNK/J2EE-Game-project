@@ -1,0 +1,1385 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Tien len truc tuyen 4 nguoi')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('tien-len')}"></div>
+
+<main class="container py-3 pb-5 tienlen-arena-shell">
+  <div class="tienlen-grid">
+    <section class="card shadow-sm theme-box">
+      <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <div class="small text-muted">Tien Len / Lobby</div>
+            <h1 class="h4 theme-text mb-1">Tien Len Mien Nam truc tuyen</h1>
+            <p class="small text-muted mb-0">Tao phong 4 nguoi, dan ma de vao ngay hoac random join neu muon bat dau nhanh.</p>
+          </div>
+          <div class="small text-md-end">
+            <div><strong>Che do:</strong> Online room 4 nguoi</div>
+            <div><strong>Luot ho tro:</strong> join / random / start / roi phong</div>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 align-items-end">
+          <div class="flex-grow-1 tl-room-input-min">
+            <label for="tlRoomIdInput" class="form-label theme-text mb-1">Ma phong</label>
+            <input id="tlRoomIdInput" type="text" class="form-control" placeholder="Nhap hoac dan ma phong de vao ngay"
+                   th:value="${defaultRoomId}">
+          </div>
+          <button id="tlJoinBtn" type="button" class="btn theme-outline-btn">Vao ngay</button>
+          <button id="tlRandomJoinBtn" type="button" class="btn theme-outline-btn">Vao nhanh random</button>
+          <button id="tlStartBtn" type="button" class="btn theme-outline-btn" disabled>Bat dau (du 4 nguoi)</button>
+          <button id="tlSurrenderBtn" type="button" class="btn btn-outline-warning" disabled>Dau hang</button>
+          <button id="tlLeaveBtn" type="button" class="btn btn-outline-danger" disabled>Roi phong</button>
+          <a th:href="@{/cards/tien-len/rooms}" class="btn theme-outline-btn">Mo sanh phong</a>
+          <a th:href="@{/games/cards}" class="btn theme-outline-btn">Ve trang che do</a>
+        </div>
+        <div class="small text-muted mt-2">Nhan Enter hoac dan ma phong de vao tran ngay.</div>
+
+        <div class="mt-3 d-flex flex-wrap gap-3 small align-items-center">
+          <div class="tl-self-summary">
+            <img id="tlSelfAvatar"
+                 class="tl-self-summary__avatar"
+                 th:src="@{/uploads/avatars/default-avatar.jpg}"
+                 alt="Anh dai dien nguoi choi">
+            <div class="tl-self-summary__body">
+              <div><strong>Ban:</strong> <span id="tlSelfName" th:text="${sessionDisplayName}">Khach</span></div>
+              <div id="tlSelfMeta" class="text-muted">Khach tam thoi</div>
+            </div>
+          </div>
+          <div><strong>Phong hien tai:</strong> <span id="tlCurrentRoomLabel">Chua vao</span></div>
+        </div>
+
+        <div class="mt-2">
+          <div class="small"><strong>Trang thai:</strong> <span id="tlStatusText">Dang khoi tao ket noi...</span></div>
+          <div class="small"><strong>Thong bao:</strong> <span id="tlMessageText">-</span></div>
+          <div id="tlStatusTimeline" class="tl-status-timeline mt-2" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card shadow-sm theme-box">
+      <div class="card-body">
+        <h2 class="h5 theme-text mb-2">Danh sach phong dang cho</h2>
+        <div id="tlRoomList" class="small d-flex flex-column gap-2 tl-room-list">
+          <div class="text-muted">Dang tai danh sach phong...</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+</main>
+
+<style>
+  .tienlen-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 14px;
+  }
+
+  .tienlen-main-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .tienlen-grid .card,
+  .tienlen-main-grid .card {
+    border: 1px solid rgba(18, 60, 46, 0.18);
+    overflow: hidden;
+  }
+
+  .tienlen-main-grid .card .card-body {
+    background:
+      radial-gradient(circle at 14% 10%, rgba(255,255,255,0.08), transparent 38%),
+      radial-gradient(circle at 88% 82%, rgba(255, 208, 134, 0.10), transparent 42%),
+      linear-gradient(180deg, rgba(10, 88, 67, 0.10), rgba(10, 88, 67, 0.03));
+    border-radius: 0.75rem;
+  }
+
+  .tl-room-list {
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .tl-self-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .tl-self-summary__avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 1px solid rgba(19, 79, 59, 0.18);
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 6px 16px rgba(5, 35, 26, 0.08);
+    flex-shrink: 0;
+  }
+
+  .tl-self-summary__body {
+    min-width: 0;
+  }
+
+  .tl-room-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(19, 79, 59, 0.16);
+    background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(248,252,251,0.95));
+    box-shadow: 0 6px 16px rgba(5, 35, 26, 0.06);
+  }
+
+  .tl-room-item__title {
+    color: #0d3d2f;
+    line-height: 1.2;
+  }
+
+  .tl-room-item__meta {
+    font-size: 0.78rem;
+    margin-top: 2px;
+  }
+
+  .tl-room-item__meter {
+    margin-top: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(10, 88, 67, 0.10);
+    overflow: hidden;
+  }
+
+  .tl-room-item__meter > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #18a36d, #0dcaf0);
+  }
+
+  .tl-room-item__btn {
+    white-space: nowrap;
+  }
+
+  .tl-empty-note {
+    padding: 8px 4px;
+  }
+
+  .tienlen-players-board.tl-table-stage {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(260px, 1.4fr) minmax(180px, 1fr);
+    grid-template-rows: minmax(112px, auto) minmax(188px, auto) minmax(118px, auto);
+    grid-template-areas:
+      ". top ."
+      "left center right"
+      ". bottom .";
+    gap: 12px;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(14, 79, 59, 0.18);
+    background:
+      radial-gradient(circle at 25% 18%, rgba(255,255,255,0.05), transparent 40%),
+      radial-gradient(circle at 75% 78%, rgba(255,222,158,0.08), transparent 45%),
+      linear-gradient(145deg, #0f5f48, #0a4f3c 58%, #094735);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.03),
+      inset 0 16px 28px rgba(255,255,255,0.03),
+      0 14px 28px rgba(5, 30, 23, 0.18);
+    position: relative;
+  }
+
+  .tienlen-player-slot {
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 10px;
+    min-height: 118px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: center;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)),
+      rgba(5, 39, 29, 0.56);
+    color: #eefbf4;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .18s ease;
+    overflow: hidden;
+  }
+
+  .tl-seat-slot--top { grid-area: top; }
+  .tl-seat-slot--right { grid-area: right; }
+  .tl-seat-slot--bottom { grid-area: bottom; }
+  .tl-seat-slot--left { grid-area: left; }
+
+  .tl-seat-slot--top,
+  .tl-seat-slot--bottom {
+    width: 100%;
+    max-width: 560px;
+    justify-self: center;
+  }
+
+  .tl-seat-slot--left,
+  .tl-seat-slot--right {
+    min-height: 188px;
+    align-self: stretch;
+    justify-content: flex-start;
+  }
+
+  .tl-seat-slot--left .tl-player-slot__head,
+  .tl-seat-slot--right .tl-player-slot__head {
+    gap: 8px;
+  }
+
+  .tl-seat-slot--left .tl-player-slot__meta,
+  .tl-seat-slot--right .tl-player-slot__meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .tl-seat-slot--left .tl-player-slot__footer,
+  .tl-seat-slot--right .tl-player-slot__footer {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.2;
+  }
+
+  .tl-table-center {
+    grid-area: center;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background:
+      radial-gradient(circle at 26% 14%, rgba(255,255,255,0.08), transparent 42%),
+      radial-gradient(circle at 78% 82%, rgba(255, 221, 164, 0.12), transparent 45%),
+      rgba(6, 42, 31, 0.58);
+    color: #effaf4;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 188px;
+  }
+
+  .tl-table-center__header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .tl-table-center__title {
+    font-weight: 700;
+    color: #f2fff8;
+    letter-spacing: .01em;
+  }
+
+  .tl-table-center__sub {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tl-table-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 999px;
+    padding: 4px 9px;
+    font-size: 0.74rem;
+    color: rgba(239, 250, 244, 0.95);
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+  }
+
+  .tl-table-center .tl-trick-cards {
+    min-height: 108px;
+    border-radius: 12px;
+    border: 1px dashed rgba(255,255,255,0.18);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)),
+      rgba(0,0,0,0.10);
+    padding: 8px 6px;
+  }
+
+  .tl-table-center .tl-trick-cards .text-muted {
+    color: rgba(226, 243, 235, 0.78) !important;
+  }
+
+  .tl-table-center__hint {
+    margin-top: auto;
+    font-size: 0.72rem;
+    color: rgba(225, 244, 234, 0.72);
+    text-align: center;
+  }
+
+  .tienlen-player-slot::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04), transparent 55%);
+  }
+
+  .tienlen-player-slot.is-turn {
+    border-color: rgba(120, 217, 255, 0.9);
+    box-shadow:
+      inset 0 0 0 1px rgba(120, 217, 255, 0.28),
+      0 0 0 1px rgba(120, 217, 255, 0.18),
+      0 0 0 8px rgba(13, 202, 240, 0.08);
+    animation: tlTurnPulse 1.8s ease-in-out infinite;
+  }
+
+  .tienlen-player-slot.is-control {
+    border-color: rgba(121, 228, 170, 0.85);
+    box-shadow: inset 0 0 0 1px rgba(121, 228, 170, 0.25);
+  }
+
+  .tienlen-player-slot.is-me {
+    border-color: rgba(255, 224, 136, 0.95);
+  }
+
+  .tienlen-player-slot.is-passed {
+    opacity: 0.72;
+    filter: saturate(0.85);
+  }
+
+  .tienlen-player-slot.is-winner {
+    border-color: rgba(255, 205, 80, 0.95);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 205, 80, 0.28),
+      0 0 0 6px rgba(255, 205, 80, 0.07);
+  }
+
+  .tl-player-slot__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .tl-player-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #f7fffb;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,0.22), transparent 45%),
+      linear-gradient(140deg, #18a36d, #0d6efd);
+    border: 1px solid rgba(255,255,255,0.22);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+  }
+
+  .tl-player-slot__identity {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .tl-player-slot__name {
+    font-weight: 700;
+    line-height: 1.15;
+    color: #f2fff7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tl-player-slot__uid {
+    font-size: 0.74rem;
+    color: rgba(230, 246, 239, 0.74);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tl-player-slot__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .tl-player-slot__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .tl-seat-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    line-height: 1.2;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.08);
+    color: #f0fff8;
+  }
+
+  .tl-seat-badge--me {
+    background: rgba(255, 224, 136, 0.16);
+    border-color: rgba(255, 224, 136, 0.38);
+    color: #ffe08a;
+  }
+
+  .tl-seat-badge--bot {
+    background: rgba(186, 146, 255, 0.14);
+    border-color: rgba(186, 146, 255, 0.30);
+    color: #dfc9ff;
+  }
+
+  .tl-seat-badge--turn {
+    background: rgba(13, 202, 240, 0.16);
+    border-color: rgba(13, 202, 240, 0.35);
+    color: #9fefff;
+  }
+
+  .tl-seat-badge--control {
+    background: rgba(25, 135, 84, 0.18);
+    border-color: rgba(121, 228, 170, 0.34);
+    color: #9ff3cb;
+  }
+
+  .tl-seat-badge--pass {
+    background: rgba(255,255,255,0.10);
+    border-color: rgba(255,255,255,0.16);
+    color: rgba(255,255,255,0.86);
+  }
+
+  .tl-seat-badge--win {
+    background: rgba(255, 193, 7, 0.18);
+    border-color: rgba(255, 214, 102, 0.42);
+    color: #ffd86a;
+  }
+
+  .tl-player-slot__count {
+    font-size: 0.78rem;
+    color: rgba(240,255,248,0.92);
+    white-space: nowrap;
+  }
+
+  .tl-player-slot__footer {
+    font-size: 0.72rem;
+    color: rgba(223, 245, 235, 0.72);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tl-player-empty {
+    height: 100%;
+    min-height: 96px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    color: rgba(240,255,248,0.72);
+    gap: 6px;
+  }
+
+  .tl-player-empty__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(255,255,255,0.06);
+    border: 1px dashed rgba(255,255,255,0.18);
+    font-weight: 700;
+  }
+
+  .tl-player-empty__text {
+    font-size: 0.82rem;
+  }
+
+  .tl-trick-well {
+    border-radius: 14px !important;
+    border: 1px solid rgba(12, 70, 53, 0.16) !important;
+    background:
+      radial-gradient(circle at 30% 15%, rgba(255,255,255,0.55), rgba(255,255,255,0.18) 55%, transparent 80%),
+      linear-gradient(180deg, rgba(245, 252, 249, 0.96), rgba(239, 248, 244, 0.90));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+  }
+
+  .tienlen-cards-row,
+  .tienlen-hand {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0;
+  }
+
+  .tl-trick-cards {
+    min-height: 98px;
+    justify-content: center;
+    padding: 6px 4px;
+  }
+
+  .tl-player-hand {
+    min-height: 112px;
+    padding: 10px 8px 8px;
+    border-radius: 14px;
+    background:
+      radial-gradient(circle at 15% 12%, rgba(255,255,255,0.06), transparent 45%),
+      linear-gradient(145deg, #0f634a, #0a4f3c 62%, #094532);
+    border: 1px solid rgba(12, 74, 56, 0.22);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    justify-content: flex-start;
+  }
+
+  .tl-player-hand .tienlen-card-btn {
+    margin-right: -18px;
+  }
+
+  .tl-player-hand .tienlen-card-btn:last-child {
+    margin-right: 0;
+  }
+
+  .tl-trick-cards .tienlen-card-btn.readonly {
+    margin-right: -10px;
+  }
+
+  .tl-trick-cards .tienlen-card-btn.readonly:last-child {
+    margin-right: 0;
+  }
+
+  .tienlen-card-btn {
+    position: relative;
+    border: 1px solid rgba(31, 38, 46, 0.18);
+    border-radius: 12px;
+    width: 64px;
+    height: 96px;
+    padding: 0;
+    background:
+      linear-gradient(145deg, #ffffff, #f3f6fb 55%, #eef2f9);
+    color: #172029;
+    display: block;
+    cursor: pointer;
+    transition: transform .14s ease, box-shadow .14s ease, opacity .14s ease, filter .14s ease;
+    user-select: none;
+    box-shadow:
+      0 10px 16px rgba(6, 19, 24, 0.14),
+      0 1px 0 rgba(255,255,255,0.85) inset;
+    overflow: hidden;
+    text-align: left;
+  }
+
+  .tienlen-card-btn.has-sprite {
+    background: #f8fafc;
+  }
+
+  .tienlen-card-btn.has-sprite::before {
+    display: none;
+  }
+
+  .tienlen-card-btn.has-sprite .tl-card-face {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-repeat: no-repeat;
+    background-color: #f8fafc;
+  }
+
+  .tienlen-card-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.48), transparent 42%);
+    pointer-events: none;
+  }
+
+  .tienlen-card-btn:hover:not(.disabled):not(.readonly) {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 22px rgba(5, 25, 30, 0.20);
+    z-index: 2;
+  }
+
+  .tienlen-card-btn.selected {
+    transform: translateY(-10px) rotate(-1deg);
+    box-shadow:
+      0 18px 24px rgba(5, 25, 30, 0.22),
+      0 0 0 2px rgba(13, 202, 240, 0.75);
+    z-index: 3;
+  }
+
+  .tienlen-card-btn.disabled {
+    opacity: 0.62;
+    cursor: not-allowed;
+    filter: grayscale(0.08);
+  }
+
+  .tienlen-card-btn.readonly {
+    cursor: default;
+  }
+
+  .tienlen-card-btn.red {
+    color: #c1121f;
+  }
+
+  .tl-card-corner {
+    position: absolute;
+    display: grid;
+    justify-items: center;
+    line-height: 1;
+    z-index: 1;
+  }
+
+  .tl-card-corner--top {
+    top: 5px;
+    left: 5px;
+  }
+
+  .tl-card-corner--bottom {
+    right: 5px;
+    bottom: 5px;
+    transform: rotate(180deg);
+  }
+
+  .tl-card-rank {
+    font-weight: 800;
+    font-size: 0.95rem;
+    letter-spacing: -0.02em;
+  }
+
+  .tl-card-suit {
+    font-size: 0.92rem;
+    margin-top: 1px;
+  }
+
+  .tl-card-center {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 2px;
+    text-align: center;
+    z-index: 0;
+  }
+
+  .tl-card-center__rank {
+    font-weight: 800;
+    font-size: 1.12rem;
+    line-height: 1;
+  }
+
+  .tl-card-center__suit {
+    font-size: 1.25rem;
+    line-height: 1;
+    opacity: 0.95;
+  }
+
+  .tl-card-code {
+    position: absolute;
+    left: 50%;
+    bottom: 4px;
+    transform: translateX(-50%);
+    font-size: 0.58rem;
+    line-height: 1;
+    color: rgba(23, 32, 41, 0.58);
+    background: rgba(255,255,255,0.72);
+    padding: 1px 4px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,0.06);
+    z-index: 1;
+  }
+
+  .tienlen-card-btn.red .tl-card-code {
+    color: rgba(193, 18, 31, 0.68);
+  }
+
+  body.dark-mode .tl-room-item {
+    background: linear-gradient(180deg, rgba(42, 49, 58, 0.9), rgba(33, 39, 48, 0.96));
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: none;
+  }
+
+  body.dark-mode .tl-room-item__title {
+    color: #eff8f3;
+  }
+
+  body.dark-mode .tl-trick-well {
+    background:
+      radial-gradient(circle at 25% 12%, rgba(255,255,255,0.08), transparent 50%),
+      linear-gradient(180deg, rgba(27, 35, 42, 0.94), rgba(22, 29, 35, 0.96));
+    border-color: rgba(255,255,255,0.08) !important;
+  }
+
+  body.dark-mode .tienlen-card-btn {
+    background: linear-gradient(145deg, #2f3640, #252c35 56%, #212830);
+    color: #f4f6fb;
+    border-color: rgba(255,255,255,0.12);
+    box-shadow: 0 10px 16px rgba(0,0,0,0.26), 0 1px 0 rgba(255,255,255,0.06) inset;
+  }
+
+  body.dark-mode .tienlen-card-btn.red {
+    color: #ff8ea0;
+  }
+
+  body.dark-mode .tl-card-code {
+    background: rgba(255,255,255,0.08);
+    color: rgba(244,246,251,0.65);
+    border-color: rgba(255,255,255,0.06);
+  }
+
+  .tl-status-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tl-status-timeline__track {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .tl-status-step {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 6px 4px;
+    border-radius: 10px;
+    border: 1px solid rgba(12, 70, 53, 0.10);
+    background: rgba(255,255,255,0.52);
+    text-align: center;
+    transition: background-color .16s ease, border-color .16s ease, opacity .16s ease;
+  }
+
+  .tl-status-step__dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: rgba(108,117,125,0.5);
+    box-shadow: 0 0 0 4px rgba(108,117,125,0.10);
+  }
+
+  .tl-status-step__label {
+    font-size: 0.68rem;
+    line-height: 1.15;
+    color: #36564b;
+    font-weight: 600;
+  }
+
+  .tl-status-step.is-done {
+    background: rgba(25, 135, 84, 0.07);
+    border-color: rgba(25, 135, 84, 0.16);
+  }
+
+  .tl-status-step.is-done .tl-status-step__dot {
+    background: #198754;
+    box-shadow: 0 0 0 4px rgba(25,135,84,0.12);
+  }
+
+  .tl-status-step.is-active {
+    background: rgba(13, 202, 240, 0.08);
+    border-color: rgba(13, 202, 240, 0.20);
+  }
+
+  .tl-status-step.is-active .tl-status-step__dot {
+    background: #0dcaf0;
+    box-shadow: 0 0 0 5px rgba(13,202,240,0.12);
+    animation: tlDotPulse 1.4s ease-in-out infinite;
+  }
+
+  .tl-status-step.is-off {
+    opacity: 0.68;
+  }
+
+  .tl-status-timeline__summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tl-status-summary-chip {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(12, 70, 53, 0.12);
+    background: rgba(255,255,255,0.70);
+    font-size: 0.74rem;
+    line-height: 1.25;
+    color: #24493d;
+  }
+
+  .tl-status-summary-chip.is-muted {
+    color: #5f746c;
+    background: rgba(255,255,255,0.52);
+  }
+
+  /* Arena table refresh inspired by reference image */
+  .tienlen-arena-shell .tienlen-players-board.tl-table-stage {
+    min-height: 560px;
+    padding: 20px 18px;
+    border-radius: 26px;
+    border: 1px solid rgba(8, 54, 34, 0.55);
+    background:
+      radial-gradient(circle at 50% 50%, rgba(12, 114, 67, 0.86), rgba(2, 75, 42, 0.94) 60%, rgba(2, 59, 33, 1)),
+      linear-gradient(180deg, rgba(5, 67, 39, 0.95), rgba(2, 54, 30, 0.98));
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.03),
+      inset 0 24px 46px rgba(255,255,255,0.04),
+      0 16px 32px rgba(2, 22, 12, 0.35);
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    min-height: 102px;
+    padding: 2px;
+    overflow: visible;
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot::before {
+    content: none;
+  }
+
+  .tienlen-arena-shell .tl-seat-slot--top,
+  .tienlen-arena-shell .tl-seat-slot--left,
+  .tienlen-arena-shell .tl-seat-slot--right {
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .tienlen-arena-shell .tl-seat-slot--bottom {
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot.is-turn,
+  .tienlen-arena-shell .tienlen-player-slot.is-control,
+  .tienlen-arena-shell .tienlen-player-slot.is-me,
+  .tienlen-arena-shell .tienlen-player-slot.is-winner {
+    border: 0;
+    box-shadow: none;
+    animation: none;
+  }
+
+  .tienlen-arena-shell .tl-player-slot__head {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tienlen-arena-shell .tl-player-avatar {
+    width: 66px;
+    height: 66px;
+    border: 3px solid rgba(255, 255, 255, 0.68);
+    background: linear-gradient(140deg, #2ea770, #1d7fbd);
+    box-shadow:
+      0 8px 16px rgba(0,0,0,0.36),
+      0 0 0 4px rgba(0,0,0,0.14);
+    overflow: hidden;
+  }
+
+  .tienlen-arena-shell .tl-player-avatar__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot.is-turn .tl-player-avatar {
+    box-shadow:
+      0 8px 16px rgba(0,0,0,0.36),
+      0 0 0 4px rgba(220, 20, 90, 0.28),
+      0 0 0 8px rgba(220, 20, 90, 0.18);
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot.is-me .tl-player-avatar {
+    border-color: rgba(255, 224, 136, 0.95);
+  }
+
+  .tienlen-arena-shell .tl-player-slot__name {
+    color: #f6fff9;
+    font-size: 0.86rem;
+    max-width: 122px;
+  }
+
+  .tienlen-arena-shell .tl-player-slot__uid,
+  .tienlen-arena-shell .tl-player-slot__footer,
+  .tienlen-arena-shell .tl-player-slot__count {
+    display: none;
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot.is-compact .tl-player-slot__meta {
+    justify-content: center;
+  }
+
+  .tienlen-arena-shell .tl-player-slot__chips {
+    justify-content: center;
+  }
+
+  .tienlen-arena-shell .tienlen-player-slot.is-compact .tl-seat-badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
+
+  .tienlen-arena-shell .tl-player-fan {
+    width: 66px;
+    height: 34px;
+    border-radius: 12px 12px 6px 6px;
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .tienlen-arena-shell .tl-player-fan::before,
+  .tienlen-arena-shell .tl-player-fan::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: 16px;
+    height: 26px;
+    border-radius: 5px 5px 2px 2px;
+    border: 1px solid rgba(255,255,255,0.65);
+    background:
+      repeating-linear-gradient(
+        90deg,
+        rgba(185, 116, 152, 0.92) 0 2px,
+        rgba(240, 210, 228, 0.65) 2px 3px
+      );
+    box-shadow: 0 5px 10px rgba(0,0,0,0.26);
+  }
+
+  .tienlen-arena-shell .tl-player-fan::before {
+    left: 10px;
+    transform: rotate(-12deg);
+  }
+
+  .tienlen-arena-shell .tl-player-fan::after {
+    right: 10px;
+    transform: rotate(12deg);
+  }
+
+  .tienlen-arena-shell .tl-table-center {
+    border: 0;
+    min-height: 190px;
+    background: rgba(0, 0, 0, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+    backdrop-filter: blur(1px);
+    justify-content: center;
+    align-items: center;
+  }
+
+  .tienlen-arena-shell .tl-table-center__header,
+  .tienlen-arena-shell .tl-table-center__hint {
+    text-align: center;
+    align-items: center;
+  }
+
+  .tienlen-arena-shell .tl-table-center .tl-trick-cards {
+    width: min(420px, 100%);
+    min-height: 120px;
+    border: 0;
+    background: rgba(0, 0, 0, 0.10);
+  }
+
+  .tienlen-arena-shell .tl-trick-cards .tienlen-card-btn.readonly {
+    margin-right: -14px;
+  }
+
+  .tienlen-arena-shell .tl-scoreboard {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 176px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(0, 0, 0, 0.22);
+    padding: 8px;
+    display: grid;
+    gap: 6px;
+    z-index: 5;
+    color: #f1fff7;
+  }
+
+  .tienlen-arena-shell .tl-scoreboard__head {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #ffde7a;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .tienlen-arena-shell .tl-scoreboard__empty {
+    font-size: 0.74rem;
+    color: rgba(241, 255, 247, 0.72);
+  }
+
+  .tienlen-arena-shell .tl-score-item {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    color: rgba(245, 255, 250, 0.95);
+  }
+
+  .tienlen-arena-shell .tl-score-item__avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.5);
+    object-fit: cover;
+    background: rgba(255,255,255,0.16);
+  }
+
+  .tienlen-arena-shell .tl-score-item__avatar--text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.56rem;
+    font-weight: 700;
+    color: #f4fff9;
+    text-transform: uppercase;
+  }
+
+  .tienlen-arena-shell .tl-score-item__name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .tienlen-arena-shell .tl-score-item__points {
+    font-weight: 700;
+    color: #fff2b9;
+  }
+
+  .tienlen-arena-shell .tl-score-item.is-turn .tl-score-item__points {
+    color: #ff99bd;
+  }
+
+  .tienlen-arena-shell .tl-player-hand {
+    justify-content: center;
+  }
+
+  .tienlen-arena-shell .tl-player-hand .tienlen-card-btn {
+    margin-right: -24px;
+  }
+
+  .tienlen-arena-shell .tl-player-hand .tienlen-card-btn:last-child {
+    margin-right: 0;
+  }
+
+  .tienlen-player-slot.turn-flash {
+    animation: tlSeatFlash 520ms ease-out;
+  }
+
+  .tienlen-card-btn.tl-card-enter-deal {
+    animation: tlCardDealIn .34s cubic-bezier(.2,.75,.25,1) both;
+    transform-origin: 50% 100%;
+  }
+
+  .tienlen-card-btn.tl-card-enter-play {
+    animation: tlCardPlayIn .28s cubic-bezier(.17,.84,.26,1) both;
+    transform-origin: 50% 100%;
+  }
+
+  .tl-trick-cards.tl-trick-pulse {
+    animation: tlTrickPulseFx .38s ease-out;
+  }
+
+  @keyframes tlTurnPulse {
+    0%, 100% { box-shadow: inset 0 0 0 1px rgba(120, 217, 255, 0.25), 0 0 0 1px rgba(120, 217, 255, 0.16), 0 0 0 6px rgba(13, 202, 240, 0.05); }
+    50% { box-shadow: inset 0 0 0 1px rgba(120, 217, 255, 0.38), 0 0 0 1px rgba(120, 217, 255, 0.24), 0 0 0 10px rgba(13, 202, 240, 0.10); }
+  }
+
+  @keyframes tlDotPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.18); }
+  }
+
+  @keyframes tlSeatFlash {
+    0% { box-shadow: 0 0 0 0 rgba(13,202,240,0.0); transform: translateY(0); }
+    35% { box-shadow: 0 0 0 8px rgba(13,202,240,0.12); transform: translateY(-1px); }
+    100% { box-shadow: 0 0 0 0 rgba(13,202,240,0.0); transform: translateY(0); }
+  }
+
+  @keyframes tlCardDealIn {
+    from { opacity: 0; transform: translateY(14px) scale(0.94) rotate(-1deg); }
+    to { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+  }
+
+  @keyframes tlCardPlayIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.92); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes tlTrickPulseFx {
+    0% { transform: scale(0.985); opacity: 0.86; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @media (max-width: 991.98px) {
+    .tienlen-grid,
+    .tienlen-main-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .tienlen-players-board.tl-table-stage {
+      grid-template-columns: minmax(130px, 1fr) minmax(220px, 1.35fr) minmax(130px, 1fr);
+      grid-template-rows: minmax(104px, auto) minmax(172px, auto) minmax(110px, auto);
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .tl-seat-slot--left,
+    .tl-seat-slot--right {
+      min-height: 172px;
+    }
+
+    .tl-seat-slot--left .tl-player-slot__uid,
+    .tl-seat-slot--right .tl-player-slot__uid,
+    .tl-seat-slot--left .tl-player-slot__footer,
+    .tl-seat-slot--right .tl-player-slot__footer {
+      display: none;
+    }
+
+    .tl-table-center {
+      min-height: 172px;
+      padding: 10px;
+    }
+
+    .tl-table-center__hint {
+      display: none;
+    }
+
+    .tienlen-arena-shell .tl-player-avatar {
+      width: 58px;
+      height: 58px;
+    }
+
+    .tienlen-arena-shell .tl-player-fan {
+      width: 58px;
+      top: -16px;
+    }
+
+    .tienlen-arena-shell .tl-scoreboard {
+      width: 154px;
+      top: 8px;
+      right: 8px;
+      padding: 6px;
+      gap: 5px;
+    }
+
+    .tienlen-arena-shell .tl-score-item {
+      grid-template-columns: 21px 1fr auto;
+      gap: 5px;
+      font-size: 0.72rem;
+    }
+
+    .tienlen-arena-shell .tl-score-item__avatar {
+      width: 21px;
+      height: 21px;
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    .tienlen-players-board.tl-table-stage {
+      grid-template-columns: minmax(86px, 1fr) minmax(150px, 1.2fr) minmax(86px, 1fr);
+      grid-template-rows: minmax(92px, auto) minmax(152px, auto) minmax(98px, auto);
+      gap: 6px;
+      padding: 8px;
+      border-radius: 14px;
+    }
+
+    .tl-seat-slot--top,
+    .tl-seat-slot--bottom {
+      max-width: none;
+    }
+
+    .tl-seat-slot--left,
+    .tl-seat-slot--right {
+      min-height: 152px;
+    }
+
+    .tl-status-timeline__track {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .tl-status-step__label {
+      font-size: 0.64rem;
+    }
+
+    .tl-status-summary-chip {
+      font-size: 0.70rem;
+      padding: 4px 8px;
+    }
+
+    .tienlen-player-slot {
+      min-height: 90px;
+      padding: 8px;
+      gap: 6px;
+    }
+
+    .tl-player-avatar {
+      width: 32px;
+      height: 32px;
+      font-size: 0.76rem;
+    }
+
+    .tl-player-slot__name {
+      font-size: 0.84rem;
+    }
+
+    .tl-player-slot__uid,
+    .tl-player-slot__footer {
+      display: none;
+    }
+
+    .tl-player-slot__count {
+      font-size: 0.72rem;
+    }
+
+    .tl-seat-badge {
+      font-size: 0.62rem;
+      padding: 2px 6px;
+    }
+
+    .tl-table-center {
+      min-height: 152px;
+      padding: 8px;
+      gap: 8px;
+    }
+
+    .tl-table-center__title {
+      font-size: 0.84rem;
+    }
+
+    .tl-table-chip {
+      font-size: 0.65rem;
+      padding: 3px 7px;
+    }
+
+    .tl-table-center .tl-trick-cards {
+      min-height: 84px;
+      padding: 6px 4px;
+    }
+
+    .tienlen-card-btn {
+      width: 52px;
+      height: 78px;
+      border-radius: 10px;
+    }
+
+    .tl-card-rank {
+      font-size: 0.82rem;
+    }
+
+    .tl-card-suit {
+      font-size: 0.78rem;
+    }
+
+    .tl-card-center__rank {
+      font-size: 0.94rem;
+    }
+
+    .tl-card-center__suit {
+      font-size: 1.02rem;
+    }
+
+    .tl-player-hand .tienlen-card-btn {
+      margin-right: -14px;
+    }
+
+    .tl-trick-cards .tienlen-card-btn.readonly {
+      margin-right: -7px;
+    }
+
+    .tienlen-arena-shell .tl-player-avatar {
+      width: 48px;
+      height: 48px;
+      border-width: 2px;
+    }
+
+    .tienlen-arena-shell .tl-player-fan {
+      width: 48px;
+      height: 26px;
+      top: -14px;
+    }
+
+    .tienlen-arena-shell .tl-player-fan::before,
+    .tienlen-arena-shell .tl-player-fan::after {
+      width: 12px;
+      height: 20px;
+    }
+
+    .tienlen-arena-shell .tl-scoreboard {
+      width: 122px;
+      top: 6px;
+      right: 6px;
+      border-radius: 10px;
+      padding: 5px;
+      gap: 4px;
+    }
+
+    .tienlen-arena-shell .tl-scoreboard__head {
+      font-size: 0.66rem;
+      gap: 3px;
+    }
+
+    .tienlen-arena-shell .tl-score-item {
+      grid-template-columns: 18px 1fr auto;
+      gap: 4px;
+      font-size: 0.64rem;
+    }
+
+    .tienlen-arena-shell .tl-score-item__avatar {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tienlen-card-btn,
+    .tienlen-player-slot,
+    .tl-status-step__dot,
+    .tl-trick-cards,
+    .tl-table-center {
+      transition: none;
+      animation: none !important;
+    }
+  }
+</style>
+
+<th:block th:replace="~{fragments :: appScripts('tien-len')}"></th:block>
+<script th:src="@{/vendor/sockjs.min.js}"></script>
+<script th:src="@{/vendor/stomp.umd.min.js}"></script>
+<script th:inline="javascript">
+  window.TienLenBoot = {
+    sessionUserId: /*[[${sessionUserId}]]*/ '',
+    sessionDisplayName: /*[[${sessionDisplayName}]]*/ '',
+    sessionAvatarPath: /*[[${sessionAvatarPath}]]*/ '',
+    defaultRoomId: /*[[${defaultRoomId}]]*/ ''
+  };
+</script>
+<script th:src="@{/js/tienlen-online.js}"></script>
+</body>
+</html>
+
+
+

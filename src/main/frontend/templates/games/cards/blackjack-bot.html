@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack vs. Bot</title>
+    <link rel="stylesheet" th:href="@{/css/blackjack-style.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+
+<div class="game-viewport">
+    <div class="game-table">
+        <div class="table-surface">
+            <div class="table-text-arc">
+                <span class="arc-text">BLACKJACK PAYS 3 TO 2</span>
+            </div>
+            <div class="table-text-line">
+                <span>DEALER MUST HIT SOFT 17</span> &bull; <span>INSURANCE PAYS 2 TO 1</span>
+            </div>
+            <div class="table-watermark"><i class="bi bi-suit-spade-fill"></i></div>
+            <div id="dealer-area" class="dealer-area"></div>
+            <div id="player-seats" class="player-seats-container"></div>
+            <div class="deck-area left"><div class="deck-placeholder"></div></div>
+            <div class="deck-area right"><div class="deck-placeholder"></div></div>
+        </div>
+    </div>
+
+    <div class="bottom-ui-panel">
+        <div id="result-history" class="result-history">
+            <div class="history-title">LAST RESULTS</div>
+            <div class="history-items"></div>
+        </div>
+        <div class="main-controls-area">
+            <div id="notification-area" class="notification-area">Place your bet</div>
+            <div id="player-actions" class="player-actions">
+                <button class="action-btn" id="btn-hit">Hit</button>
+                <button class="action-btn" id="btn-stand">Stand</button>
+                <button class="action-btn" id="btn-double">Double</button>
+                <button class="action-btn" id="btn-deal">Deal</button>
+            </div>
+        </div>
+        <div id="betting-panel" class="betting-panel">
+            <div class="bet-info">
+                <div>BET</div>
+                <div id="current-bet-amount">0</div>
+            </div>
+            <div class="chips-container">
+                <div class="chip" data-value="10"><span class="chip-value">10</span></div>
+                <div class="chip" data-value="25"><span class="chip-value">25</span></div>
+                <div class="chip" data-value="50"><span class="chip-value">50</span></div>
+                <div class="chip" data-value="100"><span class="chip-value">100</span></div>
+                <div class="chip" data-value="500"><span class="chip-value">500</span></div>
+            </div>
+            <div class="bet-actions">
+                <button id="btn-clear-bet">Clear</button>
+                <button id="btn-undo-bet">Undo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/blackjack-bot.js}"></script>
+
+</body>
+</html>

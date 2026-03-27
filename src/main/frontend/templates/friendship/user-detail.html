@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Chi tiet ban be')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('friendship-user-detail')}"></div>
+
+<main class="gx-page-shell cg-social-page cg-social-profile theme-text"
+      id="friendshipUserDetailRoot"
+      th:attr="data-target-user-id=${user.id},data-current-user-id=${currentUserId},data-is-friend=${isFriend},data-has-pending=${hasPending},data-is-owner=${isOwner}">
+  <section class="gx-page-hero theme-box cg-social-profile-hero">
+    <div class="cg-social-profile-identity">
+      <div class="cg-social-profile-identity__avatar-wrap">
+        <img class="cg-social-profile-identity__avatar"
+             th:src="@{${user.avatarPath != null and !#strings.isEmpty(user.avatarPath) ? user.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
+             alt="Anh dai dien">
+      </div>
+
+      <div class="cg-social-profile-identity__body">
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-person-vcard"></i>
+          <span>Xa hoi / Chi tiet nguoi choi</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2 mb-2"
+            th:text="${user.displayName != null and !#strings.isEmpty(user.displayName) ? user.displayName : user.id}">
+          Nguoi choi
+        </h1>
+        <div class="cg-social-meta-line cg-social-meta-line--wrap">
+          <span><i class="bi bi-at me-1"></i><span th:text="${user.username != null and !#strings.isEmpty(user.username) ? user.username : user.id}">player</span></span>
+          <span><i class="bi bi-envelope me-1"></i><span th:text="${user.email}">mail@example.com</span></span>
+          <span><i class="bi bi-geo-alt me-1"></i><span th:text="${user.country != null and !#strings.isEmpty(user.country) ? user.country : 'Chua cap nhat'}">Viet Nam</span></span>
+        </div>
+        <div class="cg-social-profile-status">
+          <span class="cg-social-pill is-positive" th:if="${isFriend}">Da la ban be</span>
+          <span class="cg-social-pill is-warm" th:if="${!isFriend and hasPending}">Dang cho xu ly loi moi</span>
+          <span class="cg-social-pill is-muted" th:if="${!isFriend and !hasPending}">Chua ket ban</span>
+          <span class="cg-social-pill is-muted" th:if="${isOwner}">Ho so cua ban</span>
+        </div>
+      </div>
+
+      <div class="cg-social-profile-identity__actions">
+        <button id="friendRelationBtn"
+                type="button"
+                class="btn btn-primary"
+                th:if="${!isOwner and currentUserId != null and !#strings.isEmpty(currentUserId)}"
+                th:text="${isFriend ? 'Huy ket ban' : (hasPending ? 'Xem thong bao loi moi' : 'Gui loi moi ket ban')}">
+          Gui loi moi ket ban
+        </button>
+        <a class="btn btn-primary"
+           th:if="${isFriend and currentUserId != null and !#strings.isEmpty(currentUserId)}"
+           th:href="@{/chat/private(currentUserId=${currentUserId},friendId=${user.id})}">Nhan tin rieng</a>
+        <a class="btn theme-outline-btn"
+           th:if="${isOwner and currentUserId != null and !#strings.isEmpty(currentUserId)}"
+           th:href="@{/profile(userId=${user.id})}">Mo profile day du</a>
+        <a class="btn theme-outline-btn" th:href="@{/friendship(currentUserId=${currentUserId})}">Ve trang ban be</a>
+      </div>
+    </div>
+
+    <div class="cg-social-profile-metrics">
+      <article class="cg-social-profile-metric">
+        <span>Ban</span>
+        <strong th:text="${user.score}">0</strong>
+      </article>
+      <article class="cg-social-profile-metric">
+        <span>Playstreak</span>
+        <strong th:text="${currentStreak} + ' ngay'">0 ngay</strong>
+      </article>
+      <article class="cg-social-profile-metric">
+        <span>Game yeu thich</span>
+        <strong th:text="${favoriteGameCount}">0</strong>
+      </article>
+      <article class="cg-social-profile-metric">
+        <span>Hang hien tai</span>
+        <strong th:text="${'#' + rank}">#0</strong>
+      </article>
+    </div>
+
+    <div id="friendshipUserDetailOut" class="small mt-2 mb-0 theme-text" role="status" aria-live="polite"></div>
+  </section>
+
+  <div class="cg-social-profile-grid">
+    <section class="theme-box cg-social-panel">
+      <div class="cg-social-panel__head">
+        <div>
+          <div class="cg-social-panel__eyebrow">Recent activity</div>
+          <h2 class="cg-social-panel__title theme-text mb-0">Hoat dong gan day</h2>
+        </div>
+        <span class="cg-social-count" th:text="${#lists.size(recentActivity)} + ' muc'">0 muc</span>
+      </div>
+      <div class="cg-social-feed" th:if="${!#lists.isEmpty(recentActivity)}">
+        <article class="cg-social-feed-card" th:each="item : ${recentActivity}">
+          <div class="cg-social-feed-card__top">
+            <span class="cg-social-pill"
+                  th:classappend="${item.resultTone == 'win' ? ' is-positive' : (item.resultTone == 'loss' ? ' is-danger' : ' is-muted')}"
+                  th:text="${item.resultLabel}">Thang</span>
+            <time th:if="${item.playedAt != null}" th:text="${#temporals.format(item.playedAt, 'dd/MM/yyyy HH:mm')}">26/03/2026 18:00</time>
+          </div>
+          <strong th:text="${item.gameName}">Game</strong>
+          <p th:text="${item.summary}">Tom tat tran dau</p>
+        </article>
+      </div>
+      <div class="cg-social-empty" th:if="${#lists.isEmpty(recentActivity)}">
+        Chua co hoat dong nao de hien thi.
+      </div>
+    </section>
+
+    <div class="cg-social-profile-side">
+      <section class="theme-box cg-social-panel">
+        <div class="cg-social-panel__head">
+          <div>
+            <div class="cg-social-panel__eyebrow">Identity</div>
+            <h2 class="cg-social-panel__title theme-text mb-0">Thong tin tai khoan</h2>
+          </div>
+        </div>
+        <div class="cg-social-mini-grid">
+          <article class="cg-social-mini-card">
+            <span>Email</span>
+            <strong th:text="${user.email != null and !#strings.isEmpty(user.email) ? user.email : 'Chua cap nhat'}">mail@example.com</strong>
+          </article>
+          <article class="cg-social-mini-card">
+            <span>Gioi tinh</span>
+            <strong th:text="${user.gender == 'male' ? 'Nam' : (user.gender == 'female' ? 'Nu' : (user.gender == 'other' ? 'Khac' : (user.gender == 'prefer_not_to_say' ? 'Khong muon chia se' : 'Chua cap nhat')))}">Chua cap nhat</strong>
+          </article>
+          <article class="cg-social-mini-card">
+            <span>Ngay sinh</span>
+            <strong th:text="${user.birthDate != null ? user.birthDate : 'Chua cap nhat'}">Chua cap nhat</strong>
+          </article>
+          <article class="cg-social-mini-card">
+            <span>Win rate</span>
+            <strong><span th:text="${winRate}">0</span>%</strong>
+          </article>
+        </div>
+      </section>
+
+      <section class="theme-box cg-social-panel">
+        <div class="cg-social-panel__head">
+          <div>
+            <div class="cg-social-panel__eyebrow">Favorites</div>
+            <h2 class="cg-social-panel__title theme-text mb-0">Tro choi yeu thich</h2>
+          </div>
+        </div>
+        <div class="cg-social-favorite-grid" th:if="${!#lists.isEmpty(favoriteGames)}">
+          <a class="cg-social-favorite-link" th:each="game : ${favoriteGames}" th:href="@{${game.href}}">
+            <div class="cg-social-favorite-link__icon">
+              <i class="bi" th:classappend="' ' + ${game.iconClass}"></i>
+            </div>
+            <div>
+              <small th:text="${game.shortLabel}">Game</small>
+              <strong th:text="${game.displayName}">Ten game</strong>
+            </div>
+          </a>
+        </div>
+        <div class="cg-social-empty" th:if="${#lists.isEmpty(favoriteGames)}">
+          Chua co tro choi yeu thich.
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('friendship-user-detail')}"></th:block>
+<script th:src="@{/js/friendship-user-detail.js}"></script>
+</body>
+</html>

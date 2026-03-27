@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Thong bao ban be')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('friendship-notifications')}"></div>
+
+<main class="gx-page-shell cg-social-page theme-text"
+      id="friendshipNotificationsRoot"
+      th:attr="data-current-user-id=${currentUserId}">
+  <section class="gx-page-hero theme-box cg-social-hero">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-bell-fill"></i>
+          <span>Xa hoi / Thong bao</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Thong bao ca nhan</h1>
+        <p class="gx-page-subtitle">
+          Tat ca loi moi ket ban, thong bao thanh tuu va thong diep he thong duoc day vao cung mot dashboard de xu ly lien tuc.
+        </p>
+      </div>
+      <div class="gx-inline-actions">
+        <span class="gx-page-badge">
+          <i class="bi bi-person-circle"></i>
+          <span th:text="${currentUserId}">user</span>
+        </span>
+        <a class="btn theme-outline-btn" th:href="@{/friendship(currentUserId=${currentUserId})}">
+          <i class="bi bi-people-fill me-1"></i> Ve trang ban be
+        </a>
+      </div>
+    </div>
+
+    <div class="cg-social-hero__grid" aria-label="Tong quan thong bao ban be">
+      <article class="cg-social-highlight">
+        <span class="cg-social-highlight__eyebrow">Friend requests</span>
+        <strong><span th:text="${#lists.size(friendRequestViews)}">0</span> loi moi ket ban</strong>
+        <p>Phe duyet ngay tu lane thong bao ma khong can quay lai man hinh danh sach ban.</p>
+      </article>
+      <article class="cg-social-highlight">
+        <span class="cg-social-highlight__eyebrow">Achievements</span>
+        <strong><span th:text="${#lists.size(achievementNotifications)}">0</span> thanh tuu moi</strong>
+        <p>Thanh tuu duoc dua vao feed de giu mach cap nhat lien tuc voi profile va lich su dau.</p>
+      </article>
+      <article class="cg-social-highlight">
+        <span class="cg-social-highlight__eyebrow">System</span>
+        <strong><span th:text="${#lists.size(systemNotifications)}">0</span> thong diep he thong</strong>
+        <p>Cac thay doi he thong, cap nhat va canh bao duoc gom chung vao day.</p>
+      </article>
+    </div>
+  </section>
+
+  <div class="cg-social-column-grid cg-social-column-grid--wide">
+    <section class="theme-box cg-social-panel">
+      <div class="cg-social-panel__head">
+        <div>
+          <div class="cg-social-panel__eyebrow">Action lane</div>
+          <h2 class="cg-social-panel__title theme-text mb-0">Loi moi ket ban</h2>
+        </div>
+        <span class="cg-social-count" th:text="${#lists.size(friendRequestViews)} + ' muc'">0 muc</span>
+      </div>
+      <ul class="list-group list-group-flush cg-social-list" id="friendRequestList">
+        <li class="list-group-item"
+            th:each="f : ${friendRequestViews}"
+            th:attr="data-friendship-id=${f.friendshipId}">
+          <article class="cg-social-card-row">
+            <div class="cg-social-card-row__header">
+              <img th:src="@{${f.requesterAvatarPath}}"
+                   alt="Anh dai dien"
+                   width="52"
+                   height="52"
+                   class="cg-social-avatar rounded-circle border">
+              <div class="cg-social-card-row__body">
+                <div class="cg-social-card-row__topline">
+                  <strong th:text="${f.requesterName}">Nguoi gui</strong>
+                  <span class="cg-social-pill is-warm">Moi</span>
+                </div>
+                <div class="cg-social-meta-line">
+                  <span th:text="${f.requesterEmail}">email@example.com</span>
+                  <span>Muon ket noi va choi cung ban</span>
+                </div>
+              </div>
+            </div>
+            <div class="cg-social-actions">
+              <a class="btn btn-sm btn-outline-primary"
+                 th:href="@{/friendship/user-detail/{id}(id=${f.requesterId},currentUserId=${currentUserId})}">Xem</a>
+              <button class="accept btn btn-sm btn-primary" type="button" th:attr="data-id=${f.friendshipId}">Chap nhan</button>
+              <button class="decline btn btn-sm btn-outline-secondary" type="button" th:attr="data-id=${f.friendshipId}">Tu choi</button>
+            </div>
+          </article>
+        </li>
+      </ul>
+      <div id="friendRequestEmptyState" class="cg-social-empty" th:if="${#lists.isEmpty(friendRequestViews)}">
+        Khong co loi moi ket ban.
+      </div>
+    </section>
+
+    <section class="theme-box cg-social-panel">
+      <div class="cg-social-panel__head">
+        <div>
+          <div class="cg-social-panel__eyebrow">Rewards</div>
+          <h2 class="cg-social-panel__title theme-text mb-0">Thanh tuu</h2>
+        </div>
+        <span class="cg-social-count" th:text="${#lists.size(achievementNotifications)} + ' muc'">0 muc</span>
+      </div>
+      <div class="cg-social-feed" th:if="${!#lists.isEmpty(achievementNotifications)}">
+        <article class="cg-social-feed-card" th:each="a : ${achievementNotifications}">
+          <div class="cg-social-feed-card__top">
+            <span class="cg-social-pill is-positive">Achievement</span>
+            <time th:if="${a.createdAt != null}" th:text="${#temporals.format(a.createdAt, 'dd/MM/yyyy HH:mm')}">26/03/2026 18:00</time>
+          </div>
+          <strong th:text="${a.achievementName}">Thanh tuu moi</strong>
+          <p>Duoc mo khoa trong hanh trinh choi game va duoc dua vao thong bao ca nhan de de theo doi.</p>
+        </article>
+      </div>
+      <div class="cg-social-empty" th:if="${#lists.isEmpty(achievementNotifications)}">
+        Chua co thong bao thanh tuu.
+      </div>
+    </section>
+
+    <section class="theme-box cg-social-panel">
+      <div class="cg-social-panel__head">
+        <div>
+          <div class="cg-social-panel__eyebrow">Broadcast</div>
+          <h2 class="cg-social-panel__title theme-text mb-0">He thong</h2>
+        </div>
+        <span class="cg-social-count" th:text="${#lists.size(systemNotifications)} + ' muc'">0 muc</span>
+      </div>
+      <div class="cg-social-feed" th:if="${!#lists.isEmpty(systemNotifications)}">
+        <article class="cg-social-feed-card" th:each="s : ${systemNotifications}">
+          <div class="cg-social-feed-card__top">
+            <span class="cg-social-pill is-muted">System</span>
+            <time th:if="${s.createdAt != null}" th:text="${#temporals.format(s.createdAt, 'dd/MM/yyyy HH:mm')}">26/03/2026 18:00</time>
+          </div>
+          <strong th:text="${s.content}">Thong diep he thong</strong>
+          <p>Cap nhat he thong, thay doi tinh nang va cac thong tin broadcast duoc tap trung o day.</p>
+        </article>
+      </div>
+      <div class="cg-social-empty" th:if="${#lists.isEmpty(systemNotifications)}">
+        Chua co thong diep he thong.
+      </div>
+    </section>
+  </div>
+
+  <div id="friendshipNotificationsOut" class="small mt-1 mb-0 theme-text" role="status" aria-live="polite"></div>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('friendship-notifications')}"></th:block>
+<script th:src="@{/js/friendship-notifications.js}"></script>
+</body>
+</html>

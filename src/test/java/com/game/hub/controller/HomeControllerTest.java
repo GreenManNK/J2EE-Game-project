@@ -29,7 +29,7 @@ class HomeControllerTest {
     void indexShouldPromoteMonopolyOnHomeRecommendedStrip() {
         PostRepository postRepository = mock(PostRepository.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
-        when(postRepository.findAll()).thenReturn(List.of());
+        when(postRepository.findAllWithComments()).thenReturn(List.of());
 
         HomeController controller = new HomeController(postRepository, userAccountRepository);
         ExtendedModelMap model = new ExtendedModelMap();

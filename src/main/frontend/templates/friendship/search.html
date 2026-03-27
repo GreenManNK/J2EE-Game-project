@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments :: appHead('Tim kiem ban be')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('friend-search')}"></div>
+
+<main class="gx-page-shell cg-social-page theme-text" id="friendshipSearchRoot" th:attr="data-current-user-id=${currentUserId}">
+  <section class="gx-page-hero theme-box cg-social-hero">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-search"></i>
+          <span>Ban be / Tim kiem</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Ket qua tim nguoi choi</h1>
+        <p class="gx-page-subtitle">
+          Tim theo ten hien thi hoac email, xem profile, gui loi moi va nhay thang vao luong ket noi chi voi mot lan thao tac.
+        </p>
+      </div>
+      <div class="gx-page-badge">
+        <i class="bi bi-key"></i>
+        <span th:text="${#strings.isEmpty(query) ? 'Chua co tu khoa' : query}">query</span>
+      </div>
+    </div>
+
+    <form class="cg-social-search-form cg-social-search-form--hero" method="get" th:action="@{/friendship/search}">
+      <input type="hidden" name="currentUserId" th:value="${currentUserId}">
+      <div class="cg-social-search-form__field">
+        <label class="form-label" for="friendSearchQuery">Tu khoa tim kiem</label>
+        <input id="friendSearchQuery" class="form-control" name="query" th:value="${query}" placeholder="Nhap ten hien thi hoac email">
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-search me-1"></i> Tim lai
+      </button>
+    </form>
+
+    <div class="cg-social-hero__grid" aria-label="Tong quan tim kiem ban be">
+      <article class="cg-social-highlight">
+        <span class="cg-social-highlight__eyebrow">Query</span>
+        <strong th:text="${#strings.isEmpty(query) ? 'Chua co tu khoa' : query}">query</strong>
+        <p>He thong uu tien tim theo ten hien thi va email de tra ve nguoi dung dung nhat.</p>
+      </article>
+      <article class="cg-social-highlight">
+        <span class="cg-social-highlight__eyebrow">Exact match</span>
+        <strong><span th:text="${#lists.size(exactMatches)}">0</span> ket qua khop chinh xac</strong>
+        <p>Ket qua exact duoc day len truoc de rut ngan so buoc ket noi.</p>
+      </article>
+      <article class="cg-social-highlight">
+        <span class="cg-social-highlight__eyebrow">Suggestions</span>
+        <strong><span th:text="${#lists.size(similarMatches)}">0</span> ket qua tuong tu</strong>
+        <p>Phan goi y giu lai CTA ket ban nhanh va link vao profile chi tiet.</p>
+      </article>
+    </div>
+  </section>
+
+  <div class="cg-social-column-grid cg-social-column-grid--search">
+    <section class="theme-box cg-social-panel">
+      <div class="cg-social-panel__head">
+        <div>
+          <div class="cg-social-panel__eyebrow">Exact</div>
+          <h2 class="cg-social-panel__title theme-text mb-0">Khop chinh xac</h2>
+        </div>
+        <span class="cg-social-count" th:text="${#lists.size(exactMatches)} + ' muc'">0 muc</span>
+      </div>
+      <div class="list-group list-group-flush cg-social-list">
+        <div class="list-group-item" th:each="u : ${exactMatches}">
+          <article class="cg-social-card-row">
+            <div class="cg-social-card-row__header">
+              <img th:src="@{${u.avatarPath != null and !#strings.isEmpty(u.avatarPath) ? u.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
+                   alt="Anh dai dien" width="52" height="52" class="cg-social-avatar rounded-circle border">
+              <div class="cg-social-card-row__body">
+                <div class="cg-social-card-row__topline">
+                  <strong th:text="${u.displayName}">Name</strong>
+                  <span class="cg-social-pill is-positive">Exact</span>
+                </div>
+                <div class="cg-social-meta-line">
+                  <span th:text="${u.email}">mail@example.com</span>
+                  <span>Diem <strong th:text="${u.score}">0</strong></span>
+                </div>
+              </div>
+            </div>
+            <div class="cg-social-actions">
+              <button type="button"
+                      class="btn btn-sm btn-primary quick-add"
+                      th:if="${currentUserId != null and !#strings.isEmpty(currentUserId) and currentUserId != u.id}"
+                      th:attr="data-user-id=${u.id}">Ket ban</button>
+              <a class="btn btn-sm btn-outline-primary" th:href="@{/friendship/user-detail/{id}(id=${u.id}, currentUserId=${currentUserId})}">Xem</a>
+            </div>
+          </article>
+        </div>
+        <div class="cg-social-empty" th:if="${#lists.isEmpty(exactMatches)}">Khong co ket qua khop chinh xac.</div>
+      </div>
+    </section>
+
+    <section class="theme-box cg-social-panel">
+      <div class="cg-social-panel__head">
+        <div>
+          <div class="cg-social-panel__eyebrow">Suggestions</div>
+          <h2 class="cg-social-panel__title theme-text mb-0">Khop tuong tu</h2>
+        </div>
+        <span class="cg-social-count" th:text="${#lists.size(similarMatches)} + ' muc'">0 muc</span>
+      </div>
+      <div class="list-group list-group-flush cg-social-list">
+        <div class="list-group-item" th:each="u : ${similarMatches}">
+          <article class="cg-social-card-row">
+            <div class="cg-social-card-row__header">
+              <img th:src="@{${u.avatarPath != null and !#strings.isEmpty(u.avatarPath) ? u.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
+                   alt="Anh dai dien" width="52" height="52" class="cg-social-avatar rounded-circle border">
+              <div class="cg-social-card-row__body">
+                <div class="cg-social-card-row__topline">
+                  <strong th:text="${u.displayName}">Name</strong>
+                  <span class="cg-social-pill is-muted">Similar</span>
+                </div>
+                <div class="cg-social-meta-line">
+                  <span th:text="${u.email}">mail@example.com</span>
+                  <span>Diem <strong th:text="${u.score}">0</strong></span>
+                </div>
+              </div>
+            </div>
+            <div class="cg-social-actions">
+              <button type="button"
+                      class="btn btn-sm btn-primary quick-add"
+                      th:if="${currentUserId != null and !#strings.isEmpty(currentUserId) and currentUserId != u.id}"
+                      th:attr="data-user-id=${u.id}">Ket ban</button>
+              <a class="btn btn-sm btn-outline-primary" th:href="@{/friendship/user-detail/{id}(id=${u.id}, currentUserId=${currentUserId})}">Xem</a>
+            </div>
+          </article>
+        </div>
+        <div class="cg-social-empty" th:if="${#lists.isEmpty(similarMatches)}">Khong co ket qua tuong tu.</div>
+      </div>
+    </section>
+  </div>
+
+  <div class="gx-inline-actions">
+    <a class="btn theme-outline-btn" th:href="@{/friendship(currentUserId=${currentUserId})}">Quay lai trang ban be</a>
+  </div>
+  <div id="friendshipSearchOut" class="small mt-1 mb-0" role="status" aria-live="polite"></div>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('friend-search')}"></th:block>
+<script th:src="@{/js/friendship-search.js}"></script>
+</body>
+</html>

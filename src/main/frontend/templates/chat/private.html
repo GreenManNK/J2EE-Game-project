@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Tin nhan rieng')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('chat-private')}"></div>
+
+<main class="private-chat-shell">
+  <section class="theme-box private-chat-main" id="privateChatRoot"
+           th:if="${success}"
+           th:attr="data-current-user-id=${currentUserId},data-friend-id=${friendId},data-current-user-name=${currentUserName},data-friend-name=${friendName},data-room-key=${roomKey}">
+    <div class="private-chat-layout">
+      <aside class="private-chat-side">
+        <div class="private-chat-side__badge">
+          <i class="bi bi-chat-dots-fill"></i>
+          <span>Private channel</span>
+        </div>
+        <h1 class="gx-page-title theme-text mb-1">Tin nhan rieng</h1>
+        <p class="gx-page-subtitle mb-0">
+          Mot luong chat rieng giua ban va mot nguoi choi khac, dong bo theo room key va hien lich su ngay trong man hinh nay.
+        </p>
+
+        <div class="private-chat-side__identity">
+          <article class="private-chat-side__user-card">
+            <span>Ban</span>
+            <strong th:text="${currentUserName}">Current user</strong>
+            <small th:text="${currentUserId}">u1</small>
+          </article>
+          <article class="private-chat-side__user-card">
+            <span>Doi thoai voi</span>
+            <strong th:text="${friendName}">Friend</strong>
+            <small th:text="${friendId}">u2</small>
+          </article>
+        </div>
+
+        <div class="private-chat-side__stats">
+          <article class="private-chat-side__stat">
+            <span>Room key</span>
+            <strong th:text="${roomKey}">room</strong>
+          </article>
+          <article class="private-chat-side__stat">
+            <span>Lich su tai san</span>
+            <strong th:text="${#lists.size(messages)} + ' tin'">0 tin</strong>
+          </article>
+        </div>
+
+        <div class="private-chat-side__actions">
+          <a class="btn btn-primary" th:href="@{/friendship/user-detail/{id}(id=${friendId},currentUserId=${currentUserId})}">
+            <i class="bi bi-person-vcard me-1"></i> Mo profile
+          </a>
+          <a class="btn theme-outline-btn" th:href="@{/friendship(currentUserId=${currentUserId})}">
+            <i class="bi bi-people-fill me-1"></i> Ve ban be
+          </a>
+          <a class="btn theme-outline-btn" th:href="@{/games/caro/rooms}">
+            <i class="bi bi-controller me-1"></i> Tim phong dau
+          </a>
+        </div>
+      </aside>
+
+      <section class="private-chat-stage">
+        <div class="private-chat-top">
+          <div class="private-chat-meta">
+            <div class="home-dashboard__eyebrow">
+              <i class="bi bi-broadcast-pin"></i>
+              <span>Room dang ket noi</span>
+            </div>
+            <strong th:text="${friendName}">Friend</strong>
+            <small th:text="${'Gui nhan tin truc tiep voi ' + friendName}">Chat voi ban</small>
+          </div>
+          <div class="private-chat-status-chip">
+            <i class="bi bi-broadcast-pin"></i>
+            <span>Trang thai:</span><span id="chatStatus">Dang ket noi...</span>
+          </div>
+        </div>
+
+        <div id="privateChatBox" class="theme-box private-chat-box"></div>
+
+        <div class="private-chat-toolbar">
+          <input id="privateMessageInput" class="form-control" placeholder="Nhap tin nhan...">
+          <button id="privateSendBtn" class="btn btn-primary">Gui</button>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section class="theme-box gx-section-card private-chat-error" th:if="${success == false}">
+    <div class="alert alert-danger mb-2" th:text="${error}">Khong tim thay tai khoan</div>
+    <a class="btn theme-outline-btn btn-sm" th:href="@{/friendship}">Ve khu ban be</a>
+  </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('chat-private')}"></th:block>
+<script th:if="${success}" th:inline="javascript">
+  window.__privateChatHistory = [[${messages}]];
+</script>
+<script th:src="@{/vendor/sockjs.min.js}"></script>
+<script th:src="@{/vendor/stomp.umd.min.js}"></script>
+<script th:src="@{/js/private-chat.js(v=20260327b)}"></script>
+</body>
+</html>

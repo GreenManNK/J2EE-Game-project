@@ -1,0 +1,326 @@
+/* --- Biến màu và font chữ --- */
+:root {
+    --table-green: #0a4723;
+    --table-green-darker: #062c16;
+    --border-gold: #d4af37;
+    --text-light: #f0f0f0;
+    --text-dark: #333;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --glow-color: #ffdd40;
+    --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-display: 'Times New Roman', Times, serif;
+}
+
+/* --- Thiết lập cơ bản --- */
+body {
+    margin: 0;
+    font-family: var(--font-main);
+    background-color: #111;
+    color: var(--text-light);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.game-viewport {
+    width: 100%;
+    max-width: 1400px;
+    aspect-ratio: 16 / 9;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* --- Bàn chơi --- */
+.game-table {
+    flex-grow: 1;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1500px;
+}
+
+.table-surface {
+    width: 95%;
+    height: 180%;
+    background: radial-gradient(circle, var(--table-green), var(--table-green-darker));
+    border: 12px solid var(--border-gold);
+    box-shadow: 0 20px 50px var(--shadow-color), inset 0 0 30px rgba(0,0,0,0.4);
+    border-radius: 50%;
+    position: absolute;
+    bottom: -85%;
+    transform: rotateX(55deg);
+}
+
+/* --- Chữ trên bàn --- */
+.table-text-arc {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50%;
+    text-align: center;
+}
+
+.arc-text {
+    font-family: var(--font-display);
+    font-size: 1.5vw;
+    font-weight: bold;
+    color: var(--text-light);
+    text-shadow: 1px 1px 3px var(--shadow-color);
+    letter-spacing: 0.5vw;
+}
+
+.table-text-line {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1vw;
+    color: rgba(255, 255, 255, 0.8);
+    white-space: nowrap;
+}
+
+.table-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 15vw;
+    color: rgba(0, 0, 0, 0.1);
+}
+
+/* --- Khu vực Dealer và Player --- */
+.dealer-area {
+    position: absolute;
+    top: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20%;
+    text-align: center;
+}
+
+.player-seats-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.player-seat {
+    position: absolute;
+    width: 15%;
+    height: 30%;
+    transform-origin: center 200%;
+    transition: all 0.3s ease;
+}
+
+/* Vị trí 5 ghế theo vòng cung */
+.player-seat[data-seat="1"] { left: 15%; top: 45%; transform: rotate(-35deg); }
+.player-seat[data-seat="2"] { left: 30%; top: 60%; transform: rotate(-15deg); }
+.player-seat[data-seat="3"] { left: 50%; top: 65%; transform: translateX(-50%); } /* Ghế chính */
+.player-seat[data-seat="4"] { left: 70%; top: 60%; transform: rotate(15deg); }
+.player-seat[data-seat="5"] { left: 85%; top: 45%; transform: rotate(35deg); }
+
+.player-seat.is-empty { opacity: 0.4; }
+.player-seat.is-turn {
+    box-shadow: 0 0 25px 10px var(--glow-color);
+    border-radius: 20px;
+}
+
+.seat-content {
+    transform: inherit; /* Bỏ transform của cha */
+    transform: rotate(0deg) !important; /* Reset xoay */
+    text-align: center;
+    padding: 10px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+}
+
+.player-info, .dealer-info {
+    font-size: 1.1vw;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px #000;
+}
+.player-balance, .player-bet {
+    font-size: 0.9vw;
+}
+.player-status {
+    font-size: 0.8vw;
+    font-style: italic;
+    color: var(--glow-color);
+    height: 1.2em;
+}
+
+/* --- Bài và Chip --- */
+.cards-hand {
+    position: relative;
+    height: 7vw;
+    margin: 10px auto;
+    width: 10vw;
+}
+
+.card {
+    width: 5vw;
+    height: 7vw;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 2px 2px 5px var(--shadow-color);
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform-origin: center center;
+    color: var(--text-dark);
+    font-size: 1.5vw;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+/* Hiệu ứng quạt bài */
+.cards-hand .card:nth-child(1) { transform: translateX(-70%) rotate(-10deg); }
+.cards-hand .card:nth-child(2) { transform: translateX(-30%) rotate(10deg); }
+.cards-hand .card:nth-child(3) { transform: translateX(10%) rotate(30deg); }
+/* ... thêm cho nhiều lá hơn */
+
+.card.hidden {
+    background-image: linear-gradient(135deg, #6a0000, #a10000);
+    color: transparent;
+}
+
+.score-display {
+    background: rgba(0,0,0,0.5);
+    padding: 2px 8px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-top: 5px;
+    font-size: 1.2vw;
+}
+
+/* --- Bảng điều khiển dưới cùng --- */
+.bottom-ui-panel {
+    height: 150px;
+    background: linear-gradient(to top, #1a1a1a, #2c2c2c);
+    border-top: 2px solid var(--border-gold);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    position: relative;
+    z-index: 10;
+}
+
+.main-controls-area {
+    flex-grow: 1;
+    text-align: center;
+}
+.notification-area {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    height: 1.5em;
+}
+.player-actions .action-btn {
+    padding: 10px 25px;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin: 0 5px;
+    border-radius: 20px;
+    border: 2px solid var(--border-gold);
+    background-color: var(--table-green);
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.player-actions .action-btn:hover:not(:disabled) {
+    background-color: var(--border-gold);
+    color: var(--text-dark);
+    transform: scale(1.05);
+}
+.player-actions .action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* --- Khu vực đặt cược --- */
+.betting-panel {
+    width: 250px;
+    text-align: center;
+}
+.bet-info {
+    font-size: 1.2em;
+    margin-bottom: 5px;
+}
+#current-bet-amount {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--glow-color);
+}
+.chips-container {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+.chip {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    transition: transform 0.2s;
+}
+.chip:hover {
+    transform: scale(1.15);
+}
+.chip[data-value="10"] { background-color: #1d6f9a; }
+.chip[data-value="25"] { background-color: #2a9d8f; }
+.chip[data-value="50"] { background-color: #e76f51; }
+.chip[data-value="100"] { background-color: #264653; color: white; }
+.chip[data-value="500"] { background-color: #f4a261; }
+
+.bet-actions button {
+    background: none;
+    border: 1px solid #888;
+    color: #ccc;
+    padding: 3px 8px;
+    font-size: 0.8em;
+    cursor: pointer;
+}
+
+/* --- Lịch sử --- */
+.result-history {
+    width: 200px;
+    font-size: 0.8em;
+}
+.history-title {
+    font-weight: bold;
+    border-bottom: 1px solid #555;
+    margin-bottom: 5px;
+}
+
+/* --- Bộ bài trang trí --- */
+.deck-area {
+    position: absolute;
+    top: 10%;
+}
+.deck-area.left { left: 5%; }
+.deck-area.right { right: 5%; }
+.deck-placeholder {
+    width: 5vw;
+    height: 7vw;
+    background-image: linear-gradient(135deg, #6a0000, #a10000);
+    border: 2px solid #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px #000;
+}

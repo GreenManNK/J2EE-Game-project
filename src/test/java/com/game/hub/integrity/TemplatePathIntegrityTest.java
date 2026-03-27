@@ -19,9 +19,9 @@ class TemplatePathIntegrityTest {
     private static final Pattern FRAGMENT_REF_PATTERN = Pattern.compile("~\\{([^}]+)\\}");
     private static final Pattern LOCAL_ASSET_PATTERN = Pattern.compile("@\\{/((?:js|css|lib|music)/[^}]+)\\}");
 
-    private static final Path MAIN_JAVA_ROOT = Path.of("src", "main", "java", "com", "game", "hub");
-    private static final Path TEMPLATES_ROOT = Path.of("src", "main", "resources", "templates");
-    private static final Path STATIC_ROOT = Path.of("src", "main", "resources", "static");
+    private static final Path MAIN_JAVA_ROOT = Path.of("src", "main", "backend", "java", "com", "game", "hub");
+    private static final Path TEMPLATES_ROOT = Path.of("src", "main", "frontend", "templates");
+    private static final Path STATIC_ROOT = Path.of("src", "main", "frontend", "static");
     private static final Path REPO_ROOT = Path.of("").toAbsolutePath().normalize();
 
     @Test

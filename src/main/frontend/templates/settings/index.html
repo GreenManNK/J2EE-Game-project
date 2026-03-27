@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Cai dat')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('settings')}"></div>
+
+<main id="settingsRoot"
+      class="gx-page-shell cg-settings-page theme-text"
+      th:attr="data-authenticated=${isAuthenticated},data-auth-user-id=${authUserId}">
+  <section class="gx-page-hero theme-box cg-settings-hero">
+    <div class="gx-page-hero__head">
+      <div>
+        <div class="home-dashboard__eyebrow">
+          <i class="bi bi-gear-fill"></i>
+          <span>TRUNG TAM CAI DAT</span>
+        </div>
+        <h1 class="gx-page-title theme-text mt-2">Dieu khien giao dien va tai khoan</h1>
+        <p class="gx-page-subtitle">
+          Mot workspace duy nhat cho account, social login, doi mat khau, tuy chon giao dien va du lieu xuat bao cao.
+        </p>
+      </div>
+      <div class="gx-inline-actions">
+        <span class="gx-page-badge">
+          <i class="bi bi-sliders"></i>
+          <span th:text="${isAuthenticated ? 'Dang dang nhap' : 'Guest mode'}">Dang dang nhap</span>
+        </span>
+        <a class="btn btn-primary"
+           th:if="${isAuthenticated}"
+           th:href="@{/profile/{id}(id=${authUserId})}">
+          <i class="bi bi-person-circle me-1"></i> Mo profile
+        </a>
+        <a class="btn theme-outline-btn" th:href="@{/leaderboard}">
+          <i class="bi bi-trophy-fill me-1"></i> Bang xep hang
+        </a>
+      </div>
+    </div>
+
+    <div class="cg-settings-summary">
+      <article class="cg-settings-summary-card">
+        <span class="cg-settings-summary-card__eyebrow">Account</span>
+        <strong th:text="${isAuthenticated ? 'Tai khoan san sang cap nhat' : 'Can dang nhap de mo day du tinh nang'}">Trang thai tai khoan</strong>
+        <p>Ho so, avatar, country, username va thong tin co ban duoc gom ve mot khu chinh sua.</p>
+      </article>
+      <article class="cg-settings-summary-card">
+        <span class="cg-settings-summary-card__eyebrow">Social</span>
+        <strong>
+          <span th:text="${(facebookLinked ? 1 : 0) + (googleLinked ? 1 : 0)}">0</span> kenh dang nhap da lien ket
+        </strong>
+        <p>Facebook va Google duoc dua len mat tien de tranh bo sot tinh nang OAuth dang co san.</p>
+      </article>
+      <article class="cg-settings-summary-card">
+        <span class="cg-settings-summary-card__eyebrow">Preferences</span>
+        <strong>Theme, language, sidebar, notifications</strong>
+        <p>Cac tuy chon UI va hanh vi he thong ap dung dong bo cho topbar, sidebar va cac page hub.</p>
+      </article>
+      <article class="cg-settings-summary-card">
+        <span class="cg-settings-summary-card__eyebrow">Exports</span>
+        <strong>Lich su, leaderboard va user reports</strong>
+        <p>Du lieu xuat CSV/Excel va khu kich hoat role quan tri van nam cung mot workflow.</p>
+      </article>
+    </div>
+  </section>
+
+  <div class="alert alert-success py-2 px-3" th:if="${socialLinked != null}">
+    Da lien ket thanh cong tai khoan <strong th:text="${#strings.capitalize(socialLinked)}">Facebook</strong>.
+  </div>
+  <div class="alert alert-danger py-2 px-3" th:if="${socialError != null}" th:text="${socialError}">
+    Khong the lien ket tai khoan mang xa hoi.
+  </div>
+
+  <div class="cg-settings-layout">
+    <div class="cg-settings-stack">
+      <section id="settingsAccountPanel" class="theme-box cg-settings-card">
+        <div class="cg-settings-card__head">
+          <div>
+            <div class="cg-settings-card__eyebrow">Account workspace</div>
+            <h2 class="cg-settings-card__title theme-text mb-0">Cai dat tai khoan</h2>
+          </div>
+          <span class="cg-social-pill is-muted" th:text="${isAuthenticated ? 'Editable' : 'Read only'}">Editable</span>
+        </div>
+
+        <div class="alert alert-info py-2 px-3 mb-0" th:if="${!isAuthenticated}">
+          Ban can dang nhap de chinh sua tai khoan.
+          <a class="alert-link" th:href="@{/account/login-page}">Dang nhap ngay</a>.
+        </div>
+
+        <form id="accountSettingsForm" class="row g-3">
+          <input type="hidden" id="settingsUserId" th:value="${authUserId}">
+          <div class="col-md-6">
+            <label class="form-label" for="settingsUsername">Ten nguoi dung</label>
+            <input id="settingsUsername"
+                   class="form-control"
+                   th:value="${settingsUser != null ? settingsUser.username : ''}"
+                   th:disabled="${!isAuthenticated}"
+                   placeholder="greenmannk">
+            <div id="settingsUsernameHint" class="form-text">6-20 ky tu, chi dung chu cai, so, dau cham va gach duoi.</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="settingsDisplayName">Ten hien thi</label>
+            <input id="settingsDisplayName"
+                   class="form-control"
+                   th:value="${settingsUser != null ? settingsUser.displayName : ''}"
+                   th:disabled="${!isAuthenticated}"
+                   placeholder="Nhap ten hien thi">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="settingsEmail">Email</label>
+            <input id="settingsEmail"
+                   type="email"
+                   class="form-control"
+                   th:value="${settingsUser != null ? settingsUser.email : ''}"
+                   th:disabled="${!isAuthenticated}"
+                   placeholder="ban@example.com">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" for="settingsCountry">Quoc gia</label>
+            <select id="settingsCountry" class="form-select" th:disabled="${!isAuthenticated}">
+              <option value="">Chon quoc gia</option>
+              <option value="Vietnam" th:selected="${settingsUser != null and settingsUser.country == 'Vietnam'}">Vietnam</option>
+              <option value="United States" th:selected="${settingsUser != null and settingsUser.country == 'United States'}">United States</option>
+              <option value="Singapore" th:selected="${settingsUser != null and settingsUser.country == 'Singapore'}">Singapore</option>
+              <option value="Japan" th:selected="${settingsUser != null and settingsUser.country == 'Japan'}">Japan</option>
+              <option value="South Korea" th:selected="${settingsUser != null and settingsUser.country == 'South Korea'}">South Korea</option>
+              <option value="Thailand" th:selected="${settingsUser != null and settingsUser.country == 'Thailand'}">Thailand</option>
+              <option value="Indonesia" th:selected="${settingsUser != null and settingsUser.country == 'Indonesia'}">Indonesia</option>
+              <option value="Philippines" th:selected="${settingsUser != null and settingsUser.country == 'Philippines'}">Philippines</option>
+              <option value="Malaysia" th:selected="${settingsUser != null and settingsUser.country == 'Malaysia'}">Malaysia</option>
+              <option value="India" th:selected="${settingsUser != null and settingsUser.country == 'India'}">India</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" for="settingsGender">Gioi tinh</label>
+            <select id="settingsGender" class="form-select" th:disabled="${!isAuthenticated}">
+              <option value="">Chon gioi tinh</option>
+              <option value="male" th:selected="${settingsUser != null and settingsUser.gender == 'male'}">Nam</option>
+              <option value="female" th:selected="${settingsUser != null and settingsUser.gender == 'female'}">Nu</option>
+              <option value="other" th:selected="${settingsUser != null and settingsUser.gender == 'other'}">Khac</option>
+              <option value="prefer_not_to_say" th:selected="${settingsUser != null and settingsUser.gender == 'prefer_not_to_say'}">Khong muon chia se</option>
+            </select>
+          </div>
+          <div class="col-md-4" th:if="${isAuthenticated}">
+            <label class="form-label d-block" for="settingsAvatarPreview">Anh dai dien hien tai</label>
+            <img id="settingsAvatarPreview"
+                 class="profile-avatar-preview"
+                 th:src="@{${settingsUser != null and settingsUser.avatarPath != null and !#strings.isEmpty(settingsUser.avatarPath) ? settingsUser.avatarPath : '/uploads/avatars/default-avatar.jpg'}}"
+                 alt="Anh dai dien hien tai">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="settingsBirthDate">Ngay sinh</label>
+            <input id="settingsBirthDate"
+                   class="form-control"
+                   type="date"
+                   th:value="${settingsUser != null and settingsUser.birthDate != null ? settingsUser.birthDate : ''}"
+                   th:disabled="${!isAuthenticated}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="settingsAvatarPath">Duong dan avatar</label>
+            <input id="settingsAvatarPath"
+                   class="form-control"
+                   th:value="${settingsUser != null ? settingsUser.avatarPath : '/uploads/avatars/default-avatar.jpg'}"
+                   th:disabled="${!isAuthenticated}"
+                   placeholder="/uploads/avatars/default-avatar.jpg">
+            <div class="form-text">Co the dan URL hoac tai tep truc tiep.</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="settingsAvatarFile">Tai avatar</label>
+            <input id="settingsAvatarFile"
+                   class="form-control"
+                   type="file"
+                   accept="*/*"
+                   th:disabled="${!isAuthenticated}">
+            <button id="settingsUploadAvatarBtn"
+                    type="button"
+                    class="btn theme-outline-btn btn-sm mt-2 w-100"
+                    th:disabled="${!isAuthenticated}">
+              Tai anh
+            </button>
+            <div class="form-text">Toi da 406MB, chap nhan moi dinh dang.</div>
+          </div>
+          <div class="col-12 d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary" th:disabled="${!isAuthenticated}">
+              <i class="bi bi-check2-circle me-1"></i> Luu tai khoan
+            </button>
+            <a class="btn theme-outline-btn" th:if="${isAuthenticated}" th:href="@{/profile/{id}(id=${authUserId})}">
+              <i class="bi bi-person-circle me-1"></i> Mo ho so
+            </a>
+            <a class="btn theme-outline-btn" th:if="${!isAuthenticated}" th:href="@{/account/login-page}">
+              <i class="bi bi-box-arrow-in-right me-1"></i> Dang nhap de mo ho so
+            </a>
+          </div>
+        </form>
+        <div id="accountSettingsStatus" class="small mb-0 theme-text" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="theme-box cg-settings-card">
+        <div class="cg-settings-card__head">
+          <div>
+            <div class="cg-settings-card__eyebrow">Social login</div>
+            <h2 class="cg-settings-card__title theme-text mb-0">Lien ket mang xa hoi</h2>
+          </div>
+        </div>
+
+        <div class="alert alert-info py-2 px-3 mb-0" th:if="${!isAuthenticated}">
+          Ban can dang nhap de lien ket Google hoac Facebook.
+        </div>
+
+        <div class="cg-settings-provider-grid">
+          <article class="cg-settings-provider">
+            <div class="cg-settings-provider__head">
+              <span class="cg-settings-provider__icon"><i class="bi bi-facebook"></i></span>
+              <div>
+                <strong>Facebook</strong>
+                <small th:text="${facebookLinked ? 'Da lien ket' : 'Chua lien ket'}">Chua lien ket</small>
+              </div>
+            </div>
+            <div class="cg-settings-provider__actions">
+              <a class="btn btn-sm btn-outline-primary"
+                 th:if="${isAuthenticated and facebookLoginEnabled and !facebookLinked}"
+                 th:href="@{/account/social/facebook/link}">
+                Lien ket
+              </a>
+              <button id="unlinkFacebookBtn"
+                      type="button"
+                      class="btn btn-sm theme-outline-btn"
+                      th:if="${isAuthenticated and facebookLinked}">
+                Huy lien ket
+              </button>
+              <a class="btn btn-sm btn-outline-primary"
+                 th:if="${!isAuthenticated and facebookLoginEnabled}"
+                 th:href="@{/oauth2/authorization/facebook}">
+                Dang nhap voi Facebook
+              </a>
+              <span class="cg-social-pill is-muted" th:if="${!facebookLoginEnabled}">Chua cau hinh tren server</span>
+            </div>
+          </article>
+
+          <article class="cg-settings-provider">
+            <div class="cg-settings-provider__head">
+              <span class="cg-settings-provider__icon"><i class="bi bi-google"></i></span>
+              <div>
+                <strong>Google</strong>
+                <small th:text="${googleLinked ? 'Da lien ket' : 'Chua lien ket'}">Chua lien ket</small>
+              </div>
+            </div>
+            <div class="cg-settings-provider__actions">
+              <a class="btn btn-sm btn-outline-primary"
+                 th:if="${isAuthenticated and googleLoginEnabled and !googleLinked}"
+                 th:href="@{/account/social/google/link}">
+                Lien ket
+              </a>
+              <button id="unlinkGoogleBtn"
+                      type="button"
+                      class="btn btn-sm theme-outline-btn"
+                      th:if="${isAuthenticated and googleLinked}">
+                Huy lien ket
+              </button>
+              <a class="btn btn-sm btn-outline-primary"
+                 th:if="${!isAuthenticated and googleLoginEnabled}"
+                 th:href="@{/oauth2/authorization/google}">
+                Dang nhap voi Google
+              </a>
+              <span class="cg-social-pill is-muted" th:if="${!googleLoginEnabled}">Chua cau hinh tren server</span>
+            </div>
+          </article>
+        </div>
+        <div id="socialLinkStatus" class="small mb-0 theme-text" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="theme-box cg-settings-card">
+        <div class="cg-settings-card__head">
+          <div>
+            <div class="cg-settings-card__eyebrow">Security</div>
+            <h2 class="cg-settings-card__title theme-text mb-0">Doi mat khau</h2>
+          </div>
+        </div>
+        <form id="changePasswordSettingsForm" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="settingsCurrentPassword">Mat khau hien tai</label>
+            <input id="settingsCurrentPassword" class="form-control" type="password" th:disabled="${!isAuthenticated}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="settingsNewPassword">Mat khau moi</label>
+            <input id="settingsNewPassword" class="form-control" type="password" th:disabled="${!isAuthenticated}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="settingsConfirmPassword">Nhap lai mat khau moi</label>
+            <input id="settingsConfirmPassword" class="form-control" type="password" th:disabled="${!isAuthenticated}">
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary" th:disabled="${!isAuthenticated}">
+              <i class="bi bi-shield-lock me-1"></i> Doi mat khau
+            </button>
+          </div>
+        </form>
+        <div id="passwordSettingsStatus" class="small mb-0 theme-text" role="status" aria-live="polite"></div>
+      </section>
+    </div>
+
+    <div class="cg-settings-stack">
+      <section id="settingsNotificationsPanel" class="theme-box cg-settings-card">
+        <div class="cg-settings-card__head">
+          <div>
+            <div class="cg-settings-card__eyebrow">Interface controls</div>
+            <h2 class="cg-settings-card__title theme-text mb-0">Cai dat giao dien va thong bao</h2>
+          </div>
+        </div>
+
+        <form id="appPreferencesForm" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="themeModeSelect">Che do giao dien</label>
+            <select id="themeModeSelect" class="form-select">
+              <option value="system">Theo he thong</option>
+              <option value="light">Sang</option>
+              <option value="dark">Toi</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="languageModeSelect">Ngon ngu</label>
+            <select id="languageModeSelect" class="form-select">
+              <option value="vi">Tieng Viet</option>
+              <option value="en">Tieng Anh</option>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <div class="cg-settings-inline-label" id="settingsPrivacyPanel">Thong bao va quyen rieng tu</div>
+          </div>
+
+          <div class="col-12">
+            <div class="cg-settings-switch-list">
+              <label class="form-check form-switch cg-settings-switch">
+                <input class="form-check-input" type="checkbox" id="desktopSidebarVisibleByDefault">
+                <span class="form-check-label">Sidebar desktop mo san mac dinh</span>
+              </label>
+              <label class="form-check form-switch cg-settings-switch">
+                <input class="form-check-input" type="checkbox" id="mobileSidebarAutoClose">
+                <span class="form-check-label">Tu dong dong sidebar mobile sau khi bam menu</span>
+              </label>
+              <label class="form-check form-switch cg-settings-switch">
+                <input class="form-check-input" type="checkbox" id="homeMusicEnabled">
+                <span class="form-check-label">Bat nhac trang chu</span>
+              </label>
+              <label class="form-check form-switch cg-settings-switch">
+                <input class="form-check-input" type="checkbox" id="toastNotificationsEnabled">
+                <span class="form-check-label">Bat toast thong bao toan he thong</span>
+              </label>
+              <label class="form-check form-switch cg-settings-switch">
+                <input class="form-check-input" type="checkbox" id="showOfflineFriendsInSidebar">
+                <span class="form-check-label">Hien thi ban ngoai tuyen trong sidebar</span>
+              </label>
+              <label class="form-check form-switch cg-settings-switch">
+                <input class="form-check-input" type="checkbox" id="autoRefreshFriendList">
+                <span class="form-check-label">Tu dong lam moi danh sach ban be</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="friendListRefreshMsSelect">Chu ky lam moi ban be</label>
+            <select id="friendListRefreshMsSelect" class="form-select">
+              <option value="5000">5 giay</option>
+              <option value="10000">10 giay</option>
+              <option value="15000">15 giay</option>
+              <option value="20000">20 giay</option>
+              <option value="30000">30 giay</option>
+              <option value="60000">60 giay</option>
+            </select>
+          </div>
+        </form>
+
+        <div class="d-flex flex-wrap gap-2">
+          <button id="savePreferencesBtn" class="btn btn-primary" type="button">
+            <i class="bi bi-save me-1"></i> Luu tuy chon
+          </button>
+          <button id="resetPreferencesBtn" class="btn theme-outline-btn" type="button">
+            <i class="bi bi-arrow-counterclockwise me-1"></i> Ve mac dinh
+          </button>
+          <button id="exportPreferencesBtn" class="btn theme-outline-btn" type="button">
+            <i class="bi bi-download me-1"></i> Xuat cai dat
+          </button>
+          <button id="importPreferencesBtn" class="btn theme-outline-btn" type="button">
+            <i class="bi bi-upload me-1"></i> Nhap cai dat
+          </button>
+          <input id="importPreferencesFileInput" type="file" accept="application/json" class="d-none">
+        </div>
+        <div id="preferencesStatus" class="small mb-0 theme-text" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="theme-box cg-settings-card">
+        <div class="cg-settings-card__head">
+          <div>
+            <div class="cg-settings-card__eyebrow">Advanced</div>
+            <h2 class="cg-settings-card__title theme-text mb-0">Bao mat nang cao</h2>
+          </div>
+        </div>
+
+        <div class="row g-2 align-items-end">
+          <div class="col-md-8">
+            <label class="form-label" for="settingsAdminCode">Ma kich hoat quan tri</label>
+            <input id="settingsAdminCode"
+                   class="form-control"
+                   type="password"
+                   th:disabled="${!isAuthenticated}"
+                   placeholder="Nhap ma kich hoat">
+          </div>
+          <div class="col-md-4 d-grid">
+            <button id="activateAdminFromSettingsBtn"
+                    class="btn theme-outline-btn"
+                    type="button"
+                    th:disabled="${!isAuthenticated}">
+              <i class="bi bi-key-fill me-1"></i> Kich hoat
+            </button>
+          </div>
+        </div>
+        <div id="securitySettingsStatus" class="small mb-0 theme-text" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="theme-box cg-settings-card">
+        <div class="cg-settings-card__head">
+          <div>
+            <div class="cg-settings-card__eyebrow">Reports</div>
+            <h2 class="cg-settings-card__title theme-text mb-0">Du lieu va bao cao</h2>
+          </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn theme-outline-btn" th:href="@{/history/export-csv(userId=${authUserId})}" data-auth-only="true">
+            Lich su CSV
+          </a>
+          <a class="btn theme-outline-btn" th:href="@{/history/export-excel(userId=${authUserId})}" data-auth-only="true">
+            Lich su Excel
+          </a>
+          <a class="btn theme-outline-btn" th:href="@{/leaderboard/export-csv}">
+            BXH CSV
+          </a>
+          <a class="btn theme-outline-btn" th:href="@{/leaderboard/export-excel}">
+            BXH Excel
+          </a>
+          <a class="btn theme-outline-btn"
+             th:href="@{/manager/export-users-excel(scope='all')}"
+             data-auth-only="true"
+             data-role-allowed="Manager,Admin">
+            Excel tai khoan
+          </a>
+          <a class="btn theme-outline-btn"
+             th:href="@{/admin}"
+             data-admin-only="true"
+             data-auth-only="true"
+             data-role-allowed="Admin">
+            Trung tam quan tri
+          </a>
+        </div>
+      </section>
+
+      <section class="theme-box cg-settings-card">
+        <div class="cg-settings-card__head">
+          <div>
+            <div class="cg-settings-card__eyebrow">Quick notes</div>
+            <h2 class="cg-settings-card__title theme-text mb-0">Huong dan nhanh</h2>
+          </div>
+        </div>
+        <ul class="cg-settings-note-list mb-0">
+          <li>Theme va ngon ngu doi ngay sau khi luu.</li>
+          <li>Sidebar desktop/mobile doc preferences moi tu local storage va server.</li>
+          <li>Social login, profile va bao cao du lieu da duoc dat trong cung mot workspace.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('settings')}"></th:block>
+<script th:src="@{/js/settings.js}"></script>
+</body>
+</html>

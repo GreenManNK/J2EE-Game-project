@@ -1,15 +1,24 @@
 package com.game.hub.games.caro.service;
 
+import com.game.hub.entity.GameHistory;
 import com.game.hub.repository.GameHistoryRepository;
 import com.game.hub.repository.UserAccountRepository;
 import com.game.hub.service.AchievementService;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class GameRoomServiceTest {
 
@@ -59,5 +68,85 @@ class GameRoomServiceTest {
         assertTrue(third.ok());
         assertEquals("X", third.symbol());
         assertEquals("u3", third.currentTurnUserId());
+    }
+
+    @Test
+    void spectatorShouldBeAbleToWatchWithoutBeingAllowedToMove() {
+        GameRoomService service = new GameRoomService(
+            mock(UserAccountRepository.class),
+            mock(GameHistoryRepository.class),
+            mock(AchievementService.class)
+        );
+
+        service.joinRoom("room-spec", "u1");
+        service.joinRoom("room-spec", "u2");
+
+        GameRoomService.JoinResult spectator = service.joinAsSpectator("room-spec", "viewer-1");
+        GameRoomService.MoveResult move = service.makeMove("room-spec", "viewer-1", 0, 0);
+
+        assertTrue(spectator.ok());
+        assertEquals("spectator", spectator.symbol());
+        assertEquals(2, spectator.playerCount());
+        assertEquals(1, spectator.spectatorCount());
+        assertFalse(move.ok());
+        assertEquals("Player does not belong to room", move.error());
+    }
+
+    @Test
+    void spectatorShouldBeAbleToJoinRoomBeforePlayersWithoutThrowing() {
+        GameRoomService service = new GameRoomService(
+            mock(UserAccountRepository.class),
+            mock(GameHistoryRepository.class),
+            mock(AchievementService.class)
+        );
+
+        GameRoomService.JoinResult spectator = service.joinAsSpectator("room-empty", "viewer-1");
+
+        assertTrue(spectator.ok());
+        assertEquals(0, spectator.playerCount());
+        assertEquals(1, spectator.spectatorCount());
+        assertNull(service.getCurrentTurnUserId("room-empty"));
+    }
+
+    @Test
+    void winningMatchShouldPersistStructuredHistoryMetadata() {
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        GameHistoryRepository gameHistoryRepository = mock(GameHistoryRepository.class);
+        AchievementService achievementService = mock(AchievementService.class);
+        when(userAccountRepository.findById("u1")).thenReturn(Optional.empty());
+        when(userAccountRepository.findById("u2")).thenReturn(Optional.empty());
+        when(userAccountRepository.findTopByOrderByScoreDesc()).thenReturn(Optional.empty());
+        doNothing().when(achievementService).evaluateAfterMatch(any(), any(), any(), anyInt(), any(), any(), any());
+
+        GameRoomService service = new GameRoomService(
+            userAccountRepository,
+            gameHistoryRepository,
+            achievementService
+        );
+
+        service.joinRoom("Normal_ABC123", "u1");
+        service.joinRoom("Normal_ABC123", "u2");
+        service.makeMove("Normal_ABC123", "u1", 0, 0);
+        service.makeMove("Normal_ABC123", "u2", 1, 0);
+        service.makeMove("Normal_ABC123", "u1", 0, 1);
+        service.makeMove("Normal_ABC123", "u2", 1, 1);
+        service.makeMove("Normal_ABC123", "u1", 0, 2);
+        service.makeMove("Normal_ABC123", "u2", 1, 2);
+        service.makeMove("Normal_ABC123", "u1", 0, 3);
+        service.makeMove("Normal_ABC123", "u2", 1, 3);
+
+        GameRoomService.MoveResult win = service.makeMove("Normal_ABC123", "u1", 0, 4);
+
+        assertTrue(win.ok());
+        assertTrue(win.win());
+
+        ArgumentCaptor<GameHistory> captor = ArgumentCaptor.forClass(GameHistory.class);
+        verify(gameHistoryRepository).save(captor.capture());
+        GameHistory saved = captor.getValue();
+        assertEquals("caro", saved.getGameCode());
+        assertEquals("Normal_ABC123", saved.getRoomId());
+        assertEquals("Phong thuong Caro", saved.getLocationLabel());
+        assertEquals("/game/room/Normal_ABC123", saved.getLocationPath());
+        assertTrue(saved.getMatchCode().startsWith("Normal_ABC123-"));
     }
 }

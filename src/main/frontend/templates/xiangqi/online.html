@@ -1,0 +1,386 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Co tuong truc tuyen')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('xiangqi-online')}"></div>
+
+<main class="container py-4">
+  <section class="card shadow-sm theme-box mb-3 gx-section-card">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div class="small">
+          <div><strong>Phong:</strong> <span id="xiangqiOnlineRoomLabel" th:text="${defaultRoomId} ?: 'Chua chon'">Chua chon</span></div>
+          <div class="online-user-summary">
+            <img id="xiangqiOnlineUserAvatar"
+                 class="online-user-summary__avatar"
+                 th:src="@{/uploads/avatars/default-avatar.jpg}"
+                 alt="Anh dai dien nguoi choi">
+            <div class="online-user-summary__body">
+              <div><strong>Ban:</strong> <span id="xiangqiOnlineUserLabel" th:text="${sessionDisplayName}">Khach</span></div>
+              <div id="xiangqiOnlineUserMeta" class="text-muted">Khach tam thoi</div>
+            </div>
+          </div>
+          <div><strong>Che do:</strong> <span id="xiangqiOnlineModeLabel">Dang choi</span></div>
+          <div><strong>Mau quan cua ban:</strong> <span id="xiangqiOnlineMyColor">Chua vao phong</span></div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <button id="xiangqiOnlineResetBtn" type="button" class="btn btn-sm theme-outline-btn" disabled>Van moi</button>
+          <button id="xiangqiOnlineSurrenderBtn" type="button" class="btn btn-sm btn-outline-warning" disabled>Dau hang</button>
+          <button id="xiangqiOnlineJoinPlayBtn" type="button" class="btn btn-sm theme-outline-btn d-none" disabled>Tham gia choi</button>
+          <button id="xiangqiOnlineSwitchSpectateBtn" type="button" class="btn btn-sm theme-outline-btn d-none" disabled>Vao che do xem</button>
+          <button id="xiangqiOnlineLeaveBtn" type="button" class="btn btn-sm btn-outline-danger">Roi phong</button>
+          <a class="btn btn-sm theme-outline-btn" th:href="@{/games/xiangqi/rooms}">Mo sanh phong</a>
+          <a class="btn btn-sm theme-outline-btn" th:href="@{/games/xiangqi}">Ve trang che do</a>
+        </div>
+      </div>
+      <div class="mt-2 small">
+        <div><strong>Ket noi:</strong> <span id="xiangqiOnlineConnectionStatus">Dang khoi tao...</span></div>
+        <div><strong>Trang thai van dau:</strong> <span id="xiangqiOnlineStatusText">Dang cho ket noi...</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="xiangqi-layout">
+    <section class="card shadow-sm theme-box gx-section-card">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+          <div>
+            <div id="xiangqiTurnStatus" class="theme-text fw-bold">Luot: Do</div>
+            <div id="xiangqiGameStatus" class="text-muted small">Dang cho vao phong...</div>
+          </div>
+          <div class="small text-muted text-end">
+            <div>Chon quan roi chon o dich de gui nuoc di</div>
+            <div>Phim tat: R Van moi, S Dau hang, L Roi phong, J Tham gia choi, V Vao xem</div>
+          </div>
+        </div>
+
+        <div class="xiangqi-board-wrap">
+          <div class="xiangqi-board-shell">
+            <div class="xiangqi-board-stage">
+              <div class="xiangqi-board-overlay" aria-hidden="true">
+                <span class="xiangqi-palace xiangqi-palace--top"></span>
+                <span class="xiangqi-palace xiangqi-palace--bottom"></span>
+              </div>
+              <div id="xiangqiBoard" class="xiangqi-board" role="grid" aria-label="Ban co tuong truc tuyen"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card shadow-sm theme-box gx-section-card">
+      <div class="card-body">
+        <h2 class="h5 theme-text mb-2">Nguoi choi trong phong</h2>
+        <div id="xiangqiOnlinePlayers" class="small xiangqi-player-list mb-3">
+          <div class="text-muted">Dang cho du nguoi...</div>
+        </div>
+
+        <h2 class="h5 theme-text mb-2">Thong tin van dau</h2>
+        <div class="small mb-3">
+          <div class="theme-text">Trang thai: <span id="xiangqiResultLabel">Dang choi</span></div>
+          <div class="theme-text">Nuoc di: <span id="xiangqiMoveCount">0</span></div>
+          <div class="theme-text">Luot hien tai: <span id="xiangqiCurrentColor">Do</span></div>
+          <div class="theme-text">Nguoi xem: <span id="xiangqiOnlineSpectatorCount">0</span></div>
+          <div class="theme-text">Nuoc cua ban / Doi thu: <span id="xiangqiOnlineMyMoveCount">0</span>/<span id="xiangqiOnlineOpponentMoveCount">0</span></div>
+          <div class="theme-text">An quan (Ban/Doi thu): <span id="xiangqiOnlineMyCaptureCount">0</span>/<span id="xiangqiOnlineOpponentCaptureCount">0</span></div>
+        </div>
+
+        <h3 class="h6 theme-text">Nhat ky nuoc di</h3>
+        <ol id="xiangqiMoveLog" class="small xiangqi-move-log mb-0"></ol>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<style>
+  main.container .xiangqi-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 14px;
+    align-items: start;
+  }
+
+  main.container .xiangqi-board-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  main.container .xiangqi-board-shell {
+    position: relative;
+    width: min(100%, 680px);
+    min-width: 320px;
+    margin: 0 auto;
+    padding: clamp(18px, 3vw, 28px);
+    border-radius: 28px;
+    background:
+      linear-gradient(140deg, rgba(255, 193, 87, 0.98), rgba(214, 104, 8, 0.98));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 240, 205, 0.45),
+      inset 0 -14px 18px rgba(96, 39, 0, 0.28),
+      0 24px 38px rgba(34, 15, 2, 0.26);
+  }
+
+  main.container .xiangqi-board-shell::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border-radius: 22px;
+    border: 2px solid rgba(112, 42, 2, 0.38);
+    pointer-events: none;
+  }
+
+  main.container .xiangqi-board-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 9 / 10;
+    border-radius: 18px;
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, rgba(255, 194, 93, 0.98), rgba(248, 173, 66, 0.98));
+    box-shadow:
+      inset 0 0 0 2px rgba(97, 42, 3, 0.64),
+      inset 0 0 18px rgba(163, 79, 17, 0.18);
+  }
+
+  main.container .xiangqi-board-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  main.container .xiangqi-board-overlay::before {
+    content: "";
+    position: absolute;
+    left: 11.1111%;
+    right: 11.1111%;
+    top: 45%;
+    height: 10%;
+    background:
+      linear-gradient(180deg, rgba(255, 191, 84, 0.42), rgba(255, 184, 71, 0.08));
+  }
+
+  main.container .xiangqi-palace {
+    position: absolute;
+    left: 38.8889%;
+    width: 22.2222%;
+    height: 20%;
+    background:
+      linear-gradient(45deg, transparent 48.7%, rgba(65, 29, 6, 0.92) 49.2%, rgba(65, 29, 6, 0.92) 50.8%, transparent 51.3%),
+      linear-gradient(-45deg, transparent 48.7%, rgba(65, 29, 6, 0.92) 49.2%, rgba(65, 29, 6, 0.92) 50.8%, transparent 51.3%);
+  }
+
+  main.container .xiangqi-palace--top {
+    top: 5%;
+  }
+
+  main.container .xiangqi-palace--bottom {
+    bottom: 5%;
+  }
+
+  main.container .xiangqi-board {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    border: none;
+    margin: 0;
+    background: transparent;
+    overflow: visible;
+  }
+
+  main.container .xiangqi-cell {
+    appearance: none;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 0;
+    aspect-ratio: 1 / 1;
+    user-select: none;
+    cursor: pointer;
+  }
+
+  main.container .xiangqi-cell::before,
+  main.container .xiangqi-cell::after {
+    content: "";
+    position: absolute;
+    background: rgba(65, 29, 6, 0.92);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  main.container .xiangqi-cell::before {
+    left: 0;
+    right: 0;
+    top: calc(50% - 1px);
+    height: 2px;
+  }
+
+  main.container .xiangqi-cell::after {
+    top: 0;
+    bottom: 0;
+    left: calc(50% - 1px);
+    width: 2px;
+  }
+
+  main.container .xiangqi-cell[data-col="0"]::before {
+    left: 50%;
+  }
+
+  main.container .xiangqi-cell[data-col="8"]::before {
+    right: 50%;
+  }
+
+  main.container .xiangqi-cell[data-row="0"]::after {
+    top: 50%;
+  }
+
+  main.container .xiangqi-cell[data-row="9"]::after {
+    bottom: 50%;
+  }
+
+  main.container .xiangqi-cell[data-row="4"]:not([data-col="0"]):not([data-col="8"])::after {
+    bottom: 50%;
+  }
+
+  main.container .xiangqi-cell[data-row="5"]:not([data-col="0"]):not([data-col="8"])::after {
+    top: 50%;
+  }
+
+  main.container .xiangqi-cell.selected {
+    outline: 3px solid rgba(53, 190, 255, 0.92);
+    outline-offset: -3px;
+  }
+
+  main.container .xiangqi-cell.legal {
+    background-image: radial-gradient(circle, rgba(56, 187, 246, 0.92) 0 18%, transparent 19%);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 34% 34%;
+  }
+
+  main.container .xiangqi-cell.capture {
+    background-image: radial-gradient(circle, transparent 0 37%, rgba(216, 74, 72, 0.92) 38% 45%, transparent 46%);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 86% 86%;
+  }
+
+  main.container .xiangqi-cell.last-move {
+    box-shadow: inset 0 0 0 999px rgba(255, 231, 103, 0.18);
+  }
+
+  main.container .xiangqi-cell.in-check {
+    box-shadow: inset 0 0 0 999px rgba(255, 82, 82, 0.14);
+  }
+
+  main.container .xiangqi-piece {
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "KaiTi", "STKaiti", "Noto Serif SC", "SimSun", serif;
+    font-weight: 700;
+    font-size: clamp(24px, 4vw, 34px);
+    line-height: 1;
+    text-align: center;
+    background:
+      radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.96), rgba(255, 241, 213, 0.96) 60%, rgba(229, 180, 113, 0.98));
+    box-shadow:
+      inset 0 0 0 2px rgba(104, 50, 10, 0.12),
+      0 6px 12px rgba(71, 32, 6, 0.18);
+    transform: translateZ(0);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  main.container .xiangqi-piece.red { color: #d21818; border-color: #d21818; text-shadow: 0 0 1px rgba(255, 255, 255, 0.3); }
+  main.container .xiangqi-piece.black { color: #17120d; border-color: #17120d; text-shadow: 0 0 1px rgba(255, 255, 255, 0.18); }
+
+  main.container .xiangqi-move-log { max-height: 280px; overflow-y: auto; padding-left: 1.1rem; }
+  main.container .xiangqi-player-list { display: flex; flex-direction: column; gap: 8px; }
+  main.container .xiangqi-player-item { border: 1px solid #777; border-radius: 8px; padding: 8px 10px; }
+  main.container .online-user-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0;
+  }
+  main.container .online-user-summary__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid rgba(60, 60, 60, 0.22);
+    background: rgba(255, 255, 255, 0.78);
+    flex-shrink: 0;
+  }
+  main.container .online-user-summary__body { min-width: 0; }
+  main.container .online-player-item__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  main.container .online-player-item__avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(60, 60, 60, 0.18);
+  }
+  main.container .online-player-item__avatar--fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #7c161b;
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.22), rgba(255, 255, 255, 0.95));
+  }
+  main.container .online-player-item__identity { min-width: 0; }
+  main.container .online-player-item__name { line-height: 1.2; }
+  main.container .online-player-item__meta { font-size: 0.8rem; }
+  main.container .xiangqi-player-item.is-me { border-color: #0dcaf0; box-shadow: 0 0 0 1px rgba(13, 202, 240, 0.4) inset; }
+  main.container .xiangqi-player-item.is-turn { box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.45) inset; }
+  @media (max-width: 991.98px) {
+    main.container .xiangqi-layout { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 575.98px) {
+    main.container .xiangqi-board-shell { width: min(100%, 96vw); min-width: 0; padding: 14px; }
+    main.container .xiangqi-piece { font-size: clamp(19px, 6vw, 28px); }
+    main.container .xiangqi-move-log { max-height: 220px; }
+  }
+</style>
+
+<th:block th:replace="~{fragments :: appScripts('xiangqi-online')}"></th:block>
+<script th:src="@{/vendor/sockjs.min.js}"></script>
+<script th:src="@{/vendor/stomp.umd.min.js}"></script>
+<script th:inline="javascript">
+  window.XiangqiOnlineBoot = {
+    roomId: /*[[${defaultRoomId}]]*/ '',
+    sessionUserId: /*[[${sessionUserId}]]*/ '',
+    sessionDisplayName: /*[[${sessionDisplayName}]]*/ '',
+    sessionAvatarPath: /*[[${sessionAvatarPath}]]*/ ''
+  };
+</script>
+<script th:src="@{/js/xiangqi-online.js}"></script>
+</body>
+</html>
+
+
+

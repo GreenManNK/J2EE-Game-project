@@ -65,7 +65,8 @@
 # or
 ./gradlew bootRun
 # or (no local JDK/Maven/Gradle required)
-docker compose up --build -d
+docker compose pull
+docker compose up -d
 ```
 
 ## Note about validation in this environment

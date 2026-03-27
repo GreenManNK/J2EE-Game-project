@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Caro - Chon che do')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-caro')}"></div>
+
+<main class="hub-portal-shell hub-portal-theme-caro">
+  <section class="card shadow-sm theme-box mb-3">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div>
+        <div class="small text-muted">Caro / Chon che do</div>
+        <h1 class="h3 theme-text mb-1">
+          <span th:text="${game != null ? game.displayName : 'Caro'}">Caro</span>
+        </h1>
+        <p class="small text-muted mb-2">Vao room online, random join, bot hoac local 2 nguoi ma khong qua them man hinh gioi thieu.</p>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="hub-portal-chip is-live" th:if="${game != null and game.availableNow}"><i class="bi bi-broadcast"></i> San sang</span>
+          <span class="hub-portal-chip" th:if="${game != null and game.supportsOnline}"><i class="bi bi-wifi"></i> Room online</span>
+          <span class="hub-portal-chip" th:if="${game != null and game.supportsOffline}"><i class="bi bi-display"></i> Bot + local</span>
+          <span class="hub-portal-chip" th:if="${game != null and game.supportsGuest}"><i class="bi bi-person-check"></i> Guest duoc choi</span>
+        </div>
+      </div>
+      <div class="small text-md-end">
+        <div><strong>Recommended:</strong> Online 1v1</div>
+        <div><strong>Access:</strong> Guest + account</div>
+        <div><strong>Session:</strong> Room / bot / local</div>
+      </div>
+    </div>
+  </section>
+
+  <section th:replace="~{fragments :: gameplayRail(
+      gameName=${game != null ? game.displayName : 'Caro'},
+      summary='Online 1v1, random room, bot va local duoc gom vao cung mot nhan gameplay.',
+      modeValue='Online / bot / local',
+      sessionValue='Room 1v1 hoac local 2 nguoi',
+      focusValue='Doc tran, block, doi nhip',
+      primaryLabel='Mo sanh Caro',
+      primaryHref='/games/caro/rooms',
+      secondaryLabel='Luyen voi bot',
+      secondaryHref='/game-mode/bot?game=caro'
+  )}"></section>
+
+  <section class="hub-portal-card">
+    <div class="hub-portal-action-grid">
+      <a th:href="@{/games/caro/rooms}" class="hub-portal-action hub-portal-action--primary">
+        <span class="hub-portal-action__icon"><i class="bi bi-globe2"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Mo sanh phong</strong>
+          <small>Tao phong, moi ban va vao match realtime</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
+
+      <button type="button"
+              class="hub-portal-action hub-portal-action--accent js-quick-random-room"
+              data-game="caro">
+        <span class="hub-portal-action__icon"><i class="bi bi-shuffle"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Vao nhanh random</strong>
+          <small>Tu dong vao phong cho phu hop hoac tao phong moi</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </button>
+
+      <a th:href="@{/game-mode/bot(game='caro')}" class="hub-portal-action hub-portal-action--accent">
+        <span class="hub-portal-action__icon"><i class="bi bi-cpu-fill"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Choi voi bot</strong>
+          <small>Chon do kho Easy/Hard va luyen tap nhanh</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
+
+      <a th:href="@{/game/offline}" class="hub-portal-action hub-portal-action--soft">
+        <span class="hub-portal-action__icon"><i class="bi bi-people-fill"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Cung may 2 nguoi</strong>
+          <small>Choi chung tren cung thiet bi, khong can room</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
+
+      <a th:href="@{/games}" class="hub-portal-action hub-portal-action--soft">
+        <span class="hub-portal-action__icon"><i class="bi bi-grid"></i></span>
+        <span class="hub-portal-action__text">
+          <strong>Ve thu vien</strong>
+          <small>Quay lai catalog de doi game hoac mode</small>
+        </span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+  </section>
+</main>
+
+<th:block th:replace="~{fragments :: appScripts('games-caro')}"></th:block>
+<script>
+  (function () {
+    const quickBtn = document.querySelector('.js-quick-random-room[data-game]');
+    if (!quickBtn) {
+      return;
+    }
+    const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+      ? window.CaroUrl.path
+      : (value) => value;
+    const ui = window.CaroUi || {};
+
+    quickBtn.addEventListener('click', async () => {
+      if (quickBtn.disabled) {
+        return;
+      }
+      const gameCode = String(quickBtn.getAttribute('data-game') || '').trim();
+      if (!gameCode) {
+        return;
+      }
+      quickBtn.disabled = true;
+      try {
+        const url = appPath('/online-hub/api/quick-random?game=' + encodeURIComponent(gameCode));
+        const response = await fetch(url, { method: 'POST' });
+        if (!response.ok) {
+          throw new Error('Khong the chon phong random');
+        }
+        const payload = await response.json();
+        const roomId = String(payload.roomId || '').trim();
+        const template = String(payload.playUrlTemplate || '').trim();
+        if (!roomId || !template.includes('{roomId}')) {
+          throw new Error('Du lieu phong khong hop le');
+        }
+        const targetPath = template.replace('{roomId}', encodeURIComponent(roomId));
+        window.location.href = appPath(targetPath);
+      } catch (error) {
+        const msg = 'Khong the vao phong random. Thu lai sau.';
+        if (ui.toast) {
+          ui.toast(msg, { type: 'warning' });
+        } else {
+          alert(msg);
+        }
+      } finally {
+        quickBtn.disabled = false;
+      }
+    });
+  })();
+</script>
+</body>
+</html>

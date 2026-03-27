@@ -1,9 +1,6 @@
 services:
   game:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: game-hub:local
+    image: ${GAME_IMAGE:-greenmannk/game-hub:latest}
     container_name: game-hub
     ports:
       - "8080:8080"
