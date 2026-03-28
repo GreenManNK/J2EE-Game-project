@@ -4,54 +4,90 @@
     <th:block th:replace="~{fragments :: appHead('Blackjack vs. Bot')}"></th:block>
     <link rel="stylesheet" th:href="@{/css/blackjack-style.css}">
 </head>
-<body>
+<body class="blackjack-bot-page">
 
-<div class="game-viewport">
-    <div class="game-table">
-        <div class="table-surface">
-            <div class="table-text-arc">
-                <span class="arc-text">BLACKJACK PAYS 3 TO 2</span>
-            </div>
-            <div class="table-text-line">
-                <span>DEALER MUST HIT SOFT 17</span> &bull; <span>INSURANCE PAYS 2 TO 1</span>
-            </div>
-            <div class="table-watermark"><i class="bi bi-suit-spade-fill"></i></div>
-            <div id="dealer-area" class="dealer-area"></div>
-            <div id="player-seats" class="player-seats-container"></div>
-            <div class="deck-area left"><div class="deck-placeholder"></div></div>
-            <div class="deck-area right"><div class="deck-placeholder"></div></div>
+<div class="blackjack-bot-shell">
+    <header class="blackjack-bot-marquee">
+        <div class="blackjack-bot-marquee__copy">
+            <div class="blackjack-bot-marquee__eyebrow">Blackjack / Dealer bot</div>
+            <h1>BLACKJACK</h1>
+            <p>Ban bot duoc doi sang cung phong cach casino table: felt teal, chip rack, deck shoe va wood rail o day ban.</p>
         </div>
-    </div>
+        <div class="blackjack-bot-marquee__actions">
+            <a th:href="@{/games/cards/blackjack}" class="blackjack-bot-link">Ve lobby realtime</a>
+            <a th:href="@{/games/cards/blackjack/local}" class="blackjack-bot-link">Qua local PvP</a>
+            <a th:href="@{/games/cards}" class="blackjack-bot-link">Ve trang danh bai</a>
+        </div>
+    </header>
 
-    <div class="bottom-ui-panel">
-        <div id="result-history" class="result-history">
-            <div class="history-title">LAST RESULTS</div>
-            <div class="history-items"></div>
-        </div>
-        <div class="main-controls-area">
-            <div id="notification-area" class="notification-area">Place your bet</div>
-            <div id="player-actions" class="player-actions">
-                <button class="action-btn" id="btn-hit">Hit</button>
-                <button class="action-btn" id="btn-stand">Stand</button>
-                <button class="action-btn" id="btn-double">Double</button>
-                <button class="action-btn" id="btn-deal">Deal</button>
+    <div class="game-viewport">
+        <div class="game-table">
+            <div class="table-surface">
+                <div class="table-title">BLACKJACK</div>
+                <div class="table-copy">
+                    <span>BLACKJACK PAYS 3 TO 2</span>
+                    <span>DEALER HITS SOFT 17</span>
+                    <span>INSURANCE PAYS 2 TO 1</span>
+                </div>
+                <div class="chip-rack" aria-hidden="true">
+                    <span class="chip-rack__chip chip-rack__chip--blue">10</span>
+                    <span class="chip-rack__chip chip-rack__chip--green">25</span>
+                    <span class="chip-rack__chip chip-rack__chip--red">50</span>
+                    <span class="chip-rack__chip chip-rack__chip--black">100</span>
+                    <span class="chip-rack__chip chip-rack__chip--violet">500</span>
+                </div>
+                <div class="deck-area right" aria-hidden="true"><div class="deck-placeholder"></div></div>
+                <div id="dealer-area" class="dealer-area"></div>
+                <div id="player-seats" class="player-seats-container"></div>
             </div>
         </div>
-        <div id="betting-panel" class="betting-panel">
-            <div class="bet-info">
-                <div>BET</div>
-                <div id="current-bet-amount">0</div>
+
+        <div class="bottom-ui-panel">
+            <div class="table-stats">
+                <div class="table-stat">
+                    <span>Balance</span>
+                    <strong id="bot-balance-value">$1,000.00</strong>
+                </div>
+                <div class="table-stat">
+                    <span>Current bet</span>
+                    <strong id="bot-bet-value">$0.00</strong>
+                </div>
+                <div class="table-stat">
+                    <span>Last result</span>
+                    <strong id="bot-last-result-value">Waiting</strong>
+                </div>
+                <div id="result-history" class="result-history">
+                    <div class="history-title">Last hands</div>
+                    <div class="history-items"></div>
+                </div>
             </div>
-            <div class="chips-container">
-                <div class="chip" data-value="10"><span class="chip-value">10</span></div>
-                <div class="chip" data-value="25"><span class="chip-value">25</span></div>
-                <div class="chip" data-value="50"><span class="chip-value">50</span></div>
-                <div class="chip" data-value="100"><span class="chip-value">100</span></div>
-                <div class="chip" data-value="500"><span class="chip-value">500</span></div>
+
+            <div class="main-controls-area">
+                <div id="notification-area" class="notification-area">Place your bet</div>
+                <div id="player-actions" class="player-actions">
+                    <button class="action-btn action-btn--hit" id="btn-hit">Hit</button>
+                    <button class="action-btn action-btn--stand" id="btn-stand">Stand</button>
+                    <button class="action-btn action-btn--double" id="btn-double">Double</button>
+                    <button class="action-btn action-btn--deal" id="btn-deal">Deal</button>
+                </div>
             </div>
-            <div class="bet-actions">
-                <button id="btn-clear-bet">Clear</button>
-                <button id="btn-undo-bet">Undo</button>
+
+            <div id="betting-panel" class="betting-panel">
+                <div class="bet-info">
+                    <div class="bet-info__label">Bet stack</div>
+                    <div id="current-bet-amount">0</div>
+                </div>
+                <div class="chips-container">
+                    <button type="button" class="chip" data-value="10"><span class="chip-value">10</span></button>
+                    <button type="button" class="chip" data-value="25"><span class="chip-value">25</span></button>
+                    <button type="button" class="chip" data-value="50"><span class="chip-value">50</span></button>
+                    <button type="button" class="chip" data-value="100"><span class="chip-value">100</span></button>
+                    <button type="button" class="chip" data-value="500"><span class="chip-value">500</span></button>
+                </div>
+                <div class="bet-actions">
+                    <button id="btn-clear-bet">Clear</button>
+                    <button id="btn-undo-bet">Undo</button>
+                </div>
             </div>
         </div>
     </div>

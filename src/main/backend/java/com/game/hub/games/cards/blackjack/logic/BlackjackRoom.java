@@ -282,6 +282,10 @@ public class BlackjackRoom {
         return new ArrayList<>(spectators);
     }
 
+    public List<String> getSeatOrder() {
+        return new ArrayList<>(seatOrder);
+    }
+
     public int getPlayerLimit() {
         return PLAYER_LIMIT;
     }

@@ -214,6 +214,7 @@ public class BlackjackSocket extends TextWebSocketHandler {
                 Map<String, Object> payloadMap = new LinkedHashMap<>();
                 payloadMap.put("id", room.getId());
                 payloadMap.put("players", room.getPlayers());
+                payloadMap.put("seatOrder", room.getSeatOrder());
                 payloadMap.put("spectators", room.getSpectators());
                 payloadMap.put("dealer", room.getDealer());
                 payloadMap.put("gameState", room.getGameState());

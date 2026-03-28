@@ -20,6 +20,8 @@
             isTurn: false
         },
         history: [],
+        betStack: [],
+        lastResult: "Waiting",
         roundActive: false,
         historyRecorded: false,
         historyMatchCode: ""
@@ -40,6 +42,9 @@
         els.notificationArea = document.getElementById("notification-area");
         els.resultHistory = document.querySelector("#result-history .history-items");
         els.currentBetAmount = document.getElementById("current-bet-amount");
+        els.balanceValue = document.getElementById("bot-balance-value");
+        els.betValue = document.getElementById("bot-bet-value");
+        els.lastResultValue = document.getElementById("bot-last-result-value");
         els.hitBtn = document.getElementById("btn-hit");
         els.standBtn = document.getElementById("btn-stand");
         els.doubleBtn = document.getElementById("btn-double");
@@ -129,6 +134,7 @@
             return;
         }
         state.player.bet += chipValue;
+        state.betStack.push(chipValue);
         syncRoundState();
     }
 
@@ -137,6 +143,7 @@
             return;
         }
         state.player.bet = 0;
+        state.betStack = [];
         syncRoundState();
     }
 
@@ -144,7 +151,7 @@
         if (state.roundActive) {
             return;
         }
-        const lastChip = Number(els.chips.find((chip) => chip.classList.contains("is-last-chip"))?.dataset.value || 0);
+        const lastChip = Number(state.betStack.pop() || 0);
         if (lastChip > 0 && state.player.bet >= lastChip) {
             state.player.bet -= lastChip;
         } else {
@@ -268,6 +275,7 @@
         }
 
         state.player.status = resultLabel;
+        state.lastResult = resultLabel;
         state.history.unshift(resultLabel);
         if (state.history.length > 5) {
             state.history = state.history.slice(0, 5);
@@ -276,6 +284,7 @@
         recordBotHistory(outcome);
         syncRoundState();
         state.player.bet = 0;
+        state.betStack = [];
         syncRoundState();
     }
 
@@ -290,6 +299,7 @@
         renderPlayer();
         renderHistory();
         updateControls();
+        syncChipHighlight();
         if (state.roundActive) {
             setNotification(state.player.isTurn ? "Your turn" : "Dealer turn");
         } else if (state.player.status && state.player.status !== "Waiting") {
@@ -298,13 +308,25 @@
             setNotification(state.player.bet > 0 ? "Nhan Deal de bat dau" : "Place your bet");
         }
         if (els.currentBetAmount) {
-            els.currentBetAmount.textContent = String(state.player.bet);
+            els.currentBetAmount.textContent = formatCurrency(state.player.bet);
+        }
+        if (els.balanceValue) {
+            els.balanceValue.textContent = formatCurrency(state.player.balance);
+        }
+        if (els.betValue) {
+            els.betValue.textContent = formatCurrency(state.player.bet);
+        }
+        if (els.lastResultValue) {
+            els.lastResultValue.textContent = state.lastResult;
         }
     }
 
     function createCardElement(card) {
         const cardEl = document.createElement("div");
         cardEl.className = "card";
+        if (card.suit === "hearts" || card.suit === "diams") {
+            cardEl.style.color = "#a91b1b";
+        }
         const rank = document.createElement("span");
         rank.className = "rank";
         rank.textContent = card.rank;
@@ -315,14 +337,21 @@
         return cardEl;
     }
 
-    function renderHand(hand) {
+    function createHiddenCardElement() {
+        const cardEl = document.createElement("div");
+        cardEl.className = "card hidden";
+        return cardEl;
+    }
+
+    function renderHand(hand, options = {}) {
+        const hiddenIndexes = new Set(options.hiddenIndexes || []);
         const handContainer = document.createElement("div");
         handContainer.className = "cards-hand";
         hand.forEach((card, index) => {
-            const cardEl = createCardElement(card);
+            const cardEl = hiddenIndexes.has(index) ? createHiddenCardElement() : createCardElement(card);
             const angle = (index - (hand.length - 1) / 2) * 12;
             const translateY = Math.abs(index - (hand.length - 1) / 2) * 5;
-            cardEl.style.transform = "translateX(-50%) rotate(" + angle + "deg) translateY(" + translateY + "px)";
+            cardEl.style.transform = "rotate(" + angle + "deg) translateY(" + translateY + "px)";
             cardEl.style.zIndex = String(index);
             handContainer.appendChild(cardEl);
         });
@@ -334,13 +363,18 @@
             return;
         }
         els.dealerArea.innerHTML = "";
+        const hideHoleCard = state.roundActive && state.player.isTurn && state.dealer.hand.length > 1;
         const info = document.createElement("div");
         info.className = "dealer-info";
         info.textContent = state.dealer.name;
-        const hand = renderHand(state.dealer.hand);
+        const hand = renderHand(state.dealer.hand, {
+            hiddenIndexes: hideHoleCard ? [1] : []
+        });
         const score = document.createElement("div");
         score.className = "score-display";
-        score.textContent = String(state.dealer.score || 0);
+        score.textContent = hideHoleCard
+            ? dealerPreview()
+            : String(state.dealer.score || 0);
         els.dealerArea.append(info, hand, score);
     }
 
@@ -349,45 +383,60 @@
             return;
         }
         els.playerSeats.innerHTML = "";
-        const seat = document.createElement("div");
-        seat.className = "player-seat" + (state.player.isTurn ? " is-turn" : "");
-        seat.dataset.seat = String(state.player.seat);
+        [1, 2, 3, 4, 5].forEach((seatNumber) => {
+            const seat = document.createElement("div");
+            const isPlayerSeat = seatNumber === state.player.seat;
+            seat.className = "player-seat"
+                + (isPlayerSeat && state.player.isTurn ? " is-turn" : "")
+                + (isPlayerSeat ? "" : " is-empty");
+            seat.dataset.seat = String(seatNumber);
 
-        const content = document.createElement("div");
-        content.className = "seat-content";
+            const content = document.createElement("div");
+            content.className = "seat-content";
 
-        const info = document.createElement("div");
-        info.className = "player-info";
-        info.textContent = state.player.name;
+            const info = document.createElement("div");
+            info.className = "player-info";
+            info.textContent = isPlayerSeat ? state.player.name : ("Seat " + seatNumber);
 
-        const balance = document.createElement("div");
-        balance.className = "player-balance";
-        balance.textContent = "$" + state.player.balance;
+            if (isPlayerSeat) {
+                const balance = document.createElement("div");
+                balance.className = "player-balance";
+                balance.textContent = "Balance " + formatCurrency(state.player.balance);
 
-        const hand = renderHand(state.player.hand);
+                const hand = renderHand(state.player.hand);
 
-        const bet = document.createElement("div");
-        bet.className = "bet-chips";
-        bet.textContent = state.player.bet > 0 ? ("$" + state.player.bet) : "";
+                const bet = document.createElement("div");
+                bet.className = "bet-chips";
+                bet.textContent = state.player.bet > 0 ? formatCurrency(state.player.bet) : "No bet";
 
-        const score = document.createElement("div");
-        score.className = "score-display";
-        score.textContent = state.player.score > 0 ? String(state.player.score) : "";
+                const score = document.createElement("div");
+                score.className = "score-display";
+                score.textContent = state.player.score > 0 ? String(state.player.score) : "-";
 
-        const status = document.createElement("div");
-        status.className = "player-status";
-        status.textContent = state.player.status || "Waiting";
+                const status = document.createElement("div");
+                status.className = "player-status";
+                status.textContent = state.player.status || "Waiting";
 
-        content.append(info, balance, hand, bet, score, status);
-        seat.appendChild(content);
-        els.playerSeats.appendChild(seat);
+                content.append(info, balance, hand, bet, score, status);
+            } else {
+                const waiting = document.createElement("div");
+                waiting.className = "player-status";
+                waiting.textContent = "Open table";
+                content.append(info, waiting);
+            }
+
+            seat.appendChild(content);
+            els.playerSeats.appendChild(seat);
+        });
     }
 
     function renderHistory() {
         if (!els.resultHistory) {
             return;
         }
-        els.resultHistory.innerHTML = state.history.map((item) => "<div>" + escapeHtml(item) + "</div>").join("");
+        els.resultHistory.innerHTML = state.history.length
+            ? state.history.map((item) => "<div>" + escapeHtml(item) + "</div>").join("")
+            : "<div>No hands yet</div>";
     }
 
     function updateControls() {
@@ -411,8 +460,32 @@
             els.undoBetBtn.disabled = state.roundActive || state.player.bet <= 0;
         }
         els.chips.forEach((chip) => {
+            chip.disabled = state.roundActive;
             chip.classList.toggle("disabled", state.roundActive);
         });
+    }
+
+    function dealerPreview() {
+        if (!state.dealer.hand.length) {
+            return "0";
+        }
+        return String(getHandValue([state.dealer.hand[0]]) || 0) + "+?";
+    }
+
+    function syncChipHighlight() {
+        const activeValue = String(state.betStack[state.betStack.length - 1] || "");
+        els.chips.forEach((chip) => {
+            chip.classList.toggle("is-last-chip", Boolean(activeValue) && chip.dataset.value === activeValue);
+        });
+    }
+
+    function formatCurrency(value) {
+        return new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(Number(value || 0));
     }
 
     function suitEntity(suit) {

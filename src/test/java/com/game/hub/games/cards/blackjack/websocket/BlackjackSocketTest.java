@@ -68,6 +68,7 @@ class BlackjackSocketTest {
         assertEquals("PLAYER_TURN", String.valueOf(latestPayload.get("gameState")));
         assertEquals(1, ((Number) latestPayload.get("playerCount")).intValue());
         assertEquals("blackjack-player", latestPayload.get("yourId"));
+        assertEquals(List.of("blackjack-player"), latestPayload.get("seatOrder"));
         assertNotNull(blackjackService.getRoom(room.getId()));
 
         socket.afterConnectionClosed(session, CloseStatus.NORMAL);

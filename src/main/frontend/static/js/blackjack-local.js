@@ -153,8 +153,8 @@
         + "<strong>" + escapeHtml(player.name) + "</strong>"
         + "<button type=\"button\" class=\"hub-portal-action\" data-seat-select=\"" + index + "\">Chon ghe</button>"
         + "</div>"
-        + "<div class=\"blackjack-local-player__meta\"><span>So du: " + player.balance + "</span><span>Cuoc: " + player.bet + "</span></div>"
-        + "<div class=\"blackjack-local-player__meta\"><span>Diem: " + handValue(player.hand) + "</span><span>Ket qua: " + escapeHtml(player.roundResult) + "</span></div>";
+        + "<div class=\"blackjack-local-player__meta\"><span>So du: " + formatMoney(player.balance) + "</span><span>Cuoc: " + formatMoney(player.bet) + "</span></div>"
+        + "<div class=\"blackjack-local-player__meta\"><span>Diem: " + (player.hand.length ? handValue(player.hand) : "-") + "</span><span>Ket qua: " + escapeHtml(player.roundResult) + "</span></div>";
       const cardsEl = document.createElement("div");
       cardsEl.className = "blackjack-local-cards";
       player.hand.forEach(function (handCard, handIndex) {
@@ -213,8 +213,8 @@
   }
 
   function renderSummary() {
-    const selected = selectedPlayer();
-    els.activeSeat.textContent = selected ? selected.name : "-";
+    const focusPlayer = currentPlayer() || selectedPlayer();
+    els.activeSeat.textContent = focusPlayer ? focusPlayer.name : "-";
   }
 
   function selectSeat(index) {
@@ -254,7 +254,7 @@
     player.bet = amount;
     player.lastBet = amount;
     player.roundResult = "Da dat cuoc";
-    setStatus(player.name + " da dat cuoc " + amount + ".");
+    setStatus(player.name + " da dat cuoc " + formatMoney(amount) + ".");
     render();
   }
 
@@ -475,14 +475,13 @@
       player.roundResult = "Push";
     });
 
-    state.phase = "round-over";
-    state.activePlayerIndex = -1;
     const roundLabel = winners.length ? ("Nguoi thang: " + winners.join(", ")) : "Dealer giu uu the";
     state.history.unshift(prefix + " " + roundLabel);
     markHistory();
+    state.phase = "betting";
+    state.activePlayerIndex = -1;
     setStatus(prefix + " " + roundLabel + ". Bam Dat lai ca ban hoac dat cuoc moi.");
     render();
-    state.phase = "betting";
   }
 
   function markSelectedSeat(index) {
@@ -663,5 +662,9 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
+  }
+
+  function formatMoney(value) {
+    return "$" + Number(value || 0).toLocaleString("en-US");
   }
 })();
