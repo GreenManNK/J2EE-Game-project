@@ -32,7 +32,7 @@ Tao file `.env.public.local` tu `.env.public.example`, sau do dien cac bien can 
 Luu y:
 
 - Khong can co them co `--named` nua. Chi can cau hinh env dung, launcher se tu uu tien named tunnel.
-- Neu chua co `CLOUDFLARE_TUNNEL_TOKEN` va `PUBLIC_BASE_URL`, launcher van chay quick tunnel de lay link tam thoi.
+- Neu chua co `CLOUDFLARE_TUNNEL_TOKEN` va `PUBLIC_BASE_URL`, launcher se tu thu `quick`, `runlocal`, `localtunnel` va giu provider dau tien pass du bo `page + ping + ws/info`.
 
 ## 2) Build production neu muon chuan bi truoc
 

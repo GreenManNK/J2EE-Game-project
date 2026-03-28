@@ -35,7 +35,7 @@ Khi chay `Start (Default Public)`, he thong se tu dong:
   - H2 file local neu khong co DB server kha dung
 - tu chon public tunnel:
   - uu tien `Cloudflare Named Tunnel` neu da co `CLOUDFLARE_TUNNEL_TOKEN` + `PUBLIC_BASE_URL`
-  - neu chua du cau hinh thi fallback sang quick tunnel
+  - neu chua du cau hinh thi thu lan luot `quick -> runlocal -> localtunnel` cho den khi public page va websocket deu san sang
 - chi bao thanh cong khi landing page va websocket public deu san sang
 - in `PUBLIC_GAME_URL=...` de gui cho nguoi choi
 
@@ -133,6 +133,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-env-setup.ps1 
 - `run-prod-public.err.log`
 - `cloudflared.err.log`
 - `cloudflared-named.err.log`
+- `public-fallback-tunnel.err.log`
 
 ## Lenh nhanh de nho
 

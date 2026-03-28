@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="previewMedia(game, mediaClass)">
+  <th:block th:if="${game != null and game.hasPreviewMedia()}">
+    <video th:if="${game.previewMediaIsVideo()}"
+           th:class="${mediaClass}"
+           th:src="${game.previewMediaUrl}"
+           aria-hidden="true"
+           tabindex="-1"
+           autoplay
+           muted
+           loop
+           playsinline
+           preload="metadata"
+           disablepictureinpicture></video>
+    <img th:if="${game.previewMediaIsImage()}"
+         th:class="${mediaClass}"
+         th:src="${game.previewMediaUrl}"
+         alt=""
+         aria-hidden="true"
+         loading="lazy"
+         decoding="async">
+  </th:block>
+</th:block>
+</body>
+</html>

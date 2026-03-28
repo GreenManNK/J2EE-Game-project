@@ -116,7 +116,8 @@
       </div>
 
       <section class="hub-portal-stage" aria-label="Preview game">
-        <div class="hub-portal-stage__screen">
+        <div class="hub-portal-stage__screen" th:attr="data-has-media=${game.hasPreviewMedia()}">
+          <th:block th:replace="~{games/media-fragments :: previewMedia(game=${game}, mediaClass='hub-portal-stage__media')}"></th:block>
           <div>
             <div class="hub-portal-stage__screen-icon">
               <i class="bi" th:classappend="' ' + ${game.iconClass}"></i>
@@ -161,7 +162,8 @@
           <span class="hub-portal-pill">Hien tai</span>
         </div>
 
-        <div class="hub-portal-preview">
+        <div class="hub-portal-preview" th:attr="data-has-media=${game.hasPreviewMedia()}">
+          <th:block th:replace="~{games/media-fragments :: previewMedia(game=${game}, mediaClass='hub-portal-preview__media')}"></th:block>
           <div class="hub-portal-preview-grid" aria-hidden="true">
             <div class="hub-portal-preview-cell is-accent-a"><i class="bi bi-wifi"></i></div>
             <div class="hub-portal-preview-cell" th:text="${game.supportsOnline ? 'Co' : 'Khong'}">Co</div>
@@ -431,7 +433,8 @@
              th:if="${g.code != game.code}"
              th:href="@{/games/{code}(code=${g.code})}"
              class="hub-portal-related-item"
-             th:attr="data-code=${g.code}">
+             th:attr="data-code=${g.code},data-has-media=${g.hasPreviewMedia()}">
+            <th:block th:replace="~{games/media-fragments :: previewMedia(game=${g}, mediaClass='hub-portal-related-media')}"></th:block>
             <i class="bi" th:classappend="${g.iconClass}"></i>
             <div>
               <strong th:text="${g.displayName}">Game</strong>

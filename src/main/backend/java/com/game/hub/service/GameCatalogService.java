@@ -12,14 +12,21 @@ import java.util.Optional;
 @Service
 public class GameCatalogService {
     private final ExternalGameModuleService externalGameModuleService;
+    private final GamePreviewMediaResolver previewMediaResolver;
 
     public GameCatalogService() {
-        this.externalGameModuleService = null;
+        this(null, new GamePreviewMediaResolver());
+    }
+
+    public GameCatalogService(ExternalGameModuleService externalGameModuleService) {
+        this(externalGameModuleService, new GamePreviewMediaResolver());
     }
 
     @Autowired
-    public GameCatalogService(ExternalGameModuleService externalGameModuleService) {
+    public GameCatalogService(ExternalGameModuleService externalGameModuleService,
+                              GamePreviewMediaResolver previewMediaResolver) {
         this.externalGameModuleService = externalGameModuleService;
+        this.previewMediaResolver = previewMediaResolver;
     }
 
     public List<GameCatalogItem> findAll() {
@@ -34,7 +41,9 @@ public class GameCatalogService {
                 merged.put(key, item);
             }
         });
-        return List.copyOf(merged.values());
+        return merged.values().stream()
+            .map(this::ensurePreviewMedia)
+            .toList();
     }
 
     public Optional<GameCatalogItem> findByCode(String code) {
@@ -242,5 +251,20 @@ public class GameCatalogService {
             return "";
         }
         return value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private GameCatalogItem ensurePreviewMedia(GameCatalogItem item) {
+        if (item == null) {
+            return null;
+        }
+        if (item.hasPreviewMedia()) {
+            return item.withPreviewMedia(
+                item.previewMediaUrl(),
+                previewMediaResolver.resolveMediaKind(item.previewMediaUrl(), item.previewMediaKind())
+            );
+        }
+        return previewMediaResolver.resolveCatalogMedia(item.code())
+            .map(media -> item.withPreviewMedia(media.url(), media.kind()))
+            .orElse(item);
     }
 }

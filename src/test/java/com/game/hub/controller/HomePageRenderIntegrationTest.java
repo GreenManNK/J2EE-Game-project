@@ -60,7 +60,8 @@ class HomePageRenderIntegrationTest {
             .andExpect(view().name("games/index"))
             .andExpect(model().attributeExists("games"))
             .andExpect(content().string(containsString("/games/monopoly")))
-            .andExpect(content().string(containsString("/games/cards/blackjack")));
+            .andExpect(content().string(containsString("/games/cards/blackjack")))
+            .andExpect(content().string(containsString("/images/games/home/quiz.")));
     }
 
     @Test
@@ -123,7 +124,8 @@ class HomePageRenderIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(view().name("games/quiz"))
             .andExpect(model().attributeExists("game", "allGames"))
-            .andExpect(content().string(containsString("Gameplay rail /")));
+            .andExpect(content().string(containsString("Gameplay rail /")))
+            .andExpect(content().string(containsString("/images/games/home/quiz.")));
     }
 
     @Test

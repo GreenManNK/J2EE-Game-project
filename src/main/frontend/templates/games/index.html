@@ -188,7 +188,8 @@
          th:href="@{'/games/' + ${g.code}}"
          class="cg-recommended-card"
          th:classappend="${g.code == 'caro'} ? ' is-feature' : (${g.code == 'monopoly'} ? ' is-wide' : '')"
-         th:attr="data-code=${g.code}">
+         th:attr="data-code=${g.code},data-has-media=${g.hasPreviewMedia()}">
+        <th:block th:replace="~{games/media-fragments :: previewMedia(game=${g}, mediaClass='cg-card-media')}"></th:block>
         <span class="cg-recommended-card__badge"
               th:text="${g.supportsOnline} ? 'Online' : (g.supportsGuest ? 'Quick play' : 'Featured')">Featured</span>
         <div class="cg-recommended-card__icon">
@@ -217,7 +218,10 @@
       <article class="cg-tile"
                th:each="g,st : ${games}"
                th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' || g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 70 : 35) + (g.supportsOnline ? 18 : 0) + (20 - st.index)},data-online=${g.supportsOnline},data-original=${!g.externalSource}">
-        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+        <div class="cg-tile-thumb"
+             th:classappend="' tone-' + ${g.code}"
+             th:attr="data-has-media=${g.hasPreviewMedia()}">
+          <th:block th:replace="~{games/media-fragments :: previewMedia(game=${g}, mediaClass='cg-tile-media')}"></th:block>
           <span class="cg-tile-badge" th:text="${g.availableNow} ? 'San sang' : 'Sap co'">San sang</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
@@ -255,7 +259,10 @@
                th:each="g : ${games}"
                th:if="${g.supportsOnline}"
                th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' || g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 85 : 45)},data-online=${g.supportsOnline},data-original=${!g.externalSource}">
-        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+        <div class="cg-tile-thumb"
+             th:classappend="' tone-' + ${g.code}"
+             th:attr="data-has-media=${g.hasPreviewMedia()}">
+          <th:block th:replace="~{games/media-fragments :: previewMedia(game=${g}, mediaClass='cg-tile-media')}"></th:block>
           <span class="cg-tile-badge">Truc tuyen</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
@@ -293,7 +300,10 @@
                th:each="g : ${games}"
                th:if="${g.code == 'caro' or g.code == 'chess' or g.code == 'xiangqi' or g.code == 'monopoly' or g.code == 'puzzle'}"
                th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' or g.code == 'monopoly' ? 2026 : 2025},data-popularity=${(g.availableNow ? 74 : 40) + (g.supportsOnline ? 10 : 0)},data-online=${g.supportsOnline},data-original=${!g.externalSource}">
-        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+        <div class="cg-tile-thumb"
+             th:classappend="' tone-' + ${g.code}"
+             th:attr="data-has-media=${g.hasPreviewMedia()}">
+          <th:block th:replace="~{games/media-fragments :: previewMedia(game=${g}, mediaClass='cg-tile-media')}"></th:block>
           <span class="cg-tile-badge">Noi bat</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
@@ -331,7 +341,10 @@
                th:each="g : ${games}"
                th:if="${g.code == 'cards' or g.code == 'blackjack' or g.code == 'puzzle' or g.code == 'quiz' or g.code == 'typing' or g.code == 'minesweeper'}"
                th:attr="data-name=${g.displayName},data-code=${g.code},data-release=${g.code == 'puzzle' or g.code == 'minesweeper' ? 2026 : 2025},data-popularity=${(g.availableNow ? 65 : 42) + (g.supportsGuest ? 12 : 0)},data-online=${g.supportsOnline},data-original=${!g.externalSource}">
-        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+        <div class="cg-tile-thumb"
+             th:classappend="' tone-' + ${g.code}"
+             th:attr="data-has-media=${g.hasPreviewMedia()}">
+          <th:block th:replace="~{games/media-fragments :: previewMedia(game=${g}, mediaClass='cg-tile-media')}"></th:block>
           <span class="cg-tile-badge">Moi</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>

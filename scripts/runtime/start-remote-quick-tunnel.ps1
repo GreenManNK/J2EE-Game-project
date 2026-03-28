@@ -84,7 +84,7 @@ Ensure-Cloudflared
 Stop-PreviousTunnel
 $process = Start-Tunnel -Port $LocalPort
 $baseUrl = Wait-QuickTunnelUrl
-$publicAppUrl = $baseUrl + $ContextPath
+$publicAppUrl = $baseUrl + $ContextPath + "/"
 
 Write-Output "OK - Remote quick tunnel da san sang."
 Write-Output "Public URL: $publicAppUrl"

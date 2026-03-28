@@ -285,9 +285,14 @@ Write-Output "RESOLVED_DB_REASON=$($dbInfo.reason)"
 Write-Output "APP_ENV_FILE=$($dbInfo.envFile)"
 Write-Output "TUNNEL_MODE_REQUESTED=auto"
 
-Run-Bootstrap -ResolvedDbKind $dbInfo.kind -Force:$ForceBootstrap
-Assert-PublicRuntimeAvailable
-Apply-DbSelection -DbInfo $dbInfo
+try {
+    Run-Bootstrap -ResolvedDbKind $dbInfo.kind -Force:$ForceBootstrap
+    Assert-PublicRuntimeAvailable
+    Apply-DbSelection -DbInfo $dbInfo
 
-& $publicStartScript -AutoBuild -Port 8080 -AppEnvFile $dbInfo.envFile -TunnelMode auto -SkipBootstrap -WaitSeconds 30
-exit $LASTEXITCODE
+    & $publicStartScript -AutoBuild -Port 8080 -AppEnvFile $dbInfo.envFile -TunnelMode auto -SkipBootstrap -WaitSeconds 30
+    exit 0
+} catch {
+    Write-Error $_.Exception.Message
+    exit 1
+}

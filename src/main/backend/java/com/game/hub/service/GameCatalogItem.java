@@ -1,6 +1,7 @@
 package com.game.hub.service;
 
 import java.util.List;
+import java.util.Locale;
 
 public record GameCatalogItem(
     String code,
@@ -21,8 +22,56 @@ public record GameCatalogItem(
     String embedUrl,
     String apiBaseUrl,
     String manifestUrl,
-    boolean overrideExisting
+    boolean overrideExisting,
+    String previewMediaUrl,
+    String previewMediaKind
 ) {
+    public GameCatalogItem(
+        String code,
+        String displayName,
+        String shortLabel,
+        String description,
+        String iconClass,
+        boolean availableNow,
+        boolean supportsOnline,
+        boolean supportsOffline,
+        boolean supportsGuest,
+        String primaryActionLabel,
+        String primaryActionUrl,
+        List<String> roadmapItems,
+        String sourceType,
+        String runtime,
+        String detailMode,
+        String embedUrl,
+        String apiBaseUrl,
+        String manifestUrl,
+        boolean overrideExisting
+    ) {
+        this(
+            code,
+            displayName,
+            shortLabel,
+            description,
+            iconClass,
+            availableNow,
+            supportsOnline,
+            supportsOffline,
+            supportsGuest,
+            primaryActionLabel,
+            primaryActionUrl,
+            roadmapItems,
+            sourceType,
+            runtime,
+            detailMode,
+            embedUrl,
+            apiBaseUrl,
+            manifestUrl,
+            overrideExisting,
+            "",
+            ""
+        );
+    }
+
     public GameCatalogItem(
         String code,
         String displayName,
@@ -56,7 +105,9 @@ public record GameCatalogItem(
             "",
             "",
             "",
-            false
+            false,
+            "",
+            ""
         );
     }
 
@@ -74,6 +125,18 @@ public record GameCatalogItem(
 
     public boolean hasEmbedUrl() {
         return embedUrl != null && !embedUrl.isBlank();
+    }
+
+    public boolean hasPreviewMedia() {
+        return previewMediaUrl != null && !previewMediaUrl.isBlank();
+    }
+
+    public boolean previewMediaIsVideo() {
+        return hasPreviewMedia() && "video".equals(normalizeMediaKind(previewMediaKind));
+    }
+
+    public boolean previewMediaIsImage() {
+        return hasPreviewMedia() && !previewMediaIsVideo();
     }
 
     public boolean embedUrlIsExternal() {
@@ -95,11 +158,44 @@ public record GameCatalogItem(
         return "/games/external/" + code.trim().toLowerCase() + "/api";
     }
 
+    public GameCatalogItem withPreviewMedia(String mediaUrl, String mediaKind) {
+        return new GameCatalogItem(
+            code,
+            displayName,
+            shortLabel,
+            description,
+            iconClass,
+            availableNow,
+            supportsOnline,
+            supportsOffline,
+            supportsGuest,
+            primaryActionLabel,
+            primaryActionUrl,
+            roadmapItems,
+            sourceType,
+            runtime,
+            detailMode,
+            embedUrl,
+            apiBaseUrl,
+            manifestUrl,
+            overrideExisting,
+            mediaUrl,
+            mediaKind
+        );
+    }
+
     private boolean isAbsoluteHttpUrl(String value) {
         if (value == null) {
             return false;
         }
         String normalized = value.trim().toLowerCase();
         return normalized.startsWith("http://") || normalized.startsWith("https://");
+    }
+
+    private String normalizeMediaKind(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.trim().toLowerCase(Locale.ROOT);
     }
 }

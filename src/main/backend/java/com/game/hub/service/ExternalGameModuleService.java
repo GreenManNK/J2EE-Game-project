@@ -45,6 +45,7 @@ public class ExternalGameModuleService {
     private final Duration importTimeout;
     private final Duration proxyTimeout;
     private final HttpClient httpClient;
+    private final GamePreviewMediaResolver previewMediaResolver;
     private final Object fileLock = new Object();
 
     @Autowired
@@ -52,7 +53,8 @@ public class ExternalGameModuleService {
         ObjectMapper objectMapper,
         @Value("${app.game-modules.external-registry-path:config/external-game-modules.json}") String registryPath,
         @Value("${app.game-modules.import-timeout-seconds:10}") int importTimeoutSeconds,
-        @Value("${app.game-modules.proxy-timeout-seconds:20}") int proxyTimeoutSeconds
+        @Value("${app.game-modules.proxy-timeout-seconds:20}") int proxyTimeoutSeconds,
+        GamePreviewMediaResolver previewMediaResolver
     ) {
         this(
             objectMapper,
@@ -62,7 +64,8 @@ public class ExternalGameModuleService {
             HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(Math.max(2, importTimeoutSeconds)))
                 .followRedirects(HttpClient.Redirect.NORMAL)
-                .build()
+                .build(),
+            previewMediaResolver
         );
     }
 
@@ -71,11 +74,28 @@ public class ExternalGameModuleService {
                                      Duration importTimeout,
                                      Duration proxyTimeout,
                                      HttpClient httpClient) {
+        this(
+            objectMapper,
+            registryPath,
+            importTimeout,
+            proxyTimeout,
+            httpClient,
+            new GamePreviewMediaResolver()
+        );
+    }
+
+    public ExternalGameModuleService(ObjectMapper objectMapper,
+                                     Path registryPath,
+                                     Duration importTimeout,
+                                     Duration proxyTimeout,
+                                     HttpClient httpClient,
+                                     GamePreviewMediaResolver previewMediaResolver) {
         this.objectMapper = objectMapper;
         this.registryPath = registryPath;
         this.importTimeout = importTimeout;
         this.proxyTimeout = proxyTimeout;
         this.httpClient = httpClient;
+        this.previewMediaResolver = previewMediaResolver;
     }
 
     public List<GameCatalogItem> listCatalogItems() {
@@ -353,6 +373,8 @@ public class ExternalGameModuleService {
         String primaryActionLabel = normalizePrimaryActionLabel(config.primaryActionLabel(), primaryActionUrl, apiBaseUrl);
         String runtime = normalizeText(config.runtime(), "external");
         String manifestUrl = normalizeText(config.manifestUrl(), normalizeUrl(manifestUrlOverride));
+        String previewMediaUrl = normalizeText(config.previewMediaUrl(), "");
+        String previewMediaKind = previewMediaResolver.resolveMediaKind(previewMediaUrl, config.previewMediaKind());
         boolean availableNow = config.availableNow() == null || config.availableNow();
         boolean supportsGuest = config.supportsGuest() == null || config.supportsGuest();
         boolean supportsOnline = config.supportsOnline() != null && config.supportsOnline();
@@ -379,7 +401,9 @@ public class ExternalGameModuleService {
             embedUrl,
             apiBaseUrl,
             manifestUrl,
-            overrideExisting
+            overrideExisting,
+            previewMediaUrl,
+            previewMediaKind
         );
     }
 
@@ -404,7 +428,9 @@ public class ExternalGameModuleService {
             normalized.embedUrl(),
             normalized.apiBaseUrl(),
             normalized.manifestUrl(),
-            Boolean.TRUE.equals(normalized.overrideExisting())
+            Boolean.TRUE.equals(normalized.overrideExisting()),
+            normalized.previewMediaUrl(),
+            normalized.previewMediaKind()
         );
     }
 

@@ -76,6 +76,8 @@ body.page-games-quiz {
   --gi-a: #6d28d9;
   --gi-b: #ec4899;
   --gi-c: #38bdf8;
+  --gi-card-art: url("../images/games/home/quiz.png");
+  --gi-card-art-position: center center;
 }
 
 body.page-games-typing {
@@ -109,6 +111,11 @@ body.page-minesweeper {
   --gi-a: #1d4ed8;
   --gi-b: #ef4444;
   --gi-c: #22d3ee;
+}
+
+body.page-games-minesweeper {
+  --gi-card-art: url("../images/games/home/minesweeper.png");
+  --gi-card-art-position: center 12%;
 }
 
 body.page-games .cg-browser-page,
@@ -506,7 +513,10 @@ body.page-games-blackjack .hub-portal-preview-cell:nth-child(2n) {
 
 body.page-games-minesweeper .hub-portal-preview {
   background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(10, 14, 26, 0.9)) !important;
+    linear-gradient(180deg, rgba(15, 23, 42, 0.58), rgba(10, 14, 26, 0.78)) ,
+    var(--gi-card-art) !important;
+  background-size: cover !important;
+  background-position: var(--gi-card-art-position, center) !important;
 }
 
 body.page-games-minesweeper .hub-portal-preview-cell {
@@ -528,6 +538,40 @@ body.page-games-quiz .game-rules ul,
 body.page-games-typing .game-rules ul,
 body.page-games-blackjack .game-rules ul {
   display: none;
+}
+
+body.page-games-quiz .hub-portal-stage__screen,
+body.page-games-minesweeper .hub-portal-stage__screen {
+  background:
+    linear-gradient(180deg, rgba(8, 20, 41, 0.42), rgba(8, 20, 41, 0.78)),
+    var(--gi-card-art);
+  background-size: cover;
+  background-position: var(--gi-card-art-position, center);
+}
+
+body.page-games-quiz .hub-portal-stage__screen[data-has-media="true"],
+body.page-games-minesweeper .hub-portal-stage__screen[data-has-media="true"] {
+  background: linear-gradient(180deg, rgba(8, 20, 41, 0.42), rgba(8, 20, 41, 0.78));
+}
+
+body.page-games-quiz .hub-portal-preview {
+  background:
+    linear-gradient(180deg, rgba(24, 8, 43, 0.48), rgba(18, 8, 34, 0.76)),
+    var(--gi-card-art) !important;
+  background-size: cover !important;
+  background-position: var(--gi-card-art-position, center) !important;
+}
+
+body.page-games-quiz .hub-portal-preview[data-has-media="true"] {
+  background: linear-gradient(180deg, rgba(24, 8, 43, 0.48), rgba(18, 8, 34, 0.76)) !important;
+}
+
+body.page-games-quiz .hub-portal-preview-cell,
+body.page-games-minesweeper .hub-portal-preview-cell {
+  background: rgba(9, 20, 39, 0.72) !important;
+  color: #eef5ff;
+  border-color: rgba(231, 239, 255, 0.18) !important;
+  backdrop-filter: blur(8px);
 }
 
 body.page-games-quiz .game-rules[open] ul,

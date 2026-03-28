@@ -44,7 +44,8 @@
          th:href="@{'/games/' + ${g.code}}"
          class="cg-recommended-card"
          th:classappend="${st.index == 0} ? ' is-feature' : (${st.index == 4} ? ' is-wide' : '')"
-         th:attr="data-code=${g.code}">
+         th:attr="data-code=${g.code},data-has-media=${g.hasPreviewMedia()}">
+        <th:block th:replace="~{games/media-fragments :: previewMedia(game=${g}, mediaClass='cg-card-media')}"></th:block>
         <span class="cg-recommended-card__badge"
               th:text="${g.code == 'monopoly'} ? ((st.index == 0) ? 'Moi cap nhat' : 'Board game') : ((st.index == 0) ? 'Top pick' : (${g.supportsOnline} ? 'Online' : 'Quick play'))">Top pick</span>
         <div class="cg-recommended-card__icon">
@@ -97,7 +98,10 @@
       <article class="cg-tile"
                th:each="g : ${recommendedGames}"
                th:attr="data-name=${g.displayName},data-code=${g.code}">
-        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+        <div class="cg-tile-thumb"
+             th:classappend="' tone-' + ${g.code}"
+             th:attr="data-has-media=${g.hasPreviewMedia()}">
+          <th:block th:replace="~{games/media-fragments :: previewMedia(game=${g}, mediaClass='cg-tile-media')}"></th:block>
           <span class="cg-tile-badge" th:text="${g.code == 'monopoly'} ? 'Moi cap nhat' : (${g.supportsOnline} ? 'Hot online' : 'Recommended')">Recommended</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
@@ -131,7 +135,10 @@
       <article class="cg-tile"
                th:each="g : ${onlineGames}"
                th:attr="data-name=${g.displayName},data-code=${g.code}">
-        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+        <div class="cg-tile-thumb"
+             th:classappend="' tone-' + ${g.code}"
+             th:attr="data-has-media=${g.hasPreviewMedia()}">
+          <th:block th:replace="~{games/media-fragments :: previewMedia(game=${g}, mediaClass='cg-tile-media')}"></th:block>
           <span class="cg-tile-badge">Online</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
@@ -165,7 +172,10 @@
       <article class="cg-tile"
                th:each="g : ${quickPlayGames}"
                th:attr="data-name=${g.displayName},data-code=${g.code}">
-        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+        <div class="cg-tile-thumb"
+             th:classappend="' tone-' + ${g.code}"
+             th:attr="data-has-media=${g.hasPreviewMedia()}">
+          <th:block th:replace="~{games/media-fragments :: previewMedia(game=${g}, mediaClass='cg-tile-media')}"></th:block>
           <span class="cg-tile-badge" th:text="${g.supportsGuest} ? 'Guest' : 'Local'">Guest</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
@@ -199,7 +209,10 @@
       <article class="cg-tile"
                th:each="g : ${strategyGames}"
                th:attr="data-name=${g.displayName},data-code=${g.code}">
-        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+        <div class="cg-tile-thumb"
+             th:classappend="' tone-' + ${g.code}"
+             th:attr="data-has-media=${g.hasPreviewMedia()}">
+          <th:block th:replace="~{games/media-fragments :: previewMedia(game=${g}, mediaClass='cg-tile-media')}"></th:block>
           <span class="cg-tile-badge">Strategy</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>
@@ -233,7 +246,10 @@
       <article class="cg-tile"
                th:each="g : ${freshGames}"
                th:attr="data-name=${g.displayName},data-code=${g.code}">
-        <div class="cg-tile-thumb" th:classappend="' tone-' + ${g.code}">
+        <div class="cg-tile-thumb"
+             th:classappend="' tone-' + ${g.code}"
+             th:attr="data-has-media=${g.hasPreviewMedia()}">
+          <th:block th:replace="~{games/media-fragments :: previewMedia(game=${g}, mediaClass='cg-tile-media')}"></th:block>
           <span class="cg-tile-badge">Fresh</span>
           <i class="bi" th:classappend="' ' + ${g.iconClass}"></i>
         </div>

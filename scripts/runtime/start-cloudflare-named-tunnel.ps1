@@ -91,7 +91,9 @@ try {
     $publicGameUrl = [Environment]::GetEnvironmentVariable("PUBLIC_GAME_URL", "Process")
     if ([string]::IsNullOrWhiteSpace($publicGameUrl) -and -not [string]::IsNullOrWhiteSpace($publicBaseUrl)) {
         $base = $publicBaseUrl.TrimEnd("/")
-        $publicGameUrl = $base + "/Game"
+        $publicGameUrl = $base + "/Game/"
+    } elseif (-not [string]::IsNullOrWhiteSpace($publicGameUrl)) {
+        $publicGameUrl = $publicGameUrl.TrimEnd("/") + "/"
     }
 
     Write-Output "TUNNEL_PID=$($proc.Id)"

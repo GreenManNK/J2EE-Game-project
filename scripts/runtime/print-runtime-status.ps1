@@ -77,7 +77,7 @@ function Get-QuickTunnelUrl([string]$LogPath) {
     if (-not $match -or $match.Matches.Count -eq 0) {
         return ""
     }
-    return $match.Matches[$match.Matches.Count - 1].Value.TrimEnd("/") + "/Game"
+    return $match.Matches[$match.Matches.Count - 1].Value.TrimEnd("/") + "/Game/"
 }
 
 function Get-DockerContainerStatus([string]$ContainerName) {
@@ -149,6 +149,33 @@ function Test-HostResolvableLocally([string]$HostName) {
     }
 }
 
+function Test-HttpOk([string]$Url, [int]$TimeoutSec = 10) {
+    try {
+        $res = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec $TimeoutSec
+        return $res.StatusCode -eq 200
+    } catch {
+        return $false
+    }
+}
+
+function Test-HttpBodyContains([string]$Url, [string]$ExpectedText, [int]$TimeoutSec = 10) {
+    try {
+        $res = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec $TimeoutSec -Headers @{
+            "Accept" = "text/html,application/xhtml+xml"
+            "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+        }
+        if ($res.StatusCode -ne 200) {
+            return $false
+        }
+        if ([string]::IsNullOrWhiteSpace($ExpectedText)) {
+            return $true
+        }
+        return ([string]$res.Content).Contains($ExpectedText)
+    } catch {
+        return $false
+    }
+}
+
 $appPidRaw = Read-FirstLine $appPidFile
 $quickPidRaw = Read-FirstLine $quickPidFile
 $namedPidRaw = Read-FirstLine $namedPidFile
@@ -170,22 +197,22 @@ $quickUrl = ""
 if ($quickProc) {
     $quickUrl = Get-QuickTunnelUrl $quickErrLog
     if ([string]::IsNullOrWhiteSpace($quickUrl) -and $savedTunnelMode -eq "quick" -and -not [string]::IsNullOrWhiteSpace($savedPublicUrl)) {
-        $quickUrl = $savedPublicUrl.TrimEnd("/")
+        $quickUrl = $savedPublicUrl.TrimEnd("/") + "/"
     }
 }
 
 $namedUrl = ""
 if ($namedProc) {
     if (-not [string]::IsNullOrWhiteSpace($savedPublicUrl)) {
-        $namedUrl = $savedPublicUrl.TrimEnd("/")
+        $namedUrl = $savedPublicUrl.TrimEnd("/") + "/"
     } elseif (-not [string]::IsNullOrWhiteSpace($savedPublicBase)) {
-        $namedUrl = $savedPublicBase.TrimEnd("/") + "/Game"
+        $namedUrl = $savedPublicBase.TrimEnd("/") + "/Game/"
     }
 }
 
 $fallbackUrl = ""
 if ($fallbackProc -and -not [string]::IsNullOrWhiteSpace($savedPublicUrl)) {
-    $fallbackUrl = $savedPublicUrl.TrimEnd("/")
+    $fallbackUrl = $savedPublicUrl.TrimEnd("/") + "/"
 }
 
 $activeMode = ""
@@ -216,6 +243,9 @@ $statusPublicUrl = if (-not [string]::IsNullOrWhiteSpace($activePublicUrl)) { $a
 $statusPublicHost = ""
 $statusPublicDnsLocalOk = ""
 $statusPublicDnsPublicOk = ""
+$activePublicPingOk = ""
+$activePublicWsInfoOk = ""
+$activePublicPageOk = ""
 if (-not [string]::IsNullOrWhiteSpace($statusPublicUrl)) {
     try {
         $statusUri = [Uri]$statusPublicUrl
@@ -224,6 +254,12 @@ if (-not [string]::IsNullOrWhiteSpace($statusPublicUrl)) {
         $statusPublicDnsPublicOk = $(if (Test-HostResolvableOnPublicDns -HostName $statusPublicHost) { "1" } else { "0" })
     } catch {
     }
+}
+
+if (-not [string]::IsNullOrWhiteSpace($activePublicUrl)) {
+    $activePublicPingOk = $(if (Test-HttpOk ($activePublicUrl.TrimEnd("/") + "/api/connectivity/ping")) { "1" } else { "0" })
+    $activePublicWsInfoOk = $(if (Test-HttpOk ($activePublicUrl.TrimEnd("/") + "/ws/info?t=1")) { "1" } else { "0" })
+    $activePublicPageOk = $(if (Test-HttpBodyContains -Url $activePublicUrl -ExpectedText 'name="app-context-path"') { "1" } else { "0" })
 }
 
 $status = [ordered]@{
@@ -242,6 +278,9 @@ $status = [ordered]@{
     FALLBACK_TUNNEL_URL = $fallbackUrl
     ACTIVE_TUNNEL_MODE = $activeMode
     ACTIVE_PUBLIC_GAME_URL = $activePublicUrl
+    ACTIVE_PUBLIC_PING_OK = $activePublicPingOk
+    ACTIVE_PUBLIC_WS_INFO_OK = $activePublicWsInfoOk
+    ACTIVE_PUBLIC_PAGE_OK = $activePublicPageOk
     STALE_PUBLIC_GAME_URL = $(if ([string]::IsNullOrWhiteSpace($activeMode) -and -not [string]::IsNullOrWhiteSpace($savedPublicUrl)) { $savedPublicUrl } else { "" })
     STATUS_PUBLIC_HOST = $statusPublicHost
     STATUS_PUBLIC_DNS_LOCAL_OK = $statusPublicDnsLocalOk

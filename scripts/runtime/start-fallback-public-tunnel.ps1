@@ -29,11 +29,12 @@ function Normalize-GameUrl([string]$Url, [string]$NormalizedContextPath) {
     if ([string]::IsNullOrWhiteSpace($Url)) {
         return $null
     }
-    $trimmed = $Url.Trim().TrimEnd("/")
-    if ($trimmed.ToLowerInvariant().EndsWith($NormalizedContextPath.ToLowerInvariant())) {
-        return $trimmed
+    $trimmed = $Url.Trim()
+    $noTrailingSlash = $trimmed.TrimEnd("/")
+    if ($noTrailingSlash.ToLowerInvariant().EndsWith($NormalizedContextPath.ToLowerInvariant())) {
+        return $noTrailingSlash + "/"
     }
-    return $trimmed + $NormalizedContextPath
+    return $noTrailingSlash + $NormalizedContextPath + "/"
 }
 
 function Ensure-Npx {

@@ -172,6 +172,56 @@ function Test-FallbackTunnelAvailable {
     return (Test-CommandExists "npx") -or (Test-CommandExists "npx.cmd")
 }
 
+function Get-TunnelCandidateModes([string]$RequestedMode) {
+    if ($RequestedMode -ne "auto") {
+        return @($RequestedMode)
+    }
+
+    $candidates = New-Object System.Collections.Generic.List[string]
+    if (Has-NamedTunnelConfig) {
+        $candidates.Add("named") | Out-Null
+    } else {
+        $missing = Get-NamedTunnelMissingConfigText
+        if (-not [string]::IsNullOrWhiteSpace($missing)) {
+            Write-Warning ("Named tunnel chua du cau hinh ({0}). Dang chuyen sang auto provider selection." -f $missing)
+        }
+    }
+
+    $candidates.Add("quick") | Out-Null
+    if (Test-FallbackTunnelAvailable) {
+        $candidates.Add("runlocal") | Out-Null
+        $candidates.Add("localtunnel") | Out-Null
+    }
+
+    return @($candidates | Select-Object -Unique)
+}
+
+function Stop-TunnelMode([string]$Mode) {
+    switch ($Mode) {
+        "named" { & $stopNamedTunnelScript | Out-Null }
+        "quick" { & $stopQuickTunnelScript | Out-Null }
+        "runlocal" { & $stopFallbackTunnelScript | Out-Null }
+        "localtunnel" { & $stopFallbackTunnelScript | Out-Null }
+        default {
+            & $stopQuickTunnelScript | Out-Null
+            & $stopNamedTunnelScript | Out-Null
+            & $stopFallbackTunnelScript | Out-Null
+        }
+    }
+}
+
+function Stop-AllTunnelsExcept([string]$Mode) {
+    if ($Mode -ne "quick") {
+        & $stopQuickTunnelScript | Out-Null
+    }
+    if ($Mode -ne "named") {
+        & $stopNamedTunnelScript | Out-Null
+    }
+    if (($Mode -ne "runlocal") -and ($Mode -ne "localtunnel")) {
+        & $stopFallbackTunnelScript | Out-Null
+    }
+}
+
 function Start-FallbackTunnelAndResolve([int]$Port, [string]$SelectedProvider) {
     Write-Output "STEP=START_TUNNEL_FALLBACK"
     & $stopQuickTunnelScript | Out-Null
@@ -215,6 +265,88 @@ function Get-QuickTunnelBaseUrl([string]$LogPath) {
         return $null
     }
     return $last.Matches[$last.Matches.Count - 1].Value
+}
+
+function Start-TunnelMode([string]$Mode, [int]$Port, [int]$WaitSeconds) {
+    switch ($Mode) {
+        "named" {
+            Write-Output "STEP=START_TUNNEL_NAMED"
+            Stop-AllTunnelsExcept -Mode "named"
+            $namedOutput = & $namedTunnelStartScript -EnvFile $AppEnvFile -WaitSeconds ([Math]::Max(20, $WaitSeconds)) 2>&1
+            $namedOutput | ForEach-Object { Write-Output ([string]$_) }
+
+            $namedMap = Parse-KeyValueLines -Lines $namedOutput
+            $publicBaseUrl = if ($namedMap.ContainsKey("PUBLIC_BASE_URL")) { [string]$namedMap["PUBLIC_BASE_URL"] } else { "" }
+            $publicGameUrl = if ($namedMap.ContainsKey("PUBLIC_GAME_URL")) { [string]$namedMap["PUBLIC_GAME_URL"] } else { "" }
+            $publicGameUrl = Normalize-GameUrl -Url $publicGameUrl
+            if ([string]::IsNullOrWhiteSpace($publicGameUrl) -and -not [string]::IsNullOrWhiteSpace($publicBaseUrl)) {
+                $publicGameUrl = Normalize-GameUrl -Url $publicBaseUrl
+            }
+            $publicBaseUrl = Normalize-BaseUrl -BaseUrl $publicBaseUrl -GameUrl $publicGameUrl
+            if ([string]::IsNullOrWhiteSpace($publicGameUrl)) {
+                throw "Named tunnel da chay nhung chua co PUBLIC_BASE_URL/PUBLIC_GAME_URL. Hay cap nhat $AppEnvFile."
+            }
+            return @{
+                tunnelMode = "named"
+                publicGameUrl = $publicGameUrl
+                publicBaseUrl = $publicBaseUrl
+                tunnelLogErr = $namedCfErrLog
+            }
+        }
+        "quick" {
+            Write-Output "STEP=START_TUNNEL_QUICK"
+            Stop-AllTunnelsExcept -Mode "quick"
+            $quickMaxAttempts = 3
+            $quickAttempt = 0
+            $quickLastError = $null
+            while ($quickAttempt -lt $quickMaxAttempts) {
+                $quickAttempt++
+                Write-Output ("QUICK_TUNNEL_ATTEMPT={0}/{1}" -f $quickAttempt, $quickMaxAttempts)
+                & $stopQuickTunnelScript | Out-Null
+
+                $quickOutput = @()
+                try {
+                    $quickOutput = & $tunnelStartScript -LocalPort $Port -ContextPath "/Game" 2>&1
+                } catch {
+                    $quickLastError = "Khoi dong quick tunnel that bai: $($_.Exception.Message)"
+                    if ($quickAttempt -lt $quickMaxAttempts) {
+                        Write-Warning ($quickLastError + " Dang thu lai...")
+                        Start-Sleep -Seconds 2
+                        continue
+                    }
+                    break
+                }
+                $quickOutput | ForEach-Object { Write-Output ([string]$_) }
+
+                $publicBaseUrl = Get-QuickTunnelBaseUrl -LogPath $cfErrLog
+                $quickAliveAfterStart = Test-ProcessAliveByPidFile -PidFilePath $tunnelPidFile
+
+                if ([string]::IsNullOrWhiteSpace($publicBaseUrl)) {
+                    $quickLastError = "Khong lay duoc quick tunnel URL tu $cfErrLog"
+                } elseif (-not $quickAliveAfterStart) {
+                    $quickLastError = "Quick tunnel vua khoi dong nhung process da dung."
+                } else {
+                    $publicBaseUrl = Normalize-BaseUrl -BaseUrl $publicBaseUrl -GameUrl $null
+                    $publicGameUrl = Normalize-GameUrl -Url $publicBaseUrl
+                    return @{
+                        tunnelMode = "quick"
+                        publicGameUrl = $publicGameUrl
+                        publicBaseUrl = $publicBaseUrl
+                        tunnelLogErr = $cfErrLog
+                    }
+                }
+
+                if ($quickAttempt -lt $quickMaxAttempts) {
+                    Write-Warning ($quickLastError + " Dang thu lai...")
+                    Start-Sleep -Seconds 2
+                }
+            }
+            throw $quickLastError
+        }
+        "runlocal" { return (Start-FallbackTunnelAndResolve -Port $Port -SelectedProvider "runlocal") }
+        "localtunnel" { return (Start-FallbackTunnelAndResolve -Port $Port -SelectedProvider "localtunnel") }
+        default { throw ("Tunnel mode khong duoc ho tro: {0}" -f $Mode) }
+    }
 }
 
 function Load-EnvFile([string]$Path) {
@@ -266,11 +398,12 @@ function Get-NamedTunnelMissingConfigText {
 
 function Normalize-GameUrl([string]$Url) {
     if ([string]::IsNullOrWhiteSpace($Url)) { return $null }
-    $trimmed = $Url.Trim().TrimEnd("/")
-    if ($trimmed.ToLowerInvariant().EndsWith("/game")) {
-        return $trimmed
+    $trimmed = $Url.Trim()
+    $noTrailingSlash = $trimmed.TrimEnd("/")
+    if ($noTrailingSlash.ToLowerInvariant().EndsWith("/game")) {
+        return $noTrailingSlash + "/"
     }
-    return $trimmed + "/Game"
+    return $noTrailingSlash + "/Game/"
 }
 
 function Normalize-BaseUrl([string]$BaseUrl, [string]$GameUrl) {
@@ -328,6 +461,104 @@ function Test-HostResolvableLocally([string]$HostName) {
         return ($addresses.Count -gt 0)
     } catch {
         return $false
+    }
+}
+
+function Get-TunnelPidCheckFile([string]$Mode) {
+    switch ($Mode) {
+        "named" { return $namedTunnelPidFile }
+        "quick" { return $tunnelPidFile }
+        "runlocal" { return (Join-Path $repoRoot "public-fallback-tunnel.pid") }
+        "localtunnel" { return (Join-Path $repoRoot "public-fallback-tunnel.pid") }
+        default { return "" }
+    }
+}
+
+function Verify-PublicTunnel([string]$ResolvedTunnelMode,
+                             [string]$PublicGameUrl,
+                             [int]$ProbeWaitSeconds,
+                             [string]$PageMarker) {
+    $publicPingUrl = $PublicGameUrl.TrimEnd("/") + "/api/connectivity/ping"
+    $publicWsInfoUrl = $PublicGameUrl.TrimEnd("/") + "/ws/info?t=1"
+    $publicHost = Get-UrlHost -Url $PublicGameUrl
+    $publicDnsWaitSeconds = if ($ResolvedTunnelMode -eq "quick") {
+        [Math]::Max(20, [Math]::Min(120, $ProbeWaitSeconds + 45))
+    } else {
+        10
+    }
+    $publicDnsOkOnPublicResolvers = $true
+    $publicDnsOkOnSystemResolver = $true
+
+    if (-not [string]::IsNullOrWhiteSpace($publicHost)) {
+        Write-Output "PUBLIC_HOST=$publicHost"
+        if ($ResolvedTunnelMode -eq "quick") {
+            Write-Output "STEP=WAIT_PUBLIC_DNS"
+            $publicDnsOkOnPublicResolvers = Wait-HostResolvableOnPublicDns -HostName $publicHost -TimeoutSeconds $publicDnsWaitSeconds
+        } else {
+            $publicDnsOkOnPublicResolvers = Test-HostResolvableOnPublicDns -HostName $publicHost
+        }
+        $publicDnsOkOnSystemResolver = Test-HostResolvableLocally -HostName $publicHost
+        Write-Output "PUBLIC_DNS_PUBLIC_OK=$([int]$publicDnsOkOnPublicResolvers)"
+        Write-Output "PUBLIC_DNS_LOCAL_OK=$([int]$publicDnsOkOnSystemResolver)"
+    }
+
+    $publicProbeTimeoutSeconds = [Math]::Max($ProbeWaitSeconds, 75)
+    $publicGameOk = Wait-HttpOk -Url $publicPingUrl -TimeoutSeconds $publicProbeTimeoutSeconds
+    $publicWsOk = Wait-HttpOk -Url $publicWsInfoUrl -TimeoutSeconds ([Math]::Max(20, [Math]::Min(120, $publicProbeTimeoutSeconds + 15)))
+    $publicPageProbeTimeoutSeconds = [Math]::Max(30, [Math]::Min(150, $publicProbeTimeoutSeconds + 20))
+    $publicPageProbe = Wait-HttpProbe -Url $PublicGameUrl -TimeoutSeconds $publicPageProbeTimeoutSeconds -AcceptHeader "text/html,application/xhtml+xml" -ExpectedBodyText $PageMarker
+    $publicPageOk = [bool]$publicPageProbe.ok
+    $tunnelPidCheckFile = Get-TunnelPidCheckFile -Mode $ResolvedTunnelMode
+    $tunnelAlive = Test-ProcessAliveByPidFile -PidFilePath $tunnelPidCheckFile
+    $appAlive = Test-ProcessAliveByPidFile -PidFilePath $appPidFile
+    $allowQuickDnsBypass = ($ResolvedTunnelMode -eq "quick") -and $tunnelAlive -and $appAlive -and $publicDnsOkOnPublicResolvers
+    $failureMessage = ""
+
+    if (($ResolvedTunnelMode -eq "quick") -and (-not $publicDnsOkOnPublicResolvers)) {
+        $failureMessage = ("Quick tunnel da tao URL nhung DNS public chua resolve: {0} (host: {1})." -f $PublicGameUrl, $publicHost)
+    }
+
+    if (-not $publicGameOk) {
+        if ($allowQuickDnsBypass) {
+            Write-Warning "Quick tunnel URL chua truy cap duoc tren DNS hien tai cua may chu, nhung da resolve duoc qua public DNS (1.1.1.1/8.8.8.8). Van tiep tuc."
+            $publicGameOk = $true
+        } elseif ([string]::IsNullOrWhiteSpace($failureMessage)) {
+            $failureMessage = ("Tunnel mode '{0}' da tao nhung URL public khong truy cap duoc: {1} (probe: {2})" -f $ResolvedTunnelMode, $PublicGameUrl, $publicPingUrl)
+        }
+    }
+
+    if (-not $publicWsOk) {
+        if ($allowQuickDnsBypass) {
+            Write-Warning "Khong probe duoc public ws/info bang DNS hien tai cua may chu, bo qua check nay vi quick tunnel da resolve qua public DNS."
+            $publicWsOk = $true
+        } elseif ([string]::IsNullOrWhiteSpace($failureMessage)) {
+            $failureMessage = ("Tunnel URL public truy cap duoc web nhung endpoint ws/info chua san sang: {0}" -f $publicWsInfoUrl)
+        }
+    }
+
+    if (-not $publicPageOk -and [string]::IsNullOrWhiteSpace($failureMessage)) {
+        $pageHint = ""
+        if ($ResolvedTunnelMode -eq "quick" -and $tunnelAlive -and $appAlive) {
+            $pageHint = " Quick tunnel/app van dang chay; day thuong la warm-up/edge delay, khong phai app da chet."
+        }
+        $failureMessage = ("Tunnel URL public da tao nhung landing page khong render duoc: {0} ({1}){2}" -f $PublicGameUrl, (Format-ProbeDiagnostic -Probe $publicPageProbe -Url $PublicGameUrl), $pageHint)
+    }
+
+    return @{
+        ok = ([string]::IsNullOrWhiteSpace($failureMessage))
+        failureMessage = $failureMessage
+        publicGameUrl = $PublicGameUrl
+        publicPingUrl = $publicPingUrl
+        publicWsInfoUrl = $publicWsInfoUrl
+        publicHost = $publicHost
+        publicDnsOkOnPublicResolvers = $publicDnsOkOnPublicResolvers
+        publicDnsOkOnSystemResolver = $publicDnsOkOnSystemResolver
+        publicGameOk = $publicGameOk
+        publicWsOk = $publicWsOk
+        publicPageOk = $publicPageOk
+        publicPageProbe = $publicPageProbe
+        tunnelAlive = $tunnelAlive
+        appAlive = $appAlive
     }
 }
 
@@ -431,204 +662,70 @@ try {
         throw ("Trang landing local bi loi hoac khong truy cap duoc: {0} ({1})" -f $localPageUrl, (Format-ProbeDiagnostic -Probe $localPageProbe -Url $localPageUrl))
     }
 
-    $resolvedTunnelMode = $TunnelMode
-    if ($TunnelMode -eq "auto") {
-        if (Has-NamedTunnelConfig) {
-            $resolvedTunnelMode = "named"
-        } else {
-            $resolvedTunnelMode = "quick"
-            $missing = Get-NamedTunnelMissingConfigText
-            if (-not [string]::IsNullOrWhiteSpace($missing)) {
-                Write-Warning ("Named tunnel chua du cau hinh ({0}). Dang fallback quick tunnel." -f $missing)
-            }
-        }
-    }
+    $candidateModes = Get-TunnelCandidateModes -RequestedMode $TunnelMode
+    $attemptFailures = New-Object System.Collections.Generic.List[string]
     $publicBaseUrl = $null
     $publicGameUrl = $null
     $tunnelLogErr = $null
+    $resolvedTunnelMode = ""
+    $publicVerification = $null
 
-    if (($resolvedTunnelMode -eq "runlocal") -or ($resolvedTunnelMode -eq "localtunnel")) {
-        $fallbackResult = Start-FallbackTunnelAndResolve -Port $Port -SelectedProvider $resolvedTunnelMode
-        $publicGameUrl = [string]$fallbackResult.publicGameUrl
-        $publicBaseUrl = [string]$fallbackResult.publicBaseUrl
-        $resolvedTunnelMode = [string]$fallbackResult.tunnelMode
-        $tunnelLogErr = [string]$fallbackResult.tunnelLogErr
-    }
-
-    if ($resolvedTunnelMode -eq "named") {
-        Write-Output "STEP=START_TUNNEL_NAMED"
-        & $stopQuickTunnelScript | Out-Null
-        & $stopFallbackTunnelScript | Out-Null
+    foreach ($candidateMode in $candidateModes) {
+        Write-Output ("STEP=TUNNEL_MODE_CANDIDATE_{0}" -f $candidateMode.ToUpperInvariant())
         try {
-            $namedOutput = & $namedTunnelStartScript -EnvFile $AppEnvFile -WaitSeconds ([Math]::Max(20, $WaitSeconds)) 2>&1
-            $namedOutput | ForEach-Object { Write-Output ([string]$_) }
+            $tunnelStart = Start-TunnelMode -Mode $candidateMode -Port $Port -WaitSeconds $WaitSeconds
+            $candidatePublicGameUrl = [string]$tunnelStart.publicGameUrl
+            $candidatePublicBaseUrl = [string]$tunnelStart.publicBaseUrl
+            $candidateResolvedMode = [string]$tunnelStart.tunnelMode
+            $candidateTunnelLogErr = [string]$tunnelStart.tunnelLogErr
 
-            $namedMap = Parse-KeyValueLines -Lines $namedOutput
-            if ($namedMap.ContainsKey("PUBLIC_BASE_URL")) {
-                $publicBaseUrl = [string]$namedMap["PUBLIC_BASE_URL"]
+            $candidateVerification = Verify-PublicTunnel `
+                -ResolvedTunnelMode $candidateResolvedMode `
+                -PublicGameUrl $candidatePublicGameUrl `
+                -ProbeWaitSeconds $WaitSeconds `
+                -PageMarker $pageMarker
+
+            if ([bool]$candidateVerification.ok) {
+                $publicGameUrl = $candidatePublicGameUrl
+                $publicBaseUrl = $candidatePublicBaseUrl
+                $resolvedTunnelMode = $candidateResolvedMode
+                $tunnelLogErr = $candidateTunnelLogErr
+                $publicVerification = $candidateVerification
+                break
             }
-            if ($namedMap.ContainsKey("PUBLIC_GAME_URL")) {
-                $publicGameUrl = [string]$namedMap["PUBLIC_GAME_URL"]
+
+            $failureMessage = [string]$candidateVerification.failureMessage
+            $attemptFailures.Add(("{0}: {1}" -f $candidateResolvedMode, $failureMessage)) | Out-Null
+            Write-Warning ("Tunnel mode '{0}' khong dat public verify: {1}" -f $candidateResolvedMode, $failureMessage)
+            Stop-TunnelMode -Mode $candidateResolvedMode
+
+            if ($TunnelMode -ne "auto") {
+                throw $failureMessage
             }
-            $publicGameUrl = Normalize-GameUrl -Url $publicGameUrl
-            if ([string]::IsNullOrWhiteSpace($publicGameUrl) -and -not [string]::IsNullOrWhiteSpace($publicBaseUrl)) {
-                $publicGameUrl = Normalize-GameUrl -Url $publicBaseUrl
-            }
-            $publicBaseUrl = Normalize-BaseUrl -BaseUrl $publicBaseUrl -GameUrl $publicGameUrl
-            if ([string]::IsNullOrWhiteSpace($publicGameUrl)) {
-                throw "Named tunnel da chay nhung chua co PUBLIC_BASE_URL/PUBLIC_GAME_URL. Hay cap nhat $AppEnvFile."
-            }
-            $tunnelLogErr = $namedCfErrLog
         } catch {
-            if ($TunnelMode -eq "auto") {
-                Write-Warning ("Named tunnel loi: {0}" -f $_.Exception.Message)
-                Write-Warning "Auto mode se fallback sang quick tunnel."
-                & $stopNamedTunnelScript | Out-Null
-                $resolvedTunnelMode = "quick"
-            } else {
+            $attemptFailures.Add(("{0}: {1}" -f $candidateMode, $_.Exception.Message)) | Out-Null
+            Write-Warning ("Tunnel mode '{0}' that bai: {1}" -f $candidateMode, $_.Exception.Message)
+            Stop-TunnelMode -Mode $candidateMode
+
+            if ($TunnelMode -ne "auto") {
                 throw
             }
         }
     }
 
-    if ($resolvedTunnelMode -eq "quick") {
-        Write-Output "STEP=START_TUNNEL_QUICK"
-        & $stopNamedTunnelScript | Out-Null
-        & $stopFallbackTunnelScript | Out-Null
-        $quickMaxAttempts = 3
-        $quickAttempt = 0
-        $quickLastError = $null
-        while ($quickAttempt -lt $quickMaxAttempts) {
-            $quickAttempt++
-            Write-Output ("QUICK_TUNNEL_ATTEMPT={0}/{1}" -f $quickAttempt, $quickMaxAttempts)
-            & $stopQuickTunnelScript | Out-Null
-
-            $quickOutput = @()
-            try {
-                $quickOutput = & $tunnelStartScript -LocalPort $Port -ContextPath "/Game" 2>&1
-            } catch {
-                $quickLastError = "Khoi dong quick tunnel that bai: $($_.Exception.Message)"
-                if ($quickAttempt -lt $quickMaxAttempts) {
-                    Write-Warning ($quickLastError + " Dang thu lai...")
-                    Start-Sleep -Seconds 2
-                    continue
-                }
-                break
-            }
-            $quickOutput | ForEach-Object { Write-Output ([string]$_) }
-
-            $publicBaseUrl = Get-QuickTunnelBaseUrl -LogPath $cfErrLog
-            $quickAliveAfterStart = Test-ProcessAliveByPidFile -PidFilePath $tunnelPidFile
-
-            if ([string]::IsNullOrWhiteSpace($publicBaseUrl)) {
-                $quickLastError = "Khong lay duoc quick tunnel URL tu $cfErrLog"
-            } elseif (-not $quickAliveAfterStart) {
-                $quickLastError = "Quick tunnel vua khoi dong nhung process da dung."
-            } else {
-                $publicBaseUrl = Normalize-BaseUrl -BaseUrl $publicBaseUrl -GameUrl $null
-                $publicGameUrl = Normalize-GameUrl -Url $publicBaseUrl
-                $tunnelLogErr = $cfErrLog
-                break
-            }
-
-            if ($quickAttempt -lt $quickMaxAttempts) {
-                Write-Warning ($quickLastError + " Dang thu lai...")
-                Start-Sleep -Seconds 2
-            }
-        }
-
-        if ([string]::IsNullOrWhiteSpace($publicGameUrl)) {
-            Write-Warning ("Quick tunnel khong on dinh sau {0} lan thu. Dang thu fallback provider..." -f $quickMaxAttempts)
-            if (-not (Test-FallbackTunnelAvailable)) {
-                throw ("Quick tunnel that bai va fallback provider cung khong tao duoc public URL. Loi quick tunnel cuoi: {0}" -f $quickLastError)
-            }
-            $fallbackResult = Start-FallbackTunnelAndResolve -Port $Port -SelectedProvider "auto"
-            $publicGameUrl = [string]$fallbackResult.publicGameUrl
-            $publicBaseUrl = [string]$fallbackResult.publicBaseUrl
-            $resolvedTunnelMode = [string]$fallbackResult.tunnelMode
-            $tunnelLogErr = [string]$fallbackResult.tunnelLogErr
-        }
+    if ([string]::IsNullOrWhiteSpace($publicGameUrl) -or [string]::IsNullOrWhiteSpace($resolvedTunnelMode) -or $null -eq $publicVerification) {
+        $joinedFailures = [string]::Join(" | ", @($attemptFailures))
+        throw ("Khong tim duoc public tunnel on dinh sau khi da thu cac provider: {0}" -f $joinedFailures)
     }
 
-    $publicPingUrl = $publicGameUrl.TrimEnd("/") + "/api/connectivity/ping"
-    $publicWsInfoUrl = $publicGameUrl.TrimEnd("/") + "/ws/info?t=1"
-    $publicHost = Get-UrlHost -Url $publicGameUrl
-    $publicDnsWaitSeconds = if ($resolvedTunnelMode -eq "quick") {
-        [Math]::Max(20, [Math]::Min(120, $WaitSeconds + 45))
-    } else {
-        10
-    }
-    $publicDnsOkOnPublicResolvers = $true
-    $publicDnsOkOnSystemResolver = $true
-
-    if (-not [string]::IsNullOrWhiteSpace($publicHost)) {
-        Write-Output "PUBLIC_HOST=$publicHost"
-        if ($resolvedTunnelMode -eq "quick") {
-            Write-Output "STEP=WAIT_PUBLIC_DNS"
-            $publicDnsOkOnPublicResolvers = Wait-HostResolvableOnPublicDns -HostName $publicHost -TimeoutSeconds $publicDnsWaitSeconds
-        } else {
-            $publicDnsOkOnPublicResolvers = Test-HostResolvableOnPublicDns -HostName $publicHost
-        }
-        $publicDnsOkOnSystemResolver = Test-HostResolvableLocally -HostName $publicHost
-        Write-Output "PUBLIC_DNS_PUBLIC_OK=$([int]$publicDnsOkOnPublicResolvers)"
-        Write-Output "PUBLIC_DNS_LOCAL_OK=$([int]$publicDnsOkOnSystemResolver)"
-    }
-
-    $publicProbeTimeoutSeconds = [Math]::Max($WaitSeconds, 75)
-    $publicGameOk = Wait-HttpOk -Url $publicPingUrl -TimeoutSeconds $publicProbeTimeoutSeconds
-    $publicWsOk = Wait-HttpOk -Url $publicWsInfoUrl -TimeoutSeconds ([Math]::Max(20, [Math]::Min(120, $publicProbeTimeoutSeconds + 15)))
-    $publicPageProbeTimeoutSeconds = [Math]::Max(30, [Math]::Min(150, $publicProbeTimeoutSeconds + 20))
-    $publicPageProbe = Wait-HttpProbe -Url $publicGameUrl -TimeoutSeconds $publicPageProbeTimeoutSeconds -AcceptHeader "text/html,application/xhtml+xml" -ExpectedBodyText $pageMarker
-    $publicPageOk = [bool]$publicPageProbe.ok
-    $tunnelPidCheckFile = switch ($resolvedTunnelMode) {
-        "named" { $namedTunnelPidFile }
-        "quick" { $tunnelPidFile }
-        default { Join-Path $repoRoot "public-fallback-tunnel.pid" }
-    }
-    $tunnelAlive = Test-ProcessAliveByPidFile -PidFilePath $tunnelPidCheckFile
-    $appAlive = Test-ProcessAliveByPidFile -PidFilePath $appPidFile
-    $allowQuickDnsBypass = ($resolvedTunnelMode -eq "quick") -and $tunnelAlive -and $appAlive -and $publicDnsOkOnPublicResolvers
-
-    if (($resolvedTunnelMode -eq "quick") -and (-not $publicDnsOkOnPublicResolvers)) {
-        $dnsHint = "Hay doi them 10-30s roi chay lai. Neu can on dinh hon, cau hinh CLOUDFLARE_TUNNEL_TOKEN + PUBLIC_BASE_URL de dung named tunnel."
-        if ($tunnelAlive -and $appAlive) {
-            $dnsHint = "Tunnel/app dang chay nhung DNS public cua quick tunnel chua resolve. " + $dnsHint
-        }
-        throw ("Quick tunnel da tao URL nhung DNS public chua resolve: {0} (host: {1}). {2}" -f $publicGameUrl, $publicHost, $dnsHint)
-    }
-
-    if (-not $publicGameOk) {
-        if ($allowQuickDnsBypass) {
-            Write-Warning "Quick tunnel URL chua truy cap duoc tren DNS hien tai cua may chu, nhung da resolve duoc qua public DNS (1.1.1.1/8.8.8.8). Van tiep tuc."
-            $publicGameOk = $true
-        } else {
-            $hint = ""
-            if ($tunnelAlive -and $appAlive) {
-                $hint = " (tunnel/app van dang chay; co the edge chua on dinh, thu lai sau 10-30s)"
-            }
-            if ($resolvedTunnelMode -eq "quick") {
-                $hint += " Neu mang cong cong bi chan *.trycloudflare.com, hay cau hinh CLOUDFLARE_TUNNEL_TOKEN + PUBLIC_BASE_URL de dung named tunnel domain co dinh."
-            } elseif (($resolvedTunnelMode -eq "runlocal") -or ($resolvedTunnelMode -eq "localtunnel")) {
-                $hint += " Fallback provider da tao URL nhung public probe that bai; hay xem public-fallback-tunnel.err.log."
-            }
-            throw ("Tunnel mode '{0}' da tao nhung URL public khong truy cap duoc: {1} (probe: {2}){3}" -f $resolvedTunnelMode, $publicGameUrl, $publicPingUrl, $hint)
-        }
-    }
-    if (-not $publicWsOk) {
-        if ($allowQuickDnsBypass) {
-            Write-Warning "Khong probe duoc public ws/info bang DNS hien tai cua may chu, bo qua check nay vi quick tunnel da resolve qua public DNS."
-            $publicWsOk = $true
-        } else {
-            throw "Tunnel URL public truy cap duoc web nhung endpoint ws/info chua san sang: $publicWsInfoUrl"
-        }
-    }
-    if (-not $publicPageOk) {
-        $pageHint = ""
-        if ($resolvedTunnelMode -eq "quick" -and $tunnelAlive -and $appAlive) {
-            $pageHint = " Quick tunnel/app van dang chay; day thuong la warm-up/edge delay, khong phai app da chet."
-        }
-        throw ("Tunnel URL public da tao nhung landing page khong render duoc: {0} ({1}){2}" -f $publicGameUrl, (Format-ProbeDiagnostic -Probe $publicPageProbe -Url $publicGameUrl), $pageHint)
-    }
+    $publicPingUrl = [string]$publicVerification.publicPingUrl
+    $publicWsInfoUrl = [string]$publicVerification.publicWsInfoUrl
+    $publicHost = [string]$publicVerification.publicHost
+    $publicDnsOkOnPublicResolvers = [bool]$publicVerification.publicDnsOkOnPublicResolvers
+    $publicDnsOkOnSystemResolver = [bool]$publicVerification.publicDnsOkOnSystemResolver
+    $publicGameOk = [bool]$publicVerification.publicGameOk
+    $publicWsOk = [bool]$publicVerification.publicWsOk
+    $publicPageOk = [bool]$publicVerification.publicPageOk
 
     $publicUrlLines = @(
         "# Auto-generated by scripts/runtime/start-remote-public-session.ps1"

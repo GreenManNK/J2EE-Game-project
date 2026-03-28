@@ -79,6 +79,9 @@ class GameCatalogServiceTest {
         assertTrue(quiz.supportsOnline());
         assertTrue(quiz.supportsOffline());
         assertEquals("/games/quiz", quiz.primaryActionUrl());
+        assertTrue(quiz.hasPreviewMedia());
+        assertTrue(quiz.previewMediaIsImage());
+        assertTrue(quiz.previewMediaUrl().startsWith("/images/games/home/quiz."));
 
         var typing = service.findByCode("typing").orElseThrow();
         assertTrue(typing.availableNow());
@@ -163,10 +166,54 @@ class GameCatalogServiceTest {
         assertEquals("python", externalModule.runtime());
         assertEquals("https://python.example.com/play", externalModule.primaryActionUrl());
         assertEquals("https://python.example.com/api", externalModule.apiBaseUrl());
+        assertTrue(externalModule.previewMediaUrl().isBlank());
 
         var overriddenQuiz = service.findByCode("quiz").orElseThrow();
         assertTrue(overriddenQuiz.isExternalSource());
         assertEquals("Quiz API Python", overriddenQuiz.displayName());
         assertEquals("https://python.example.com/quiz", overriddenQuiz.primaryActionUrl());
+    }
+
+    @Test
+    void shouldInferVideoPreviewMediaForExternalModule() throws Exception {
+        Path registryFile = Files.createTempFile("external-game-modules-video", ".json");
+        ExternalGameModuleService externalService = new ExternalGameModuleService(
+            new ObjectMapper(),
+            registryFile,
+            Duration.ofSeconds(5),
+            Duration.ofSeconds(5),
+            HttpClient.newHttpClient()
+        );
+        externalService.upsertModules(List.of(
+            new ExternalGameModuleConfig(
+                "video-module",
+                "Video Module",
+                "Video Module",
+                "Module co preview video.",
+                "bi-camera-reels-fill",
+                true,
+                true,
+                false,
+                true,
+                "Mo video module",
+                "https://video.example.com/play",
+                List.of("Preview video loop"),
+                "external-module",
+                "node",
+                "redirect",
+                "",
+                "https://video.example.com/api",
+                "https://video.example.com/manifest.json",
+                false,
+                "https://cdn.example.com/media/video-module.webm",
+                ""
+            )
+        ), false);
+
+        GameCatalogService service = new GameCatalogService(externalService);
+
+        var videoModule = service.findByCode("video-module").orElseThrow();
+        assertEquals("https://cdn.example.com/media/video-module.webm", videoModule.previewMediaUrl());
+        assertTrue(videoModule.previewMediaIsVideo());
     }
 }

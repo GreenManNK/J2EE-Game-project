@@ -967,7 +967,9 @@
 </div>
 
 <section th:fragment="gameplayRail(gameName, summary, modeValue, sessionValue, focusValue, primaryLabel, primaryHref, secondaryLabel, secondaryHref)"
-         class="gameplay-rail">
+         class="gameplay-rail"
+         th:attr="data-has-media=${game != null and game.hasPreviewMedia()}">
+  <th:block th:replace="~{games/media-fragments :: previewMedia(game=${game}, mediaClass='gameplay-rail__media')}"></th:block>
   <div class="gameplay-rail__intro">
     <div class="gameplay-rail__eyebrow">Gameplay rail / <span th:text="${gameName}">Caro</span></div>
     <div class="gameplay-rail__head">
