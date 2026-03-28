@@ -4,7 +4,7 @@
 <body>
 <div th:replace="~{fragments :: appShell('games-puzzle-jigsaw')}"></div>
 
-<main class="hub-portal-shell hub-portal-theme-puzzle">
+<main id="jigsaw-app" class="hub-portal-shell hub-portal-theme-puzzle">
     <section class="hub-portal-hero hub-portal-hero--single">
         <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
         <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
@@ -121,6 +121,7 @@
         display: flex;
         flex-direction: column;
         gap: 0.2rem;
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
     }
 
     .puzzle-hud span {
@@ -147,6 +148,7 @@
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 14px;
         padding: 6px;
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
     }
 
     .jigsaw-cell {
@@ -155,6 +157,11 @@
         border-radius: 8px;
         position: relative;
         overflow: hidden;
+        transition: border-color var(--play-motion-fast, 160ms) ease, background-color var(--play-motion-fast, 160ms) ease, transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1));
+    }
+
+    .jigsaw-cell.is-fresh {
+        animation: jigsawCellSettle .34s var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1));
     }
 
     .jigsaw-piece {
@@ -165,11 +172,24 @@
         cursor: pointer;
         background-size: cover;
         background-repeat: no-repeat;
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, filter var(--play-motion-fast, 160ms) ease, outline-color var(--play-motion-fast, 160ms) ease;
+        will-change: transform, box-shadow;
+    }
+
+    .jigsaw-piece:hover {
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 12px 22px rgba(8, 15, 31, 0.16);
     }
 
     .jigsaw-piece.selected {
         outline: 3px solid rgba(56, 189, 248, 0.95);
         outline-offset: 1px;
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 16px 28px rgba(8, 15, 31, 0.18);
+    }
+
+    .jigsaw-piece.is-fresh {
+        animation: jigsawPieceIn .34s var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1));
     }
 
     .jigsaw-tray {
@@ -181,6 +201,7 @@
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 14px;
         background: rgba(2, 6, 23, 0.32);
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
     }
 
     .jigsaw-preview {
@@ -190,16 +211,66 @@
         border: 1px solid rgba(255, 255, 255, 0.25);
         background-size: cover;
         background-position: center;
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease;
     }
 
     .puzzle-note {
         margin: 0.8rem 0 0;
         font-size: 0.9rem;
         color: rgba(255, 255, 255, 0.85);
+        padding: 0.72rem 0.84rem;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: transform var(--play-motion-fast, 160ms) ease, box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
     }
 
     .puzzle-note.success {
         color: #bbf7d0;
+        border-color: rgba(74, 222, 128, 0.24);
+        background: rgba(20, 83, 45, 0.18);
+    }
+
+    #jigsaw-app[data-phase="playing"] .jigsaw-preview {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 28px rgba(8, 15, 31, 0.18);
+    }
+
+    #jigsaw-app[data-phase="finished"] .jigsaw-board {
+        box-shadow: 0 18px 34px rgba(8, 15, 31, 0.2);
+        border-color: rgba(74, 222, 128, 0.28);
+    }
+
+    #jigsaw-app[data-phase="finished"] .puzzle-hud > div:last-child strong {
+        animation: jigsawSuccessPulse .82s ease-in-out 2;
+    }
+
+    @keyframes jigsawPieceIn {
+        0% { opacity: 0.35; transform: translateY(10px) scale(0.92); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes jigsawCellSettle {
+        0% { transform: scale(0.95); border-color: rgba(56, 189, 248, 0.44); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes jigsawSuccessPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.08); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .puzzle-hud > div,
+        .jigsaw-board,
+        .jigsaw-cell,
+        .jigsaw-piece,
+        .jigsaw-tray,
+        .jigsaw-preview,
+        .puzzle-note {
+            animation: none !important;
+            transition-duration: 1ms !important;
+        }
     }
 
     @media (max-width: 980px) {
@@ -213,6 +284,7 @@
     }
 </style>
 <script>
+    const appRoot = document.getElementById('jigsaw-app');
     const puzzleContainer = document.getElementById('puzzle-container');
     const piecesContainer = document.getElementById('pieces-container');
     const previewEl = document.getElementById('jigsaw-preview');
@@ -249,6 +321,7 @@
     let startTime;
     let timerHandle;
     let winReported = false;
+    let motion = { selectedPieceId: null, selectedAt: 0, placedPieceId: null, placedCellIndex: -1, placedAt: 0 };
 
     newGameBtn.addEventListener('click', startNewGame);
     sizeSelect.addEventListener('change', startNewGame);
@@ -265,6 +338,8 @@
         resetTimer();
         statusEl.textContent = 'Chon 1 manh trong khay, sau do click vao o tren ban de dat.';
         statusEl.classList.remove('success');
+        appRoot.dataset.phase = 'playing';
+        motion = { selectedPieceId: null, selectedAt: 0, placedPieceId: null, placedCellIndex: -1, placedAt: 0 };
 
         renderBoard();
         renderTray(shuffle(Array.from({ length: pieceCount }, (_, i) => i)));
@@ -279,7 +354,7 @@
         for (let i = 0; i < boardState.length; i += 1) {
             const cell = document.createElement('button');
             cell.type = 'button';
-            cell.className = 'jigsaw-cell';
+            cell.className = 'jigsaw-cell' + ((i === motion.placedCellIndex && (Date.now() - motion.placedAt) < 900) ? ' is-fresh' : '');
             cell.style.aspectRatio = '1 / 1';
             cell.dataset.index = String(i);
             cell.addEventListener('click', () => handleBoardCellClick(i));
@@ -304,6 +379,12 @@
         piece.type = 'button';
         piece.className = 'jigsaw-piece';
         piece.dataset.pieceId = String(pieceId);
+        if (pieceId === motion.selectedPieceId && (Date.now() - motion.selectedAt) < 1200) {
+            piece.classList.add('selected');
+        }
+        if (pieceId === motion.placedPieceId && (Date.now() - motion.placedAt) < 900) {
+            piece.classList.add('is-fresh');
+        }
 
         const x = pieceId % boardSize;
         const y = Math.floor(pieceId / boardSize);
@@ -317,6 +398,8 @@
 
     function selectPiece(pieceId) {
         selectedPieceId = pieceId;
+        motion.selectedPieceId = pieceId;
+        motion.selectedAt = Date.now();
         repaintSelection();
     }
 
@@ -351,6 +434,10 @@
 
         boardState[cellIndex] = selectedPieceId;
         selectedElement.remove();
+        motion.placedPieceId = selectedPieceId;
+        motion.placedCellIndex = cellIndex;
+        motion.placedAt = Date.now();
+        motion.selectedPieceId = null;
         selectedPieceId = null;
 
         moveCount += 1;
@@ -396,6 +483,7 @@
         clearInterval(timerHandle);
         statusEl.textContent = `Ban da giai xong trong ${moveCount} buoc va ${timeEl.textContent}.`;
         statusEl.classList.add('success');
+        appRoot.dataset.phase = 'finished';
         reportWin();
     }
 

@@ -66,7 +66,7 @@ public class TypingController {
         populateCatalogModel(model);
         model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
         model.addAttribute("roomPage", roomPage);
-        return "games/typing";
+        return roomPage ? "games/typing-room" : "games/typing";
     }
 
     private String renderPracticePage(Model model, boolean botPage, String botDifficulty) {

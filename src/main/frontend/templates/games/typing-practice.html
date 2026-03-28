@@ -111,6 +111,8 @@
         background: rgba(10, 24, 40, 0.44);
         box-shadow: 0 20px 40px rgba(8, 15, 31, 0.22);
         overflow: hidden;
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
+        will-change: transform, box-shadow;
     }
 
     .typing-practice-card--main {
@@ -141,6 +143,8 @@
         border: 1px solid rgba(255, 255, 255, 0.14);
         display: grid;
         gap: 0.25rem;
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease, background-color var(--play-motion-fast, 160ms) ease;
+        will-change: transform, box-shadow;
     }
 
     .typing-practice-stat span,
@@ -162,6 +166,7 @@
         border-radius: 16px;
         background: rgba(255, 255, 255, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.12);
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
     }
 
     .typing-practice-label {
@@ -173,6 +178,7 @@
         line-height: 1.6;
         word-break: break-word;
         font-size: 1rem;
+        transition: color var(--play-motion-fast, 160ms) ease;
     }
 
     .typing-practice-text .typed-correct {
@@ -194,6 +200,12 @@
         background: rgba(255, 255, 255, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.12);
         color: inherit;
+        transition: border-color var(--play-motion-fast, 160ms) ease, box-shadow var(--play-motion-base, 240ms) ease, background-color var(--play-motion-fast, 160ms) ease;
+    }
+
+    .typing-practice-input:focus {
+        box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.14);
+        border-color: rgba(34, 211, 238, 0.48);
     }
 
     .typing-practice-lanes,
@@ -210,6 +222,7 @@
         border: 1px solid rgba(255, 255, 255, 0.12);
         display: grid;
         gap: 0.45rem;
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
     }
 
     .typing-practice-lane__head {
@@ -229,7 +242,8 @@
         height: 100%;
         width: 0;
         background: linear-gradient(90deg, #22d3ee, #3b82f6);
-        transition: width 0.18s ease;
+        transition: width var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease;
+        box-shadow: 0 0 14px rgba(59, 130, 246, 0.22);
     }
 
     .typing-practice-actions {
@@ -242,14 +256,23 @@
         margin: 0;
         font-size: 0.92rem;
         color: rgba(255, 255, 255, 0.84);
+        padding: 0.7rem 0.8rem;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: transform var(--play-motion-fast, 160ms) ease, box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease, background-color var(--play-motion-fast, 160ms) ease;
     }
 
     .typing-practice-note.error {
         color: #fecaca;
+        border-color: rgba(248, 113, 113, 0.22);
+        background: rgba(127, 29, 29, 0.18);
     }
 
     .typing-practice-note.success {
         color: #bbf7d0;
+        border-color: rgba(74, 222, 128, 0.24);
+        background: rgba(20, 83, 45, 0.18);
     }
 
     .typing-practice-side-head {
@@ -266,8 +289,75 @@
 
     .typing-practice-history {
         margin: 0;
-        padding-left: 1.2rem;
+        padding-left: 0;
+        list-style: none;
         font-size: 0.92rem;
+    }
+
+    .typing-practice-history__item {
+        padding: 0.72rem 0.82rem;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.06);
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, opacity var(--play-motion-fast, 160ms) ease;
+    }
+
+    .typing-practice-history__item.is-new {
+        animation: typingHistoryIn .42s var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1));
+    }
+
+    #typing-practice-app[data-phase="racing"] .typing-practice-card--main {
+        box-shadow: 0 24px 54px rgba(8, 15, 31, 0.3);
+    }
+
+    #typing-practice-app[data-phase="racing"] .typing-practice-target,
+    #typing-practice-app[data-phase="racing"] .typing-practice-lane:first-child {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 34px rgba(15, 23, 42, 0.2);
+    }
+
+    #typing-practice-app[data-bot-enabled="true"][data-phase="racing"] .typing-practice-lane:last-child {
+        box-shadow: 0 14px 28px rgba(59, 130, 246, 0.16);
+    }
+
+    #typing-practice-app[data-phase="finished"] .typing-practice-target {
+        box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.28), 0 18px 32px rgba(8, 15, 31, 0.16);
+    }
+
+    #typing-practice-app[data-urgent="true"] #typing-practice-timer {
+        animation: typingTimerUrgent .82s ease-in-out infinite;
+    }
+
+    #typing-practice-app[data-feedback="success"] .typing-practice-note,
+    #typing-practice-app[data-feedback="error"] .typing-practice-note {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px rgba(8, 15, 31, 0.16);
+    }
+
+    @keyframes typingTimerUrgent {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.08); opacity: 0.92; }
+    }
+
+    @keyframes typingHistoryIn {
+        0% { opacity: 0; transform: translateY(8px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .typing-practice-card,
+        .typing-practice-stat,
+        .typing-practice-summary__row,
+        .typing-practice-target,
+        .typing-practice-input,
+        .typing-practice-lane,
+        .typing-practice-lane__track > div,
+        .typing-practice-note,
+        .typing-practice-history__item,
+        #typing-practice-timer {
+            animation: none !important;
+            transition-duration: 1ms !important;
+        }
     }
 
     body:not(.dark-mode) .typing-practice-card {

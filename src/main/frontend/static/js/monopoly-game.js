@@ -176,6 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   let botTurnTimer = 0;
   let botTurnKey = "";
+  let motionRefreshTimer = 0;
 
   bindStaticEvents();
   bindRoomEvents();
@@ -195,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (isDedicatedRoomPage()) {
       joinRoom(roomSession.roomId, true);
-    } else if (!isLocalPage()) {
+    } else if (!isLocalPage() && !isBotPage()) {
       navigateToRoomPage(roomSession.roomId);
       return;
     }
@@ -226,7 +227,22 @@ document.addEventListener("DOMContentLoaded", () => {
       winnerId: null,
       settings: {
         passGoAmount: PASS_GO_AMOUNT
-      }
+      },
+      motion: createMotionState()
+    };
+  }
+
+  function createMotionState() {
+    return {
+      lastDiceAt: 0,
+      lastTurnAt: 0,
+      lastArriveAt: 0,
+      lastArriveTileIndex: null,
+      lastArrivePlayerId: null,
+      latestLogId: 0,
+      latestLogAt: 0,
+      sequence: 0,
+      focusPlayerId: null
     };
   }
 
@@ -427,6 +443,10 @@ document.addEventListener("DOMContentLoaded", () => {
       setRoomStatus("Dang o che do phong. Roi phong neu muon mo van local rieng.", true);
       return;
     }
+    if (isBotSetupPage()) {
+      navigateToBotArena();
+      return;
+    }
     if (confirmIfRunning && state.players.length > 0 && state.phase !== "setup") {
       const shouldReset = window.confirm("Bat dau van moi? Tien trinh hien tai se mat.");
       if (!shouldReset) {
@@ -438,11 +458,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function readSetupConfig() {
-    const playerCount = Math.max(2, Math.min(4, Number(refs.playerCount?.value || 4)));
-    const startingCash = Math.max(800, Number(refs.startingCash?.value || 1500));
+    const playerCount = Math.max(2, Math.min(4, Number(refs.playerCount?.value || boot.botPlayerCount || 4)));
+    const startingCash = Math.max(800, Number(refs.startingCash?.value || boot.botStartingCash || 1500));
     if (isBotPage()) {
       const players = [{
-        name: sanitizeName(refs.playerInputs[0]?.value, "Nguoi choi"),
+        name: sanitizeName(refs.playerInputs[0]?.value || boot.botPlayerName, "Nguoi choi"),
         isBot: false
       }];
       for (let slot = 2; slot <= playerCount; slot += 1) {
@@ -485,6 +505,7 @@ document.addEventListener("DOMContentLoaded", () => {
     state.round = 1;
     state.turnNumber = 1;
     state.selectedTileIndex = 0;
+    markTurnMotion(state.players[0]?.id || null);
     logAction("Van moi", "Ban choi da san sang. " + state.players[0].name + " di truoc.");
     renderAll();
   }
@@ -603,7 +624,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function logAction(title, message) {
+    const motion = state.motion || (state.motion = createMotionState());
+    motion.sequence = Number(motion.sequence || 0) + 1;
+    motion.latestLogId = motion.sequence;
+    motion.latestLogAt = Date.now();
     state.log.unshift({
+      id: motion.latestLogId,
       title,
       message,
       stamp: "Luot " + state.turnNumber
@@ -611,6 +637,74 @@ document.addEventListener("DOMContentLoaded", () => {
     if (state.log.length > MAX_LOG_ITEMS) {
       state.log.length = MAX_LOG_ITEMS;
     }
+    scheduleMotionRefresh(760);
+  }
+
+  function markDiceMotion() {
+    state.motion = state.motion || createMotionState();
+    state.motion.lastDiceAt = Date.now();
+    scheduleMotionRefresh(960);
+  }
+
+  function markTurnMotion(playerId) {
+    state.motion = state.motion || createMotionState();
+    state.motion.lastTurnAt = Date.now();
+    state.motion.focusPlayerId = playerId || null;
+    scheduleMotionRefresh(1280);
+  }
+
+  function markArrivalMotion(playerId, tileIndex) {
+    state.motion = state.motion || createMotionState();
+    state.motion.lastArriveAt = Date.now();
+    state.motion.lastArrivePlayerId = playerId || null;
+    state.motion.lastArriveTileIndex = Number.isInteger(tileIndex) ? tileIndex : null;
+    scheduleMotionRefresh(900);
+  }
+
+  function isMotionRecent(timestamp, windowMs) {
+    return Number(timestamp || 0) > 0 && (Date.now() - Number(timestamp)) < windowMs;
+  }
+
+  function isRecentTurnPulse(playerId) {
+    const motion = state.motion || {};
+    return Boolean(playerId) && playerId === motion.focusPlayerId && isMotionRecent(motion.lastTurnAt, 1200);
+  }
+
+  function isRecentArrival(tileIndex, playerId) {
+    const motion = state.motion || {};
+    return isMotionRecent(motion.lastArriveAt, 860)
+      && motion.lastArriveTileIndex === tileIndex
+      && (!playerId || motion.lastArrivePlayerId === playerId);
+  }
+
+  function isRecentDiceRoll() {
+    return isMotionRecent(state.motion?.lastDiceAt, 920);
+  }
+
+  function isRecentLogEntry(logId) {
+    const motion = state.motion || {};
+    return logId != null
+      && motion.latestLogId === logId
+      && isMotionRecent(motion.latestLogAt, 720);
+  }
+
+  function scheduleMotionRefresh(delayMs) {
+    if (motionRefreshTimer) {
+      window.clearTimeout(motionRefreshTimer);
+    }
+    motionRefreshTimer = window.setTimeout(() => {
+      motionRefreshTimer = 0;
+      refreshMotionSurfaces();
+    }, Math.max(60, Number(delayMs || 0)));
+  }
+
+  function refreshMotionSurfaces() {
+    renderBoard();
+    renderTurnSummary();
+    renderStandings();
+    renderPlayers();
+    renderPortfolio();
+    renderLog();
   }
 
   function renderAll() {
@@ -645,6 +739,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectedClass = state.selectedTileIndex === space.index ? " is-selected" : "";
     const ownedClass = owner ? " is-owned" : "";
     const mortgagedClass = space.mortgaged ? " is-mortgaged" : "";
+    const arrivalClass = isRecentArrival(space.index) ? " is-arriving" : "";
     const houses = renderHouseDots(space);
     const tokens = renderTokenDots(space.index);
     const meta = renderSpaceMeta(space, owner);
@@ -652,7 +747,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return `
       <button
         type="button"
-        class="monopoly-space ${frameClass} type-${space.type}${selectedClass}${ownedClass}${mortgagedClass}"
+        class="monopoly-space ${frameClass} type-${space.type}${selectedClass}${ownedClass}${mortgagedClass}${arrivalClass}"
         data-space-index="${space.index}"
         style="grid-row:${position.row};grid-column:${position.col};--space-accent:${groupMeta.accent};${ownerStyle}">
         <span class="monopoly-space__band"></span>
@@ -673,6 +768,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentPlayer = getCurrentPlayer();
     const dieA = state.lastDice ? state.lastDice.a : "-";
     const dieB = state.lastDice ? state.lastDice.b : "-";
+    const diceMotionClass = isRecentDiceRoll() ? " is-rolling" : "";
     return `
       <div class="monopoly-board-center">
         <div class="monopoly-board-center__tickets" aria-hidden="true">
@@ -688,7 +784,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <h3 class="monopoly-board-center__title">${escapeHtml(currentPlayer ? "Luot cua " + currentPlayer.name : "Ban choi Monopoly")}</h3>
           <p class="monopoly-board-center__subtitle">${escapeHtml(resolveInstructionText())}</p>
         </div>
-        <div class="monopoly-dice-row">
+        <div class="monopoly-dice-row${diceMotionClass}">
           <div class="monopoly-dice">
             <div class="monopoly-die">${dieA}</div>
             <div class="monopoly-die">${dieB}</div>
@@ -715,9 +811,10 @@ document.addEventListener("DOMContentLoaded", () => {
       refs.instruction.textContent = "";
       return;
     }
+    const leadMotionClass = isRecentTurnPulse(currentPlayer.id) ? " is-live-turn" : "";
 
     refs.turnSummary.innerHTML = `
-      <div class="monopoly-turn-summary__lead">
+      <div class="monopoly-turn-summary__lead${leadMotionClass}">
         <div>
           <strong>${escapeHtml(currentPlayer.name)}</strong>
           <small>${escapeHtml(
@@ -966,7 +1063,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .sort((left, right) => right.value - left.value);
     const maxValue = ranked[0] ? ranked[0].value : 1;
     refs.standings.innerHTML = ranked.map(({ player, value }, index) => `
-      <div class="monopoly-standing-item">
+      <div class="monopoly-standing-item${isRecentTurnPulse(player.id) ? " is-live-turn" : ""}">
         <div class="monopoly-standing-meta">
           <strong>${index + 1}. ${escapeHtml(player.name)}</strong>
           <small>${player.bankrupt ? "Pha san" : "Tien mat " + formatMoney(player.money)} | Gia tri rong ${formatMoney(value)}</small>
@@ -1010,7 +1107,7 @@ document.addEventListener("DOMContentLoaded", () => {
         badges.push('<span class="monopoly-player-badge">Pha san</span>');
       }
       return `
-        <article class="monopoly-player-card${state.players[state.currentPlayerIndex]?.id === player.id ? " is-current" : ""}${player.bankrupt ? " is-bankrupt" : ""}">
+        <article class="monopoly-player-card${state.players[state.currentPlayerIndex]?.id === player.id ? " is-current" : ""}${player.bankrupt ? " is-bankrupt" : ""}${isRecentTurnPulse(player.id) ? " is-live-turn" : ""}${isRecentArrival(player.position, player.id) ? " is-updated" : ""}">
           <div class="monopoly-player-head">
             <div class="monopoly-player-name">
               <span class="monopoly-player-color" style="--player-color:${player.color}"></span>
@@ -1063,7 +1160,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     refs.log.innerHTML = '<div class="monopoly-log-list">' + state.log.map((entry) => `
-      <div class="monopoly-log-item">
+      <div class="monopoly-log-item${isRecentLogEntry(entry.id) ? " is-new" : ""}">
         <strong>${escapeHtml(entry.title)} - ${escapeHtml(entry.stamp)}</strong>
         <small>${escapeHtml(entry.message)}</small>
       </div>
@@ -1146,7 +1243,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderTokenDots(tileIndex) {
     return state.players
       .filter((player) => !player.bankrupt && player.position === tileIndex)
-      .map((player) => '<span class="monopoly-token-dot" style="--token-color:' + player.color + '"></span>')
+      .map((player) => '<span class="monopoly-token-dot'
+        + (state.players[state.currentPlayerIndex]?.id === player.id ? ' is-current-turn' : '')
+        + (isRecentArrival(tileIndex, player.id) ? ' is-arriving' : '')
+        + '" style="--token-color:' + player.color + '"></span>')
       .join("");
   }
 
@@ -1502,6 +1602,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dice = rollDice();
     state.lastDice = dice;
     state.lastCard = null;
+    markDiceMotion();
 
     if (currentPlayer.inJail && state.phase === "jail") {
       handleJailRoll(currentPlayer, dice);
@@ -1861,6 +1962,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     player.position = destination;
     state.selectedTileIndex = destination;
+    markArrivalMotion(player.id, destination);
     logAction("Di chuyen", player.name + " den " + getBoardSpace(destination).name + ". " + reason);
     resolveLanding(player, getBoardSpace(destination));
   }
@@ -1874,6 +1976,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     player.position = destination;
     state.selectedTileIndex = destination;
+    markArrivalMotion(player.id, destination);
     logAction("The su kien", player.name + " di toi " + getBoardSpace(destination).name + ". " + reason);
     resolveLanding(player, getBoardSpace(destination));
   }
@@ -2054,6 +2157,7 @@ document.addEventListener("DOMContentLoaded", () => {
     state.pendingPurchase = null;
     state.phase = "await_end_turn";
     state.selectedTileIndex = 10;
+    markArrivalMotion(player.id, 10);
     logAction("Vao tu", player.name + " bi dua vao tu. " + reason);
     renderAll();
   }
@@ -2189,6 +2293,7 @@ document.addEventListener("DOMContentLoaded", () => {
     state.specialRent = null;
     state.selectedTileIndex = state.players[nextIndex].position;
     state.phase = state.players[nextIndex].inJail ? "jail" : "await_roll";
+    markTurnMotion(state.players[nextIndex].id);
     logAction("Chuyen luot", state.players[nextIndex].name + " den luot.");
   }
 
@@ -2735,7 +2840,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function isBotPage() {
-    return Boolean(boot.botPage) || /\/games\/monopoly\/bot\/?$/i.test(String(window.location.pathname || ""));
+    return Boolean(boot.botPage) || /\/games\/monopoly\/bot(?:\/arena)?\/?$/i.test(String(window.location.pathname || ""));
+  }
+
+  function isBotArenaPage() {
+    return Boolean(boot.botArenaPage) || /\/games\/monopoly\/bot\/arena\/?$/i.test(String(window.location.pathname || ""));
+  }
+
+  function isBotSetupPage() {
+    return isBotPage() && !isBotArenaPage();
   }
 
   function normalizeBotDifficulty(rawValue) {
@@ -2744,7 +2857,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function shouldBootLocalBoard() {
-    return isLocalPage() || isBotPage();
+    return isLocalPage() || isBotArenaPage();
   }
 
   function hasRoomUi() {
@@ -2759,6 +2872,19 @@ document.addEventListener("DOMContentLoaded", () => {
     return appPath("/games/monopoly/local");
   }
 
+  function buildBotSetupPath() {
+    return appPath("/games/monopoly/bot?difficulty=" + encodeURIComponent(normalizeBotDifficulty()));
+  }
+
+  function buildBotArenaPath(config) {
+    const params = new URLSearchParams();
+    params.set("difficulty", normalizeBotDifficulty(config?.botDifficulty));
+    params.set("playerName", sanitizeName(config?.players?.[0]?.name, "Nguoi choi"));
+    params.set("playerCount", String(Math.max(2, Math.min(4, Number(config?.playerCount || 4)))));
+    params.set("startingCash", String(Math.max(800, Number(config?.startingCash || 1500))));
+    return appPath("/games/monopoly/bot/arena?" + params.toString());
+  }
+
   function buildRoomPath(roomId) {
     return appPath("/games/monopoly/room/" + encodeURIComponent(String(roomId || "").trim().toUpperCase()));
   }
@@ -2770,6 +2896,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     window.location.href = buildRoomPath(normalizedRoomId);
+  }
+
+  function navigateToBotArena() {
+    const config = readSetupConfig();
+    window.location.href = buildBotArenaPath(config);
   }
 
   function setRoomStatus(message, isError) {
@@ -3059,7 +3190,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!refs.localSetupCard) {
       return;
     }
-    refs.localSetupCard.hidden = (!isLocalPage() && !isBotPage()) || isRoomAttached();
+    refs.localSetupCard.hidden = (!isLocalPage() && !isBotSetupPage()) || isRoomAttached();
   }
 
   function renderRoomPanels() {

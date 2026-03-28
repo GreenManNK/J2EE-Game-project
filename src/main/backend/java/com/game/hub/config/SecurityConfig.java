@@ -2,7 +2,6 @@ package com.game.hub.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,19 +20,16 @@ public class SecurityConfig {
     private final SessionRoleAuthenticationFilter sessionRoleAuthenticationFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
-    private final String googleClientId;
-    private final String facebookClientId;
+    private final SocialLoginConfiguration socialLoginConfiguration;
 
     public SecurityConfig(SessionRoleAuthenticationFilter sessionRoleAuthenticationFilter,
                           OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
                           OAuth2LoginFailureHandler oAuth2LoginFailureHandler,
-                          @Value("${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID:}") String googleClientId,
-                          @Value("${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID:}") String facebookClientId) {
+                          SocialLoginConfiguration socialLoginConfiguration) {
         this.sessionRoleAuthenticationFilter = sessionRoleAuthenticationFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
         this.oAuth2LoginFailureHandler = oAuth2LoginFailureHandler;
-        this.googleClientId = googleClientId;
-        this.facebookClientId = facebookClientId;
+        this.socialLoginConfiguration = socialLoginConfiguration;
     }
 
     @Bean
@@ -70,11 +66,7 @@ public class SecurityConfig {
     }
 
     private boolean isSocialLoginConfigured() {
-        return hasText(googleClientId) || hasText(facebookClientId);
-    }
-
-    private boolean hasText(String value) {
-        return value != null && !value.trim().isEmpty();
+        return socialLoginConfiguration.isAnyProviderEnabled();
     }
 
     private AuthenticationEntryPoint authenticationEntryPoint() {

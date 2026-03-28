@@ -22,6 +22,8 @@
     timerHandle: null,
     active: false,
     finished: false,
+    phase: "loading",
+    lastOutcome: "",
     botProgress: 0,
     botWpm: 0,
     historyItems: [],
@@ -71,6 +73,15 @@
     await loadTexts();
     updateStatsUi();
     prepareText(0);
+  }
+
+  function syncMotionState(nextPhase) {
+    if (nextPhase) {
+      state.phase = nextPhase;
+    }
+    app.dataset.phase = String(state.phase || "ready");
+    app.dataset.urgent = app.dataset.urgent === "true" ? "true" : "false";
+    app.dataset.outcome = String(state.lastOutcome || "");
   }
 
   function bindActions() {
@@ -124,6 +135,7 @@
     state.currentText = state.texts[state.index] || "";
     state.active = false;
     state.finished = false;
+    state.lastOutcome = "";
     state.botProgress = 0;
     state.botWpm = 0;
     state.matchCode = newMatchCode();
@@ -146,6 +158,8 @@
     els.result.textContent = "Chua bat dau";
     renderTargetText(state.currentText, "");
     setFeedback("Nhan Bat dau van de chay quote nay.", "");
+    app.dataset.urgent = "false";
+    syncMotionState("ready");
   }
 
   function startRace(restartCurrent) {
@@ -171,6 +185,7 @@
     els.status.textContent = state.botEnabled ? "Dang race voi bot" : "Dang practice";
     els.result.textContent = state.botEnabled ? "Chua chot keo" : "Dang luyen tap";
     setFeedback(state.botEnabled ? "Giu accuracy va ve dich truoc bot." : "Giu nhip go va ket thuc quote nhanh nhat co the.", "");
+    syncMotionState("racing");
     updateRaceFrame();
     stopRaceTimer();
     state.timerHandle = window.setInterval(updateRaceFrame, 120);
@@ -216,6 +231,7 @@
 
     const remainingSeconds = Math.max(0, Math.ceil((state.raceEndsAt - Date.now()) / 1000));
     els.timer.textContent = remainingSeconds + "s";
+    app.dataset.urgent = remainingSeconds <= 10 ? "true" : "false";
     if (Date.now() >= state.raceEndsAt) {
       finishRace("timeout");
     }
@@ -259,6 +275,9 @@
     } else {
       result = "Dung quote o muc hien tai";
     }
+    state.lastOutcome = outcome;
+    app.dataset.urgent = "false";
+    syncMotionState("finished");
 
     els.status.textContent = "Da ket thuc";
     els.result.textContent = result;
@@ -276,12 +295,14 @@
     els.history.innerHTML = "";
     if (!state.historyItems.length) {
       const li = document.createElement("li");
+      li.className = "typing-practice-history__item";
       li.textContent = "Chua co quote nao duoc chay.";
       els.history.appendChild(li);
       return;
     }
-    state.historyItems.slice().reverse().forEach(function (item) {
+    state.historyItems.slice().reverse().forEach(function (item, index) {
       const li = document.createElement("li");
+      li.className = "typing-practice-history__item" + (index === 0 ? " is-new" : "");
       li.textContent = item;
       els.history.appendChild(li);
     });
@@ -513,6 +534,7 @@
     if (type) {
       els.feedback.classList.add(type);
     }
+    app.dataset.feedback = String(type || "neutral");
   }
 
   function stopRaceTimer() {

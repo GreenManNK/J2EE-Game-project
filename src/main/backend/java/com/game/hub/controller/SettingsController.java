@@ -1,10 +1,10 @@
 package com.game.hub.controller;
 
+import com.game.hub.config.SocialLoginConfiguration;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.UserAccountRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,15 +18,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/settings")
 public class SettingsController {
     private final UserAccountRepository userAccountRepository;
-    private final String facebookClientId;
-    private final String googleClientId;
+    private final SocialLoginConfiguration socialLoginConfiguration;
 
     public SettingsController(UserAccountRepository userAccountRepository,
-                              @Value("${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID:}") String facebookClientId,
-                              @Value("${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID:}") String googleClientId) {
+                              SocialLoginConfiguration socialLoginConfiguration) {
         this.userAccountRepository = userAccountRepository;
-        this.facebookClientId = facebookClientId;
-        this.googleClientId = googleClientId;
+        this.socialLoginConfiguration = socialLoginConfiguration;
     }
 
     @GetMapping
@@ -43,8 +40,8 @@ public class SettingsController {
         model.addAttribute("isAdminViewer", "Admin".equalsIgnoreCase(authRole));
         model.addAttribute("isAuthenticated", settingsUser != null);
         model.addAttribute("settingsUser", settingsUser);
-        model.addAttribute("googleLoginEnabled", hasText(googleClientId));
-        model.addAttribute("facebookLoginEnabled", hasText(facebookClientId));
+        model.addAttribute("googleLoginEnabled", socialLoginConfiguration.isGoogleEnabled());
+        model.addAttribute("facebookLoginEnabled", socialLoginConfiguration.isFacebookEnabled());
         model.addAttribute("googleLinked", settingsUser != null && toTrimmed(settingsUser.getOauthGoogleId()) != null);
         model.addAttribute("facebookLinked", settingsUser != null && toTrimmed(settingsUser.getOauthFacebookId()) != null);
         model.addAttribute("socialLinked", toTrimmed(socialLinked));
@@ -114,7 +111,4 @@ public class SettingsController {
             .orElse(null);
     }
 
-    private boolean hasText(String value) {
-        return value != null && !value.trim().isEmpty();
-    }
 }

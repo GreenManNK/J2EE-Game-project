@@ -2187,6 +2187,7 @@ body.dark-mode .hub-portal-shell {
 
 body.dark-mode .hub-portal-hero,
 body.dark-mode .hub-portal-panel,
+body.dark-mode .hub-portal-card,
 body.dark-mode .hub-portal-highlight,
 body.dark-mode .hub-portal-game-card,
 body.dark-mode .hub-portal-section-card {
@@ -2194,6 +2195,15 @@ body.dark-mode .hub-portal-section-card {
     linear-gradient(180deg, rgba(10, 16, 30, 0.92), rgba(8, 13, 24, 0.84)) !important;
   border-color: rgba(148, 163, 184, 0.18) !important;
   box-shadow: var(--gx-shadow-soft) !important;
+}
+
+body.dark-mode .hub-portal-card__head h2,
+body.dark-mode .hub-portal-card h3 {
+  color: #eef4ff;
+}
+
+body.dark-mode .hub-portal-card p {
+  color: #9fb0ce;
 }
 
 body.dark-mode .hub-portal-action,

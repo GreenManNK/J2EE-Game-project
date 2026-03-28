@@ -73,6 +73,26 @@ class HomePageRenderIntegrationTest {
     }
 
     @Test
+    void loginPageShouldRenderSplitAuthSurface() throws Exception {
+        mockMvc.perform(get("/account/login-page"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("account/login"))
+            .andExpect(content().string(containsString("Game Hub account")))
+            .andExpect(content().string(containsString("Dang nhap de tiep tuc choi")))
+            .andExpect(content().string(containsString("id=\"loginForm\"")));
+    }
+
+    @Test
+    void registerPageShouldRenderSplitOnboardingSurface() throws Exception {
+        mockMvc.perform(get("/account/register-page"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("account/register"))
+            .andExpect(content().string(containsString("Quy trinh 3 buoc")))
+            .andExpect(content().string(containsString("Email va mat khau")))
+            .andExpect(content().string(containsString("id=\"regForm\"")));
+    }
+
+    @Test
     void caroDetailPageShouldRenderWithSharedCatalogModel() throws Exception {
         mockMvc.perform(get("/games/caro"))
             .andExpect(status().isOk())
@@ -182,7 +202,8 @@ class HomePageRenderIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(view().name("games/monopoly"))
             .andExpect(model().attributeExists("game", "allGames"))
-            .andExpect(content().string(containsString("Gameplay rail /")));
+            .andExpect(content().string(containsString("Gameplay rail /")))
+            .andExpect(content().string(containsString("/games/monopoly/bot?difficulty=easy")));
     }
 
     @Test
@@ -206,7 +227,7 @@ class HomePageRenderIntegrationTest {
     void monopolyLocalPageShouldRenderDedicatedLocalMode() throws Exception {
         mockMvc.perform(get("/games/monopoly/local"))
             .andExpect(status().isOk())
-            .andExpect(view().name("games/monopoly"))
+            .andExpect(view().name("games/monopoly-local"))
             .andExpect(model().attribute("localPage", true))
             .andExpect(model().attribute("roomPage", false))
             .andExpect(model().attribute("botPage", false));
@@ -216,19 +237,39 @@ class HomePageRenderIntegrationTest {
     void monopolyBotPageShouldRenderDedicatedBotMode() throws Exception {
         mockMvc.perform(get("/games/monopoly/bot").param("difficulty", "hard"))
             .andExpect(status().isOk())
-            .andExpect(view().name("games/monopoly"))
+            .andExpect(view().name("games/monopoly-bot"))
             .andExpect(model().attribute("roomPage", false))
             .andExpect(model().attribute("localPage", false))
             .andExpect(model().attribute("botPage", true))
+            .andExpect(model().attribute("botArenaPage", false))
             .andExpect(model().attribute("botDifficulty", "hard"))
-            .andExpect(content().string(containsString("bot tu dong")));
+            .andExpect(content().string(containsString("Sanh bot rieng")))
+            .andExpect(content().string(not(containsString("Phong bot da mo"))));
+    }
+
+    @Test
+    void monopolyBotArenaPageShouldRenderDedicatedArenaTemplate() throws Exception {
+        mockMvc.perform(get("/games/monopoly/bot/arena")
+                .param("difficulty", "hard")
+                .param("playerName", "Tester")
+                .param("playerCount", "3")
+                .param("startingCash", "2000"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/monopoly-bot-arena"))
+            .andExpect(model().attribute("roomPage", false))
+            .andExpect(model().attribute("localPage", false))
+            .andExpect(model().attribute("botPage", true))
+            .andExpect(model().attribute("botArenaPage", true))
+            .andExpect(model().attribute("botDifficulty", "hard"))
+            .andExpect(content().string(containsString("Phong bot da mo")))
+            .andExpect(content().string(not(containsString("Setup ban voi bot"))));
     }
 
     @Test
     void monopolyRoomPageShouldRenderDedicatedRoomMode() throws Exception {
         mockMvc.perform(get("/games/monopoly/room/MONO-1"))
             .andExpect(status().isOk())
-            .andExpect(view().name("games/monopoly"))
+            .andExpect(view().name("games/monopoly-room"))
             .andExpect(model().attribute("defaultRoomId", "MONO-1"))
             .andExpect(model().attribute("roomPage", true))
             .andExpect(model().attribute("localPage", false))
@@ -252,7 +293,7 @@ class HomePageRenderIntegrationTest {
     void quizRoomPageShouldRenderDedicatedRoomTemplate() throws Exception {
         mockMvc.perform(get("/games/quiz/room/QUIZ-1"))
             .andExpect(status().isOk())
-            .andExpect(view().name("games/quiz"))
+            .andExpect(view().name("games/quiz-room"))
             .andExpect(model().attribute("defaultRoomId", "QUIZ-1"))
             .andExpect(model().attribute("roomPage", true))
             .andExpect(content().string(containsString("Quiz / Phong choi")))
@@ -263,7 +304,7 @@ class HomePageRenderIntegrationTest {
     void typingRoomPageShouldRenderDedicatedRoomTemplate() throws Exception {
         mockMvc.perform(get("/games/typing/room/TYP-1"))
             .andExpect(status().isOk())
-            .andExpect(view().name("games/typing"))
+            .andExpect(view().name("games/typing-room"))
             .andExpect(model().attribute("defaultRoomId", "TYP-1"))
             .andExpect(model().attribute("roomPage", true))
             .andExpect(content().string(containsString("Typing / Phong choi")))
@@ -274,7 +315,7 @@ class HomePageRenderIntegrationTest {
     void blackjackRoomPageShouldRenderDedicatedRoomTemplate() throws Exception {
         mockMvc.perform(get("/games/cards/blackjack/room/BJ-1"))
             .andExpect(status().isOk())
-            .andExpect(view().name("games/cards/blackjack"))
+            .andExpect(view().name("games/cards/blackjack-room"))
             .andExpect(model().attribute("defaultRoomId", "BJ-1"))
             .andExpect(model().attribute("roomPage", true))
             .andExpect(content().string(containsString("Blackjack / Phong choi")))

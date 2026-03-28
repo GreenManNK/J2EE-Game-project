@@ -31,8 +31,8 @@ class BlackjackControllerTest {
         ConcurrentModel playModel = new ConcurrentModel();
         ConcurrentModel spectateModel = new ConcurrentModel();
 
-        assertEquals("games/cards/blackjack", controller.blackjackRoomPage("BJ-ROOM-1", playModel));
-        assertEquals("games/cards/blackjack", controller.blackjackSpectatePage("BJ-ROOM-1", spectateModel));
+        assertEquals("games/cards/blackjack-room", controller.blackjackRoomPage("BJ-ROOM-1", playModel));
+        assertEquals("games/cards/blackjack-room", controller.blackjackSpectatePage("BJ-ROOM-1", spectateModel));
         assertEquals("BJ-ROOM-1", playModel.getAttribute("defaultRoomId"));
         assertEquals(Boolean.TRUE, playModel.getAttribute("roomPage"));
         assertEquals(Boolean.FALSE, playModel.getAttribute("spectateMode"));

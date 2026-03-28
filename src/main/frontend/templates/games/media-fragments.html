@@ -5,7 +5,7 @@
   <th:block th:if="${game != null and game.hasPreviewMedia()}">
     <video th:if="${game.previewMediaIsVideo()}"
            th:class="${mediaClass}"
-           th:src="${game.previewMediaUrl}"
+           th:src="@{${game.previewMediaUrl}}"
            aria-hidden="true"
            tabindex="-1"
            autoplay
@@ -16,7 +16,7 @@
            disablepictureinpicture></video>
     <img th:if="${game.previewMediaIsImage()}"
          th:class="${mediaClass}"
-         th:src="${game.previewMediaUrl}"
+         th:src="@{${game.previewMediaUrl}}"
          alt=""
          aria-hidden="true"
          loading="lazy"

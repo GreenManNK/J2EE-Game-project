@@ -26,7 +26,7 @@ class TypingControllerTest {
 
         String view = controller.typingRoomPage("TYP-ROOM-1", model);
 
-        assertEquals("games/typing", view);
+        assertEquals("games/typing-room", view);
         assertEquals("TYP-ROOM-1", model.getAttribute("defaultRoomId"));
         assertEquals(Boolean.TRUE, model.getAttribute("roomPage"));
     }

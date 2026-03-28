@@ -210,7 +210,8 @@
       rgba(5, 39, 29, 0.56);
     color: #eefbf4;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .18s ease;
+    transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease, opacity var(--play-motion-fast, 160ms) ease;
+    will-change: transform, box-shadow, opacity;
     overflow: hidden;
   }
 
@@ -568,11 +569,14 @@
     color: #172029;
     display: block;
     cursor: pointer;
-    transition: transform .14s ease, box-shadow .14s ease, opacity .14s ease, filter .14s ease;
+    transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, opacity var(--play-motion-fast, 160ms) ease, filter var(--play-motion-fast, 160ms) ease;
     user-select: none;
     box-shadow: 0 10px 16px rgba(6, 19, 24, 0.14), 0 1px 0 rgba(255,255,255,0.85) inset;
     overflow: hidden;
     text-align: left;
+    will-change: transform, box-shadow, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
   .tienlen-bot-card-btn.has-sprite {
@@ -600,14 +604,14 @@
   }
 
   .tienlen-bot-card-btn:hover:not(.disabled):not(.readonly) {
-    transform: translateY(-4px);
-    box-shadow: 0 14px 22px rgba(5, 25, 30, 0.20);
+    transform: translateY(-5px) scale(1.015);
+    box-shadow: 0 18px 28px rgba(5, 25, 30, 0.22);
     z-index: 2;
   }
 
   .tienlen-bot-card-btn.selected {
-    transform: translateY(-10px) rotate(-1deg);
-    box-shadow: 0 18px 24px rgba(5, 25, 30, 0.22), 0 0 0 2px rgba(13, 202, 240, 0.75);
+    transform: translateY(-11px) rotate(-1deg) scale(1.02);
+    box-shadow: 0 20px 28px rgba(5, 25, 30, 0.24), 0 0 0 2px rgba(13, 202, 240, 0.75);
     z-index: 3;
   }
 
@@ -826,21 +830,21 @@
   }
 
   .tienlen-bot-player-slot.turn-flash {
-    animation: tlSeatFlash 520ms ease-out;
+    animation: tlSeatFlash 620ms var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1));
   }
 
   .tienlen-bot-card-btn.tl-card-enter-deal {
-    animation: tlCardDealIn .34s cubic-bezier(.2,.75,.25,1) both;
+    animation: tlCardDealIn .42s var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)) both;
     transform-origin: 50% 100%;
   }
 
   .tienlen-bot-card-btn.tl-card-enter-play {
-    animation: tlCardPlayIn .28s cubic-bezier(.17,.84,.26,1) both;
+    animation: tlCardPlayIn .34s var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)) both;
     transform-origin: 50% 100%;
   }
 
   .tl-trick-cards.tl-trick-pulse {
-    animation: tlTrickPulseFx .38s ease-out;
+    animation: tlTrickPulseFx .48s var(--play-motion-soft, cubic-bezier(.2, .72, .25, 1));
   }
 
   @keyframes tlTurnPulse {
@@ -854,23 +858,26 @@
   }
 
   @keyframes tlSeatFlash {
-    0% { box-shadow: 0 0 0 0 rgba(13,202,240,0.0); transform: translateY(0); }
-    35% { box-shadow: 0 0 0 8px rgba(13,202,240,0.12); transform: translateY(-1px); }
-    100% { box-shadow: 0 0 0 0 rgba(13,202,240,0.0); transform: translateY(0); }
+    0% { box-shadow: 0 0 0 0 rgba(13,202,240,0.0); transform: translateY(0) scale(1); }
+    38% { box-shadow: 0 0 0 10px rgba(13,202,240,0.14); transform: translateY(-2px) scale(1.01); }
+    100% { box-shadow: 0 0 0 0 rgba(13,202,240,0.0); transform: translateY(0) scale(1); }
   }
 
   @keyframes tlCardDealIn {
-    from { opacity: 0; transform: translateY(14px) scale(0.94) rotate(-1deg); }
-    to { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+    0% { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.9) rotate(-2deg); }
+    68% { opacity: 1; transform: translate3d(0, -2px, 0) scale(1.02) rotate(0.4deg); }
+    100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1) rotate(0); }
   }
 
   @keyframes tlCardPlayIn {
-    from { opacity: 0; transform: translateY(10px) scale(0.92); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    0% { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.92); }
+    62% { opacity: 1; transform: translate3d(0, -1px, 0) scale(1.03); }
+    100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
   }
 
   @keyframes tlTrickPulseFx {
-    0% { transform: scale(0.985); opacity: 0.86; }
+    0% { transform: scale(0.975); opacity: 0.8; }
+    55% { transform: scale(1.012); opacity: 1; }
     100% { transform: scale(1); opacity: 1; }
   }
 

@@ -13,6 +13,11 @@
   --play-accent-2: #44c9ff;
   --play-accent-3: #ff9ac2;
   --play-gold: #ffcf68;
+  --play-motion-fast: 160ms;
+  --play-motion-base: 240ms;
+  --play-motion-slow: 420ms;
+  --play-motion-spring: cubic-bezier(.22, 1, .36, 1);
+  --play-motion-soft: cubic-bezier(.2, .72, .25, 1);
 }
 
 .gameplay-rail {
@@ -225,6 +230,32 @@
 
   .gameplay-rail__actions {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gameplay-rail,
+  .gameplay-rail *,
+  .chess-cell,
+  .chess-piece,
+  .xiangqi-cell,
+  .xiangqi-piece,
+  .tienlen-card-btn,
+  .tienlen-bot-card-btn,
+  .tienlen-player-slot,
+  .tienlen-bot-player-slot,
+  .monopoly-space,
+  .monopoly-player-card,
+  .monopoly-token-dot,
+  .monopoly-die,
+  .player-seat,
+  .action-btn,
+  .card,
+  .chip {
+    animation: none !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -1432,14 +1463,188 @@ body.page-games-blackjack .game-rules {
   backdrop-filter: blur(10px);
 }
 
+body.page-lobby .lobby-hero,
+body.page-lobby .lobby-room-list-card,
+body.page-games-quiz .quiz-room-panel,
+body.page-games-typing .typing-room-panel,
+body.page-games-blackjack .blackjack-room-panel,
+body.page-games-quiz .quiz-shell,
+body.page-games-typing .typing-shell,
+body.page-games-blackjack .blackjack-shell,
+body.page-tien-len .tienlen-grid > .card,
+body.page-tien-len .tienlen-main-grid > .card,
+body.page-tien-len .tienlen-players-board.tl-table-stage,
+body.page-tien-len .tl-table-center,
+body.page-tien-len .tl-scoreboard,
+body.page-tien-len-bot .tienlen-bot-shell,
+body.page-tien-len-bot .tienlen-bot-top-grid > .card,
+body.page-tien-len-bot .tienlen-bot-main-grid > .card {
+  transition:
+    transform var(--play-motion-base) var(--play-motion-spring),
+    border-color var(--play-motion-fast) ease,
+    box-shadow var(--play-motion-base) ease,
+    background var(--play-motion-base) ease,
+    filter var(--play-motion-fast) ease;
+}
+
+body.page-lobby .lobby-hero:hover,
+body.page-lobby .lobby-room-list-card:hover,
+body.page-games-quiz .quiz-room-panel:hover,
+body.page-games-typing .typing-room-panel:hover,
+body.page-games-blackjack .blackjack-room-panel:hover,
+body.page-games-quiz .quiz-shell:hover,
+body.page-games-typing .typing-shell:hover,
+body.page-games-blackjack .blackjack-shell:hover,
+body.page-tien-len .tienlen-grid > .card:hover,
+body.page-tien-len .tienlen-main-grid > .card:hover,
+body.page-tien-len .tienlen-players-board.tl-table-stage:hover,
+body.page-tien-len-bot .tienlen-bot-top-grid > .card:hover,
+body.page-tien-len-bot .tienlen-bot-main-grid > .card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 28px 54px rgba(4, 12, 23, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border-color: var(--play-surface-border-strong);
+}
+
+body.page-lobby #roomList .list-group-item,
+body.page-games-quiz .quiz-room-item,
+body.page-games-typing .typing-room-item,
+body.page-games-blackjack .blackjack-room-item,
+body.page-tien-len .tl-room-item,
+body.page-tien-len .tl-status-step,
+body.page-tien-len .tl-status-summary-chip,
+body.page-tien-len-bot .tl-status-step,
+body.page-tien-len-bot .tl-status-summary-chip {
+  transition:
+    transform var(--play-motion-fast) ease,
+    border-color var(--play-motion-fast) ease,
+    background var(--play-motion-fast) ease,
+    box-shadow var(--play-motion-base) ease,
+    opacity var(--play-motion-fast) ease;
+}
+
+body.page-lobby #roomList .list-group-item {
+  border-radius: 18px;
+  border: 1px solid var(--play-emphasis-border);
+  background: var(--play-emphasis-bg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 30px rgba(4, 12, 23, 0.12);
+  margin-bottom: 0.55rem;
+}
+
+body.page-lobby #roomList .list-group-item:last-child {
+  margin-bottom: 0;
+}
+
+body.page-lobby #roomList .list-group-item:hover,
+body.page-games-quiz .quiz-room-item:hover,
+body.page-games-typing .typing-room-item:hover,
+body.page-games-blackjack .blackjack-room-item:hover,
+body.page-tien-len .tl-room-item:hover,
+body.page-tien-len .tl-status-step:hover,
+body.page-tien-len .tl-status-summary-chip:hover,
+body.page-tien-len-bot .tl-status-step:hover,
+body.page-tien-len-bot .tl-status-summary-chip:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124, 197, 209, 0.42);
+  box-shadow: 0 20px 36px rgba(4, 12, 23, 0.14);
+}
+
+body.page-lobby .input-group .form-control,
+body.page-games-quiz .quiz-join-row input,
+body.page-games-typing .typing-join-row input,
+body.page-games-blackjack .blackjack-join-row input,
+body.page-tien-len .tl-room-input-min .form-control,
+body.page-tien-len-bot .tl-room-input-min .form-control {
+  transition:
+    border-color var(--play-motion-fast) ease,
+    box-shadow var(--play-motion-fast) ease,
+    background var(--play-motion-fast) ease,
+    transform var(--play-motion-fast) ease;
+}
+
+body.page-lobby .input-group .form-control:focus,
+body.page-games-quiz .quiz-join-row input:focus,
+body.page-games-typing .typing-join-row input:focus,
+body.page-games-blackjack .blackjack-join-row input:focus,
+body.page-tien-len .tl-room-input-min .form-control:focus,
+body.page-tien-len-bot .tl-room-input-min .form-control:focus {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 4px rgba(35, 181, 201, 0.12),
+    0 14px 28px rgba(4, 12, 23, 0.12);
+}
+
+body.page-games-quiz .quiz-room-tools .hub-portal-action,
+body.page-games-typing .typing-room-tools .hub-portal-action,
+body.page-games-blackjack .blackjack-room-tools .hub-portal-action,
+body.page-lobby .input-group .btn,
+body.page-tien-len .btn,
+body.page-tien-len-bot .btn {
+  transition:
+    transform var(--play-motion-fast) ease,
+    border-color var(--play-motion-fast) ease,
+    box-shadow var(--play-motion-base) ease,
+    background var(--play-motion-fast) ease,
+    color var(--play-motion-fast) ease;
+}
+
+body.page-games-quiz .quiz-room-tools .hub-portal-action:hover,
+body.page-games-typing .typing-room-tools .hub-portal-action:hover,
+body.page-games-blackjack .blackjack-room-tools .hub-portal-action:hover,
+body.page-lobby .input-group .btn:hover,
+body.page-tien-len .btn:hover,
+body.page-tien-len-bot .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(4, 12, 23, 0.14);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   body.page-games-quiz .quiz-room-stage > *,
   body.page-games-typing .typing-room-stage > *,
   body.page-games-blackjack .blackjack-room-stage > *,
   body.page-games-quiz .hub-portal-shell > *,
   body.page-games-typing .hub-portal-shell > *,
-  body.page-games-blackjack .hub-portal-shell > * {
+  body.page-games-blackjack .hub-portal-shell > *,
+  body.page-lobby .lobby-shell > *,
+  body.page-tien-len .tienlen-arena-shell > *,
+  body.page-tien-len .tienlen-grid > *,
+  body.page-tien-len .tienlen-main-grid > *,
+  body.page-tien-len-bot .tienlen-bot-shell > *,
+  body.page-tien-len-bot .tienlen-bot-top-grid > *,
+  body.page-tien-len-bot .tienlen-bot-main-grid > * {
     animation: interface-refresh-lift 0.46s ease both;
+  }
+
+  body.page-games-quiz .quiz-room-stage > *:nth-child(2),
+  body.page-games-typing .typing-room-stage > *:nth-child(2),
+  body.page-games-blackjack .blackjack-room-stage > *:nth-child(2),
+  body.page-games-quiz .hub-portal-shell > *:nth-child(2),
+  body.page-games-typing .hub-portal-shell > *:nth-child(2),
+  body.page-games-blackjack .hub-portal-shell > *:nth-child(2),
+  body.page-lobby .lobby-shell > *:nth-child(2),
+  body.page-tien-len .tienlen-arena-shell > *:nth-child(2),
+  body.page-tien-len .tienlen-grid > *:nth-child(2),
+  body.page-tien-len .tienlen-main-grid > *:nth-child(2),
+  body.page-tien-len-bot .tienlen-bot-shell > *:nth-child(2),
+  body.page-tien-len-bot .tienlen-bot-top-grid > *:nth-child(2),
+  body.page-tien-len-bot .tienlen-bot-main-grid > *:nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  body.page-games-quiz .quiz-room-stage > *:nth-child(3),
+  body.page-games-typing .typing-room-stage > *:nth-child(3),
+  body.page-games-blackjack .blackjack-room-stage > *:nth-child(3),
+  body.page-games-quiz .hub-portal-shell > *:nth-child(3),
+  body.page-games-typing .hub-portal-shell > *:nth-child(3),
+  body.page-games-blackjack .hub-portal-shell > *:nth-child(3),
+  body.page-tien-len .tienlen-arena-shell > *:nth-child(3),
+  body.page-tien-len .tienlen-main-grid > *:nth-child(3),
+  body.page-tien-len-bot .tienlen-bot-shell > *:nth-child(3),
+  body.page-tien-len-bot .tienlen-bot-main-grid > *:nth-child(3) {
+    animation-delay: 120ms;
   }
 }
 

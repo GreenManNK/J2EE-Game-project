@@ -12,6 +12,7 @@
 
   const steps = Array.from(document.querySelectorAll("[data-register-step]"));
   const progress = Array.from(document.querySelectorAll("[data-register-progress]"));
+  const storySteps = Array.from(document.querySelectorAll("[data-register-story-step]"));
   const backButton = document.getElementById("registerBackBtn");
   const passwordToggleButton = document.getElementById("toggleRegPasswordBtn");
   const usernameShuffleButton = document.getElementById("regUsernameShuffleBtn");
@@ -82,6 +83,15 @@
     });
     progress.forEach((item, index) => {
       item.classList.toggle("is-active", index <= stepIndex);
+    });
+    storySteps.forEach((item, index) => {
+      const active = index === stepIndex;
+      item.classList.toggle("is-active", active);
+      if (active) {
+        item.setAttribute("aria-current", "step");
+      } else {
+        item.removeAttribute("aria-current");
+      }
     });
     if (backButton) {
       backButton.disabled = stepIndex === 0;

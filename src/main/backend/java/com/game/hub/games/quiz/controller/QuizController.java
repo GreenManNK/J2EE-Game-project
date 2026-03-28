@@ -83,7 +83,7 @@ public class QuizController {
         model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
         model.addAttribute("spectateMode", spectateMode);
         model.addAttribute("roomPage", roomPage);
-        return "games/quiz";
+        return roomPage ? "games/quiz-room" : "games/quiz";
     }
 
     private String renderPracticePage(Model model,

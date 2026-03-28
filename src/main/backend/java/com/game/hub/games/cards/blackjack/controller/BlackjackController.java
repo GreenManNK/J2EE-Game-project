@@ -68,7 +68,7 @@ public class BlackjackController {
         model.addAttribute("defaultRoomId", roomId == null ? "" : roomId.trim());
         model.addAttribute("spectateMode", spectateMode);
         model.addAttribute("roomPage", roomPage);
-        return "games/cards/blackjack";
+        return roomPage ? "games/cards/blackjack-room" : "games/cards/blackjack";
     }
 
     @GetMapping("/rooms")

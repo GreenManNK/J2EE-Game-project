@@ -9,6 +9,15 @@ spring:
     multipart:
       max-file-size: 406MB
       max-request-size: 406MB
+  security:
+    oauth2:
+      client:
+        provider:
+          facebook:
+            authorization-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_FACEBOOK_AUTHORIZATION_URI:https://www.facebook.com/v20.0/dialog/oauth}
+            token-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_FACEBOOK_TOKEN_URI:https://graph.facebook.com/v20.0/oauth/access_token}
+            user-info-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_FACEBOOK_USER_INFO_URI:https://graph.facebook.com/me?fields=id,name,email}
+            user-name-attribute: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_FACEBOOK_USER_NAME_ATTRIBUTE:id}
   mail:
     host: ${MAIL_HOST:}
     port: ${MAIL_PORT:587}

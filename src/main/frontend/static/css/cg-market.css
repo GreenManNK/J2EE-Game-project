@@ -3371,6 +3371,11 @@ body.dark-mode {
   z-index: 2;
 }
 
+.cg-recommended-card[data-has-media="true"] .cg-recommended-card__badge,
+.cg-tile-thumb[data-has-media="true"] .cg-tile-badge {
+  display: none;
+}
+
 .cg-tile-thumb[data-has-media="true"]::before {
   content: "";
   position: absolute;

@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Ban blackjack')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-blackjack')}"></div>
+<th:block th:replace="~{games/cards/blackjack :: blackjackPageContent}"></th:block>
+</body>
+</html>

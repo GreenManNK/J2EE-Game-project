@@ -4,7 +4,7 @@
 <body>
 <div th:replace="~{fragments :: appShell('games-puzzle-sliding')}"></div>
 
-<main class="hub-portal-shell hub-portal-theme-puzzle">
+<main id="sliding-app" class="hub-portal-shell hub-portal-theme-puzzle">
     <section class="hub-portal-hero hub-portal-hero--single">
         <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
         <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
@@ -111,6 +111,7 @@
         display: flex;
         flex-direction: column;
         gap: 0.2rem;
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
     }
 
     .sliding-hud span {
@@ -133,6 +134,7 @@
         border-radius: 14px;
         padding: 6px;
         background: rgba(2, 6, 23, 0.35);
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
     }
 
     .sliding-tile {
@@ -144,6 +146,17 @@
         cursor: pointer;
         position: relative;
         overflow: hidden;
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, filter var(--play-motion-fast, 160ms) ease, border-color var(--play-motion-fast, 160ms) ease;
+        will-change: transform, box-shadow, filter;
+    }
+
+    .sliding-tile:hover {
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 12px 22px rgba(8, 15, 31, 0.16);
+    }
+
+    .sliding-tile.is-fresh {
+        animation: slidingTileSettle .34s var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1));
     }
 
     .sliding-tile > span {
@@ -160,6 +173,7 @@
         border: 1px dashed rgba(255, 255, 255, 0.3);
         border-radius: 8px;
         background: rgba(255, 255, 255, 0.04);
+        transition: border-color var(--play-motion-fast, 160ms) ease, background-color var(--play-motion-fast, 160ms) ease;
     }
 
     .sliding-preview {
@@ -169,16 +183,59 @@
         border: 1px solid rgba(255, 255, 255, 0.24);
         background-size: cover;
         background-position: center;
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
     }
 
     .sliding-note {
         margin: 0.8rem 0 0;
         font-size: 0.9rem;
         color: rgba(255, 255, 255, 0.85);
+        padding: 0.72rem 0.84rem;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: transform var(--play-motion-fast, 160ms) ease, box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
     }
 
     .sliding-note.success {
         color: #bbf7d0;
+        border-color: rgba(74, 222, 128, 0.24);
+        background: rgba(20, 83, 45, 0.18);
+    }
+
+    #sliding-app[data-phase="playing"] .sliding-preview {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 28px rgba(8, 15, 31, 0.18);
+    }
+
+    #sliding-app[data-phase="finished"] .sliding-board {
+        box-shadow: 0 18px 34px rgba(8, 15, 31, 0.2);
+        border-color: rgba(74, 222, 128, 0.28);
+    }
+
+    #sliding-app[data-phase="finished"] .sliding-hud > div:last-child strong {
+        animation: slidingSuccessPulse .8s ease-in-out 2;
+    }
+
+    @keyframes slidingTileSettle {
+        0% { opacity: 0.4; transform: translateY(10px) scale(0.9); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes slidingSuccessPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.08); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .sliding-hud > div,
+        .sliding-board,
+        .sliding-tile,
+        .sliding-preview,
+        .sliding-note {
+            animation: none !important;
+            transition-duration: 1ms !important;
+        }
     }
 
     @media (max-width: 940px) {
@@ -192,6 +249,7 @@
     }
 </style>
 <script>
+    const appRoot = document.getElementById('sliding-app');
     const puzzleContainer = document.getElementById('puzzle-container');
     const previewEl = document.getElementById('sliding-preview');
     const movesEl = document.getElementById('sliding-moves');
@@ -227,6 +285,7 @@
     let startTime;
     let timerHandle;
     let winReported = false;
+    let motion = { lastMovedValue: null, lastMoveAt: 0 };
 
     shuffleBtn.addEventListener('click', startGame);
     sizeSelect.addEventListener('change', startGame);
@@ -243,6 +302,8 @@
         previewEl.style.backgroundImage = `url(${imageUrl})`;
         statusEl.textContent = 'Click o nam canh o trong de di chuyen.';
         statusEl.classList.remove('success');
+        appRoot.dataset.phase = 'playing';
+        motion = { lastMovedValue: null, lastMoveAt: 0 };
 
         render();
         updateHud();
@@ -286,9 +347,12 @@
         if (!getNeighborIndices(emptyIndex).includes(index)) {
             return;
         }
+        const movedValue = board[index];
 
         [board[index], board[emptyIndex]] = [board[emptyIndex], board[index]];
         moves += 1;
+        motion.lastMovedValue = movedValue;
+        motion.lastMoveAt = Date.now();
         render();
         updateHud();
 
@@ -298,6 +362,7 @@
             streakEl.textContent = String(streak);
             statusEl.textContent = `Ban da giai xong trong ${moves} buoc va ${timeEl.textContent}.`;
             statusEl.classList.add('success');
+            appRoot.dataset.phase = 'finished';
             reportWin();
         }
     }
@@ -332,6 +397,9 @@
             const tile = document.createElement('button');
             tile.type = 'button';
             tile.className = 'sliding-tile';
+            if (value === motion.lastMovedValue && (Date.now() - motion.lastMoveAt) < 900) {
+                tile.classList.add('is-fresh');
+            }
 
             const imageIndex = value - 1;
             const imageX = imageIndex % size;

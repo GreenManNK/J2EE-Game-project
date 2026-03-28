@@ -4,71 +4,115 @@
 <body>
 <div th:replace="~{fragments :: appShell('account-login')}"></div>
 
-<main class="auth-shell auth-onboard">
-  <section class="auth-onboard__card" aria-labelledby="loginTitle">
-    <div class="auth-onboard__chrome">
-      <a class="auth-onboard__nav-btn" th:href="@{/}" aria-label="Quay ve trang chu">
-        <i class="bi bi-chevron-left"></i>
-      </a>
-      <div class="auth-onboard__title">Dang nhap</div>
-      <a class="auth-onboard__close-btn" th:href="@{/}" aria-label="Dong trang dang nhap">
-        <i class="bi bi-x-lg"></i>
-      </a>
-    </div>
+<main class="auth-shell auth-onboard auth-onboard--split">
+  <section class="auth-onboard__card auth-onboard__card--split" aria-labelledby="loginTitle">
+    <div class="auth-onboard__layout">
+      <aside class="auth-onboard__story auth-onboard__story--login" aria-label="Thong tin dang nhap">
+        <div class="auth-onboard__story-top">
+          <div class="auth-onboard__story-kicker">Game Hub account</div>
+          <h1 class="auth-onboard__story-title">Dang nhap mot lan de quay lai dung tran dau cua ban.</h1>
+          <p class="auth-onboard__story-copy">
+            Ho so, lich su dau, bang xep hang, avatar va du lieu guest se duoc giu trong cung mot tai khoan.
+          </p>
+        </div>
 
-    <div class="auth-onboard__body">
-      <div class="auth-onboard__eyebrow">
-        <i class="bi bi-shield-check"></i>
-        <span>Truy cap tai khoan</span>
-      </div>
-      <h1 id="loginTitle" class="auth-onboard__heading">Dang nhap de tiep tuc choi</h1>
-      <p class="auth-onboard__copy">
-        Dong bo ho so, lich su dau, bang xep hang, thong bao va chuc nang cai dat app desktop.
-      </p>
+        <div class="auth-onboard__story-metrics">
+          <article class="auth-onboard__metric">
+            <strong>1 tai khoan</strong>
+            <span>Dung cho online, local, bot va lich su choi.</span>
+          </article>
+          <article class="auth-onboard__metric">
+            <strong>Guest safe</strong>
+            <span>Du lieu guest duoc di chuyen vao account sau khi dang nhap.</span>
+          </article>
+          <article class="auth-onboard__metric">
+            <strong>2 cach vao</strong>
+            <span>Email hoac social login neu da cau hinh.</span>
+          </article>
+        </div>
 
-      <div th:if="${socialError != null}" class="alert alert-danger py-2" role="alert" th:text="${socialError}">
-        Dang nhap mang xa hoi that bai.
-      </div>
+        <div class="auth-onboard__story-block">
+          <div class="auth-onboard__story-label">Sau khi vao hub</div>
+          <ul class="auth-onboard__story-list">
+            <li>Dong bo lich su, BXH va cac che do solo bot.</li>
+            <li>Giu avatar, quoc gia, thong tin profile va cai dat.</li>
+            <li>Vao room nhanh hon va chia se link phong de dang hon.</li>
+          </ul>
+        </div>
+      </aside>
 
-      <form id="loginForm" class="auth-onboard__grid">
-        <label class="auth-onboard__label" for="email">
-          <span>Email</span>
-          <input id="email" class="auth-onboard__input" type="email" placeholder="ban@example.com" required autocomplete="email">
-        </label>
-        <label class="auth-onboard__label" for="password">
-          <span>Mat khau</span>
-          <div class="auth-onboard__field">
-            <input id="password" class="auth-onboard__input" type="password" placeholder="Nhap mat khau" required autocomplete="current-password">
-            <button class="auth-onboard__field-action" id="togglePasswordBtn" type="button" aria-label="Hien hoac an mat khau">
-              <i class="bi bi-eye"></i>
+      <section class="auth-onboard__panel">
+        <div class="auth-onboard__chrome">
+          <a class="auth-onboard__nav-btn" th:href="@{/}" aria-label="Quay ve trang chu">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+          <div class="auth-onboard__title">Dang nhap</div>
+          <a class="auth-onboard__close-btn" th:href="@{/}" aria-label="Dong trang dang nhap">
+            <i class="bi bi-x-lg"></i>
+          </a>
+        </div>
+
+        <div class="auth-onboard__body">
+          <div class="auth-onboard__eyebrow">
+            <i class="bi bi-shield-check"></i>
+            <span>Truy cap tai khoan</span>
+          </div>
+          <h2 id="loginTitle" class="auth-onboard__heading">Dang nhap de tiep tuc choi</h2>
+          <p class="auth-onboard__copy">
+            Vao lai ho so cua ban, tiep tuc room dang mo va dong bo thanh tich tren moi game.
+          </p>
+
+          <div th:if="${socialError != null}" class="alert alert-danger py-2" role="alert" th:text="${socialError}">
+            Dang nhap mang xa hoi that bai.
+          </div>
+
+          <form id="loginForm" class="auth-onboard__grid">
+            <label class="auth-onboard__label" for="email">
+              <span>Email</span>
+              <input id="email" class="auth-onboard__input" type="email" placeholder="ban@example.com" required autocomplete="email">
+            </label>
+            <label class="auth-onboard__label" for="password">
+              <span>Mat khau</span>
+              <div class="auth-onboard__field">
+                <input id="password" class="auth-onboard__input" type="password" placeholder="Nhap mat khau" required autocomplete="current-password">
+                <button class="auth-onboard__field-action" id="togglePasswordBtn" type="button" aria-label="Hien hoac an mat khau">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+            </label>
+            <button type="submit" class="auth-onboard__cta">Dang nhap</button>
+          </form>
+
+          <div class="auth-onboard__microcopy">
+            Neu ban vua choi bang guest, he thong se tu dong chuyen du lieu guest vao account sau khi dang nhap thanh cong.
+          </div>
+
+          <div class="auth-onboard__support">
+            <a class="auth-onboard__link-btn" th:href="@{/account/reset-page}">Quen mat khau?</a>
+            <a class="auth-onboard__link-btn" th:href="@{/account/register-page}">Tao tai khoan moi</a>
+          </div>
+
+          <div class="auth-onboard__divider">hoac tiep tuc nhanh</div>
+
+          <div class="auth-onboard__social">
+            <a th:if="${googleLoginEnabled}" class="btn btn-outline-light auth-onboard__social-btn" th:href="@{/oauth2/authorization/google}">
+              <i class="bi bi-google me-2"></i> Dang nhap voi Google
+            </a>
+            <button th:if="${!googleLoginEnabled}" type="button" class="btn btn-outline-light auth-onboard__social-btn" disabled>
+              <i class="bi bi-google me-2"></i> Google chua cau hinh
+            </button>
+
+            <a th:if="${facebookLoginEnabled}" class="btn btn-outline-light auth-onboard__social-btn" th:href="@{/oauth2/authorization/facebook}">
+              <i class="bi bi-facebook me-2"></i> Dang nhap voi Facebook
+            </a>
+            <button th:if="${!facebookLoginEnabled}" type="button" class="btn btn-outline-light auth-onboard__social-btn" disabled>
+              <i class="bi bi-facebook me-2"></i> Facebook chua cau hinh
             </button>
           </div>
-        </label>
-        <button type="submit" class="auth-onboard__cta">Dang nhap</button>
-      </form>
 
-      <div class="auth-onboard__support">
-        <a class="auth-onboard__link-btn" th:href="@{/account/reset-page}">Quen mat khau?</a>
-        <a class="auth-onboard__link-btn" th:href="@{/account/register-page}">Tao tai khoan moi</a>
-      </div>
-
-      <div class="auth-onboard__social">
-        <a th:if="${googleLoginEnabled}" class="btn btn-outline-light auth-onboard__social-btn" th:href="@{/oauth2/authorization/google}">
-          <i class="bi bi-google me-2"></i> Dang nhap voi Google
-        </a>
-        <button th:if="${!googleLoginEnabled}" type="button" class="btn btn-outline-light auth-onboard__social-btn" disabled>
-          <i class="bi bi-google me-2"></i> Google chua cau hinh
-        </button>
-
-        <a th:if="${facebookLoginEnabled}" class="btn btn-outline-light auth-onboard__social-btn" th:href="@{/oauth2/authorization/facebook}">
-          <i class="bi bi-facebook me-2"></i> Dang nhap voi Facebook
-        </a>
-        <button th:if="${!facebookLoginEnabled}" type="button" class="btn btn-outline-light auth-onboard__social-btn" disabled>
-          <i class="bi bi-facebook me-2"></i> Facebook chua cau hinh
-        </button>
-      </div>
-
-      <div id="out" class="auth-onboard__status small" role="status" aria-live="polite"></div>
+          <div id="out" class="auth-onboard__status small" role="status" aria-live="polite"></div>
+        </div>
+      </section>
     </div>
   </section>
 </main>

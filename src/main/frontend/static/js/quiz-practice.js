@@ -22,6 +22,8 @@
     deadlineAt: 0,
     timerHandle: null,
     awaitingTransition: false,
+    phase: "loading",
+    lastOutcome: "",
     historyItems: [],
     matchCode: "",
     historyRecorded: false,
@@ -64,6 +66,15 @@
     await loadQuestions();
     updateStatsUi();
     resetSession();
+  }
+
+  function syncMotionState(nextPhase) {
+    if (nextPhase) {
+      state.phase = nextPhase;
+    }
+    app.dataset.phase = String(state.phase || "ready");
+    app.dataset.urgent = app.dataset.urgent === "true" ? "true" : "false";
+    app.dataset.outcome = String(state.lastOutcome || "");
   }
 
   function bindActions() {
@@ -137,12 +148,15 @@
     state.botScore = 0;
     state.historyItems = [];
     state.awaitingTransition = false;
+    state.lastOutcome = "";
     state.matchCode = newMatchCode();
     state.historyRecorded = false;
     state.playerCorrectAnswers = 0;
     renderSummary("Dang choi", state.botEnabled ? "Chua chot keo voi bot" : "Dang luyen tap");
     renderHistory();
     renderScoreboard();
+    app.dataset.urgent = "false";
+    syncMotionState("ready");
     showQuestion();
   }
 
@@ -153,6 +167,7 @@
       return;
     }
     state.awaitingTransition = false;
+    syncMotionState("asking");
     els.question.textContent = question.question;
     els.options.className = "quiz-practice-options";
     els.options.innerHTML = "";
@@ -170,6 +185,7 @@
       question.options.forEach(function (option, index) {
         const wrapper = document.createElement("label");
         wrapper.className = "quiz-practice-option";
+        wrapper.style.setProperty("--quiz-option-index", String(index));
 
         const input = document.createElement("input");
         input.type = question.type === "multipleCorrect" ? "checkbox" : "radio";
@@ -220,6 +236,7 @@
 
     state.awaitingTransition = true;
     stopTimer();
+    syncMotionState("resolving");
 
     const playerResult = skipped
       ? { answered: false, correct: false, delta: 0, label: "Bo qua" }
@@ -264,12 +281,19 @@
     if (state.botEnabled) {
       if (player > bot) {
         resultLabel = "Ban thang bot";
+        state.lastOutcome = "win";
       } else if (player < bot) {
         resultLabel = "Bot thang";
+        state.lastOutcome = "loss";
       } else {
         resultLabel = "Hoa bot";
+        state.lastOutcome = "draw";
       }
+    } else {
+      state.lastOutcome = "success";
     }
+    app.dataset.urgent = "false";
+    syncMotionState("finished");
     renderSummary("Da ket thuc", resultLabel);
     els.question.textContent = state.botEnabled
       ? "Da chot keo voi bot. Bam Choi lai de vao van moi."
@@ -287,6 +311,18 @@
     els.playerScore.textContent = String(state.playerScore);
     if (els.botScore) {
       els.botScore.textContent = String(state.botScore);
+      const botCard = els.botScore.closest(".quiz-practice-stat");
+      if (botCard) {
+        botCard.classList.toggle("is-leading", state.botEnabled && state.botScore > state.playerScore);
+      }
+    }
+    const playerCard = els.playerScore ? els.playerScore.closest(".quiz-practice-stat") : null;
+    if (playerCard) {
+      playerCard.classList.toggle("is-leading", !state.botEnabled || state.playerScore >= state.botScore);
+    }
+    const timerCard = els.timer ? els.timer.closest(".quiz-practice-stat") : null;
+    if (timerCard) {
+      timerCard.classList.toggle("is-urgent", app.dataset.urgent === "true");
     }
   }
 
@@ -299,12 +335,14 @@
     els.history.innerHTML = "";
     if (!state.historyItems.length) {
       const li = document.createElement("li");
+      li.className = "quiz-practice-history__item";
       li.textContent = "Chua co cau hoi nao duoc cham.";
       els.history.appendChild(li);
       return;
     }
-    state.historyItems.forEach(function (item) {
+    state.historyItems.forEach(function (item, index) {
       const li = document.createElement("li");
+      li.className = "quiz-practice-history__item" + (index === (state.historyItems.length - 1) ? " is-new" : "");
       li.textContent = item;
       els.history.appendChild(li);
     });
@@ -331,6 +369,11 @@
   function updateTimer() {
     const remaining = Math.max(0, Math.ceil((state.deadlineAt - Date.now()) / 1000));
     els.timer.textContent = remaining + "s";
+    app.dataset.urgent = remaining <= 5 ? "true" : "false";
+    const timerCard = els.timer ? els.timer.closest(".quiz-practice-stat") : null;
+    if (timerCard) {
+      timerCard.classList.toggle("is-urgent", remaining <= 5);
+    }
   }
 
   function setFeedback(message, type) {
@@ -339,6 +382,7 @@
     if (type) {
       els.feedback.classList.add(type);
     }
+    app.dataset.feedback = String(type || "neutral");
   }
 
   function readPlayerAnswer(question) {

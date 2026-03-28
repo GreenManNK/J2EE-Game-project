@@ -1,11 +1,11 @@
 package com.game.hub.controller;
 
 import com.game.hub.config.OAuth2LoginSuccessHandler;
+import com.game.hub.config.SocialLoginConfiguration;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.UserAccountRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,15 +20,12 @@ public class AccountPageController {
     private static final String SOCIAL_PROVIDER_FACEBOOK = "facebook";
 
     private final UserAccountRepository userAccountRepository;
-    private final String googleClientId;
-    private final String facebookClientId;
+    private final SocialLoginConfiguration socialLoginConfiguration;
 
     public AccountPageController(UserAccountRepository userAccountRepository,
-                                 @Value("${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID:}") String googleClientId,
-                                 @Value("${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID:}") String facebookClientId) {
+                                 SocialLoginConfiguration socialLoginConfiguration) {
         this.userAccountRepository = userAccountRepository;
-        this.googleClientId = googleClientId;
-        this.facebookClientId = facebookClientId;
+        this.socialLoginConfiguration = socialLoginConfiguration;
     }
 
     @GetMapping("/login-page")
@@ -37,15 +34,15 @@ public class AccountPageController {
         if (socialError != null && !socialError.isBlank()) {
             model.addAttribute("socialError", socialError.trim());
         }
-        model.addAttribute("googleLoginEnabled", hasText(googleClientId));
-        model.addAttribute("facebookLoginEnabled", hasText(facebookClientId));
+        model.addAttribute("googleLoginEnabled", socialLoginConfiguration.isGoogleEnabled());
+        model.addAttribute("facebookLoginEnabled", socialLoginConfiguration.isFacebookEnabled());
         return "account/login";
     }
 
     @GetMapping("/register-page")
     public String registerPage(Model model) {
-        model.addAttribute("googleLoginEnabled", hasText(googleClientId));
-        model.addAttribute("facebookLoginEnabled", hasText(facebookClientId));
+        model.addAttribute("googleLoginEnabled", socialLoginConfiguration.isGoogleEnabled());
+        model.addAttribute("facebookLoginEnabled", socialLoginConfiguration.isFacebookEnabled());
         return "account/register";
     }
 
@@ -125,10 +122,6 @@ public class AccountPageController {
         return text.isEmpty() ? null : text;
     }
 
-    private boolean hasText(String value) {
-        return value != null && !value.trim().isEmpty();
-    }
-
     private String normalizeSocialProvider(String provider) {
         String normalized = toTrimmed(provider);
         if (normalized == null) {
@@ -145,12 +138,6 @@ public class AccountPageController {
     }
 
     private boolean isSocialProviderConfigured(String provider) {
-        if (SOCIAL_PROVIDER_GOOGLE.equals(provider)) {
-            return hasText(googleClientId);
-        }
-        if (SOCIAL_PROVIDER_FACEBOOK.equals(provider)) {
-            return hasText(facebookClientId);
-        }
-        return false;
+        return socialLoginConfiguration.isProviderEnabled(provider);
     }
 }

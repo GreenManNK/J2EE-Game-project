@@ -1,5 +1,6 @@
 package com.game.hub.controller;
 
+import com.game.hub.config.SocialLoginConfiguration;
 import com.game.hub.repository.UserAccountRepository;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
@@ -15,8 +16,7 @@ class AccountPageControllerTest {
     void startSocialLinkShouldRequireAuthenticatedUser() {
         AccountPageController controller = new AccountPageController(
             mock(UserAccountRepository.class),
-            "google-client",
-            "facebook-client"
+            socialLoginConfiguration("google-client", "google-secret", "facebook-client", "facebook-secret")
         );
 
         String viewName = controller.startSocialLink("google", new MockHttpServletRequest());
@@ -28,8 +28,7 @@ class AccountPageControllerTest {
     void startSocialLinkShouldStoreLinkStateAndRedirectToOAuthProvider() {
         AccountPageController controller = new AccountPageController(
             mock(UserAccountRepository.class),
-            "google-client",
-            "facebook-client"
+            socialLoginConfiguration("google-client", "google-secret", "facebook-client", "facebook-secret")
         );
         MockHttpServletRequest request = new MockHttpServletRequest();
         HttpSession session = request.getSession(true);
@@ -46,8 +45,7 @@ class AccountPageControllerTest {
     void startSocialLinkShouldRejectUnsupportedProvider() {
         AccountPageController controller = new AccountPageController(
             mock(UserAccountRepository.class),
-            "google-client",
-            "facebook-client"
+            socialLoginConfiguration("google-client", "google-secret", "facebook-client", "facebook-secret")
         );
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.getSession(true).setAttribute("AUTH_USER_ID", "u1");
@@ -56,5 +54,32 @@ class AccountPageControllerTest {
 
         assertEquals("redirect:/settings?socialError=Unsupported+social+provider", viewName);
         assertNull(request.getSession(false).getAttribute("SOCIAL_LINK_USER_ID"));
+    }
+
+    @Test
+    void startSocialLinkShouldRejectProviderWhenSecretMissing() {
+        AccountPageController controller = new AccountPageController(
+            mock(UserAccountRepository.class),
+            socialLoginConfiguration("google-client", "google-secret", "facebook-client", "")
+        );
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.getSession(true).setAttribute("AUTH_USER_ID", "u1");
+
+        String viewName = controller.startSocialLink("facebook", request);
+
+        assertEquals("redirect:/settings?socialError=facebook+OAuth+is+not+configured", viewName);
+        assertNull(request.getSession(false).getAttribute("SOCIAL_LINK_USER_ID"));
+    }
+
+    private SocialLoginConfiguration socialLoginConfiguration(String googleClientId,
+                                                              String googleClientSecret,
+                                                              String facebookClientId,
+                                                              String facebookClientSecret) {
+        return new SocialLoginConfiguration(
+            googleClientId,
+            googleClientSecret,
+            facebookClientId,
+            facebookClientSecret
+        );
     }
 }

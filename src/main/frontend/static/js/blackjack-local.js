@@ -12,7 +12,8 @@
     deck: [],
     dealer: { hand: [] },
     players: [],
-    history: []
+    history: [],
+    motion: createMotionState()
   };
 
   const els = {
@@ -22,6 +23,7 @@
     rebetAll: document.getElementById("blackjack-local-rebet-all"),
     dealerValue: document.getElementById("blackjack-local-dealer-value"),
     dealerCards: document.getElementById("blackjack-local-dealer-cards"),
+    dealerBox: document.querySelector(".blackjack-local-dealer"),
     players: document.getElementById("blackjack-local-players"),
     status: document.getElementById("blackjack-local-status"),
     activeSeat: document.getElementById("blackjack-local-active-seat"),
@@ -37,6 +39,19 @@
   };
 
   document.addEventListener("DOMContentLoaded", init);
+
+  function createMotionState() {
+    return {
+      selectedSeatIndex: 0,
+      selectedSeatAt: 0,
+      activeSeatIndex: -1,
+      activeSeatAt: 0,
+      drawOwner: "",
+      drawAt: 0,
+      dealAllAt: 0,
+      historyAt: 0
+    };
+  }
 
   function init() {
     bindActions();
@@ -69,11 +84,13 @@
     state.phase = "betting";
     state.activePlayerIndex = -1;
     state.selectedSeatIndex = 0;
+    state.motion = createMotionState();
     state.dealer = { hand: [] };
     state.deck = [];
     state.players = Array.from({ length: state.seatCount }, function (_, index) {
       return createPlayer(index);
     });
+    markSelectedSeat(0);
     els.betInput.value = "25";
     setStatus("Chon ghe va dat cuoc de chuan bi van moi.");
     render();
@@ -95,6 +112,7 @@
   }
 
   function render() {
+    app.dataset.phase = String(state.phase || "betting");
     renderDealer();
     renderPlayers();
     renderHistory();
@@ -103,13 +121,17 @@
   }
 
   function renderDealer() {
+    if (els.dealerBox) {
+      els.dealerBox.classList.toggle("is-live-turn", state.phase === "dealer-turn");
+    }
     els.dealerCards.innerHTML = "";
     const hideHoleCard = state.phase === "player-turn" && state.dealer.hand.length > 1;
     const visibleCards = state.dealer.hand.map(function (card, index) {
       return hideHoleCard && index === 1 ? null : card;
     });
-    visibleCards.forEach(function (card) {
-      els.dealerCards.appendChild(card ? buildCardElement(card) : buildBackCardElement());
+    visibleCards.forEach(function (card, index) {
+      const shouldAnimate = shouldAnimateDealerCard(index, visibleCards.length);
+      els.dealerCards.appendChild(card ? buildCardElement(card, shouldAnimate) : buildBackCardElement(shouldAnimate));
     });
     const visibleValue = hideHoleCard && state.dealer.hand[0]
       ? handValue([state.dealer.hand[0]]) + "+?"
@@ -123,7 +145,9 @@
       const card = document.createElement("article");
       card.className = "blackjack-local-player"
         + (index === state.selectedSeatIndex ? " selected" : "")
-        + (index === state.activePlayerIndex && state.phase === "player-turn" ? " active" : "");
+        + (index === state.activePlayerIndex && state.phase === "player-turn" ? " active" : "")
+        + (shouldPulseSelected(index) ? " motion-selected" : "")
+        + (shouldPulseActive(index) ? " motion-active" : "");
       card.innerHTML = ""
         + "<div class=\"blackjack-local-player__head\">"
         + "<strong>" + escapeHtml(player.name) + "</strong>"
@@ -133,8 +157,8 @@
         + "<div class=\"blackjack-local-player__meta\"><span>Diem: " + handValue(player.hand) + "</span><span>Ket qua: " + escapeHtml(player.roundResult) + "</span></div>";
       const cardsEl = document.createElement("div");
       cardsEl.className = "blackjack-local-cards";
-      player.hand.forEach(function (handCard) {
-        cardsEl.appendChild(buildCardElement(handCard));
+      player.hand.forEach(function (handCard, handIndex) {
+        cardsEl.appendChild(buildCardElement(handCard, shouldAnimatePlayerCard(player, handIndex)));
       });
       card.appendChild(cardsEl);
       els.players.appendChild(card);
@@ -152,12 +176,14 @@
     els.history.innerHTML = "";
     if (!state.history.length) {
       const li = document.createElement("li");
+      li.className = "blackjack-local-history__item";
       li.textContent = "Chua co van nao duoc giai quyet.";
       els.history.appendChild(li);
       return;
     }
-    state.history.slice(0, 8).forEach(function (item) {
+    state.history.slice(0, 8).forEach(function (item, index) {
       const li = document.createElement("li");
+      li.className = "blackjack-local-history__item" + (index === 0 && isRecent(state.motion.historyAt, 1200) ? " is-new" : "");
       li.textContent = item;
       els.history.appendChild(li);
     });
@@ -196,6 +222,7 @@
       return;
     }
     state.selectedSeatIndex = index;
+    markSelectedSeat(index);
     render();
   }
 
@@ -291,6 +318,7 @@
         }
       }
     });
+    markDraw("all", true);
 
     if (isNaturalBlackjack(state.dealer.hand)) {
       settleRound("Dealer blackjack tu nhien.");
@@ -303,6 +331,7 @@
       return;
     }
     state.selectedSeatIndex = state.activePlayerIndex;
+    markActiveSeat(state.activePlayerIndex);
     setStatus("Den luot " + currentPlayer().name + ". Dua may cho ghe nay.");
     render();
   }
@@ -313,6 +342,7 @@
       return;
     }
     player.hand.push(drawCard());
+    markDraw(player.id, false);
     if (handValue(player.hand) > 21) {
       player.busted = true;
       player.standing = true;
@@ -343,6 +373,7 @@
     player.balance -= player.bet;
     player.bet *= 2;
     player.hand.push(drawCard());
+    markDraw(player.id, false);
     if (handValue(player.hand) > 21) {
       player.busted = true;
       player.roundResult = "Bust";
@@ -374,6 +405,8 @@
     }
     state.activePlayerIndex = nextIndex;
     state.selectedSeatIndex = nextIndex;
+    markActiveSeat(nextIndex);
+    markSelectedSeat(nextIndex);
     setStatus("Den luot " + currentPlayer().name + ". Dua may cho ghe nay.");
     render();
   }
@@ -383,6 +416,7 @@
     while (handValue(state.dealer.hand) < 17) {
       state.dealer.hand.push(drawCard());
     }
+    markDraw("dealer", false);
     settleRound("Dealer da ket thuc luot rut bai.");
   }
 
@@ -445,9 +479,65 @@
     state.activePlayerIndex = -1;
     const roundLabel = winners.length ? ("Nguoi thang: " + winners.join(", ")) : "Dealer giu uu the";
     state.history.unshift(prefix + " " + roundLabel);
+    markHistory();
     setStatus(prefix + " " + roundLabel + ". Bam Dat lai ca ban hoac dat cuoc moi.");
     render();
     state.phase = "betting";
+  }
+
+  function markSelectedSeat(index) {
+    state.motion.selectedSeatIndex = index;
+    state.motion.selectedSeatAt = Date.now();
+  }
+
+  function markActiveSeat(index) {
+    state.motion.activeSeatIndex = index;
+    state.motion.activeSeatAt = Date.now();
+  }
+
+  function markDraw(owner, dealAll) {
+    state.motion.drawOwner = String(owner || "");
+    state.motion.drawAt = Date.now();
+    if (dealAll) {
+      state.motion.dealAllAt = state.motion.drawAt;
+    }
+  }
+
+  function markHistory() {
+    state.motion.historyAt = Date.now();
+  }
+
+  function isRecent(timestamp, windowMs) {
+    return Number(timestamp || 0) > 0 && (Date.now() - Number(timestamp)) < windowMs;
+  }
+
+  function shouldPulseSelected(index) {
+    return index === state.motion.selectedSeatIndex && isRecent(state.motion.selectedSeatAt, 900);
+  }
+
+  function shouldPulseActive(index) {
+    return index === state.motion.activeSeatIndex && isRecent(state.motion.activeSeatAt, 1200);
+  }
+
+  function shouldAnimatePlayerCard(player, handIndex) {
+    if (!player) {
+      return false;
+    }
+    if (isRecent(state.motion.dealAllAt, 900) && state.phase === "player-turn") {
+      return true;
+    }
+    return isRecent(state.motion.drawAt, 820)
+      && state.motion.drawOwner === player.id
+      && handIndex === (player.hand.length - 1);
+  }
+
+  function shouldAnimateDealerCard(index, totalCards) {
+    if (isRecent(state.motion.dealAllAt, 900) && state.phase === "player-turn") {
+      return true;
+    }
+    return isRecent(state.motion.drawAt, 820)
+      && state.motion.drawOwner === "dealer"
+      && index === (totalCards - 1);
   }
 
   function findNextActivePlayer(currentIndex) {
@@ -535,10 +625,10 @@
     return Array.isArray(hand) && hand.length === 2 && handValue(hand) === 21;
   }
 
-  function buildCardElement(card) {
+  function buildCardElement(card, isFresh) {
     const el = document.createElement("div");
     const red = card.suit === "HEARTS" || card.suit === "DIAMONDS";
-    el.className = "blackjack-local-card-face" + (red ? " red" : "");
+    el.className = "blackjack-local-card-face" + (red ? " red" : "") + (isFresh ? " is-fresh" : "");
     el.innerHTML = ""
       + "<div>" + escapeHtml(card.rank) + "</div>"
       + "<div class=\"blackjack-local-card-center\">" + suitSymbol(card.suit) + "</div>"
@@ -546,9 +636,9 @@
     return el;
   }
 
-  function buildBackCardElement() {
+  function buildBackCardElement(isFresh) {
     const el = document.createElement("div");
-    el.className = "blackjack-local-card-back";
+    el.className = "blackjack-local-card-back" + (isFresh ? " is-fresh" : "");
     el.textContent = "?";
     return el;
   }

@@ -53,6 +53,36 @@ class OAuth2LoginSuccessHandlerTest {
         assertEquals("/Game/settings?socialLinked=google", response.getRedirectedUrl());
     }
 
+    @Test
+    void facebookLoginShouldExtractIdAttributeForLinking() throws Exception {
+        AccountService accountService = mock(AccountService.class);
+        OAuth2LoginSuccessHandler handler = new OAuth2LoginSuccessHandler(accountService);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setContextPath("/Game");
+        request.getSession(true).setAttribute(OAuth2LoginSuccessHandler.SOCIAL_LINK_USER_ID, "u1");
+        request.getSession().setAttribute(OAuth2LoginSuccessHandler.SOCIAL_LINK_PROVIDER, "facebook");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        when(accountService.linkOAuth2Provider(eq("u1"), argThat(req ->
+            req != null
+                && "facebook".equals(req.provider())
+                && "facebook-456".equals(req.providerUserId())
+                && "fb-user@example.com".equals(req.email())
+                && "Fb User".equals(req.displayName())
+        ))).thenReturn(AccountService.ServiceResult.ok(Map.of("message", "Linked")));
+        when(accountService.getSessionUserSummary("u1"))
+            .thenReturn(AccountService.ServiceResult.ok(Map.of("userId", "u1", "role", "User")));
+
+        handler.onAuthenticationSuccess(request, response, facebookOauthToken());
+
+        verify(accountService).linkOAuth2Provider(eq("u1"), argThat(req ->
+            req != null
+                && "facebook".equals(req.provider())
+                && "facebook-456".equals(req.providerUserId())
+        ));
+        assertEquals("/Game/settings?socialLinked=facebook", response.getRedirectedUrl());
+    }
+
     private OAuth2AuthenticationToken oauthToken() {
         OAuth2User principal = new DefaultOAuth2User(
             List.of(new SimpleGrantedAuthority("ROLE_USER")),
@@ -64,5 +94,18 @@ class OAuth2LoginSuccessHandlerTest {
             "sub"
         );
         return new OAuth2AuthenticationToken(principal, principal.getAuthorities(), "google");
+    }
+
+    private OAuth2AuthenticationToken facebookOauthToken() {
+        OAuth2User principal = new DefaultOAuth2User(
+            List.of(new SimpleGrantedAuthority("ROLE_USER")),
+            Map.of(
+                "id", "facebook-456",
+                "email", "fb-user@example.com",
+                "name", "Fb User"
+            ),
+            "id"
+        );
+        return new OAuth2AuthenticationToken(principal, principal.getAuthorities(), "facebook");
     }
 }

@@ -347,6 +347,245 @@ body.page-account-register main.auth-shell {
   align-items: center;
 }
 
+.auth-onboard--split {
+  padding: 28px 20px;
+  background:
+    radial-gradient(circle at top left, rgba(24, 192, 182, 0.16), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(255, 168, 76, 0.2), transparent 34%),
+    linear-gradient(180deg, #07111d 0%, #091421 46%, #101a2c 100%);
+}
+
+.auth-onboard__card--split {
+  width: min(1180px, 100%);
+  padding: 0;
+  overflow: hidden;
+  border-color: rgba(109, 167, 202, 0.24);
+  background:
+    linear-gradient(180deg, rgba(10, 18, 32, 0.98), rgba(8, 12, 24, 0.98)),
+    rgba(10, 18, 32, 0.96);
+}
+
+.auth-onboard__layout {
+  display: grid;
+  grid-template-columns: minmax(340px, 0.95fr) minmax(420px, 1.05fr);
+  min-height: 720px;
+}
+
+.auth-onboard__story,
+.auth-onboard__panel {
+  min-width: 0;
+}
+
+.auth-onboard__story {
+  position: relative;
+  display: grid;
+  align-content: space-between;
+  gap: 22px;
+  padding: 34px 32px 30px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 184, 77, 0.2), transparent 34%),
+    radial-gradient(circle at bottom left, rgba(24, 192, 182, 0.18), transparent 36%),
+    linear-gradient(180deg, rgba(14, 35, 53, 0.96), rgba(10, 23, 36, 0.98));
+}
+
+.auth-onboard__story::before,
+.auth-onboard__story::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.auth-onboard__story::before {
+  top: 24px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(255, 185, 89, 0.18), transparent 68%);
+}
+
+.auth-onboard__story::after {
+  bottom: -72px;
+  left: -44px;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(31, 197, 189, 0.16), transparent 70%);
+}
+
+.auth-onboard__story-top,
+.auth-onboard__story-block,
+.auth-onboard__story-note,
+.auth-onboard__story-metrics {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-onboard__story-kicker {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.48rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffe3b6;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.auth-onboard__story-title {
+  margin: 1rem 0 0;
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  font-size: clamp(2.2rem, 4.2vw, 3.6rem);
+  line-height: 0.98;
+  font-weight: 700;
+  color: #f5fbff;
+  max-width: 12ch;
+}
+
+.auth-onboard__story-copy {
+  margin: 1rem 0 0;
+  max-width: 54ch;
+  color: rgba(219, 233, 242, 0.84);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.auth-onboard__story-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.auth-onboard__metric {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem 1rem 1.05rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  background: rgba(7, 16, 26, 0.48);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.auth-onboard__metric strong {
+  font-size: 1rem;
+  color: #ffffff;
+}
+
+.auth-onboard__metric span {
+  color: rgba(214, 226, 234, 0.78);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.auth-onboard__story-block {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-onboard__story-label {
+  color: #ffd58f;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.auth-onboard__story-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.7rem;
+  color: rgba(232, 241, 246, 0.84);
+  line-height: 1.6;
+}
+
+.auth-onboard__story-step-list {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-onboard__story-step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 0.95rem 1rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(6, 18, 28, 0.48);
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.auth-onboard__story-step.is-active {
+  border-color: rgba(255, 204, 120, 0.54);
+  background: linear-gradient(135deg, rgba(255, 184, 77, 0.16), rgba(18, 92, 104, 0.16));
+  transform: translateY(-1px);
+}
+
+.auth-onboard__story-step strong {
+  display: block;
+  color: #fff7ea;
+  font-size: 1rem;
+}
+
+.auth-onboard__story-step p {
+  margin: 0.35rem 0 0;
+  color: rgba(221, 232, 239, 0.78);
+  line-height: 1.5;
+}
+
+.auth-onboard__story-step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffe3b6;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.auth-onboard__story-note {
+  padding: 1rem 1.05rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(6, 18, 28, 0.48);
+  color: rgba(228, 238, 245, 0.84);
+  line-height: 1.6;
+}
+
+.auth-onboard__panel {
+  display: grid;
+  gap: 18px;
+  padding: 22px 22px 24px;
+  background:
+    linear-gradient(180deg, rgba(12, 20, 38, 0.98), rgba(8, 13, 26, 0.98)),
+    rgba(9, 14, 26, 0.98);
+}
+
+.auth-onboard__divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(190, 204, 228, 0.64);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auth-onboard__divider::before,
+.auth-onboard__divider::after {
+  content: "";
+  flex: 1 1 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(130, 152, 199, 0.28), transparent);
+}
+
 .auth-onboard__link-btn {
   display: inline-flex;
   align-items: center;
@@ -879,6 +1118,37 @@ body.social-drawer-open[data-open-social-drawer="friends"] #friendsDrawer {
     grid-template-columns: 1fr;
   }
 
+  .auth-onboard--split {
+    padding: 18px 12px;
+  }
+
+  .auth-onboard__card--split {
+    width: 100%;
+    padding: 0;
+  }
+
+  .auth-onboard__layout {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .auth-onboard__story,
+  .auth-onboard__panel {
+    padding: 20px 16px;
+  }
+
+  .auth-onboard__story-title {
+    max-width: none;
+  }
+
+  .auth-onboard__story-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-onboard__story-step {
+    grid-template-columns: 38px 1fr;
+  }
+
   .account-drawer {
     width: 100vw;
     padding-inline: 14px;
@@ -887,5 +1157,20 @@ body.social-drawer-open[data-open-social-drawer="friends"] #friendsDrawer {
   .social-drawer {
     width: 100vw;
     padding-inline: 14px;
+  }
+}
+
+@media (max-width: 980px) {
+  .auth-onboard__layout {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .auth-onboard__story {
+    padding-bottom: 24px;
+  }
+
+  .auth-onboard__story-metrics {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
 }

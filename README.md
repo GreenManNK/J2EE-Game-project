@@ -122,6 +122,45 @@ Nhung bien chinh:
 - `MAIL_USERNAME`
 - `MAIL_PASSWORD`
 
+## Dang ky / dang nhap / lien ket bang Facebook
+
+Flow Facebook duoc dung chung cho 3 tac vu:
+
+- dang ky nhanh tu trang `register`
+- dang nhap tu trang `login`
+- lien ket them provider trong trang `settings`
+
+Can cau hinh day du ca 2 bien:
+
+```env
+SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID=...
+SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_SECRET=...
+```
+
+Scope mac dinh:
+
+```env
+SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_SCOPE=public_profile,email
+```
+
+Callback URL trong Meta/Facebook developer console:
+
+```text
+https://<domain>/Game/login/oauth2/code/facebook
+```
+
+Neu test local:
+
+```text
+http://localhost:8080/Game/login/oauth2/code/facebook
+```
+
+Luu y:
+
+- UI chi hien nut Facebook khi da co du `CLIENT_ID` va `CLIENT_SECRET`
+- Neu muon link tai khoan dang nhap san co, vao `Settings -> Social login`
+- Neu server chay qua public tunnel, callback phai trung domain dang song ban gui cho nguoi choi
+
 ## Test va verify
 
 Chay test:

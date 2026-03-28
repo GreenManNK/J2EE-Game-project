@@ -27,8 +27,8 @@ class QuizControllerTest {
         ConcurrentModel playModel = new ConcurrentModel();
         ConcurrentModel spectateModel = new ConcurrentModel();
 
-        assertEquals("games/quiz", controller.quizRoomPage("QUIZ-ROOM-1", playModel));
-        assertEquals("games/quiz", controller.quizSpectatePage("QUIZ-ROOM-1", spectateModel));
+        assertEquals("games/quiz-room", controller.quizRoomPage("QUIZ-ROOM-1", playModel));
+        assertEquals("games/quiz-room", controller.quizSpectatePage("QUIZ-ROOM-1", spectateModel));
         assertEquals("QUIZ-ROOM-1", playModel.getAttribute("defaultRoomId"));
         assertEquals(Boolean.TRUE, playModel.getAttribute("roomPage"));
         assertEquals(Boolean.FALSE, playModel.getAttribute("spectateMode"));

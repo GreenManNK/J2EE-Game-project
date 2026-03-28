@@ -36,6 +36,12 @@
     timerId: null,
     flagMode: false,
     hintsUsed: 0,
+    motion: {
+      lastCellKey: '',
+      lastCellAt: 0,
+      hintedCellKey: '',
+      hintedAt: 0
+    },
     stats: {
       totalGames: 0,
       wins: 0,
@@ -64,6 +70,7 @@
   };
 
   const refs = {
+    app: document.getElementById('minesweeper-app'),
     board: document.getElementById('msBoard'),
     boardMeta: document.getElementById('msBoardMeta'),
     minesLeft: document.getElementById('msMinesLeft'),
@@ -439,6 +446,7 @@
 
   function startTimer() {
     stopTimer();
+    syncRootPhase();
     state.timerId = window.setInterval(() => {
       state.timerSeconds += 1;
       refs.timer.textContent = state.timerSeconds + 's';
@@ -450,6 +458,28 @@
     refs.statusPill.textContent = text;
     refs.statusPill.classList.remove('text-bg-primary', 'text-bg-success', 'text-bg-danger', 'text-bg-warning', 'text-bg-secondary');
     refs.statusPill.classList.add(pillType || 'text-bg-primary');
+  }
+
+  function syncRootPhase() {
+    if (!refs.app) {
+      return;
+    }
+    const phase = state.gameOver
+      ? (state.win ? 'win' : 'loss')
+      : (state.firstMove ? 'ready' : 'playing');
+    refs.app.dataset.phase = phase;
+    refs.app.dataset.flagMode = state.flagMode ? 'on' : 'off';
+  }
+
+  function markCellMotion(row, col, hinted) {
+    const key = row + ',' + col;
+    const now = Date.now();
+    state.motion.lastCellKey = key;
+    state.motion.lastCellAt = now;
+    if (hinted) {
+      state.motion.hintedCellKey = key;
+      state.motion.hintedAt = now;
+    }
   }
 
   function updateLevelButtons() {
@@ -464,6 +494,7 @@
     refs.flagModeBtn.setAttribute('aria-pressed', state.flagMode ? 'true' : 'false');
     refs.flagModeBtn.textContent = 'Dat co: ' + (state.flagMode ? 'Bat' : 'Tat');
     refs.flagModeBtn.classList.toggle('is-on', state.flagMode);
+    syncRootPhase();
   }
 
   function updateHintUi() {
@@ -664,6 +695,10 @@
     const cell = state.board[row][col];
     const el = state.cellEls[row][col];
     if (!el) return;
+    const cellKey = row + ',' + col;
+    const now = Date.now();
+    const isFresh = state.motion.lastCellKey === cellKey && (now - state.motion.lastCellAt) < 950;
+    const isHinted = state.motion.hintedCellKey === cellKey && (now - state.motion.hintedAt) < 1900;
 
     el.className = 'ms-cell';
     el.textContent = '';
@@ -693,6 +728,12 @@
     if (cell.exploded) {
       el.classList.add('exploded');
       el.textContent = '✹';
+    }
+    if (isFresh) {
+      el.classList.add('is-fresh');
+    }
+    if (isHinted) {
+      el.classList.add('is-hinted');
     }
   }
 
@@ -822,6 +863,7 @@
 
     updateProgressiveUi();
     updateHintUi();
+    syncRootPhase();
   }
 
   function checkWin() {
@@ -835,6 +877,7 @@
     if (state.gameOver) return;
     const cell = state.board[row][col];
     if (cell.revealed || cell.flagged) return;
+    markCellMotion(row, col, false);
 
     if (state.firstMove) {
       placeMines(row, col);
@@ -869,6 +912,7 @@
       cell.questioned = false;
       state.flagsPlaced += 1;
     }
+    markCellMotion(row, col, false);
     renderCell(row, col);
     updateCounters();
   }
@@ -882,12 +926,14 @@
       cell.flagged = true;
       cell.questioned = false;
       state.flagsPlaced += 1;
+      markCellMotion(row, col, false);
       renderCell(row, col);
       return true;
     }
     if (!cell.flagged) return false;
     cell.flagged = false;
     state.flagsPlaced = Math.max(0, state.flagsPlaced - 1);
+    markCellMotion(row, col, false);
     renderCell(row, col);
     return true;
   }
@@ -1024,6 +1070,7 @@
 
     const [row, col] = candidates[Math.floor(Math.random() * candidates.length)];
     state.hintsUsed += 1;
+    markCellMotion(row, col, true);
     revealCell(row, col);
     updateCounters();
     if (!state.gameOver) {
@@ -1070,6 +1117,10 @@
     state.revealedSafeCells = 0;
     state.flagsPlaced = 0;
     state.hintsUsed = 0;
+    state.motion.lastCellKey = '';
+    state.motion.lastCellAt = 0;
+    state.motion.hintedCellKey = '';
+    state.motion.hintedAt = 0;
     state.timerSeconds = 0;
     state.suppressNextClickKey = '';
     state.suppressNextClickUntil = 0;
@@ -1085,6 +1136,7 @@
     refs.statusText.textContent = 'Cho nuoc dau';
     refs.timer.textContent = '0s';
     refs.minesLeft.textContent = String(state.mines);
+    syncRootPhase();
     syncUrl();
   }
 

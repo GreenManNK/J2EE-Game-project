@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Dau quiz')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('games-quiz')}"></div>
+<th:block th:replace="~{games/quiz :: quizPageContent}"></th:block>
+</body>
+</html>

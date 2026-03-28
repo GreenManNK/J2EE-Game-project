@@ -7,8 +7,14 @@
     --text-dark: #333;
     --shadow-color: rgba(0, 0, 0, 0.5);
     --glow-color: #ffdd40;
+    --glow-color-soft: rgba(255, 221, 64, 0.28);
     --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     --font-display: 'Times New Roman', Times, serif;
+    --play-motion-fast: 160ms;
+    --play-motion-base: 240ms;
+    --play-motion-slow: 420ms;
+    --play-motion-spring: cubic-bezier(.22, 1, .36, 1);
+    --play-motion-soft: cubic-bezier(.2, .72, .25, 1);
 }
 
 /* --- Thiết lập cơ bản --- */
@@ -116,7 +122,12 @@ body {
     width: 15%;
     height: 30%;
     transform-origin: center 200%;
-    transition: all 0.3s ease;
+    transition:
+        transform var(--play-motion-base) var(--play-motion-spring),
+        box-shadow var(--play-motion-base) ease,
+        opacity var(--play-motion-fast) ease,
+        filter var(--play-motion-fast) ease;
+    will-change: transform, box-shadow, opacity;
 }
 
 /* Vị trí 5 ghế theo vòng cung */
@@ -130,6 +141,7 @@ body {
 .player-seat.is-turn {
     box-shadow: 0 0 25px 10px var(--glow-color);
     border-radius: 20px;
+    animation: blackjackSeatPulse 1.6s var(--play-motion-soft) infinite;
 }
 
 .seat-content {
@@ -162,6 +174,7 @@ body {
     height: 7vw;
     margin: 10px auto;
     width: 10vw;
+    perspective: 900px;
 }
 
 .card {
@@ -181,6 +194,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    transition:
+        box-shadow var(--play-motion-base) ease,
+        filter var(--play-motion-fast) ease,
+        opacity var(--play-motion-fast) ease;
+    will-change: opacity, box-shadow, filter;
+    animation: blackjackCardFadeIn var(--play-motion-slow) var(--play-motion-soft) both;
 }
 /* Hiệu ứng quạt bài */
 .cards-hand .card:nth-child(1) { transform: translateX(-70%) rotate(-10deg); }
@@ -193,6 +212,11 @@ body {
     color: transparent;
 }
 
+.cards-hand .card:nth-child(2) { animation-delay: 50ms; }
+.cards-hand .card:nth-child(3) { animation-delay: 100ms; }
+.cards-hand .card:nth-child(4) { animation-delay: 150ms; }
+.cards-hand .card:nth-child(5) { animation-delay: 200ms; }
+
 .score-display {
     background: rgba(0,0,0,0.5);
     padding: 2px 8px;
@@ -200,6 +224,7 @@ body {
     display: inline-block;
     margin-top: 5px;
     font-size: 1.2vw;
+    transition: background-color var(--play-motion-fast) ease, box-shadow var(--play-motion-base) ease;
 }
 
 /* --- Bảng điều khiển dưới cùng --- */
@@ -235,12 +260,18 @@ body {
     background-color: var(--table-green);
     color: var(--text-light);
     cursor: pointer;
-    transition: all 0.2s;
+    transition:
+        transform var(--play-motion-fast) var(--play-motion-spring),
+        background-color var(--play-motion-fast) ease,
+        color var(--play-motion-fast) ease,
+        box-shadow var(--play-motion-base) ease;
+    will-change: transform, box-shadow;
 }
 .player-actions .action-btn:hover:not(:disabled) {
     background-color: var(--border-gold);
     color: var(--text-dark);
-    transform: scale(1.05);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.24);
 }
 .player-actions .action-btn:disabled {
     opacity: 0.5;
@@ -278,10 +309,20 @@ body {
     cursor: pointer;
     border: 2px solid white;
     box-shadow: 0 2px 4px var(--shadow-color);
-    transition: transform 0.2s;
+    transition:
+        transform var(--play-motion-fast) var(--play-motion-spring),
+        box-shadow var(--play-motion-base) ease,
+        filter var(--play-motion-fast) ease;
+    will-change: transform, box-shadow;
 }
 .chip:hover {
-    transform: scale(1.15);
+    transform: translateY(-4px) scale(1.12);
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.28);
+}
+
+.chip.is-last-chip {
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.12), 0 0 16px var(--glow-color-soft);
+    transform: translateY(-2px) scale(1.06);
 }
 .chip[data-value="10"] { background-color: #1d6f9a; }
 .chip[data-value="25"] { background-color: #2a9d8f; }
@@ -323,4 +364,14 @@ body {
     border: 2px solid #fff;
     border-radius: 8px;
     box-shadow: 0 0 10px #000;
+}
+
+@keyframes blackjackSeatPulse {
+    0%, 100% { box-shadow: 0 0 18px 6px rgba(255, 221, 64, 0.26); }
+    50% { box-shadow: 0 0 28px 12px rgba(255, 221, 64, 0.4); }
+}
+
+@keyframes blackjackCardFadeIn {
+    0% { opacity: 0; filter: blur(2px) saturate(0.9); }
+    100% { opacity: 1; filter: blur(0) saturate(1); }
 }

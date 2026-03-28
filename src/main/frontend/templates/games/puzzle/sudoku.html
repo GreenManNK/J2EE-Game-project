@@ -4,7 +4,7 @@
 <body>
 <div th:replace="~{fragments :: appShell('games-puzzle-sudoku')}"></div>
 
-<main class="hub-portal-shell hub-portal-theme-puzzle">
+<main id="sudoku-app" class="hub-portal-shell hub-portal-theme-puzzle">
     <section class="hub-portal-hero hub-portal-hero--single">
         <div class="hub-portal-hero__glow hub-portal-hero__glow--a" aria-hidden="true"></div>
         <div class="hub-portal-hero__glow hub-portal-hero__glow--b" aria-hidden="true"></div>
@@ -98,6 +98,7 @@
         display: flex;
         flex-direction: column;
         gap: 0.2rem;
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
     }
 
     .sudoku-hud span {
@@ -116,6 +117,7 @@
         background: rgba(2, 6, 23, 0.45);
         border-radius: 8px;
         overflow: hidden;
+        transition: transform var(--play-motion-base, 240ms) var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1)), box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
     }
 
     .sudoku-cell {
@@ -127,11 +129,13 @@
         font-weight: 600;
         background: rgba(255, 255, 255, 0.02);
         color: #f8fafc;
+        transition: background-color var(--play-motion-fast, 160ms) ease, color var(--play-motion-fast, 160ms) ease, transform var(--play-motion-fast, 160ms) ease, box-shadow var(--play-motion-base, 240ms) ease;
     }
 
     .sudoku-cell:focus {
         outline: none;
         background: rgba(56, 189, 248, 0.18);
+        box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.48);
     }
 
     .sudoku-cell.fixed {
@@ -142,11 +146,18 @@
     .sudoku-cell.conflict {
         background: rgba(220, 38, 38, 0.28);
         color: #fecaca;
+        animation: sudokuConflictPulse .46s var(--play-motion-soft, cubic-bezier(.2, .72, .25, 1));
     }
 
     .sudoku-cell.hint-wrong {
         background: rgba(245, 158, 11, 0.25);
         color: #fde68a;
+        animation: sudokuHintPulse .4s var(--play-motion-spring, cubic-bezier(.22, 1, .36, 1));
+    }
+
+    .sudoku-cell.is-recent {
+        transform: scale(1.04);
+        box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.44);
     }
 
     .sudoku-cell[data-row="2"],
@@ -165,14 +176,53 @@
         margin: 0.75rem 0 0;
         font-size: 0.9rem;
         color: rgba(255, 255, 255, 0.85);
+        padding: 0.72rem 0.84rem;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: transform var(--play-motion-fast, 160ms) ease, box-shadow var(--play-motion-base, 240ms) ease, border-color var(--play-motion-fast, 160ms) ease;
     }
 
     .sudoku-note.success {
         color: #bbf7d0;
+        border-color: rgba(74, 222, 128, 0.24);
+        background: rgba(20, 83, 45, 0.18);
     }
 
     .sudoku-note.error {
         color: #fecaca;
+        border-color: rgba(248, 113, 113, 0.22);
+        background: rgba(127, 29, 29, 0.18);
+    }
+
+    #sudoku-app[data-phase="finished"] .sudoku-grid {
+        box-shadow: 0 18px 34px rgba(8, 15, 31, 0.18);
+        border-color: rgba(74, 222, 128, 0.3);
+    }
+
+    #sudoku-app[data-phase="error"] .sudoku-hud > div:first-child strong {
+        animation: sudokuHintPulse .5s ease-in-out 2;
+    }
+
+    @keyframes sudokuConflictPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes sudokuHintPulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.08); opacity: 0.92; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .sudoku-hud > div,
+        .sudoku-grid,
+        .sudoku-cell,
+        .sudoku-note {
+            animation: none !important;
+            transition-duration: 1ms !important;
+        }
     }
 
     @media (max-width: 560px) {
@@ -183,6 +233,7 @@
     }
 </style>
 <script>
+    const appRoot = document.getElementById('sudoku-app');
     const gridContainer = document.getElementById('grid-container');
     const newBtn = document.getElementById('new-sudoku-btn');
     const checkBtn = document.getElementById('check-sudoku-btn');
@@ -218,6 +269,8 @@
     let timerHandle;
     let startedAt;
     let winReported = false;
+    let lastTouchedIndex = -1;
+    let lastTouchedAt = 0;
 
     newBtn.addEventListener('click', startPuzzle);
     checkBtn.addEventListener('click', checkProgress);
@@ -231,6 +284,9 @@
         levelEl.textContent = currentPuzzle.level;
         statusEl.textContent = 'Dien tat ca o trong. O trung lap se duoc to mau.';
         statusEl.classList.remove('success', 'error');
+        appRoot.dataset.phase = 'playing';
+        lastTouchedIndex = -1;
+        lastTouchedAt = 0;
 
         buildGrid();
         startTimer();
@@ -259,6 +315,9 @@
                 cell.addEventListener('input', () => handleInput(cell));
                 cell.addEventListener('blur', () => checkSingleCell(cell));
             }
+            if (i === lastTouchedIndex && (Date.now() - lastTouchedAt) < 900) {
+                cell.classList.add('is-recent');
+            }
 
             gridContainer.appendChild(cell);
         }
@@ -268,6 +327,10 @@
         const raw = cell.value.replace(/[^1-9]/g, '');
         cell.value = raw.slice(0, 1);
         cell.classList.remove('hint-wrong');
+        appRoot.dataset.phase = 'playing';
+        lastTouchedIndex = Number(cell.dataset.index);
+        lastTouchedAt = Date.now();
+        cell.classList.add('is-recent');
         highlightConflicts();
         checkCompletion();
     }
@@ -283,6 +346,7 @@
             mistakes += 1;
             mistakesEl.textContent = String(mistakes);
             cell.classList.add('hint-wrong');
+            appRoot.dataset.phase = 'error';
         }
     }
 
@@ -294,12 +358,14 @@
             statusEl.textContent = `Dang co ${conflicts} o bi trung lap.`;
             statusEl.classList.add('error');
             statusEl.classList.remove('success');
+            appRoot.dataset.phase = 'error';
             return;
         }
 
         if (emptyCount > 0) {
             statusEl.textContent = `Con ${emptyCount} o chua dien.`;
             statusEl.classList.remove('success', 'error');
+            appRoot.dataset.phase = 'playing';
             return;
         }
 
@@ -316,6 +382,7 @@
         statusEl.textContent = 'Da hien dap an.';
         statusEl.classList.remove('success');
         statusEl.classList.add('error');
+        appRoot.dataset.phase = 'error';
     }
 
     function highlightConflicts() {
@@ -383,6 +450,7 @@
         statusEl.textContent = `Hoan thanh trong ${timeEl.textContent} voi ${mistakes} loi sai.`;
         statusEl.classList.remove('error');
         statusEl.classList.add('success');
+        appRoot.dataset.phase = 'finished';
         reportWin();
     }
 
