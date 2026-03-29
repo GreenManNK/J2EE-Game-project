@@ -12,7 +12,23 @@ spring:
   security:
     oauth2:
       client:
+        registration:
+          google:
+            client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID:}
+            client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET:}
+            scope: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_SCOPE:openid,profile,email}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          facebook:
+            client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID:}
+            client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_SECRET:}
+            scope: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_SCOPE:public_profile,email}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
         provider:
+          google:
+            authorization-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_GOOGLE_AUTHORIZATION_URI:https://accounts.google.com/o/oauth2/v2/auth}
+            token-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_GOOGLE_TOKEN_URI:https://www.googleapis.com/oauth2/v4/token}
+            user-info-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_GOOGLE_USER_INFO_URI:https://www.googleapis.com/oauth2/v1/userinfo}
+            user-name-attribute: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_GOOGLE_USER_NAME_ATTRIBUTE:sub}
           facebook:
             authorization-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_FACEBOOK_AUTHORIZATION_URI:https://www.facebook.com/v20.0/dialog/oauth}
             token-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_FACEBOOK_TOKEN_URI:https://graph.facebook.com/v20.0/oauth/access_token}
