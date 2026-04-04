@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -119,6 +120,29 @@ class HomeControllerTest {
     }
 
     @Test
+    void createPostShouldRejectProfanity() {
+        PostRepository postRepository = mock(PostRepository.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("AUTH_USER_ID")).thenReturn("u1");
+
+        UserAccount user = new UserAccount();
+        user.setId("u1");
+        user.setDisplayName("Alice");
+        when(userAccountRepository.findById("u1")).thenReturn(Optional.of(user));
+
+        HomeController controller = new HomeController(postRepository, userAccountRepository);
+        Object result = controller.createPost(new HomeController.CreatePostRequest("v.c.l", "Spoofed", ""), request);
+
+        assertTrue(result instanceof Map<?, ?>);
+        assertFalse((Boolean) ((Map<?, ?>) result).get("success"));
+        assertEquals("Tin nhan chua ngon tu tho tuc va da bi chan. Canh cao 1/3.", ((Map<?, ?>) result).get("error"));
+        verify(postRepository, never()).save(any(Post.class));
+    }
+
+    @Test
     void createCommentShouldRequireLoginSession() {
         PostRepository postRepository = mock(PostRepository.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
@@ -130,5 +154,27 @@ class HomeControllerTest {
 
         assertFalse(result.get("success") instanceof Boolean b && b);
         assertEquals("Login required", result.get("error"));
+    }
+
+    @Test
+    void createCommentShouldRejectProfanity() {
+        PostRepository postRepository = mock(PostRepository.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("AUTH_USER_ID")).thenReturn("u1");
+
+        UserAccount user = new UserAccount();
+        user.setId("u1");
+        user.setDisplayName("Alice");
+        when(userAccountRepository.findById("u1")).thenReturn(Optional.of(user));
+
+        HomeController controller = new HomeController(postRepository, userAccountRepository);
+        Map<String, Object> result = controller.createComment(new HomeController.CreateCommentRequest(1L, "d!t m3", "spoof"), request);
+
+        assertFalse(result.get("success") instanceof Boolean b && b);
+        assertEquals("Tin nhan chua ngon tu tho tuc va da bi chan. Canh cao 1/3.", result.get("error"));
+        verify(postRepository, never()).findByIdWithComments(1L);
     }
 }

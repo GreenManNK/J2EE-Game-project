@@ -25,7 +25,17 @@ public class ChessOnlineRoomService {
     public synchronized JoinResult joinRoom(String roomId,
                                             String userId,
                                             String displayName,
-                                            String avatarPath) {
+                                            String avatarPath,
+                                            int winningStreak) {
+        return joinRoom(roomId, userId, displayName, avatarPath, winningStreak, false);
+    }
+
+    public synchronized JoinResult joinRoom(String roomId,
+                                            String userId,
+                                            String displayName,
+                                            String avatarPath,
+                                            int winningStreak,
+                                            boolean flamingChessIconUnlocked) {
         String normalizedRoomId = normalize(roomId);
         String normalizedUserId = normalize(userId);
         if (normalizedRoomId == null || normalizedUserId == null) {
@@ -41,6 +51,9 @@ public class ChessOnlineRoomService {
             if (avatarPath != null && !avatarPath.isBlank()) {
                 existing.avatarPath = avatarPath.trim();
             }
+            existing.winningStreak = Math.max(0, winningStreak);
+            existing.redPieces = hasRedPieces(existing.winningStreak);
+            existing.flamingChessIconUnlocked = flamingChessIconUnlocked;
             return new JoinResult(true, existing.color, snapshotOf(room), null);
         }
 
@@ -57,7 +70,10 @@ public class ChessOnlineRoomService {
             normalizedUserId,
             displayName == null || displayName.isBlank() ? normalizedUserId : displayName.trim(),
             avatarPath == null || avatarPath.isBlank() ? "" : avatarPath.trim(),
-            assignedColor
+            assignedColor,
+            Math.max(0, winningStreak),
+            hasRedPieces(winningStreak),
+            flamingChessIconUnlocked
         ));
 
         if (room.players.size() == PLAYER_LIMIT) {
@@ -335,6 +351,20 @@ public class ChessOnlineRoomService {
         return room == null ? null : snapshotOf(room);
     }
 
+    public synchronized void updatePlayerWinningStreak(String roomId, String userId, int winningStreak) {
+        RoomState room = rooms.get(normalize(roomId));
+        String normalizedUserId = normalize(userId);
+        if (room == null || normalizedUserId == null) {
+            return;
+        }
+        PlayerSeatState player = room.players.get(normalizedUserId);
+        if (player == null) {
+            return;
+        }
+        player.winningStreak = Math.max(0, winningStreak);
+        player.redPieces = hasRedPieces(player.winningStreak);
+    }
+
     public synchronized List<RoomListRow> availableRooms() {
         return rooms.values().stream()
             .filter(room -> !room.players.isEmpty() || !room.spectators.isEmpty())
@@ -585,7 +615,15 @@ public class ChessOnlineRoomService {
         }
         List<PlayerSnapshot> players = room.players.values().stream()
             .sorted(Comparator.comparing(player -> player.color))
-            .map(player -> new PlayerSnapshot(player.userId, player.displayName, player.avatarPath, player.color))
+            .map(player -> new PlayerSnapshot(
+                player.userId,
+                player.displayName,
+                player.avatarPath,
+                player.color,
+                player.winningStreak,
+                player.redPieces,
+                player.flamingChessIconUnlocked
+            ))
             .toList();
 
         LastMoveSnapshot lastMove = room.lastMove == null ? null : new LastMoveSnapshot(
@@ -732,6 +770,10 @@ public class ChessOnlineRoomService {
         return text.isEmpty() ? null : text;
     }
 
+    private boolean hasRedPieces(int winningStreak) {
+        return Math.max(0, winningStreak) > 10;
+    }
+
     public record JoinResult(boolean ok, String assignedColor, RoomSnapshot room, String error) {
     }
 
@@ -790,7 +832,21 @@ public class ChessOnlineRoomService {
         }
     }
 
-    public record PlayerSnapshot(String userId, String displayName, String avatarPath, String color) {
+    public record PlayerSnapshot(String userId,
+                                 String displayName,
+                                 String avatarPath,
+                                 String color,
+                                 int winningStreak,
+                                 boolean redPieces,
+                                 boolean flamingChessIconUnlocked) {
+        public PlayerSnapshot(String userId,
+                              String displayName,
+                              String avatarPath,
+                              String color,
+                              int winningStreak,
+                              boolean redPieces) {
+            this(userId, displayName, avatarPath, color, winningStreak, redPieces, false);
+        }
     }
 
     public record LastMoveSnapshot(int fromRow,
@@ -849,12 +905,24 @@ public class ChessOnlineRoomService {
         private String displayName;
         private String avatarPath;
         private String color;
+        private int winningStreak;
+        private boolean redPieces;
+        private boolean flamingChessIconUnlocked;
 
-        private PlayerSeatState(String userId, String displayName, String avatarPath, String color) {
+        private PlayerSeatState(String userId,
+                                String displayName,
+                                String avatarPath,
+                                String color,
+                                int winningStreak,
+                                boolean redPieces,
+                                boolean flamingChessIconUnlocked) {
             this.userId = userId;
             this.displayName = displayName;
             this.avatarPath = avatarPath;
             this.color = color;
+            this.winningStreak = Math.max(0, winningStreak);
+            this.redPieces = redPieces;
+            this.flamingChessIconUnlocked = flamingChessIconUnlocked;
         }
     }
 

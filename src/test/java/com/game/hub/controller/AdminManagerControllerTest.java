@@ -3,6 +3,7 @@ package com.game.hub.controller;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.FriendshipRepository;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.AchievementService;
 import com.game.hub.service.DataExportAuditService;
 import org.junit.jupiter.api.Test;
 import org.springframework.ui.ConcurrentModel;
@@ -33,7 +34,8 @@ class AdminManagerControllerTest {
             userRepo,
             friendshipRepo,
             mock(org.springframework.security.crypto.password.PasswordEncoder.class),
-            mock(DataExportAuditService.class)
+            mock(DataExportAuditService.class),
+            mock(AchievementService.class)
         );
 
         assertEquals("admin/index", controller.adminCenterPage());
@@ -49,6 +51,34 @@ class AdminManagerControllerTest {
         Object edit = controller.edit("missing", new AdminController.EditUserRequest("A", 1, "User", null));
         assertTrue(edit instanceof Map<?, ?>);
         assertFalse((Boolean) ((Map<?, ?>) edit).get("success"));
+    }
+
+    @Test
+    void adminShouldReturnUnlockErrorWhenUserHasNotReachedTenChessWins() {
+        UserAccountRepository userRepo = mock(UserAccountRepository.class);
+        FriendshipRepository friendshipRepo = mock(FriendshipRepository.class);
+        AchievementService achievementService = mock(AchievementService.class);
+        UserAccount user = new UserAccount();
+        user.setId("u1");
+        user.setChessWinCount(4);
+
+        when(userRepo.findById("u1")).thenReturn(Optional.of(user));
+        when(achievementService.unlockFlamingChessIcon("u1"))
+            .thenReturn(AchievementService.ChessIconUnlockResult.error("Nguoi choi moi co 4/10 chien thang Co vua duoc ghi nhan."));
+
+        AdminController controller = new AdminController(
+            userRepo,
+            friendshipRepo,
+            mock(org.springframework.security.crypto.password.PasswordEncoder.class),
+            mock(DataExportAuditService.class),
+            achievementService
+        );
+
+        Object result = controller.unlockFlamingChessIcon("u1");
+
+        assertTrue(result instanceof Map<?, ?>);
+        assertFalse((Boolean) ((Map<?, ?>) result).get("success"));
+        assertEquals(4, ((Map<?, ?>) result).get("chessWinCount"));
     }
 
     @Test

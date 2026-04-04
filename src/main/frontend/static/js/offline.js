@@ -17,6 +17,24 @@ function notify(message, type) {
     }
 }
 
+function confirmSurrender(currentPlayer) {
+    if (typeof ui.confirmAction === "function") {
+        return ui.confirmAction({
+            title: "Dau hang van Caro?",
+            text: "Nguoi choi " + currentPlayer + " se thua ngay va doi thu duoc tinh la chien thang.",
+            confirmText: "Dau hang",
+            cancelText: "Tiep tuc choi",
+            fallbackText: "Xac nhan dau hang cho nguoi choi " + currentPlayer + "?",
+            danger: true
+        });
+    }
+    return Promise.resolve(
+        typeof window !== "undefined" && typeof window.confirm === "function"
+            ? window.confirm(`Xac nhan dau hang cho nguoi choi ${currentPlayer}?`)
+            : false
+    );
+}
+
 // Tao ban co
 document.addEventListener("DOMContentLoaded", function () {
     const boardContainer = document.getElementById("game-board");
@@ -97,12 +115,10 @@ function resetBoard() {
     updateTurnDisplay();
 }
 
-function surrenderCurrentPlayer() {
+async function surrenderCurrentPlayer() {
     if (gameOver) return;
-    if (typeof window !== "undefined" && typeof window.confirm === "function") {
-        const accepted = window.confirm(`Xac nhan dau hang cho nguoi choi ${currentSymbol}?`);
-        if (!accepted) return;
-    }
+    const accepted = await confirmSurrender(currentSymbol);
+    if (!accepted) return;
 
     gameOver = true;
     winLine = [];

@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProfileStatsService {
+    private static final String FLAMING_CHESS_ICON_ACHIEVEMENT = "Co vua boc lua";
+    private static final int FLAMING_CHESS_ICON_REQUIRED_WINS = 10;
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
     private static final TypeReference<List<String>> STRING_LIST_TYPE = new TypeReference<>() {
     };
@@ -76,6 +78,7 @@ public class ProfileStatsService {
         "Winner - Puzzle Sliding",
         "Winner - Puzzle Word",
         "Winner - Puzzle Sudoku",
+        FLAMING_CHESS_ICON_ACHIEVEMENT,
         "Bac",
         "Vang",
         "Kim cuong",
@@ -166,6 +169,9 @@ public class ProfileStatsService {
             .map(UserAchievement::getAchievementName)
             .filter(name -> name != null && !name.isBlank())
             .collect(Collectors.toCollection(HashSet::new));
+        if (user.isFlamingChessIconUnlocked()) {
+            unlockedAchievementNames.add(FLAMING_CHESS_ICON_ACHIEVEMENT);
+        }
 
         List<String> diemAchievements = userAchievements.stream()
             .map(UserAchievement::getAchievementName)
@@ -186,11 +192,7 @@ public class ProfileStatsService {
 
         Map<String, List<String>> gameAchievements = buildGameAchievements(unlockedAchievementNames);
 
-        Set<String> achieved = new HashSet<>();
-        achieved.addAll(diemAchievements);
-        achieved.addAll(overallAchievements);
-        achieved.addAll(gameAchievements.keySet().stream().map(this::toGameAchievementName).toList());
-        achieved.addAll(repeatAchievements.keySet());
+        Set<String> achieved = new HashSet<>(unlockedAchievementNames);
 
         List<String> locked = showAchievements
             ? ALL_POSSIBLE_ACHIEVEMENTS.stream().filter(a -> !achieved.contains(a)).toList()
@@ -223,15 +225,27 @@ public class ProfileStatsService {
         result.put("repeatAchievements", repeatAchievements);
         result.put("achievements", overallAchievements);
         result.put("lockedAchievements", locked);
+        result.put("chessFlamingIconUnlocked", unlockedAchievementNames.contains(FLAMING_CHESS_ICON_ACHIEVEMENT));
+        result.put("chessWinCount", Math.max(0, user.getChessWinCount()));
+        result.put("chessFlamingIconRequiredWins", FLAMING_CHESS_ICON_REQUIRED_WINS);
         result.put("isOwner", userId.equals(currentUserId));
         return result;
     }
 
     private Map<String, List<String>> buildGameAchievements(Set<String> unlockedAchievementNames) {
         Map<String, List<String>> grouped = new LinkedHashMap<>();
-        GAME_ACHIEVEMENT_ORDER.stream()
-            .filter(gameName -> unlockedAchievementNames.contains(toGameAchievementName(gameName)))
-            .forEach(gameName -> grouped.put(gameName, List.of("Chien thang dau tien")));
+        GAME_ACHIEVEMENT_ORDER.forEach(gameName -> {
+            List<String> achievements = new ArrayList<>();
+            if (unlockedAchievementNames.contains(toGameAchievementName(gameName))) {
+                achievements.add("Chien thang dau tien");
+            }
+            if ("Chess".equals(gameName) && unlockedAchievementNames.contains(FLAMING_CHESS_ICON_ACHIEVEMENT)) {
+                achievements.add("Bieu tuong Co vua boc lua");
+            }
+            if (!achievements.isEmpty()) {
+                grouped.put(gameName, achievements);
+            }
+        });
         return grouped;
     }
 

@@ -5,6 +5,8 @@ import com.game.hub.entity.Post;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.PostRepository;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.ChatModerationService;
+import com.game.hub.service.CommunicationGuardService;
 import com.game.hub.service.GameCatalogItem;
 import com.game.hub.service.GameCatalogService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,20 +37,28 @@ public class HomeController {
     private final PostRepository postRepository;
     private final UserAccountRepository userAccountRepository;
     private final GameCatalogService gameCatalogService;
+    private final CommunicationGuardService communicationGuardService;
 
     public HomeController(PostRepository postRepository, UserAccountRepository userAccountRepository) {
-        this(postRepository, userAccountRepository, new GameCatalogService());
+        this(
+            postRepository,
+            userAccountRepository,
+            new GameCatalogService(),
+            new CommunicationGuardService(userAccountRepository, new ChatModerationService())
+        );
     }
 
     @Autowired
     public HomeController(
         PostRepository postRepository,
         UserAccountRepository userAccountRepository,
-        GameCatalogService gameCatalogService
+        GameCatalogService gameCatalogService,
+        CommunicationGuardService communicationGuardService
     ) {
         this.postRepository = postRepository;
         this.userAccountRepository = userAccountRepository;
         this.gameCatalogService = gameCatalogService;
+        this.communicationGuardService = communicationGuardService;
     }
 
     @GetMapping
@@ -83,6 +93,10 @@ public class HomeController {
         if (content == null) {
             return Map.of("success", false, "error", "Content is required");
         }
+        CommunicationGuardService.ValidationResult validation = communicationGuardService.validate(user.getId(), content);
+        if (!validation.allowed()) {
+            return Map.of("success", false, "error", validation.error());
+        }
         Post post = new Post();
         post.setAuthor(displayNameOf(user));
         post.setAuthorUserId(user.getId());
@@ -105,6 +119,10 @@ public class HomeController {
         String content = trimToNull(request.content());
         if (content == null) {
             return Map.of("success", false, "error", "Content is required");
+        }
+        CommunicationGuardService.ValidationResult validation = communicationGuardService.validate(user.getId(), content);
+        if (!validation.allowed()) {
+            return Map.of("success", false, "error", validation.error());
         }
         Post post = postRepository.findByIdWithComments(request.postId()).orElse(null);
         if (post == null) {

@@ -537,8 +537,16 @@ public class TienLenWebSocketController {
         boolean botWinner = room.players().stream()
             .filter(Objects::nonNull)
             .anyMatch(player -> Objects.equals(player.userId(), winnerUserId) && player.bot());
-        if (!botWinner) {
+        if (botWinner) {
+            return;
+        }
+        boolean hasBotPlayer = room.players().stream()
+            .filter(Objects::nonNull)
+            .anyMatch(TienLenRoomService.PlayerSnapshot::bot);
+        if (hasBotPlayer) {
             achievementService.checkAndAward(winnerUserId, "Tien Len", true);
+        } else {
+            achievementService.recordRewardedWin(winnerUserId, "Tien Len");
         }
     }
 

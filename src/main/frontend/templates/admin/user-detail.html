@@ -25,6 +25,7 @@
       <div class="profile-summary-item"><small>Email</small><strong th:text="${user.email}">email@example.com</strong></div>
       <div class="profile-summary-item"><small>Ten hien thi</small><strong th:text="${user.displayName}">Nguoi choi</strong></div>
       <div class="profile-summary-item"><small>Diem</small><strong th:text="${user.score}">0</strong></div>
+      <div class="profile-summary-item"><small>Chuoi thang</small><strong th:text="${user.winningStreak}">0</strong></div>
       <div class="profile-summary-item"><small>Quyen</small><strong th:text="${user.role == 'Admin' ? 'Quan tri' : (user.role == 'Manager' ? 'Quan ly' : 'Nguoi choi')}">Nguoi choi</strong></div>
       <div class="profile-summary-item"><small>Khoa den</small><strong th:text="${user.bannedUntil} ?: '-'">-</strong></div>
     </div>

@@ -96,6 +96,22 @@
       return moves;
     }
 
+    async function confirmSurrender() {
+      if (typeof ui.confirmAction === 'function') {
+        return ui.confirmAction({
+          title: 'Dau hang van Caro?',
+          text: 'Ban se thua ngay lap tuc va bot se duoc tinh la chien thang cua van hien tai.',
+          confirmText: 'Dau hang',
+          cancelText: 'Tiep tuc choi',
+          fallbackText: 'Ban chac chan muon dau hang?',
+          danger: true
+        });
+      }
+      return typeof window.confirm === 'function'
+        ? window.confirm('Ban chac chan muon dau hang?')
+        : false;
+    }
+
     async function recordHistory(outcome) {
       if (historyRecorded || typeof historyApi.recordBotMatch !== 'function') {
         return;
@@ -287,9 +303,9 @@
     }
 
     document.getElementById('resetBtn')?.addEventListener('click', resetGame);
-    surrenderBtn?.addEventListener('click', () => {
+    surrenderBtn?.addEventListener('click', async () => {
       if (busy || gameOver) return;
-      if (typeof window.confirm === 'function' && !window.confirm('Ban chac chan muon dau hang?')) {
+      if (!await confirmSurrender()) {
         return;
       }
       gameOver = true;

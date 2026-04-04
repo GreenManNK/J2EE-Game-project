@@ -14,6 +14,7 @@
   const state = {
     gameCode: String(boot.gameCode || '').trim(),
     gameName: String(boot.gameName || '').trim(),
+    selectedVariant: String(boot.selectedVariant || '').trim().toLowerCase(),
     roomId: String(boot.selectedRoomId || '').trim(),
     onlineSupportedNow: Boolean(boot.onlineSupportedNow),
     supportsSpectateNow: Boolean(boot.supportsSpectateNow),
@@ -332,8 +333,19 @@
         roomId: String(roomId || '').trim(),
         playerCount: 1,
         playerLimit: 2,
-        note: 'Dang cho doi thu'
-      })).filter((row) => row.roomId);
+        note: String(roomId || '').trim().startsWith('Advanced_')
+          ? 'Che do nang cao - du 5 quan se nhan skill'
+          : 'Dang cho doi thu'
+      })).filter((row) => {
+        if (!row.roomId) {
+          return false;
+        }
+        const advancedRoom = row.roomId.startsWith('Advanced_');
+        if (state.selectedVariant === 'advanced') {
+          return advancedRoom;
+        }
+        return !advancedRoom;
+      });
     }
 
     if (!Array.isArray(roomsPayload)) {
@@ -360,7 +372,7 @@
       els.roomList.innerHTML = '<div class="text-muted">Dang tai danh sach phong...</div>';
     }
     try {
-      const res = await fetch(appPath('/online-hub/api/rooms?game=' + encodeURIComponent(state.gameCode)), {
+      const res = await fetch(appPath('/online-hub/api/rooms?game=' + encodeURIComponent(state.gameCode) + variantQuerySuffix()), {
         cache: 'no-store'
       });
       if (!res.ok) {
@@ -533,7 +545,7 @@
 
   async function createRoomViaApi() {
     try {
-      const res = await fetch(appPath('/online-hub/api/create-room?game=' + encodeURIComponent(state.gameCode)), {
+      const res = await fetch(appPath('/online-hub/api/create-room?game=' + encodeURIComponent(state.gameCode) + variantQuerySuffix()), {
         method: 'POST'
       });
       if (!res.ok) {
@@ -641,6 +653,9 @@
   }
 
   function generateRoomId() {
+    if (state.gameCode === 'caro' && state.selectedVariant === 'advanced') {
+      return 'Advanced_' + Math.random().toString(36).slice(2, 8).toUpperCase();
+    }
     const prefixes = {
       caro: 'CARO',
       chess: 'CHESS',
@@ -666,6 +681,10 @@
   function normalizeRoomId(value) {
     const text = String(value || '').trim();
     return text || '';
+  }
+
+  function variantQuerySuffix() {
+    return state.selectedVariant ? ('&variant=' + encodeURIComponent(state.selectedVariant)) : '';
   }
 
   function parseJsonSafe(raw) {

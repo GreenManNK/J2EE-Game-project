@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -33,12 +34,14 @@ class AchievementServiceTest {
         AchievementNotificationRepository achievementNotificationRepository = mock(AchievementNotificationRepository.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
         GameHistoryRepository gameHistoryRepository = mock(GameHistoryRepository.class);
+        WinRewardScoreService winRewardScoreService = mock(WinRewardScoreService.class);
 
         AchievementService service = new AchievementService(
             userAchievementRepository,
             achievementNotificationRepository,
             userAccountRepository,
-            gameHistoryRepository
+            gameHistoryRepository,
+            winRewardScoreService
         );
 
         service.checkAndAward("guest-123", "Caro", true);
@@ -53,6 +56,7 @@ class AchievementServiceTest {
         AchievementNotificationRepository achievementNotificationRepository = mock(AchievementNotificationRepository.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
         GameHistoryRepository gameHistoryRepository = mock(GameHistoryRepository.class);
+        WinRewardScoreService winRewardScoreService = mock(WinRewardScoreService.class);
 
         List<UserAchievement> savedAchievements = new ArrayList<>();
 
@@ -75,7 +79,8 @@ class AchievementServiceTest {
             userAchievementRepository,
             achievementNotificationRepository,
             userAccountRepository,
-            gameHistoryRepository
+            gameHistoryRepository,
+            winRewardScoreService
         );
 
         List.of(
@@ -111,6 +116,7 @@ class AchievementServiceTest {
         AchievementNotificationRepository achievementNotificationRepository = mock(AchievementNotificationRepository.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
         GameHistoryRepository gameHistoryRepository = mock(GameHistoryRepository.class);
+        WinRewardScoreService winRewardScoreService = mock(WinRewardScoreService.class);
 
         List<UserAchievement> savedAchievements = new ArrayList<>();
         when(userAchievementRepository.existsByUserIdAndAchievementName(anyString(), anyString())).thenReturn(false);
@@ -151,11 +157,80 @@ class AchievementServiceTest {
             userAchievementRepository,
             achievementNotificationRepository,
             userAccountRepository,
-            gameHistoryRepository
+            gameHistoryRepository,
+            winRewardScoreService
         );
 
         service.evaluateAfterMatch("Normal_ROOM", "winner-1", "loser-1", 12, null, null, null);
 
         assertTrue(savedAchievements.isEmpty());
+    }
+
+    @Test
+    void recordRewardedWinShouldGrantAchievementAndAwardScoreBonus() {
+        UserAchievementRepository userAchievementRepository = mock(UserAchievementRepository.class);
+        AchievementNotificationRepository achievementNotificationRepository = mock(AchievementNotificationRepository.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        GameHistoryRepository gameHistoryRepository = mock(GameHistoryRepository.class);
+        WinRewardScoreService winRewardScoreService = mock(WinRewardScoreService.class);
+        UserAccount user = new UserAccount();
+        user.setId("user-1");
+        user.setChessWinCount(9);
+
+        when(userAccountRepository.existsById("user-1")).thenReturn(true);
+        when(userAccountRepository.findById("user-1")).thenReturn(java.util.Optional.of(user));
+        when(userAccountRepository.save(any(UserAccount.class))).thenAnswer(invocation -> invocation.getArgument(0, UserAccount.class));
+        when(userAchievementRepository.existsByUserIdAndAchievementName("user-1", "Winner - Chess")).thenReturn(false);
+        when(userAchievementRepository.findByUserId("user-1")).thenReturn(List.of());
+        when(userAchievementRepository.save(any(UserAchievement.class))).thenAnswer(invocation -> invocation.getArgument(0, UserAchievement.class));
+        when(achievementNotificationRepository.save(any(AchievementNotification.class))).thenAnswer(invocation -> invocation.getArgument(0, AchievementNotification.class));
+
+        AchievementService service = new AchievementService(
+            userAchievementRepository,
+            achievementNotificationRepository,
+            userAccountRepository,
+            gameHistoryRepository,
+            winRewardScoreService
+        );
+
+        service.recordRewardedWin("user-1", "Chess");
+
+        verify(userAchievementRepository).save(any(UserAchievement.class));
+        verify(winRewardScoreService).awardPlayerWinBonus("user-1");
+        assertEquals(10, user.getChessWinCount());
+    }
+
+    @Test
+    void unlockFlamingChessIconShouldRequireTenRecordedChessWins() {
+        UserAchievementRepository userAchievementRepository = mock(UserAchievementRepository.class);
+        AchievementNotificationRepository achievementNotificationRepository = mock(AchievementNotificationRepository.class);
+        UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
+        GameHistoryRepository gameHistoryRepository = mock(GameHistoryRepository.class);
+        WinRewardScoreService winRewardScoreService = mock(WinRewardScoreService.class);
+        UserAccount user = new UserAccount();
+        user.setId("user-1");
+        user.setChessWinCount(10);
+
+        when(userAccountRepository.existsById("user-1")).thenReturn(true);
+        when(userAccountRepository.findById("user-1")).thenReturn(java.util.Optional.of(user));
+        when(userAccountRepository.save(any(UserAccount.class))).thenAnswer(invocation -> invocation.getArgument(0, UserAccount.class));
+        when(userAchievementRepository.existsByUserIdAndAchievementName("user-1", AchievementService.FLAMING_CHESS_ICON_ACHIEVEMENT)).thenReturn(false);
+        when(userAchievementRepository.save(any(UserAchievement.class))).thenAnswer(invocation -> invocation.getArgument(0, UserAchievement.class));
+        when(achievementNotificationRepository.save(any(AchievementNotification.class))).thenAnswer(invocation -> invocation.getArgument(0, AchievementNotification.class));
+
+        AchievementService service = new AchievementService(
+            userAchievementRepository,
+            achievementNotificationRepository,
+            userAccountRepository,
+            gameHistoryRepository,
+            winRewardScoreService
+        );
+
+        AchievementService.ChessIconUnlockResult success = service.unlockFlamingChessIcon("user-1");
+
+        assertTrue(success.success());
+        assertFalse(success.alreadyUnlocked());
+        assertTrue(user.isFlamingChessIconUnlocked());
+        verify(userAchievementRepository).save(any(UserAchievement.class));
     }
 }

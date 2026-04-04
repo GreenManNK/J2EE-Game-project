@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
@@ -207,6 +208,38 @@ class HomePageRenderIntegrationTest {
     }
 
     @Test
+    void goldMinerDetailPageShouldRenderWithSharedCatalogModel() throws Exception {
+        mockMvc.perform(get("/games/goldminer"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/detail"))
+            .andExpect(model().attributeExists("game", "allGames"))
+            .andExpect(content().string(containsString("/goldminer")))
+            .andExpect(content().string(containsString("Dao vang")))
+            .andExpect(content().string(containsString("Can goc quay, bam tha moc dung luc va keo vang truoc khi dong ho ve 0.")))
+            .andExpect(content().string(not(containsString("Game nay da co route truy cap va bo cuc gameplay trong game hub."))))
+            .andExpect(content().string(not(containsString("Hoan thanh 1 tran dau dau tien."))));
+
+        mockMvc.perform(get("/games/goldminer/"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("games/detail"))
+            .andExpect(model().attributeExists("game", "allGames"));
+    }
+
+    @Test
+    void goldMinerPlayPageShouldAllowDirectAccessWithOrWithoutTrailingSlash() throws Exception {
+        mockMvc.perform(get("/goldminer"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("goldminer/index"))
+            .andExpect(model().attributeExists("game", "allGames"))
+            .andExpect(content().string(containsString("goldminerCanvas")));
+
+        mockMvc.perform(get("/goldminer/"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("goldminer/index"))
+            .andExpect(model().attributeExists("game", "allGames"));
+    }
+
+    @Test
     void blackjackDetailPageShouldRenderWithGameplayRail() throws Exception {
         mockMvc.perform(get("/games/cards/blackjack"))
             .andExpect(status().isOk())
@@ -377,6 +410,19 @@ class HomePageRenderIntegrationTest {
         mockMvc.perform(get("/games/monopoly/rooms"))
             .andExpect(status().is3xxRedirection())
             .andExpect(view().name("redirect:/games/monopoly"));
+    }
+
+    @Test
+    void goldMinerRoomEntryShouldRedirectToPlayPage() throws Exception {
+        mockMvc.perform(get("/games/goldminer/rooms"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(view().name("redirect:/goldminer"))
+            .andExpect(redirectedUrl("/goldminer"));
+
+        mockMvc.perform(get("/games/goldminer/rooms/"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(view().name("redirect:/goldminer"))
+            .andExpect(redirectedUrl("/goldminer"));
     }
 
     @Test

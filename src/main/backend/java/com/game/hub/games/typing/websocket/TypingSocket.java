@@ -90,7 +90,10 @@ public class TypingSocket extends TextWebSocketHandler {
             room.updateProgress(playerId, typedText);
             broadcastRoom(room);
             if (room.getGameState() == TypingRoom.GameState.FINISHED) {
-                achievementService.checkAndAward(room.getWinner(), "Typing", true);
+                String winnerId = room.getWinner();
+                if (winnerId != null && room.grantWinRewardOnce()) {
+                    achievementService.recordRewardedWin(winnerId, "Typing");
+                }
             }
             return;
         }

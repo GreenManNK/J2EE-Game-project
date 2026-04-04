@@ -530,7 +530,23 @@
         }
     }
 
-    function surrenderGame() {
+    async function requestSurrenderConfirmation(messagePrefix, winnerLabel) {
+        if (window.CaroUi && typeof window.CaroUi.confirmAction === "function") {
+            return window.CaroUi.confirmAction({
+                title: "Dau hang van Co tuong?",
+                text: messagePrefix + " se thua ngay va " + winnerLabel + " duoc tinh la chien thang.",
+                confirmText: "Dau hang",
+                cancelText: "Tiep tuc choi",
+                fallbackText: messagePrefix + " chac chan muon dau hang?",
+                danger: true
+            });
+        }
+        return typeof window.confirm === "function"
+            ? window.confirm(messagePrefix + " chac chan muon dau hang?")
+            : false;
+    }
+
+    async function surrenderGame() {
         if (state.gameOver) {
             return;
         }
@@ -542,7 +558,7 @@
         const winnerSide = surrenderSide === "r" ? "b" : "r";
         const winnerLabel = colorName(winnerSide);
         const messagePrefix = state.botEnabled ? "Ban" : surrenderLabel;
-        if (!window.confirm(messagePrefix + " chac chan muon dau hang?")) {
+        if (!await requestSurrenderConfirmation(messagePrefix, winnerLabel)) {
             return;
         }
         state.snapshots.push(captureSnapshot());

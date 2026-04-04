@@ -385,10 +385,27 @@
     }
   }
 
+  function readStoredCurrentUser() {
+    return parseJsonSafe(localStorage.getItem(USER_KEY));
+  }
+
+  function normalizeNonNegativeInt(value, fallbackValue) {
+    const fallback = Number.isFinite(Number(fallbackValue)) ? Math.max(0, Number.parseInt(String(fallbackValue), 10) || 0) : 0;
+    const parsed = Number.parseInt(String(value == null ? '' : value), 10);
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : fallback;
+  }
+
   function normalizeCurrentUser(user) {
+    const normalizedUserId = String(user?.userId || '').trim();
+    const stored = normalizedUserId ? readStoredCurrentUser() : null;
+    const storedUserId = stored && stored.userId ? String(stored.userId).trim() : '';
+    const legacyScore = normalizedUserId ? window.localStorage.getItem('score') : null;
+    const fallbackScore = storedUserId && storedUserId === normalizedUserId
+      ? normalizeNonNegativeInt(stored.score, normalizeNonNegativeInt(legacyScore, 0))
+      : 0;
     const rawUsername = String(user?.username || user?.displayName || '').trim().replace(/^@+/, '');
     return {
-      userId: String(user?.userId || '').trim(),
+      userId: normalizedUserId,
       username: rawUsername,
       displayName: String(user?.displayName || rawUsername || 'Nguoi choi').trim() || 'Nguoi choi',
       email: String(user?.email || '').trim(),
@@ -397,6 +414,7 @@
       country: String(user?.country || '').trim(),
       gender: String(user?.gender || '').trim(),
       birthDate: String(user?.birthDate || '').trim(),
+      score: normalizeNonNegativeInt(user?.score, fallbackScore),
       onboardingCompleted: user?.onboardingCompleted === true
     };
   }
@@ -419,6 +437,7 @@
         country: localStorage.getItem('country') || '',
         gender: localStorage.getItem('gender') || '',
         birthDate: localStorage.getItem('birthDate') || '',
+        score: localStorage.getItem('score') || '0',
         onboardingCompleted: localStorage.getItem('onboardingCompleted') === 'true'
       });
       setCurrentUser(fromLegacy);
@@ -445,6 +464,7 @@
     localStorage.setItem('country', normalized.country);
     localStorage.setItem('gender', normalized.gender);
     localStorage.setItem('birthDate', normalized.birthDate);
+    localStorage.setItem('score', String(normalized.score || 0));
     localStorage.setItem('onboardingCompleted', normalized.onboardingCompleted ? 'true' : 'false');
     emitCurrentUserChange(normalized, 'set');
   }
@@ -460,14 +480,60 @@
     localStorage.removeItem('country');
     localStorage.removeItem('gender');
     localStorage.removeItem('birthDate');
+    localStorage.removeItem('score');
     localStorage.removeItem('onboardingCompleted');
     emitCurrentUserChange(null, 'clear');
+  }
+
+  function sameCurrentUser(left, right) {
+    const a = left && left.userId ? normalizeCurrentUser(left) : null;
+    const b = right && right.userId ? normalizeCurrentUser(right) : null;
+    if (!a || !b) {
+      return a === b;
+    }
+    return a.userId === b.userId
+      && a.username === b.username
+      && a.displayName === b.displayName
+      && a.email === b.email
+      && a.role === b.role
+      && a.avatarPath === b.avatarPath
+      && a.country === b.country
+      && a.gender === b.gender
+      && a.birthDate === b.birthDate
+      && a.score === b.score
+      && a.onboardingCompleted === b.onboardingCompleted;
+  }
+
+  async function refreshCurrentUserFromSession() {
+    try {
+      const res = await fetch(toAppPath('/account/session-user'), { cache: 'no-store' });
+      const data = await res.json().catch(() => ({}));
+      const sessionUser = data && data.success === true && data.data && data.data.userId
+        ? normalizeCurrentUser(data.data)
+        : null;
+      const current = getCurrentUser();
+
+      if (!sessionUser) {
+        if (current && current.userId) {
+          clearCurrentUser();
+        }
+        return null;
+      }
+
+      if (!sameCurrentUser(current, sessionUser)) {
+        setCurrentUser(sessionUser);
+      }
+      return sessionUser;
+    } catch (_) {
+      return getCurrentUser();
+    }
   }
 
   window.CaroUser = {
     get: getCurrentUser,
     set: setCurrentUser,
     clear: clearCurrentUser,
+    refresh: refreshCurrentUserFromSession,
     eventName: USER_CHANGE_EVENT
   };
 
@@ -1065,10 +1131,50 @@
     return success;
   }
 
+  async function confirmAction(options) {
+    const opts = options || {};
+    const title = String(opts.title || 'Xac nhan thao tac').trim() || 'Xac nhan thao tac';
+    const text = String(opts.text || opts.message || '').trim();
+    const icon = String(opts.icon || 'warning').trim() || 'warning';
+    const confirmText = String(opts.confirmText || 'Xac nhan').trim() || 'Xac nhan';
+    const cancelText = String(opts.cancelText || 'Huy').trim() || 'Huy';
+    const fallbackText = String(opts.fallbackText || text || title).trim() || 'Xac nhan thao tac?';
+    const isDanger = opts.danger !== false;
+
+    if (typeof Swal !== 'undefined' && Swal && typeof Swal.fire === 'function') {
+      try {
+        const result = await Swal.fire({
+          title: title,
+          text: text || undefined,
+          icon: icon,
+          showCancelButton: true,
+          reverseButtons: true,
+          focusCancel: !isDanger,
+          confirmButtonText: confirmText,
+          cancelButtonText: cancelText,
+          buttonsStyling: false,
+          customClass: {
+            popup: 'cg-confirm-modal' + (isDanger ? ' cg-confirm-modal--danger' : ''),
+            confirmButton: 'cg-confirm-modal__confirm',
+            cancelButton: 'cg-confirm-modal__cancel'
+          }
+        });
+        return !!result.isConfirmed;
+      } catch (_) {
+      }
+    }
+
+    if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
+      return !!window.confirm(fallbackText);
+    }
+    return false;
+  }
+
   window.CaroUi = {
     toast: showToast,
     apiResult: reportApiResult,
-    setStatus: setStatusMessage
+    setStatus: setStatusMessage,
+    confirmAction: confirmAction
   };
 
   function normalizeRootRelativeUrls() {
@@ -1123,7 +1229,9 @@
         el.textContent = safeUser ? (safeUser.email || '') : '';
       });
       userMetas.forEach((el) => {
-        el.textContent = safeUser ? (safeUser.email || safeUser.userId) : 'Dang nhap de xem du lieu tai khoan';
+        el.textContent = safeUser
+          ? ('Diem thuong: ' + String(normalizeNonNegativeInt(safeUser.score, 0)))
+          : 'Dang nhap de xem du lieu tai khoan';
       });
       userAvatars.forEach((el) => {
         const avatarPath = safeUser ? safeUser.avatarPath : DEFAULT_AVATAR_PATH;
@@ -1169,42 +1277,11 @@
       );
 
     const syncSessionUser = () => {
-      fetch(toAppPath('/account/session-user'), { cache: 'no-store' })
-        .then((res) => res.json().catch(() => ({})))
-        .then((data) => {
-          const sessionUser = data && data.success === true && data.data && data.data.userId
-            ? normalizeCurrentUser(data.data)
-            : null;
-
-          if (!sessionUser) {
-            if (user && user.userId) {
-              clearCurrentUser();
-              user = null;
-              applyAuthState(null);
-            }
-            return;
-          }
-
-          const hasChanged = !user
-            || user.userId !== sessionUser.userId
-            || user.username !== sessionUser.username
-            || user.displayName !== sessionUser.displayName
-            || user.email !== sessionUser.email
-            || user.role !== sessionUser.role
-            || user.avatarPath !== sessionUser.avatarPath
-            || user.country !== sessionUser.country
-            || user.gender !== sessionUser.gender
-            || user.birthDate !== sessionUser.birthDate
-            || user.onboardingCompleted !== sessionUser.onboardingCompleted;
-
-          if (hasChanged) {
-            setCurrentUser(sessionUser);
-          } else {
-            user = sessionUser;
-            applyAuthState(sessionUser);
-          }
-
-          if (shouldMigrateGuestData()) {
+      refreshCurrentUserFromSession()
+        .then((sessionUser) => {
+          user = sessionUser && sessionUser.userId ? normalizeCurrentUser(sessionUser) : null;
+          applyAuthState(user);
+          if (user && shouldMigrateGuestData()) {
             window.CaroGuestData.migrateToAccount?.();
           }
         })

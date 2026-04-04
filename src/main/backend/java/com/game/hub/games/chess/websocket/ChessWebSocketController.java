@@ -11,6 +11,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import com.game.hub.service.WinningStreakService;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -28,16 +29,19 @@ public class ChessWebSocketController {
     private final SimpMessagingTemplate messagingTemplate;
     private final UserAccountRepository userAccountRepository;
     private final AchievementService achievementService;
+    private final WinningStreakService winningStreakService;
     private final Map<String, RoomPresence> sessionRoomPresence = new ConcurrentHashMap<>();
 
     public ChessWebSocketController(ChessOnlineRoomService roomService,
                                     SimpMessagingTemplate messagingTemplate,
                                     UserAccountRepository userAccountRepository,
-                                    AchievementService achievementService) {
+                                    AchievementService achievementService,
+                                    WinningStreakService winningStreakService) {
         this.roomService = roomService;
         this.messagingTemplate = messagingTemplate;
         this.userAccountRepository = userAccountRepository;
         this.achievementService = achievementService;
+        this.winningStreakService = winningStreakService;
     }
 
     @MessageMapping("/chess.join")
@@ -52,7 +56,14 @@ public class ChessWebSocketController {
         }
 
         PlayerMeta meta = playerMeta(userId);
-        ChessOnlineRoomService.JoinResult result = roomService.joinRoom(roomId, userId, meta.displayName(), meta.avatarPath());
+        ChessOnlineRoomService.JoinResult result = roomService.joinRoom(
+            roomId,
+            userId,
+            meta.displayName(),
+            meta.avatarPath(),
+            meta.winningStreak(),
+            meta.flamingChessIconUnlocked()
+        );
         if (!result.ok()) {
             sendUserError(roomId, userId, result.error());
             if (result.room() != null) {
@@ -128,11 +139,12 @@ public class ChessWebSocketController {
             return;
         }
 
-        if (result.room() != null && result.room().isGameOver()) {
-            awardFinishedMatch(result.room());
+        ChessOnlineRoomService.RoomSnapshot roomToBroadcast = result.room();
+        if (roomToBroadcast != null && roomToBroadcast.isGameOver()) {
+            roomToBroadcast = finalizeFinishedMatch(roomId, roomToBroadcast);
         }
 
-        broadcastRoomState(roomId, "MOVE", result.room(), result.room() == null ? null : result.room().statusMessage());
+        broadcastRoomState(roomId, "MOVE", roomToBroadcast, roomToBroadcast == null ? null : roomToBroadcast.statusMessage());
     }
 
     @MessageMapping("/chess.reset")
@@ -177,11 +189,17 @@ public class ChessWebSocketController {
             return;
         }
 
-        if (result.room() != null && result.room().isGameOver()) {
-            awardFinishedMatch(result.room());
+        ChessOnlineRoomService.RoomSnapshot roomToBroadcast = result.room();
+        if (roomToBroadcast != null && roomToBroadcast.isGameOver()) {
+            roomToBroadcast = finalizeFinishedMatch(roomId, roomToBroadcast);
         }
 
-        broadcastRoomState(roomId, "SURRENDER", result.room(), result.room() == null ? "Nguoi choi da dau hang" : result.room().statusMessage());
+        broadcastRoomState(
+            roomId,
+            "SURRENDER",
+            roomToBroadcast,
+            roomToBroadcast == null ? "Nguoi choi da dau hang" : roomToBroadcast.statusMessage()
+        );
     }
 
     @MessageMapping("/chess.leave")
@@ -263,18 +281,27 @@ public class ChessWebSocketController {
         messagingTemplate.convertAndSend("/topic/chess.room." + roomId, payload);
     }
 
-    private void awardFinishedMatch(ChessOnlineRoomService.RoomSnapshot room) {
+    private ChessOnlineRoomService.RoomSnapshot finalizeFinishedMatch(String roomId, ChessOnlineRoomService.RoomSnapshot room) {
         if (room == null || !room.isGameOver()) {
-            return;
+            return room;
         }
         String winnerId = room.getWinnerId();
         String loserId = room.getLoserId(winnerId);
         if (winnerId != null && !winnerId.isBlank()) {
-            achievementService.checkAndAward(winnerId, "Chess", true);
+            achievementService.recordRewardedWin(winnerId, "Chess");
         }
         if (loserId != null && !loserId.isBlank()) {
             achievementService.checkAndAward(loserId, "Chess", false);
         }
+        WinningStreakService.MatchResult streakResult = winningStreakService.recordMatchResult(winnerId, loserId);
+        if (streakResult != null && streakResult.winner() != null) {
+            roomService.updatePlayerWinningStreak(roomId, streakResult.winner().userId(), streakResult.winner().winningStreak());
+        }
+        if (streakResult != null && streakResult.loser() != null) {
+            roomService.updatePlayerWinningStreak(roomId, streakResult.loser().userId(), streakResult.loser().winningStreak());
+        }
+        ChessOnlineRoomService.RoomSnapshot refreshed = roomService.roomSnapshot(roomId);
+        return refreshed == null ? room : refreshed;
     }
 
     private void sendUserError(String roomId, String userId, String error) {
@@ -362,20 +389,20 @@ public class ChessWebSocketController {
 
     private PlayerMeta playerMeta(String userId) {
         if (userId == null || userId.isBlank()) {
-            return new PlayerMeta("Guest", DEFAULT_AVATAR_PATH);
+            return new PlayerMeta("Guest", DEFAULT_AVATAR_PATH, 0, false);
         }
         Optional<UserAccount> user = userAccountRepository.findById(userId);
         if (user.isPresent()) {
             UserAccount acc = user.get();
             String name = (acc.getDisplayName() == null || acc.getDisplayName().isBlank()) ? userId : acc.getDisplayName();
             String avatar = (acc.getAvatarPath() == null || acc.getAvatarPath().isBlank()) ? DEFAULT_AVATAR_PATH : acc.getAvatarPath();
-            return new PlayerMeta(name, avatar);
+            return new PlayerMeta(name, avatar, acc.getWinningStreak(), acc.isFlamingChessIconUnlocked());
         }
         if (userId.toLowerCase().startsWith("guest-")) {
             String suffix = userId.length() <= 4 ? userId : userId.substring(userId.length() - 4);
-            return new PlayerMeta("Guest " + suffix.toUpperCase(), DEFAULT_AVATAR_PATH);
+            return new PlayerMeta("Guest " + suffix.toUpperCase(), DEFAULT_AVATAR_PATH, 0, false);
         }
-        return new PlayerMeta(userId, DEFAULT_AVATAR_PATH);
+        return new PlayerMeta(userId, DEFAULT_AVATAR_PATH, 0, false);
     }
 
     private String safeTrim(Object value) {
@@ -386,7 +413,7 @@ public class ChessWebSocketController {
         return text.isEmpty() ? null : text;
     }
 
-    private record PlayerMeta(String displayName, String avatarPath) {
+    private record PlayerMeta(String displayName, String avatarPath, int winningStreak, boolean flamingChessIconUnlocked) {
     }
 
     private record RoomPresence(String roomId, String userId) {

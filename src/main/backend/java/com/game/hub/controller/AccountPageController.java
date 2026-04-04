@@ -84,6 +84,7 @@ public class AccountPageController {
         model.addAttribute("country", user.getCountry() == null ? "" : user.getCountry());
         model.addAttribute("gender", user.getGender() == null ? "" : user.getGender());
         model.addAttribute("birthDate", user.getBirthDate() == null ? "" : user.getBirthDate().toString());
+        model.addAttribute("score", Math.max(0, user.getScore()));
         model.addAttribute("onboardingCompleted", user.isOnboardingCompleted());
         model.addAttribute(
             "avatarPath",

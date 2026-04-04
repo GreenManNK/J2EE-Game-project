@@ -4,6 +4,7 @@ import com.game.hub.entity.Friendship;
 import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.FriendshipRepository;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.AchievementService;
 import com.game.hub.service.DataExportAuditService;
 import com.game.hub.support.UserExportSupport;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,15 +36,18 @@ public class AdminController {
     private final FriendshipRepository friendshipRepository;
     private final PasswordEncoder passwordEncoder;
     private final DataExportAuditService dataExportAuditService;
+    private final AchievementService achievementService;
 
     public AdminController(UserAccountRepository userAccountRepository,
                            FriendshipRepository friendshipRepository,
                            PasswordEncoder passwordEncoder,
-                           DataExportAuditService dataExportAuditService) {
+                           DataExportAuditService dataExportAuditService,
+                           AchievementService achievementService) {
         this.userAccountRepository = userAccountRepository;
         this.friendshipRepository = friendshipRepository;
         this.passwordEncoder = passwordEncoder;
         this.dataExportAuditService = dataExportAuditService;
+        this.achievementService = achievementService;
     }
 
     @GetMapping({"", "/"})
@@ -173,6 +177,36 @@ public class AdminController {
         user.setBannedUntil(null);
         userAccountRepository.save(user);
         return Map.of("success", true);
+    }
+
+    @ResponseBody
+    @PostMapping("/users/{id}/unlock-flaming-chess-icon")
+    public Object unlockFlamingChessIcon(@PathVariable String id) {
+        UserAccount user = userAccountRepository.findById(id).orElse(null);
+        if (user == null) {
+            return Map.of("success", false, "error", "User not found");
+        }
+        AchievementService.ChessIconUnlockResult result = achievementService.unlockFlamingChessIcon(id);
+        if (!result.success()) {
+            return Map.of(
+                "success", false,
+                "error", result.error(),
+                "chessWinCount", user.getChessWinCount(),
+                "requiredWins", AchievementService.FLAMING_CHESS_ICON_REQUIRED_WINS,
+                "unlocked", user.isFlamingChessIconUnlocked()
+            );
+        }
+        UserAccount refreshed = userAccountRepository.findById(id).orElse(user);
+        return Map.of(
+            "success", true,
+            "alreadyUnlocked", result.alreadyUnlocked(),
+            "chessWinCount", refreshed.getChessWinCount(),
+            "requiredWins", AchievementService.FLAMING_CHESS_ICON_REQUIRED_WINS,
+            "unlocked", refreshed.isFlamingChessIconUnlocked(),
+            "message", result.alreadyUnlocked()
+                ? "Bieu tuong Co vua boc lua da duoc mo khoa truoc do."
+                : "Da mo khoa bieu tuong Co vua boc lua."
+        );
     }
 
     @GetMapping("/export-users-csv")

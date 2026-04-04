@@ -31,6 +31,8 @@ import java.util.concurrent.ThreadLocalRandom;
 @RequestMapping("/online-hub")
 public class OnlineHubController {
     private static final String DEFAULT_GAME_CODE = "caro";
+    private static final String CARO_VARIANT_ADVANCED = "advanced";
+    private static final String CARO_VARIANT_STANDARD = "standard";
 
     private final GameCatalogService gameCatalogService;
     private final GameRoomService gameRoomService;
@@ -62,16 +64,32 @@ public class OnlineHubController {
     @GetMapping
     public String index(@RequestParam(required = false) String game,
                         @RequestParam(required = false) String roomId,
+                        @RequestParam(required = false) String variant,
                         Model model) {
+        return indexInternal(game, roomId, variant, model);
+    }
+
+    public String index(String game,
+                        String roomId,
+                        Model model) {
+        return indexInternal(game, roomId, null, model);
+    }
+
+    private String indexInternal(String game,
+                                 String roomId,
+                                 String variant,
+                                 Model model) {
         GameCatalogItem item = resolveGameItem(game);
+        String normalizedVariant = normalizeVariant(item.code(), variant);
 
         model.addAttribute("selectedGame", item);
         model.addAttribute("selectedGameCode", item.code());
         model.addAttribute("selectedGameName", item.displayName());
         model.addAttribute("selectedRoomId", roomId == null ? "" : roomId.trim());
+        model.addAttribute("selectedVariant", normalizedVariant);
         model.addAttribute("onlineSupportedNow", onlineGameplayImplemented(item.code()));
         model.addAttribute("supportsSpectateNow", supportsSpectateNow(item.code()));
-        model.addAttribute("roomRows", listRooms(item.code()));
+        model.addAttribute("roomRows", listRooms(item.code(), normalizedVariant));
         model.addAttribute("playUrlBase", playUrlBase(item.code()));
         model.addAttribute("playRoomParam", playRoomParam(item.code()));
         model.addAttribute("playUrlTemplate", playUrlTemplate(item.code()));
@@ -84,26 +102,48 @@ public class OnlineHubController {
 
     @ResponseBody
     @GetMapping("/api/rooms")
-    public Map<String, Object> rooms(@RequestParam(required = false) String game) {
+    public Map<String, Object> rooms(@RequestParam(required = false) String game,
+                                     @RequestParam(required = false) String variant) {
+        return roomsInternal(game, variant);
+    }
+
+    public Map<String, Object> rooms(String game) {
+        return roomsInternal(game, null);
+    }
+
+    private Map<String, Object> roomsInternal(String game, String variant) {
         GameCatalogItem item = resolveGameItem(game);
+        String normalizedVariant = normalizeVariant(item.code(), variant);
         return Map.of(
             "game", item.code(),
+            "variant", normalizedVariant,
             "onlineSupportedNow", onlineGameplayImplemented(item.code()),
             "supportsSpectateNow", supportsSpectateNow(item.code()),
-            "rooms", listRooms(item.code())
+            "rooms", listRooms(item.code(), normalizedVariant)
         );
     }
 
     @ResponseBody
     @PostMapping("/api/create-room")
-    public Map<String, Object> createRoom(@RequestParam(required = false) String game) {
+    public Map<String, Object> createRoom(@RequestParam(required = false) String game,
+                                          @RequestParam(required = false) String variant) {
+        return createRoomInternal(game, variant);
+    }
+
+    public Map<String, Object> createRoom(String game) {
+        return createRoomInternal(game, null);
+    }
+
+    private Map<String, Object> createRoomInternal(String game, String variant) {
         GameCatalogItem item = resolveGameItem(game);
         String gameCode = item.code();
+        String normalizedVariant = normalizeVariant(gameCode, variant);
 
-        RoomCreation creation = createRoomForGame(gameCode);
+        RoomCreation creation = createRoomForGame(gameCode, normalizedVariant);
 
         return Map.of(
             "game", gameCode,
+            "variant", normalizedVariant,
             "roomId", creation.roomId(),
             "serverCreated", creation.serverCreated(),
             "onlineSupportedNow", onlineGameplayImplemented(gameCode),
@@ -117,11 +157,21 @@ public class OnlineHubController {
 
     @ResponseBody
     @PostMapping("/api/quick-random")
-    public Map<String, Object> quickRandom(@RequestParam(required = false) String game) {
+    public Map<String, Object> quickRandom(@RequestParam(required = false) String game,
+                                           @RequestParam(required = false) String variant) {
+        return quickRandomInternal(game, variant);
+    }
+
+    public Map<String, Object> quickRandom(String game) {
+        return quickRandomInternal(game, null);
+    }
+
+    private Map<String, Object> quickRandomInternal(String game, String variant) {
         GameCatalogItem item = resolveGameItem(game);
         String gameCode = item.code();
+        String normalizedVariant = normalizeVariant(gameCode, variant);
 
-        List<RoomRow> rows = listRooms(gameCode);
+        List<RoomRow> rows = listRooms(gameCode, normalizedVariant);
         List<RoomRow> joinableRooms = rows.stream()
             .filter(this::isJoinableRoom)
             .toList();
@@ -135,7 +185,7 @@ public class OnlineHubController {
             createdNew = false;
             serverCreated = false;
         } else {
-            RoomCreation creation = createRoomForGame(gameCode);
+            RoomCreation creation = createRoomForGame(gameCode, normalizedVariant);
             roomId = creation.roomId();
             createdNew = true;
             serverCreated = creation.serverCreated();
@@ -143,6 +193,7 @@ public class OnlineHubController {
 
         return Map.of(
             "game", gameCode,
+            "variant", normalizedVariant,
             "roomId", roomId,
             "createdNew", createdNew,
             "serverCreated", serverCreated,
@@ -274,10 +325,11 @@ public class OnlineHubController {
         return "/games/" + gameCode + "/rooms?roomId={roomId}";
     }
 
-    private List<RoomRow> listRooms(String gameCode) {
+    private List<RoomRow> listRooms(String gameCode, String variant) {
         if ("caro".equalsIgnoreCase(gameCode)) {
             return gameRoomService.availableRooms().stream()
-                .map(roomId -> new RoomRow(roomId, 1, 2, "Dang cho doi thu"))
+                .filter(roomId -> matchesCaroVariant(roomId, variant))
+                .map(roomId -> new RoomRow(roomId, 1, 2, roomNoteForCaro(roomId)))
                 .toList();
         }
         if ("cards".equalsIgnoreCase(gameCode)) {
@@ -366,7 +418,7 @@ public class OnlineHubController {
     private record RoomCreation(String roomId, boolean serverCreated) {
     }
 
-    private RoomCreation createRoomForGame(String gameCode) {
+    private RoomCreation createRoomForGame(String gameCode, String variant) {
         if ("blackjack".equalsIgnoreCase(gameCode)) {
             return new RoomCreation(blackjackService.createRoom().getId(), true);
         }
@@ -376,7 +428,7 @@ public class OnlineHubController {
         if ("quiz".equalsIgnoreCase(gameCode)) {
             return new RoomCreation(quizService.createRoom().getRoomId(), true);
         }
-        return new RoomCreation(generatedRoomId(gameCode), false);
+        return new RoomCreation(generatedRoomId(gameCode, variant), false);
     }
 
     private boolean isJoinableRoom(RoomRow row) {
@@ -389,7 +441,11 @@ public class OnlineHubController {
         return row.playerCount() < row.playerLimit();
     }
 
-    private String generatedRoomId(String gameCode) {
+    private String generatedRoomId(String gameCode, String variant) {
+        if ("caro".equalsIgnoreCase(gameCode) && CARO_VARIANT_ADVANCED.equalsIgnoreCase(variant)) {
+            String token = UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
+            return "Advanced_" + token;
+        }
         String prefix = switch (gameCode == null ? "" : gameCode.trim().toLowerCase()) {
             case "caro" -> "CARO";
             case "cards" -> "TL";
@@ -402,6 +458,29 @@ public class OnlineHubController {
         };
         String token = UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
         return prefix + "-" + token;
+    }
+
+    private String normalizeVariant(String gameCode, String variant) {
+        if (!"caro".equalsIgnoreCase(gameCode)) {
+            return "";
+        }
+        String normalized = variant == null ? "" : variant.trim().toLowerCase();
+        return CARO_VARIANT_ADVANCED.equals(normalized) ? CARO_VARIANT_ADVANCED : CARO_VARIANT_STANDARD;
+    }
+
+    private boolean matchesCaroVariant(String roomId, String variant) {
+        boolean advancedRoom = gameRoomService.isAdvancedModeRoom(roomId);
+        if (CARO_VARIANT_ADVANCED.equalsIgnoreCase(variant)) {
+            return advancedRoom;
+        }
+        return !advancedRoom;
+    }
+
+    private String roomNoteForCaro(String roomId) {
+        if (gameRoomService.isAdvancedModeRoom(roomId)) {
+            return "Che do nang cao - du 5 quan se nhan skill";
+        }
+        return "Dang cho doi thu";
     }
 
     private GameCatalogItem resolveGameItem(String game) {

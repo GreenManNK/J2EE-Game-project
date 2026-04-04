@@ -283,6 +283,9 @@ public class AccountSyncService {
         } else if (created) {
             user.setHighestScore(Math.max(0, user.getScore()));
         }
+        if (request.winningStreak() != null) {
+            user.setWinningStreak(Math.max(0, request.winningStreak()));
+        }
         if (user.getHighestScore() < user.getScore()) {
             user.setHighestScore(user.getScore());
         }
@@ -630,6 +633,7 @@ public class AccountSyncService {
         snapshot.put("emailConfirmed", user.isEmailConfirmed());
         snapshot.put("score", user.getScore());
         snapshot.put("highestScore", user.getHighestScore());
+        snapshot.put("winningStreak", user.getWinningStreak());
         snapshot.put("online", user.isOnline());
         snapshot.put("bannedUntil", user.getBannedUntil());
         snapshot.put("lastSystemNotificationSeenAt", user.getLastSystemNotificationSeenAt());
@@ -1200,6 +1204,7 @@ public class AccountSyncService {
         String role,
         Integer score,
         Integer highestScore,
+        Integer winningStreak,
         Boolean online,
         LocalDateTime bannedUntil,
         Boolean clearBannedUntil,

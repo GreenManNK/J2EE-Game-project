@@ -24,7 +24,7 @@ public class GoldMinerController {
         this.gameCatalogService = gameCatalogService;
     }
 
-    @GetMapping
+    @GetMapping({"", "/"})
     public String index(Model model) {
         if (model != null) {
             GameCatalogItem game = gameCatalogService.findByCode(GAME_CODE).orElse(null);

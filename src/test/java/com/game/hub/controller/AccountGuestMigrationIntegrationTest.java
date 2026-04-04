@@ -43,6 +43,7 @@ class AccountGuestMigrationIntegrationTest {
         user.setPassword(passwordEncoder.encode("Pass@123"));
         user.setEmailConfirmed(true);
         user.setRole("Admin");
+        user.setScore(88);
         user = userAccountRepository.save(user);
 
         MockHttpSession session = new MockHttpSession();
@@ -56,6 +57,7 @@ class AccountGuestMigrationIntegrationTest {
             .andExpect(jsonPath("$.data.displayName").value("Session User"))
             .andExpect(jsonPath("$.data.email").value("session-user@test.com"))
             .andExpect(jsonPath("$.data.role").value("Admin"))
+            .andExpect(jsonPath("$.data.score").value(88))
             .andExpect(jsonPath("$.data.avatarPath").value("/uploads/avatars/session-user.png"));
     }
 

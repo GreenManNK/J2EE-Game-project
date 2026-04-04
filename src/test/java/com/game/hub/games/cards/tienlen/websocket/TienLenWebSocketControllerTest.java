@@ -69,7 +69,7 @@ class TienLenWebSocketControllerTest {
 
             controller.play(message, headers);
 
-            verify(achievementService).checkAndAward("u1", "Tien Len", true);
+            verify(achievementService).recordRewardedWin("u1", "Tien Len");
         } finally {
             controller.shutdownAutomation();
         }

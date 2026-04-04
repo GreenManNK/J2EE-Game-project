@@ -274,7 +274,7 @@ public class XiangqiWebSocketController {
     private void awardWinnerAchievement(XiangqiOnlineRoomService.RoomSnapshot room) {
         String winnerUserId = room == null ? null : room.getWinnerId();
         if (winnerUserId != null) {
-            achievementService.checkAndAward(winnerUserId, "Xiangqi", true);
+            achievementService.recordRewardedWin(winnerUserId, "Xiangqi");
         }
     }
 

@@ -106,4 +106,43 @@ class ChatControllerTest {
         verify(messagingTemplate).convertAndSendToUser("u1", "/queue/private-chat", payload);
         verify(messagingTemplate).convertAndSendToUser("u2", "/queue/private-chat", payload);
     }
+
+    @Test
+    void sendPrivateMessageShouldReturnWarningWhenMessageIsMasked() {
+        PrivateChatService chatService = mock(PrivateChatService.class);
+        SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("AUTH_USER_ID")).thenReturn("u1");
+
+        Map<String, Object> payload = Map.of(
+            "messageId", 52L,
+            "clientMessageId", "cid-52",
+            "type", "PRIVATE_CHAT",
+            "roomKey", "u1__u2",
+            "fromUserId", "u1",
+            "toUserId", "u2",
+            "senderName", "Alice",
+            "message", "******"
+        );
+        when(chatService.saveMessage("u1", "u2", "v.c.l", "cid-52")).thenReturn(
+            PrivateChatService.SendResult.success(
+                "u1__u2",
+                "u1",
+                payload,
+                "Tin nhan chua ngon tu tho tuc va da bi chan. Noi dung da duoc an thanh ******. Canh cao 1/3."
+            )
+        );
+
+        ChatController controller = new ChatController(chatService, messagingTemplate);
+        Map<String, Object> response = controller.sendPrivateMessage(
+            new ChatController.SendPrivateChatRequest("u2", "v.c.l", "cid-52"),
+            request
+        );
+
+        assertTrue((Boolean) response.get("success"));
+        assertEquals(payload, response.get("payload"));
+        assertEquals("Tin nhan chua ngon tu tho tuc va da bi chan. Noi dung da duoc an thanh ******. Canh cao 1/3.", response.get("warning"));
+    }
 }

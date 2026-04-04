@@ -146,7 +146,7 @@
           </div>
           <div class="hub-portal-stage__stat">
             <span>Entry</span>
-            <strong th:text="${game.availableNow} ? 'Play now' : 'Soon'}">Play now</strong>
+            <strong th:text="${game.availableNow} ? 'Play now' : 'Soon'">Play now</strong>
           </div>
         </div>
       </section>
@@ -335,7 +335,7 @@
           <li>Nguoi choi co the xoay vong cac mini-game de leo thanh tich tong hop.</li>
         </ul>
         <ul class="hub-portal-bullet-list"
-            th:if="${game.code != 'caro' and game.code != 'chess' and game.code != 'xiangqi' and game.code != 'cards' and game.code != 'blackjack' and game.code != 'quiz' and game.code != 'typing' and game.code != 'minesweeper' and game.code != 'puzzle'}">
+            th:if="${game.code != 'caro' and game.code != 'chess' and game.code != 'xiangqi' and game.code != 'cards' and game.code != 'blackjack' and game.code != 'quiz' and game.code != 'typing' and game.code != 'minesweeper' and game.code != 'goldminer' and game.code != 'puzzle'}">
           <li>Game nay da co route truy cap va bo cuc gameplay trong game hub.</li>
           <li>Vong lap mac dinh: vao room/che do, dau 1 tran, tong ket va cho tran moi.</li>
           <li>Noi dung chi tiet cua tran dau se duoc mo rong tiep theo theo metadata.</li>
@@ -398,7 +398,7 @@
           <li>Chuoi 10 van giai lien tuc khong bo ngang.</li>
         </ul>
         <ul class="hub-portal-bullet-list"
-            th:if="${game.code != 'caro' and game.code != 'chess' and game.code != 'xiangqi' and game.code != 'cards' and game.code != 'blackjack' and game.code != 'quiz' and game.code != 'typing' and game.code != 'minesweeper' and game.code != 'puzzle'}">
+            th:if="${game.code != 'caro' and game.code != 'chess' and game.code != 'xiangqi' and game.code != 'cards' and game.code != 'blackjack' and game.code != 'quiz' and game.code != 'typing' and game.code != 'minesweeper' and game.code != 'goldminer' and game.code != 'puzzle'}">
           <li>Hoan thanh 1 tran dau dau tien.</li>
           <li>Dat chuoi 3 tran lien tiep.</li>
           <li>Thang 10 tran o cung game mode.</li>

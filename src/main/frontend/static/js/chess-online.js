@@ -56,6 +56,19 @@
         pendingMove: false
     };
 
+    function refreshRewardScoreIfNeeded(room, previousStatus) {
+        const winnerUserId = String(room && room.winnerId ? room.winnerId : "").trim();
+        if (previousStatus === "GAME_OVER" || state.roomStatus !== "GAME_OVER" || !winnerUserId || winnerUserId !== state.userId) {
+            return;
+        }
+        const task = window.CaroUser && typeof window.CaroUser.refresh === "function"
+            ? window.CaroUser.refresh()
+            : null;
+        if (task && typeof task.catch === "function") {
+            task.catch(() => {});
+        }
+    }
+
     const PIECE_VALUES = {
         P: 10,
         N: 30,
@@ -151,12 +164,28 @@
         });
     }
 
-    function surrenderGame() {
+    async function requestSurrenderConfirmation() {
+        if (window.CaroUi && typeof window.CaroUi.confirmAction === "function") {
+            return window.CaroUi.confirmAction({
+                title: "Dau hang van Co vua?",
+                text: "Neu xac nhan, ban se thua ngay va tran dau trong phong se ket thuc voi chien thang cho doi thu.",
+                confirmText: "Dau hang",
+                cancelText: "Tiep tuc choi",
+                fallbackText: "Ban chac chan muon dau hang van dau nay?",
+                danger: true
+            });
+        }
+        return typeof window.confirm === "function"
+            ? window.confirm("Ban chac chan muon dau hang van dau nay?")
+            : false;
+    }
+
+    async function surrenderGame() {
         if (!canSurrenderGame()) {
             setGameStatus("Khong the dau hang luc nay.");
             return;
         }
-        if (!window.confirm("Ban chac chan muon dau hang van dau nay?")) {
+        if (!await requestSurrenderConfirmation()) {
             return;
         }
         state.client.publish({
@@ -438,7 +467,11 @@
 
             if (piece) {
                 const pieceEl = document.createElement("span");
-                pieceEl.className = "chess-piece " + (piece[0] === "w" ? "white" : "black");
+                const pieceClasses = ["chess-piece", piece[0] === "w" ? "white" : "black"];
+                if (pieceUsesRedTheme(piece)) {
+                    pieceClasses.push("red");
+                }
+                pieceEl.className = pieceClasses.join(" ");
                 pieceEl.textContent = PIECE_ICONS[piece] || piece;
                 cell.appendChild(pieceEl);
             }
@@ -980,6 +1013,7 @@
         if (!room || typeof room !== "object") {
             return;
         }
+        const previousStatus = state.roomStatus;
         const nextRoomId = normalizeText(room.roomId);
         if (nextRoomId) {
             state.roomId = nextRoomId;
@@ -993,7 +1027,10 @@
                 userId: normalizeText(p.userId),
                 displayName: normalizeText(p.displayName) || normalizeText(p.userId) || "Khach",
                 avatarPath: normalizeText(p.avatarPath),
-                color: normalizeText(p.color) === "b" ? "b" : "w"
+                color: normalizeText(p.color) === "b" ? "b" : "w",
+                winningStreak: Math.max(0, Number.parseInt(String(p.winningStreak ?? 0), 10) || 0),
+                redPieces: Boolean(p.redPieces),
+                flamingChessIconUnlocked: Boolean(p.flamingChessIconUnlocked)
             }))
             : [];
 
@@ -1026,6 +1063,7 @@
         state.legalMoves = [];
         state.pendingMove = false;
         refreshLocalGameState(normalizeText(messageText) || normalizeText(room.statusMessage));
+        refreshRewardScoreIfNeeded(room, previousStatus);
         renderAll();
         renderPlayers();
         updateStatusText();
@@ -1100,17 +1138,21 @@
             const displayName = player.userId === state.userId
                 ? (state.displayName || player.displayName || player.userId || "Khach")
                 : (player.displayName || player.userId || "Khach");
+            const streakText = player.winningStreak > 0 ? (" | Chuoi thang: " + player.winningStreak) : "";
+            const redText = player.redPieces ? " | Quan do" : "";
+            const flameText = player.flamingChessIconUnlocked ? " | Co vua boc lua" : "";
             const avatarHtml = buildAvatarHtml(
                 player.userId === state.userId ? state.avatarPath : player.avatarPath,
                 displayName,
                 "online-player-item__avatar"
             );
+            const flamingIconHtml = player.flamingChessIconUnlocked ? buildFlamingChessIconHtml() : "";
             row.innerHTML =
                 '<div class="online-player-item__head">' +
                     avatarHtml +
                     '<div class="online-player-item__identity">' +
-                        '<div class="fw-semibold online-player-item__name">' + escapeHtml(displayName) + meText + '</div>' +
-                        '<div class="text-muted online-player-item__meta">Quan: ' + colorText + ' | ' + escapeHtml(playerPresenceText(player)) + '</div>' +
+                        '<div class="fw-semibold online-player-item__name">' + flamingIconHtml + escapeHtml(displayName) + meText + '</div>' +
+                        '<div class="text-muted online-player-item__meta">Quan: ' + colorText + ' | ' + escapeHtml(playerPresenceText(player)) + escapeHtml(streakText + redText + flameText) + '</div>' +
                     '</div>' +
                 '</div>';
             els.playersBox.appendChild(row);
@@ -1344,6 +1386,17 @@
         return isGuestUserId(userId) ? "Khach tam thoi" : "Tai khoan";
     }
 
+    function pieceUsesRedTheme(piece) {
+        if (!piece || piece.length < 1) {
+            return false;
+        }
+        const side = piece[0] === "b" ? "b" : "w";
+        const owner = Array.isArray(state.players)
+            ? state.players.find((player) => player.color === side)
+            : null;
+        return Boolean(owner && owner.redPieces);
+    }
+
     function syncCurrentUserIdentity(nextUser) {
         const candidate = nextUser && normalizeText(nextUser.userId) === state.userId
             ? nextUser
@@ -1358,11 +1411,17 @@
     }
 
     function renderCurrentUserSummary() {
+        const currentPlayer = Array.isArray(state.players)
+            ? state.players.find((player) => normalizeText(player.userId) === state.userId)
+            : null;
         if (els.userLabel) {
             els.userLabel.textContent = state.displayName || state.userId || "Khach";
         }
         if (els.userMeta) {
-            els.userMeta.textContent = isGuestUserId(state.userId) ? "Khach tam thoi" : "Tai khoan dang nhap";
+            const metaText = isGuestUserId(state.userId) ? "Khach tam thoi" : "Tai khoan dang nhap";
+            els.userMeta.textContent = currentPlayer && currentPlayer.flamingChessIconUnlocked
+                ? (metaText + " | Co vua boc lua")
+                : metaText;
         }
         if (els.userAvatar) {
             els.userAvatar.setAttribute("src", currentUserAvatarSrc(state.avatarPath));
@@ -1378,6 +1437,13 @@
         syncCurrentUserIdentity(nextUser);
         renderCurrentUserSummary();
         renderPlayers();
+    }
+
+    function buildFlamingChessIconHtml() {
+        return '<span class="chess-flaming-icon" title="Co vua boc lua" aria-label="Co vua boc lua">' +
+            '<i class="bi bi-grid-3x3-gap-fill"></i>' +
+            '<i class="bi bi-fire"></i>' +
+            '</span>';
     }
 
     function updateModeUi() {

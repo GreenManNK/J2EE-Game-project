@@ -41,8 +41,13 @@ public class UserAccount {
     private String oauthFacebookId;
     private int score = 50;
     private int highestScore;
+    private int winningStreak;
+    private int chessWinCount;
+    private boolean flamingChessIconUnlocked;
+    private int abusiveContentViolationCount;
     private boolean isOnline = false;
     private LocalDateTime bannedUntil;
+    private LocalDateTime communicationRestrictedUntil;
     private LocalDateTime lastSystemNotificationSeenAt = LocalDateTime.of(1970, 1, 1, 0, 0);
     private String themeMode = "system";
     private String language = "vi";
@@ -95,6 +100,10 @@ public class UserAccount {
         return bannedUntil != null && bannedUntil.isAfter(LocalDateTime.now());
     }
 
+    public boolean isCommunicationRestricted() {
+        return communicationRestrictedUntil != null && communicationRestrictedUntil.isAfter(LocalDateTime.now());
+    }
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getUsername() { return username; }
@@ -127,10 +136,20 @@ public class UserAccount {
     public void setScore(int score) { this.score = score; }
     public int getHighestScore() { return highestScore; }
     public void setHighestScore(int highestScore) { this.highestScore = highestScore; }
+    public int getWinningStreak() { return winningStreak; }
+    public void setWinningStreak(int winningStreak) { this.winningStreak = Math.max(0, winningStreak); }
+    public int getChessWinCount() { return chessWinCount; }
+    public void setChessWinCount(int chessWinCount) { this.chessWinCount = Math.max(0, chessWinCount); }
+    public boolean isFlamingChessIconUnlocked() { return flamingChessIconUnlocked; }
+    public void setFlamingChessIconUnlocked(boolean flamingChessIconUnlocked) { this.flamingChessIconUnlocked = flamingChessIconUnlocked; }
+    public int getAbusiveContentViolationCount() { return abusiveContentViolationCount; }
+    public void setAbusiveContentViolationCount(int abusiveContentViolationCount) { this.abusiveContentViolationCount = Math.max(0, abusiveContentViolationCount); }
     public boolean isOnline() { return isOnline; }
     public void setOnline(boolean online) { isOnline = online; }
     public LocalDateTime getBannedUntil() { return bannedUntil; }
     public void setBannedUntil(LocalDateTime bannedUntil) { this.bannedUntil = bannedUntil; }
+    public LocalDateTime getCommunicationRestrictedUntil() { return communicationRestrictedUntil; }
+    public void setCommunicationRestrictedUntil(LocalDateTime communicationRestrictedUntil) { this.communicationRestrictedUntil = communicationRestrictedUntil; }
     public LocalDateTime getLastSystemNotificationSeenAt() { return lastSystemNotificationSeenAt; }
     public void setLastSystemNotificationSeenAt(LocalDateTime lastSystemNotificationSeenAt) { this.lastSystemNotificationSeenAt = lastSystemNotificationSeenAt; }
     public String getThemeMode() { return themeMode; }

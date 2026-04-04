@@ -97,7 +97,7 @@ class GameCatalogControllerTest {
         assertEquals("redirect:/games/quiz/room/QUIZ-1", controller.rooms("quiz", "QUIZ-1"));
         assertEquals("redirect:/games/typing/room/TYP-1", controller.rooms("typing", "TYP-1"));
         assertEquals("redirect:/games/monopoly/room/MONO-1", controller.rooms("monopoly", "MONO-1"));
-        assertEquals("redirect:/games/goldminer", controller.rooms("goldminer", "GM-1"));
+        assertEquals("redirect:/goldminer", controller.rooms("goldminer", "GM-1"));
     }
 
     @Test

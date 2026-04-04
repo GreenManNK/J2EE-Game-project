@@ -115,7 +115,7 @@ class TypingSocketTest {
 
         socket.handleTextMessage(firstSession, new TextMessage("{\"action\":\"progress\",\"roomId\":\"" + room.getId() + "\",\"typed\":\"abc\"}"));
 
-        verify(achievementService).checkAndAward("player-4", "Typing", true);
+        verify(achievementService).recordRewardedWin("player-4", "Typing");
     }
 
     private WebSocketSession session(String sessionId, String principalName) {

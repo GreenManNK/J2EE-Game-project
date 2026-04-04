@@ -63,6 +63,19 @@
         pendingMove: false
     };
 
+    function refreshRewardScoreIfNeeded(room, previousStatus) {
+        const winnerUserId = String(room && room.winnerId ? room.winnerId : "").trim();
+        if (previousStatus === "GAME_OVER" || state.roomStatus !== "GAME_OVER" || !winnerUserId || winnerUserId !== state.userId) {
+            return;
+        }
+        const task = window.CaroUser && typeof window.CaroUser.refresh === "function"
+            ? window.CaroUser.refresh()
+            : null;
+        if (task && typeof task.catch === "function") {
+            task.catch(() => {});
+        }
+    }
+
     let els = {};
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -148,12 +161,28 @@
         });
     }
 
-    function surrenderGame() {
+    async function requestSurrenderConfirmation() {
+        if (window.CaroUi && typeof window.CaroUi.confirmAction === "function") {
+            return window.CaroUi.confirmAction({
+                title: "Dau hang van Co tuong?",
+                text: "Neu xac nhan, ban se thua ngay va doi thu trong phong se duoc tinh la chien thang.",
+                confirmText: "Dau hang",
+                cancelText: "Tiep tuc choi",
+                fallbackText: "Ban chac chan muon dau hang van dau nay?",
+                danger: true
+            });
+        }
+        return typeof window.confirm === "function"
+            ? window.confirm("Ban chac chan muon dau hang van dau nay?")
+            : false;
+    }
+
+    async function surrenderGame() {
         if (!canSurrenderGame()) {
             setGameStatus("Khong the dau hang luc nay.");
             return;
         }
-        if (!window.confirm("Ban chac chan muon dau hang van dau nay?")) {
+        if (!await requestSurrenderConfirmation()) {
             return;
         }
         state.client.publish({
@@ -1037,6 +1066,7 @@
         if (!room || typeof room !== "object") {
             return;
         }
+        const previousStatus = state.roomStatus;
         const nextRoomId = normalizeText(room.roomId);
         if (nextRoomId) {
             state.roomId = nextRoomId;
@@ -1080,6 +1110,7 @@
         state.legalMoves = [];
         state.pendingMove = false;
         refreshLocalGameState(normalizeText(messageText) || normalizeText(room.statusMessage));
+        refreshRewardScoreIfNeeded(room, previousStatus);
         renderAll();
         renderPlayers();
         updateStatusText();

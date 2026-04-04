@@ -24,7 +24,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class PrivateChatServiceTest {
-
     @Test
     void buildChatBootstrapShouldRejectNonFriendUsers() {
         UserAccountRepository userRepo = mock(UserAccountRepository.class);
@@ -35,7 +34,7 @@ class PrivateChatServiceTest {
         when(userRepo.findById("u2")).thenReturn(Optional.of(user("u2", "Bob")));
         when(friendshipService.areFriends("u1", "u2")).thenReturn(false);
 
-        PrivateChatService service = new PrivateChatService(userRepo, friendshipService, chatRepo);
+        PrivateChatService service = new PrivateChatService(userRepo, friendshipService, chatRepo, communicationGuardService(userRepo));
         PrivateChatService.ChatBootstrapResult result = service.buildChatBootstrap("u1", "u2");
 
         assertFalse(result.ok());
@@ -58,7 +57,7 @@ class PrivateChatServiceTest {
             return record;
         });
 
-        PrivateChatService service = new PrivateChatService(userRepo, friendshipService, chatRepo);
+        PrivateChatService service = new PrivateChatService(userRepo, friendshipService, chatRepo, communicationGuardService(userRepo));
         PrivateChatService.SendResult result = service.saveMessage(" u1 ", "u2", "  hello  ", " cid-1 ");
 
         assertTrue(result.ok());
@@ -101,7 +100,7 @@ class PrivateChatServiceTest {
         existing.setSentAt(LocalDateTime.of(2026, 2, 23, 10, 2));
         when(chatRepo.findFirstByRoomKeyAndClientMessageId("u1__u2", "cid-15")).thenReturn(Optional.of(existing));
 
-        PrivateChatService service = new PrivateChatService(userRepo, friendshipService, chatRepo);
+        PrivateChatService service = new PrivateChatService(userRepo, friendshipService, chatRepo, communicationGuardService(userRepo));
         PrivateChatService.SendResult result = service.saveMessage("u1", "u2", "hello", "cid-15");
 
         assertTrue(result.ok());
@@ -140,7 +139,7 @@ class PrivateChatServiceTest {
 
         when(chatRepo.findTop100ByRoomKeyOrderByIdDesc("u1__u2")).thenReturn(List.of(newer, older));
 
-        PrivateChatService service = new PrivateChatService(userRepo, friendshipService, chatRepo);
+        PrivateChatService service = new PrivateChatService(userRepo, friendshipService, chatRepo, communicationGuardService(userRepo));
         PrivateChatService.ChatBootstrapResult result = service.buildChatBootstrap("u1", "u2");
 
         assertTrue(result.ok());
@@ -152,6 +151,38 @@ class PrivateChatServiceTest {
         assertNull(first.get("clientMessageId"));
         assertEquals("old", first.get("message"));
         assertEquals("new", second.get("message"));
+    }
+
+    @Test
+    void saveMessageShouldMaskProfanityBeforePersisting() {
+        UserAccountRepository userRepo = mock(UserAccountRepository.class);
+        FriendshipService friendshipService = mock(FriendshipService.class);
+        PrivateChatRecordRepository chatRepo = mock(PrivateChatRecordRepository.class);
+
+        when(userRepo.findById("u1")).thenReturn(Optional.of(user("u1", "Alice")));
+        when(userRepo.findById("u2")).thenReturn(Optional.of(user("u2", "Bob")));
+        when(friendshipService.areFriends("u1", "u2")).thenReturn(true);
+        when(chatRepo.save(any(PrivateChatRecord.class))).thenAnswer(invocation -> {
+            PrivateChatRecord record = invocation.getArgument(0);
+            record.setId(99L);
+            record.setSentAt(LocalDateTime.of(2026, 2, 23, 10, 5, 0));
+            return record;
+        });
+
+        PrivateChatService service = new PrivateChatService(userRepo, friendshipService, chatRepo, communicationGuardService(userRepo));
+        PrivateChatService.SendResult result = service.saveMessage("u1", "u2", "d!t m3 may", "cid-bad");
+
+        assertTrue(result.ok());
+        assertEquals("******", result.payload().get("message"));
+        assertEquals("Tin nhan chua ngon tu tho tuc va da bi chan. Noi dung da duoc an thanh ******. Canh cao 1/3.", result.warning());
+
+        ArgumentCaptor<PrivateChatRecord> captor = ArgumentCaptor.forClass(PrivateChatRecord.class);
+        verify(chatRepo).save(captor.capture());
+        assertEquals("******", captor.getValue().getContent());
+    }
+
+    private CommunicationGuardService communicationGuardService(UserAccountRepository userRepo) {
+        return new CommunicationGuardService(userRepo, new ChatModerationService());
     }
 
     private static UserAccount user(String id, String displayName) {

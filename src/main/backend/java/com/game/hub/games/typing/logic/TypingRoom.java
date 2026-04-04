@@ -17,10 +17,12 @@ public class TypingRoom {
     private long countdownEndsAtEpochMs;
     private long raceStartedAtEpochMs;
     private long raceEndsAtEpochMs;
+    private boolean winRewardGranted;
 
     public TypingRoom(String id, String textToType) {
         this.id = id;
         this.textToType = textToType;
+        this.winRewardGranted = false;
     }
 
     public boolean addPlayer(String playerId) {
@@ -86,6 +88,7 @@ public class TypingRoom {
         countdownEndsAtEpochMs = 0;
         raceStartedAtEpochMs = 0;
         raceEndsAtEpochMs = 0;
+        winRewardGranted = false;
         if (players.size() >= MIN_PLAYERS_TO_START) {
             beginCountdown();
         } else {
@@ -157,6 +160,7 @@ public class TypingRoom {
         countdownEndsAtEpochMs = 0;
         raceStartedAtEpochMs = 0;
         raceEndsAtEpochMs = 0;
+        winRewardGranted = false;
     }
 
     private void syncStateWithClock() {
@@ -197,6 +201,15 @@ public class TypingRoom {
     public long getRaceEndsAtEpochMs() {
         syncStateWithClock();
         return raceEndsAtEpochMs;
+    }
+
+    public boolean grantWinRewardOnce() {
+        syncStateWithClock();
+        if (gameState != GameState.FINISHED || winRewardGranted) {
+            return false;
+        }
+        winRewardGranted = true;
+        return true;
     }
 
     public enum GameState { WAITING, COUNTDOWN, PLAYING, FINISHED }

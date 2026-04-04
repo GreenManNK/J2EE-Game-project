@@ -83,6 +83,32 @@ class OnlineHubControllerTest {
     }
 
     @Test
+    void advancedVariantShouldFilterAdvancedCaroRoomsOnly() {
+        GameRoomService gameRoomService = mock(GameRoomService.class);
+        when(gameRoomService.availableRooms()).thenReturn(List.of("Advanced_123", "CARO-999"));
+        when(gameRoomService.isAdvancedModeRoom("Advanced_123")).thenReturn(true);
+        when(gameRoomService.isAdvancedModeRoom("CARO-999")).thenReturn(false);
+
+        OnlineHubController controller = new OnlineHubController(
+            new GameCatalogService(),
+            gameRoomService,
+            new TienLenRoomService(),
+            mock(BlackjackService.class),
+            new ChessOnlineRoomService(),
+            new XiangqiOnlineRoomService(),
+            mock(TypingService.class),
+            mock(QuizService.class)
+        );
+
+        Map<String, Object> result = controller.rooms("caro", "advanced");
+
+        @SuppressWarnings("unchecked")
+        List<OnlineHubController.RoomRow> rooms = (List<OnlineHubController.RoomRow>) result.get("rooms");
+        assertEquals(1, rooms.size());
+        assertEquals("Advanced_123", rooms.get(0).roomId());
+    }
+
+    @Test
     void shouldThrow404ForUnknownGame() {
         OnlineHubController controller = new OnlineHubController(
             new GameCatalogService(),
@@ -273,6 +299,26 @@ class OnlineHubControllerTest {
     }
 
     @Test
+    void createRoomApiShouldCreateAdvancedCaroRoomIdWhenVariantRequested() {
+        OnlineHubController controller = new OnlineHubController(
+            new GameCatalogService(),
+            mock(GameRoomService.class),
+            new TienLenRoomService(),
+            mock(BlackjackService.class),
+            new ChessOnlineRoomService(),
+            new XiangqiOnlineRoomService(),
+            mock(TypingService.class),
+            mock(QuizService.class)
+        );
+
+        Map<String, Object> result = controller.createRoom("caro", "advanced");
+
+        assertEquals("caro", result.get("game"));
+        assertEquals("advanced", result.get("variant"));
+        assertTrue(String.valueOf(result.get("roomId")).startsWith("Advanced_"));
+    }
+
+    @Test
     void createRoomApiShouldCreateQuizRoomFromService() {
         BlackjackService blackjackService = mock(BlackjackService.class);
         TypingService typingService = mock(TypingService.class);
@@ -384,8 +430,8 @@ class OnlineHubControllerTest {
     @Test
     void chessRoomsApiShouldIncludePlayingRoomForSpectate() {
         ChessOnlineRoomService chessService = new ChessOnlineRoomService();
-        chessService.joinRoom("CHESS-WATCH", "whiteUser", "White", "");
-        chessService.joinRoom("CHESS-WATCH", "blackUser", "Black", "");
+        chessService.joinRoom("CHESS-WATCH", "whiteUser", "White", "", 0);
+        chessService.joinRoom("CHESS-WATCH", "blackUser", "Black", "", 0);
 
         OnlineHubController controller = new OnlineHubController(
             new GameCatalogService(),

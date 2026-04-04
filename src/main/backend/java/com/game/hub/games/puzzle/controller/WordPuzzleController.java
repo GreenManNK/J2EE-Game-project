@@ -1,7 +1,9 @@
 package com.game.hub.games.puzzle.controller;
 
+import com.game.hub.games.puzzle.service.WordPuzzleService;
 import com.game.hub.service.AchievementService;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,13 +15,17 @@ import java.security.Principal;
 @RequestMapping("/games/puzzle/word")
 public class WordPuzzleController {
     private final AchievementService achievementService;
+    private final WordPuzzleService wordPuzzleService;
 
-    public WordPuzzleController(AchievementService achievementService) {
+    public WordPuzzleController(AchievementService achievementService,
+                                WordPuzzleService wordPuzzleService) {
         this.achievementService = achievementService;
+        this.wordPuzzleService = wordPuzzleService;
     }
 
     @GetMapping
-    public String wordPage() {
+    public String wordPage(Model model) {
+        model.addAttribute("wordPool", wordPuzzleService.getWordPool());
         return "games/puzzle/word";
     }
 

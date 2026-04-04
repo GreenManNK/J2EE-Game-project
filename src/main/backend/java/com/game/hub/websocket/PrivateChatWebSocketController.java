@@ -30,11 +30,11 @@ public class PrivateChatWebSocketController {
         String content = trimToNull(message.getContent());
 
         if (currentUserId == null) {
-            broadcastError(privateChatService.roomKey(trimToNull(message.getCurrentUserId()), friendId), trimToNull(message.getCurrentUserId()), "Login required");
+            sendUserError(privateChatService.roomKey(trimToNull(message.getCurrentUserId()), friendId), trimToNull(message.getCurrentUserId()), "Login required");
             return;
         }
         if (friendId == null || content == null) {
-            broadcastError(privateChatService.roomKey(currentUserId, friendId), currentUserId, "Missing chat payload");
+            sendUserError(privateChatService.roomKey(currentUserId, friendId), currentUserId, "Missing chat payload");
             return;
         }
 
@@ -45,11 +45,12 @@ public class PrivateChatWebSocketController {
             trimToNull(message.getClientMessageId())
         );
         if (!result.ok()) {
-            broadcastError(result.roomKey(), result.userId(), result.error() == null ? "Cannot send message" : result.error());
+            sendUserError(result.roomKey(), result.userId(), result.error() == null ? "Cannot send message" : result.error());
             return;
         }
 
         broadcastPayload(result.payload());
+        sendUserWarning(result.roomKey(), result.userId(), result.warning());
     }
 
     private String trimToNull(String v) {
@@ -99,7 +100,7 @@ public class PrivateChatWebSocketController {
         }
     }
 
-    private void broadcastError(String roomKey, String userId, String error) {
+    private void sendUserError(String roomKey, String userId, String error) {
         if (roomKey == null || userId == null) {
             return;
         }
@@ -109,7 +110,18 @@ public class PrivateChatWebSocketController {
             "userId", userId,
             "error", error == null ? "Cannot send message" : error
         );
-        messagingTemplate.convertAndSend("/topic/private." + roomKey, payload);
         messagingTemplate.convertAndSendToUser(userId, "/queue/private-chat", payload);
+    }
+
+    private void sendUserWarning(String roomKey, String userId, String warning) {
+        if (roomKey == null || userId == null || warning == null || warning.isBlank()) {
+            return;
+        }
+        messagingTemplate.convertAndSendToUser(userId, "/queue/private-chat", Map.of(
+            "type", "WARNING",
+            "roomKey", roomKey,
+            "userId", userId,
+            "message", warning
+        ));
     }
 }

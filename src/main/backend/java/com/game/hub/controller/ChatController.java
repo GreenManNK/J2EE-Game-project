@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Controller
@@ -72,10 +73,13 @@ public class ChatController {
         }
 
         broadcastPayload(result.payload());
-        return Map.of(
-            "success", true,
-            "payload", result.payload()
-        );
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("success", true);
+        response.put("payload", result.payload());
+        if (result.warning() != null && !result.warning().isBlank()) {
+            response.put("warning", result.warning());
+        }
+        return response;
     }
 
     private String asString(Object value) {

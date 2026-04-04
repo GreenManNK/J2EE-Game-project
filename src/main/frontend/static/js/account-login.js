@@ -49,6 +49,7 @@
           country: data.data.country || "",
           gender: data.data.gender || "",
           birthDate: data.data.birthDate || "",
+          score: data.data.score || 0,
           onboardingCompleted: data.data.onboardingCompleted === true
         });
         await window.CaroGuestData?.migrateToAccount?.();

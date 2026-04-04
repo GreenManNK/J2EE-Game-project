@@ -7,16 +7,18 @@ import java.util.Locale;
 
 @Component
 public class SocialLoginConfiguration {
+    private static final String DISABLED_PLACEHOLDER = "__disabled__";
+
     private final String googleClientId;
     private final String googleClientSecret;
     private final String facebookClientId;
     private final String facebookClientSecret;
 
     public SocialLoginConfiguration(
-        @Value("${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID:}") String googleClientId,
-        @Value("${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET:}") String googleClientSecret,
-        @Value("${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID:}") String facebookClientId,
-        @Value("${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_SECRET:}") String facebookClientSecret
+        @Value("${spring.security.oauth2.client.registration.google.client-id:" + DISABLED_PLACEHOLDER + "}") String googleClientId,
+        @Value("${spring.security.oauth2.client.registration.google.client-secret:" + DISABLED_PLACEHOLDER + "}") String googleClientSecret,
+        @Value("${spring.security.oauth2.client.registration.facebook.client-id:" + DISABLED_PLACEHOLDER + "}") String facebookClientId,
+        @Value("${spring.security.oauth2.client.registration.facebook.client-secret:" + DISABLED_PLACEHOLDER + "}") String facebookClientSecret
     ) {
         this.googleClientId = googleClientId;
         this.googleClientSecret = googleClientSecret;
@@ -52,7 +54,8 @@ public class SocialLoginConfiguration {
     }
 
     private boolean hasText(String value) {
-        return trimToNull(value) != null;
+        String normalized = trimToNull(value);
+        return normalized != null && !DISABLED_PLACEHOLDER.equals(normalized);
     }
 
     private String trimToNull(String value) {

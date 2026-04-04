@@ -38,7 +38,7 @@ public class GameCatalogController {
         return Map.of("games", gameCatalogService.findAll());
     }
 
-    @GetMapping("/{code}/rooms")
+    @GetMapping({"/{code}/rooms", "/{code}/rooms/"})
     public String rooms(@PathVariable String code,
                         @RequestParam(required = false) String roomId) {
         GameCatalogItem game = gameCatalogService.findByCode(code)
@@ -56,12 +56,12 @@ public class GameCatalogController {
             case "quiz" -> redirectToDedicatedRoom("/games/quiz", "/games/quiz/room/", roomId);
             case "typing" -> redirectToDedicatedRoom("/games/typing", "/games/typing/room/", roomId);
             case "monopoly" -> redirectToDedicatedRoom("/games/monopoly", "/games/monopoly/room/", roomId);
-            case "goldminer" -> "redirect:/games/goldminer";
+            case "goldminer" -> "redirect:/goldminer";
             default -> routeSharedRoom(game.code(), roomId);
         };
     }
 
-    @GetMapping("/{code}")
+    @GetMapping({"/{code}", "/{code}/"})
     public String detail(@PathVariable String code, Model model) {
         GameCatalogItem game = gameCatalogService.findByCode(code)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));

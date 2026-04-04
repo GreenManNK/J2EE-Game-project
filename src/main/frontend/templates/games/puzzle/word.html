@@ -73,6 +73,11 @@
 </main>
 
 <th:block th:replace="~{fragments :: appScripts('games-puzzle-word')}"></th:block>
+<script th:inline="javascript">
+    window.WordPuzzleBoot = {
+        wordPool: /*[[${wordPool}]]*/ []
+    };
+</script>
 <style>
     .word-controls {
         display: flex;
@@ -202,7 +207,10 @@
 </style>
 <script>
     const GRID_SIZE = 12;
-    const WORDS = ['JAVA', 'SPRING', 'PUZZLE', 'GAME', 'SOCKET', 'PLAYER', 'SCORE', 'RACE'];
+    const DEFAULT_WORD_POOL = ['JAVA', 'SPRING', 'PUZZLE', 'GAME', 'SOCKET', 'PLAYER', 'SCORE', 'RACE'];
+    const WORD_POOL = Array.isArray(window.WordPuzzleBoot?.wordPool) && window.WordPuzzleBoot.wordPool.length
+        ? window.WordPuzzleBoot.wordPool.map((word) => String(word || '').trim().toUpperCase()).filter(Boolean)
+        : DEFAULT_WORD_POOL.slice();
     const DIRECTIONS = [
         { dx: 1, dy: 0 }, { dx: -1, dy: 0 },
         { dx: 0, dy: 1 }, { dx: 0, dy: -1 },
@@ -222,6 +230,7 @@
         : (value) => value;
 
     let grid;
+    let currentWords = [];
     let placements;
     let foundWords;
     let selectedStart = null;
@@ -229,21 +238,31 @@
     let timerHandle;
     let winReported = false;
 
-    newBtn.addEventListener('click', startGame);
+    newBtn.addEventListener('click', () => {
+        void startGame();
+    });
 
     function startGame() {
-        grid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(''));
-        placements = [];
+        const prepared = prepareBoardWithRetries();
+        if (!prepared) {
+            statusEl.textContent = 'Khong the tao bang moi tu du lieu hien co. Hay them them tu trong admin.';
+            statusEl.classList.remove('success');
+            statusEl.classList.add('error');
+            return;
+        }
+
+        grid = prepared.grid;
+        currentWords = prepared.words;
+        placements = prepared.placements;
         foundWords = new Set();
         selectedStart = null;
         winReported = false;
 
-        placeWords();
         fillRandomLetters();
         renderGrid();
         renderWordList();
 
-        totalCountEl.textContent = String(WORDS.length);
+        totalCountEl.textContent = String(currentWords.length);
         foundCountEl.textContent = '0';
         statusEl.textContent = 'Click chu cai dau tien, sau do click chu cai cuoi cua tu.';
         statusEl.classList.remove('success', 'error');
@@ -252,7 +271,7 @@
     }
 
     function placeWords() {
-        WORDS.forEach((word) => {
+        currentWords.forEach((word) => {
             let placed = false;
             for (let attempt = 0; attempt < 280 && !placed; attempt += 1) {
                 const direction = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
@@ -323,7 +342,7 @@
 
     function renderWordList() {
         wordListContainer.innerHTML = '';
-        WORDS.forEach((word) => {
+        currentWords.forEach((word) => {
             const item = document.createElement('div');
             item.className = 'word-item';
             item.dataset.word = word;
@@ -356,7 +375,7 @@
 
         const word = path.map((point) => grid[point.y][point.x]).join('');
         const reversedWord = word.split('').reverse().join('');
-        const matched = WORDS.find((candidate) => !foundWords.has(candidate) && (candidate === word || candidate === reversedWord));
+        const matched = currentWords.find((candidate) => !foundWords.has(candidate) && (candidate === word || candidate === reversedWord));
 
         if (!matched) {
             statusEl.textContent = 'Khong trung tu trong danh sach. Thu lai.';
@@ -374,7 +393,7 @@
         statusEl.classList.remove('error');
         statusEl.classList.add('success');
 
-        if (foundWords.size === WORDS.length) {
+        if (foundWords.size === currentWords.length) {
             clearInterval(timerHandle);
             statusEl.textContent = `Da tim het tu trong ${timeEl.textContent}.`;
             statusEl.classList.add('success');
@@ -471,7 +490,49 @@
         }, 1000);
     }
 
-    startGame();
+    function prepareBoardWithRetries() {
+        const sourcePool = Array.from(new Set(WORD_POOL.map((word) => String(word || '').trim().toUpperCase()).filter(Boolean)));
+        if (sourcePool.length === 0) {
+            return null;
+        }
+
+        for (let attempt = 0; attempt < 12; attempt += 1) {
+            const candidateWords = pickWordSet(sourcePool, 8);
+            if (candidateWords.length === 0) {
+                break;
+            }
+            grid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(''));
+            placements = [];
+            currentWords = candidateWords;
+            try {
+                placeWords();
+                return {
+                    grid: grid,
+                    words: candidateWords,
+                    placements: placements.slice()
+                };
+            } catch (_error) {
+            }
+        }
+        return null;
+    }
+
+    function pickWordSet(pool, desiredCount) {
+        const shuffled = shuffleArray(pool)
+            .filter((word) => word && word.length >= 3 && word.length <= GRID_SIZE);
+        return shuffled.slice(0, Math.max(1, Math.min(desiredCount, shuffled.length)));
+    }
+
+    function shuffleArray(source) {
+        const copy = Array.isArray(source) ? source.slice() : [];
+        for (let i = copy.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+    }
+
+    void startGame();
 </script>
 </body>
 </html>

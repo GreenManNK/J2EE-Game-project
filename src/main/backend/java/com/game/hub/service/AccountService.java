@@ -2021,6 +2021,8 @@ public class AccountService {
         payload.put("country", user.getCountry() == null ? "" : user.getCountry());
         payload.put("gender", user.getGender() == null ? "" : user.getGender());
         payload.put("birthDate", user.getBirthDate() == null ? "" : user.getBirthDate().toString());
+        payload.put("score", Math.max(0, user.getScore()));
+        payload.put("winningStreak", Math.max(0, user.getWinningStreak()));
         payload.put("onboardingCompleted", user.isOnboardingCompleted());
         return payload;
     }

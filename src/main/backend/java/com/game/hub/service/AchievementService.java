@@ -17,6 +17,8 @@ import java.util.Set;
 
 @Service
 public class AchievementService {
+    public static final String FLAMING_CHESS_ICON_ACHIEVEMENT = "Co vua boc lua";
+    public static final int FLAMING_CHESS_ICON_REQUIRED_WINS = 10;
     private static final Set<String> GAME_WIN_ACHIEVEMENTS = Set.of(
         "Winner - Caro",
         "Winner - Chess",
@@ -63,15 +65,18 @@ public class AchievementService {
     private final AchievementNotificationRepository achievementNotificationRepository;
     private final UserAccountRepository userAccountRepository;
     private final GameHistoryRepository gameHistoryRepository;
+    private final WinRewardScoreService winRewardScoreService;
 
     public AchievementService(UserAchievementRepository userAchievementRepository,
                               AchievementNotificationRepository achievementNotificationRepository,
                               UserAccountRepository userAccountRepository,
-                              GameHistoryRepository gameHistoryRepository) {
+                              GameHistoryRepository gameHistoryRepository,
+                              WinRewardScoreService winRewardScoreService) {
         this.userAchievementRepository = userAchievementRepository;
         this.achievementNotificationRepository = achievementNotificationRepository;
         this.userAccountRepository = userAccountRepository;
         this.gameHistoryRepository = gameHistoryRepository;
+        this.winRewardScoreService = winRewardScoreService;
     }
 
     @Transactional
@@ -83,6 +88,47 @@ public class AchievementService {
             grantOnce(userId, "Winner - " + gameName.trim());
             evaluateGameCoverageAchievements(userId);
         }
+    }
+
+    @Transactional
+    public void recordRewardedWin(String userId, String gameName) {
+        if (!isPersistentPlayerAccount(userId) || gameName == null || gameName.isBlank()) {
+            return;
+        }
+        String normalizedGameName = gameName.trim();
+        checkAndAward(userId, normalizedGameName, true);
+        winRewardScoreService.awardPlayerWinBonus(userId);
+        if ("chess".equalsIgnoreCase(normalizedGameName)) {
+            userAccountRepository.findById(userId).ifPresent(user -> {
+                user.setChessWinCount(user.getChessWinCount() + 1);
+                userAccountRepository.save(user);
+            });
+        }
+    }
+
+    @Transactional
+    public ChessIconUnlockResult unlockFlamingChessIcon(String userId) {
+        if (!isPersistentPlayerAccount(userId)) {
+            return ChessIconUnlockResult.error("Nguoi choi khong hop le");
+        }
+        UserAccount user = userAccountRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ChessIconUnlockResult.error("Khong tim thay nguoi choi");
+        }
+        int recordedWins = Math.max(0, user.getChessWinCount());
+        if (user.isFlamingChessIconUnlocked()) {
+            grantOnce(userId, FLAMING_CHESS_ICON_ACHIEVEMENT);
+            return new ChessIconUnlockResult(true, true, recordedWins, true, null);
+        }
+        if (recordedWins < FLAMING_CHESS_ICON_REQUIRED_WINS) {
+            return ChessIconUnlockResult.error(
+                "Nguoi choi moi co " + recordedWins + "/" + FLAMING_CHESS_ICON_REQUIRED_WINS + " chien thang Co vua duoc ghi nhan."
+            );
+        }
+        user.setFlamingChessIconUnlocked(true);
+        userAccountRepository.save(user);
+        grantOnce(userId, FLAMING_CHESS_ICON_ACHIEVEMENT);
+        return new ChessIconUnlockResult(true, false, recordedWins, true, null);
     }
 
     @Transactional
@@ -277,5 +323,15 @@ public class AchievementService {
     }
 
     private record PlayerStats(int totalGames, int totalWins, double winRate, int currentWinStreak, int currentLoseStreak) {
+    }
+
+    public record ChessIconUnlockResult(boolean success,
+                                        boolean alreadyUnlocked,
+                                        int chessWinCount,
+                                        boolean unlocked,
+                                        String error) {
+        public static ChessIconUnlockResult error(String error) {
+            return new ChessIconUnlockResult(false, false, 0, false, error);
+        }
     }
 }

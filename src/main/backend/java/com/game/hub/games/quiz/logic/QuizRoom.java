@@ -26,6 +26,7 @@ public class QuizRoom {
     private String hostPlayerId;
     private long questionStartedAtEpochMs;
     private long questionDeadlineEpochMs;
+    private boolean winRewardGranted;
 
     public QuizRoom(String roomId, List<Question> questions) {
         this.roomId = roomId;
@@ -38,6 +39,7 @@ public class QuizRoom {
         this.hostPlayerId = null;
         this.questionStartedAtEpochMs = 0;
         this.questionDeadlineEpochMs = 0;
+        this.winRewardGranted = false;
     }
 
     public boolean addPlayer(WebSocketSession session) {
@@ -101,6 +103,7 @@ public class QuizRoom {
             answeredPlayerIds.clear();
             questionStartedAtEpochMs = 0;
             questionDeadlineEpochMs = 0;
+            winRewardGranted = false;
         }
     }
 
@@ -112,7 +115,16 @@ public class QuizRoom {
         started = true;
         answeredPlayerIds.clear();
         players.replaceAll((session, score) -> 0);
+        winRewardGranted = false;
         openCurrentQuestionWindow();
+        return true;
+    }
+
+    public boolean grantWinRewardOnce() {
+        if (winRewardGranted || !isGameOver()) {
+            return false;
+        }
+        winRewardGranted = true;
         return true;
     }
 

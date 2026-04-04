@@ -9,7 +9,7 @@
     <div class="goldminer-hero__copy">
       <div class="goldminer-kicker">Gold Miner / quick play</div>
       <h1 th:text="${game != null ? game.displayName : 'Dao vang'}">Dao vang</h1>
-      <p>Moc quay lien tuc, bam tha day de keo vang, cat cu keo xau bang TNT va vuot 3 vong muc tieu diem ngay trong browser.</p>
+      <p>Moc quay lien tuc, bam tha day de keo vang, cat cu keo xau bang TNT va vuot 3 vong muc tieu diem ngay trong browser. Moi 10 giay se co 1 qua bom song xuat hien ngau nhien trong mo, cham vao la no va quet sach loot xung quanh.</p>
       <div class="goldminer-chip-row">
         <span class="goldminer-chip is-live"><i class="bi bi-gem"></i> Quick play san sang</span>
         <span class="goldminer-chip"><i class="bi bi-stopwatch-fill"></i> 3 vong / target score</span>
@@ -52,9 +52,17 @@
           <span>Time</span>
           <strong id="goldminerTime">55s</strong>
         </article>
+        <article class="goldminer-stat-card is-hazard">
+          <span>Bom tiep</span>
+          <strong id="goldminerBombCountdown">10s</strong>
+        </article>
         <article class="goldminer-stat-card">
           <span>TNT</span>
           <strong id="goldminerBombs">2</strong>
+        </article>
+        <article class="goldminer-stat-card is-hazard-soft">
+          <span>Bom song</span>
+          <strong id="goldminerHazardCount">0</strong>
         </article>
         <article class="goldminer-stat-card">
           <span>Best</span>
@@ -69,6 +77,20 @@
         </div>
         <div class="goldminer-progress__track">
           <div id="goldminerProgressFill" class="goldminer-progress__fill"></div>
+        </div>
+      </section>
+
+      <section id="goldminerHazardPanel" class="goldminer-hazard" data-level="calm" aria-live="polite">
+        <div class="goldminer-hazard__icon">
+          <i class="bi bi-radioactive"></i>
+        </div>
+        <div class="goldminer-hazard__copy">
+          <strong id="goldminerHazardTitle">Bom song dang cho kich hoat</strong>
+          <span id="goldminerHazardText">Vao round de bat dau dem 10 giay. Khi hook cham bom, no se xoa loot trong vung no.</span>
+        </div>
+        <div class="goldminer-hazard__meta">
+          <span id="goldminerHazardActive">0 bom tren map</span>
+          <span>Tam no ~108px</span>
         </div>
       </section>
 
@@ -161,6 +183,7 @@
           <li><strong>Space / click:</strong> Tha moc o goc dang quay.</li>
           <li><strong>D / TNT:</strong> Cat vat dang keo neu dinh da xau.</li>
           <li><strong>P:</strong> Tam dung run hien tai.</li>
+          <li><strong>Bom song:</strong> Cu 10 giay se co 1 qua bom xuat hien ngau nhien; moc cham vao la no va don sach tai nguyen o gan.</li>
           <li><strong>Uu tien:</strong> Vang to cho diem cao, kim cuong keo rat nhanh.</li>
           <li><strong>Shop:</strong> Chon 1 nang cap giua cac vong de vao sau khoe hon.</li>
         </ul>
@@ -306,7 +329,7 @@
 
   .goldminer-stage__top {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 10px;
   }
 
@@ -329,6 +352,93 @@
   .goldminer-stat-card strong {
     font-size: 1.15rem;
     color: #fff5dd;
+  }
+
+  .goldminer-stat-card.is-hazard {
+    border-color: rgba(255, 139, 102, 0.26);
+    background: linear-gradient(180deg, rgba(112, 29, 25, 0.34), rgba(255, 255, 255, 0.05));
+  }
+
+  .goldminer-stat-card.is-hazard strong {
+    color: #ffccbb;
+  }
+
+  .goldminer-stat-card.is-hazard-soft {
+    border-color: rgba(255, 181, 120, 0.2);
+    background: linear-gradient(180deg, rgba(93, 51, 19, 0.26), rgba(255, 255, 255, 0.05));
+  }
+
+  .goldminer-hazard {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 184, 120, 0.16);
+    background:
+      radial-gradient(circle at 0% 0%, rgba(255, 122, 89, 0.12), transparent 26%),
+      linear-gradient(135deg, rgba(36, 18, 16, 0.76), rgba(17, 20, 28, 0.82));
+  }
+
+  .goldminer-hazard[data-level="warning"] {
+    border-color: rgba(255, 170, 76, 0.34);
+    box-shadow: inset 0 0 0 1px rgba(255, 170, 76, 0.1);
+  }
+
+  .goldminer-hazard[data-level="danger"] {
+    border-color: rgba(255, 111, 87, 0.42);
+    box-shadow: 0 0 0 1px rgba(255, 111, 87, 0.12) inset, 0 0 26px rgba(164, 36, 27, 0.2);
+    animation: goldminerHazardPulse 1.3s ease-in-out infinite;
+  }
+
+  .goldminer-hazard__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 190, 140, 0.18);
+    background: linear-gradient(135deg, rgba(255, 122, 89, 0.22), rgba(255, 193, 111, 0.12));
+    color: #ffbe8a;
+    font-size: 1.22rem;
+  }
+
+  .goldminer-hazard__copy {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .goldminer-hazard__copy strong {
+    color: #fff1de;
+    font-size: 0.98rem;
+  }
+
+  .goldminer-hazard__copy span {
+    color: rgba(242, 244, 255, 0.76);
+    line-height: 1.45;
+    font-size: 0.88rem;
+  }
+
+  .goldminer-hazard__meta {
+    display: grid;
+    justify-items: end;
+    gap: 4px;
+    text-align: right;
+    color: rgba(255, 231, 199, 0.86);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  @keyframes goldminerHazardPulse {
+    0%, 100% {
+      box-shadow: 0 0 0 1px rgba(255, 111, 87, 0.12) inset, 0 0 22px rgba(164, 36, 27, 0.12);
+    }
+    50% {
+      box-shadow: 0 0 0 1px rgba(255, 111, 87, 0.2) inset, 0 0 30px rgba(164, 36, 27, 0.22);
+    }
   }
 
   .goldminer-progress {
@@ -635,6 +745,20 @@
     color: #38230b;
   }
 
+  body:not(.dark-mode) .goldminer-stat-card.is-hazard {
+    border-color: rgba(206, 92, 56, 0.26);
+    background: linear-gradient(180deg, rgba(255, 226, 219, 0.9), rgba(255, 255, 255, 0.74));
+  }
+
+  body:not(.dark-mode) .goldminer-stat-card.is-hazard-soft {
+    border-color: rgba(198, 136, 60, 0.22);
+    background: linear-gradient(180deg, rgba(255, 240, 219, 0.92), rgba(255, 255, 255, 0.74));
+  }
+
+  body:not(.dark-mode) .goldminer-stat-card.is-hazard strong {
+    color: #8e3219;
+  }
+
   body:not(.dark-mode) .goldminer-kicker,
   body:not(.dark-mode) .goldminer-overlay__card small,
   body:not(.dark-mode) .goldminer-panel__pill {
@@ -645,6 +769,28 @@
     border-color: rgba(24, 148, 136, 0.26);
     background: rgba(222, 248, 245, 0.86);
     color: #0f5f59;
+  }
+
+  body:not(.dark-mode) .goldminer-hazard {
+    border-color: rgba(203, 137, 70, 0.18);
+    background:
+      radial-gradient(circle at 0% 0%, rgba(255, 140, 103, 0.12), transparent 26%),
+      linear-gradient(135deg, rgba(255, 247, 239, 0.94), rgba(250, 244, 236, 0.98));
+  }
+
+  body:not(.dark-mode) .goldminer-hazard__icon {
+    border-color: rgba(208, 132, 71, 0.18);
+    background: linear-gradient(135deg, rgba(255, 215, 204, 0.92), rgba(255, 239, 210, 0.92));
+    color: #b14d22;
+  }
+
+  body:not(.dark-mode) .goldminer-hazard__copy strong {
+    color: #38230b;
+  }
+
+  body:not(.dark-mode) .goldminer-hazard__copy span,
+  body:not(.dark-mode) .goldminer-hazard__meta {
+    color: #6b5a48;
   }
 
   body:not(.dark-mode) .goldminer-action.is-primary {
@@ -685,6 +831,16 @@
     .goldminer-progress__meta {
       flex-direction: column;
       align-items: start;
+    }
+
+    .goldminer-hazard {
+      grid-template-columns: 1fr;
+      justify-items: start;
+    }
+
+    .goldminer-hazard__meta {
+      justify-items: start;
+      text-align: left;
     }
   }
 

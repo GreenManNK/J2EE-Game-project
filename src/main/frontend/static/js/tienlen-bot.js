@@ -4,6 +4,7 @@
   const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
     ? window.CaroUrl.path
     : (value) => value;
+  const ui = window.CaroUi || {};
   const USER_CHANGE_EVENT = (window.CaroUser && window.CaroUser.eventName) || 'caro:user-changed';
   const DEFAULT_AVATAR_PATH = '/uploads/avatars/default-avatar.jpg';
   const CARD_SPRITE = Object.freeze({
@@ -301,13 +302,31 @@
     scheduleBotTurnIfNeeded();
   }
 
-  function surrenderGame() {
+  function requestSurrenderConfirmation() {
+    if (typeof ui.confirmAction === 'function') {
+      return ui.confirmAction({
+        title: 'Dau hang van Tien len?',
+        text: 'Ban se thua ngay va ket qua van hien tai se duoc chot cho may.',
+        confirmText: 'Dau hang',
+        cancelText: 'Tiep tuc choi',
+        fallbackText: 'Ban chac chan muon dau hang van Tien len nay?',
+        danger: true
+      });
+    }
+    return Promise.resolve(
+      typeof window.confirm === 'function'
+        ? window.confirm('Ban chac chan muon dau hang van Tien len nay?')
+        : false
+    );
+  }
+
+  async function surrenderGame() {
     if (!state.started || state.gameOver) {
       setMessage('Khong co van dau dang dien ra de dau hang');
       renderAll();
       return;
     }
-    if (!window.confirm('Ban chac chan muon dau hang van Tien len nay?')) {
+    if (!await requestSurrenderConfirmation()) {
       return;
     }
 

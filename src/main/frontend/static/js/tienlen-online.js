@@ -44,6 +44,15 @@
     avatarPath: (boot.sessionAvatarPath || '').trim()
   };
 
+  function refreshRewardScore() {
+    const task = window.CaroUser && typeof window.CaroUser.refresh === 'function'
+      ? window.CaroUser.refresh()
+      : null;
+    if (task && typeof task.catch === 'function') {
+      task.catch(() => {});
+    }
+  }
+
   const els = {};
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -377,14 +386,34 @@
       setMessage('Chi co the dau hang khi van dau dang dien ra');
       return;
     }
-    if (!window.confirm('Ban chac chan muon dau hang va roi phong?')) {
-      return;
-    }
-    leaveCurrentRoomWithOptions({
-      destination: '/app/tienlen.surrender',
-      statusText: 'Da dau hang va roi phong',
-      messageText: 'Ban da dau hang va roi phong'
+    requestSurrenderConfirmation().then((confirmed) => {
+      if (!confirmed) {
+        return;
+      }
+      leaveCurrentRoomWithOptions({
+        destination: '/app/tienlen.surrender',
+        statusText: 'Da dau hang va roi phong',
+        messageText: 'Ban da dau hang va roi phong'
+      });
     });
+  }
+
+  function requestSurrenderConfirmation() {
+    if (typeof ui.confirmAction === 'function') {
+      return ui.confirmAction({
+        title: 'Dau hang van Tien len?',
+        text: 'Ban se roi phong ngay va nhan ket qua thua cho van dau hien tai.',
+        confirmText: 'Dau hang',
+        cancelText: 'O lai phong',
+        fallbackText: 'Ban chac chan muon dau hang va roi phong?',
+        danger: true
+      });
+    }
+    return Promise.resolve(
+      typeof window.confirm === 'function'
+        ? window.confirm('Ban chac chan muon dau hang va roi phong?')
+        : false
+    );
   }
 
   function onRoomMessage(message) {
@@ -418,6 +447,9 @@
       if (payload.type === 'GAME_OVER' && payload.room.winnerUserId) {
         const youWin = payload.room.winnerUserId === me.userId;
         const endMessage = youWin ? 'Ban da thang van Tien len!' : (payload.room.statusMessage || 'Van dau ket thuc.');
+        if (youWin) {
+          refreshRewardScore();
+        }
         window.setTimeout(() => { if (ui.toast) { ui.toast(endMessage, { type: youWin ? 'success' : 'warning' }); } else if (typeof window !== 'undefined' && typeof window['alert'] === 'function') { window['alert'](endMessage); } }, 50);
       }
       renderAll();

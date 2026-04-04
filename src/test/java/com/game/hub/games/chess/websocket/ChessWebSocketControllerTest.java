@@ -3,6 +3,7 @@ package com.game.hub.games.chess.websocket;
 import com.game.hub.service.AchievementService;
 import com.game.hub.games.chess.service.ChessOnlineRoomService;
 import com.game.hub.repository.UserAccountRepository;
+import com.game.hub.service.WinningStreakService;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -23,9 +24,15 @@ class ChessWebSocketControllerTest {
         SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
         AchievementService achievementService = mock(AchievementService.class);
+        WinningStreakService winningStreakService = mock(WinningStreakService.class);
         SimpMessageHeaderAccessor headers = mock(SimpMessageHeaderAccessor.class);
 
         when(headers.getSessionAttributes()).thenReturn(Map.of("AUTH_USER_ID", "blackUser"));
+        when(winningStreakService.recordMatchResult("blackUser", "whiteUser"))
+            .thenReturn(new WinningStreakService.MatchResult(
+                new WinningStreakService.PlayerState("blackUser", 11, true),
+                new WinningStreakService.PlayerState("whiteUser", 0, false)
+            ));
 
         ChessOnlineRoomService.RoomSnapshot room = new ChessOnlineRoomService.RoomSnapshot(
             "CHESS-FINAL",
@@ -40,14 +47,20 @@ class ChessWebSocketControllerTest {
             List.of("Trang Tot di f2 -> f3", "Den Hau di d8 -> h4"),
             null,
             List.of(
-                new ChessOnlineRoomService.PlayerSnapshot("whiteUser", "White", "", "w"),
-                new ChessOnlineRoomService.PlayerSnapshot("blackUser", "Black", "", "b")
+                new ChessOnlineRoomService.PlayerSnapshot("whiteUser", "White", "", "w", 0, false),
+                new ChessOnlineRoomService.PlayerSnapshot("blackUser", "Black", "", "b", 0, false)
             )
         );
         when(roomService.move("CHESS-FINAL", "blackUser", 0, 3, 4, 7, null))
             .thenReturn(ChessOnlineRoomService.ActionResult.ok("MOVE", room));
 
-        ChessWebSocketController controller = new ChessWebSocketController(roomService, messagingTemplate, userAccountRepository, achievementService);
+        ChessWebSocketController controller = new ChessWebSocketController(
+            roomService,
+            messagingTemplate,
+            userAccountRepository,
+            achievementService,
+            winningStreakService
+        );
         ChessMoveMessage message = new ChessMoveMessage();
         message.setRoomId("CHESS-FINAL");
         message.setUserId("blackUser");
@@ -74,6 +87,7 @@ class ChessWebSocketControllerTest {
         SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
         UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
         AchievementService achievementService = mock(AchievementService.class);
+        WinningStreakService winningStreakService = mock(WinningStreakService.class);
         SimpMessageHeaderAccessor headers = mock(SimpMessageHeaderAccessor.class);
 
         when(headers.getSessionAttributes()).thenReturn(Map.of("AUTH_USER_ID", "viewerUser"));
@@ -92,14 +106,20 @@ class ChessWebSocketControllerTest {
             List.of(),
             null,
             List.of(
-                new ChessOnlineRoomService.PlayerSnapshot("whiteUser", "White", "", "w"),
-                new ChessOnlineRoomService.PlayerSnapshot("blackUser", "Black", "", "b")
+                new ChessOnlineRoomService.PlayerSnapshot("whiteUser", "White", "", "w", 0, false),
+                new ChessOnlineRoomService.PlayerSnapshot("blackUser", "Black", "", "b", 0, false)
             )
         );
         when(roomService.joinAsSpectator("CHESS-WATCH", "viewerUser"))
             .thenReturn(new ChessOnlineRoomService.JoinResult(true, "spectator", room, null));
 
-        ChessWebSocketController controller = new ChessWebSocketController(roomService, messagingTemplate, userAccountRepository, achievementService);
+        ChessWebSocketController controller = new ChessWebSocketController(
+            roomService,
+            messagingTemplate,
+            userAccountRepository,
+            achievementService,
+            winningStreakService
+        );
         ChessJoinMessage join = new ChessJoinMessage();
         join.setRoomId("CHESS-WATCH");
         join.setUserId("viewerUser");

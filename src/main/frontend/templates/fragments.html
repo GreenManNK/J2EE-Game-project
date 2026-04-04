@@ -98,7 +98,7 @@
   <link rel="stylesheet" th:href="@{/css/layout-refresh.css(v=20260307a)}">
   <link rel="stylesheet" th:href="@{/css/cg-market.css(v=20260315b)}">
   <link rel="stylesheet" th:href="@{/css/game-identity.css(v=20260304a)}">
-  <link rel="stylesheet" th:href="@{/css/arcade-shell.css(v=20260313a)}">
+  <link rel="stylesheet" th:href="@{/css/arcade-shell.css(v=20260404b)}">
   <link rel="stylesheet" th:href="@{/css/account-surface.css(v=20260313a)}">
   <link rel="stylesheet" th:href="@{/css/unified-app.css(v=20260315a)}">
   <link rel="stylesheet" th:href="@{/css/play-surfaces.css(v=20260315a)}">
@@ -1059,8 +1059,8 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script th:src="@{/lib/jquery/dist/jquery.min.js}"></script>
   <script th:src="@{/js/network-health.js}"></script>
-  <script th:src="@{/js/site.js}"></script>
-  <script th:src="@{/js/i18n-ui.js}"></script>
+  <script th:src="@{/js/site.js(v=20260404b)}"></script>
+  <script th:src="@{/js/i18n-ui.js(v=20260404h)}"></script>
   <script th:src="@{/js/app-shell.js}"></script>
   <script th:src="@{/js/account-drawer.js}"></script>
   <script th:src="@{/js/social-drawers.js}"></script>
@@ -1474,7 +1474,8 @@
               displayName: payload?.data?.displayName || current.displayName || tx("Người chơi"),
               email: payload?.data?.email || current.email || "",
               role: "Admin",
-              avatarPath: payload?.data?.avatarPath || current.avatarPath || "/uploads/avatars/default-avatar.jpg"
+              avatarPath: payload?.data?.avatarPath || current.avatarPath || "/uploads/avatars/default-avatar.jpg",
+              score: payload?.data?.score ?? current.score ?? 0
             });
           }
           window.setTimeout(() => window.location.reload(), 200);

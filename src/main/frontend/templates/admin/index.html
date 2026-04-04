@@ -126,13 +126,17 @@
           <th>Email</th>
           <th>Ten hien thi</th>
           <th>Diem</th>
+          <th>Chuoi thang</th>
+          <th>Chess / Icon</th>
+          <th>Vi pham</th>
+          <th>Cam giao tiep den</th>
           <th>Quyen</th>
           <th>Khoa</th>
           <th>Thao tac</th>
         </tr>
         </thead>
         <tbody id="adminUsersTableBody">
-        <tr><td colspan="7" class="text-center text-muted">Dang tai...</td></tr>
+        <tr><td colspan="11" class="text-center text-muted">Dang tai...</td></tr>
         </tbody>
       </table>
     </div>
@@ -341,6 +345,91 @@
         </thead>
         <tbody id="adminGameModulesTableBody">
         <tr><td colspan="6" class="text-center text-muted">Dang tai...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="theme-box rounded p-3 mb-3 gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Quan ly du lieu game mo chu</h2>
+      <div class="gx-section-card__meta">Them truc tiep tu moi vao database de game word puzzle su dung ngay khi mo trang.</div>
+    </div>
+
+    <form id="adminPuzzleWordForm" class="row g-2 align-items-end">
+      <div class="col-md-8">
+        <label class="form-label" for="adminPuzzleWordInput">Tu / cau hoi</label>
+        <input id="adminPuzzleWordInput"
+               class="form-control"
+               placeholder="VD: SPRINGBOOT"
+               maxlength="12"
+               required>
+      </div>
+      <div class="col-md-2">
+        <button id="adminPuzzleWordReloadBtn" type="button" class="btn theme-outline-btn w-100">Tai lai</button>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Them vao DB</button>
+      </div>
+      <div class="col-12">
+        <div id="adminPuzzleWordStatus" class="small mb-0 theme-text" role="status" aria-live="polite"></div>
+      </div>
+    </form>
+
+    <div class="table-responsive mt-3">
+      <table class="table table-bordered table-hover align-middle mb-0">
+        <thead>
+        <tr class="theme-table-header">
+          <th>ID</th>
+          <th>Tu</th>
+          <th>So ky tu</th>
+        </tr>
+        </thead>
+        <tbody id="adminPuzzleWordTableBody">
+        <tr><td colspan="3" class="text-center text-muted">Dang tai...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="theme-box rounded p-3 mb-3 gx-section-card">
+    <div class="gx-section-card__head">
+      <h2 class="gx-section-card__title theme-text mb-0">Bo loc chat tho tuc</h2>
+      <div class="gx-section-card__meta">Mac dinh da co san mot bo tu cấm. Admin co the them cum tu moi vao database de mo rong bo loc.</div>
+    </div>
+
+    <form id="adminModerationTermForm" class="row g-2 align-items-end">
+      <div class="col-md-8">
+        <label class="form-label" for="adminModerationTermInput">Cum tu can chan</label>
+        <input id="adminModerationTermInput"
+               class="form-control"
+               placeholder="VD: lag switch"
+               maxlength="64"
+               required>
+      </div>
+      <div class="col-md-2">
+        <button id="adminModerationTermReloadBtn" type="button" class="btn theme-outline-btn w-100">Tai lai</button>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Them vao DB</button>
+      </div>
+      <div class="col-12">
+        <div id="adminModerationTermStatus" class="small mb-0 theme-text" role="status" aria-live="polite"></div>
+      </div>
+    </form>
+
+    <div class="table-responsive mt-3">
+      <table class="table table-bordered table-hover align-middle mb-0">
+        <thead>
+        <tr class="theme-table-header">
+          <th>ID</th>
+          <th>Cum tu</th>
+          <th>Nguon</th>
+          <th>Thao tac</th>
+        </tr>
+        </thead>
+        <tbody id="adminModerationTermTableBody">
+        <tr><td colspan="4" class="text-center text-muted">Dang tai...</td></tr>
         </tbody>
       </table>
     </div>

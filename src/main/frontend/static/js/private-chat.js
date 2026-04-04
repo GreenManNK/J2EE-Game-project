@@ -226,6 +226,16 @@
         }
         return;
       }
+      if (payload.type === 'WARNING') {
+        if (!payload.roomKey || payload.roomKey === roomKey || payload.userId === currentUserId) {
+          const warning = payload.message || 'Tin nhan da bi an noi dung.';
+          setStatus(warning);
+          if (payload.userId === currentUserId) {
+            showToast(warning, 'warning');
+          }
+        }
+        return;
+      }
       if (payload.type !== 'PRIVATE_CHAT') {
         return;
       }
@@ -384,7 +394,13 @@
         throw new Error(String(data?.error || 'Khong gui duoc tin nhan'));
       }
       handleIncoming(data.payload);
-      setStatus('Da gui qua API');
+      if (data.warning) {
+        const warning = String(data.warning);
+        setStatus(warning);
+        showToast(warning, 'warning');
+      } else {
+        setStatus('Da gui qua API');
+      }
       schedulePoll();
     }
 

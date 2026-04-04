@@ -5,35 +5,44 @@ import com.game.hub.entity.UserAccount;
 import com.game.hub.repository.GameHistoryRepository;
 import com.game.hub.repository.UserAccountRepository;
 import com.game.hub.service.AchievementService;
+import com.game.hub.service.WinningStreakService;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class GameRoomService {
     private static final int BOARD_SIZE = 10;
     private static final int MAX_SPECTATORS = 4;
+    private static final String ADVANCED_ROOM_PREFIX = "Advanced_";
 
     private final Map<String, Map<String, String>> roomPlayers = new ConcurrentHashMap<>();
     private final Map<String, List<String>> roomSpectators = new ConcurrentHashMap<>();
     private final Map<String, String[][]> boards = new ConcurrentHashMap<>();
     private final Map<String, String> currentTurn = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, List<SkillType>>> roomSkillInventory = new ConcurrentHashMap<>();
 
     private final UserAccountRepository userAccountRepository;
     private final GameHistoryRepository gameHistoryRepository;
     private final AchievementService achievementService;
+    private final WinningStreakService winningStreakService;
+    private final Random random = new Random();
 
     public GameRoomService(UserAccountRepository userAccountRepository,
                            GameHistoryRepository gameHistoryRepository,
-                           AchievementService achievementService) {
+                           AchievementService achievementService,
+                           WinningStreakService winningStreakService) {
         this.userAccountRepository = userAccountRepository;
         this.gameHistoryRepository = gameHistoryRepository;
         this.achievementService = achievementService;
+        this.winningStreakService = winningStreakService;
     }
 
     public synchronized JoinResult joinRoom(String roomId, String userId) {
@@ -43,8 +52,10 @@ public class GameRoomService {
 
         Map<String, String> players = roomPlayers.computeIfAbsent(roomId, k -> new ConcurrentHashMap<>());
         List<String> spectators = roomSpectators.computeIfAbsent(roomId, k -> new ArrayList<>());
+        roomSkillInventory.computeIfAbsent(roomId, k -> new ConcurrentHashMap<>());
 
         if (players.containsKey(userId)) {
+            ensurePlayerSkillInventory(roomId, userId);
             return new JoinResult(true, players.get(userId), null, currentTurn.get(roomId), players.size(), spectators.size());
         }
         if (players.size() >= 2) {
@@ -56,6 +67,7 @@ public class GameRoomService {
             return new JoinResult(false, null, "Room is full", currentTurn.get(roomId), players.size(), spectators.size());
         }
         players.put(userId, symbol);
+        ensurePlayerSkillInventory(roomId, userId);
 
         boards.computeIfAbsent(roomId, k -> new String[BOARD_SIZE][BOARD_SIZE]);
         if (!currentTurn.containsKey(roomId)) {
@@ -117,7 +129,27 @@ public class GameRoomService {
         int totalMoves = countMoves(board);
 
         List<BoardPoint> winLine = findWinLine(board, x, y, symbol);
+        boolean advancedMode = isAdvancedModeRoom(roomId);
         boolean win = winLine != null;
+        if (win && advancedMode && totalMoves < (BOARD_SIZE * BOARD_SIZE)) {
+            SkillType awardedSkill = awardRandomAdvancedSkill(roomId, userId);
+            String nextPlayer = opponentId(players, userId);
+            if (nextPlayer == null || nextPlayer.isBlank()) {
+                nextPlayer = userId;
+            }
+            currentTurn.put(roomId, nextPlayer);
+            return MoveResult.skillAwarded(
+                symbol,
+                x,
+                y,
+                nextPlayer,
+                userId,
+                awardedSkill == null ? null : awardedSkill.code(),
+                winLine,
+                getSkillChargesSnapshot(roomId),
+                getSkillTypesSnapshot(roomId)
+            );
+        }
         if (win) {
             String loserId = players.keySet().stream().filter(id -> !id.equals(userId)).findFirst().orElse(null);
             Integer winnerScoreBefore = null;
@@ -142,6 +174,7 @@ public class GameRoomService {
                     roomId, userId, loserId, totalMoves, winnerScoreBefore, loserScoreBefore, topPlayerIdBeforeMatch
                 );
             }
+            winningStreakService.recordMatchResult(userId, loserId);
 
             currentTurn.remove(roomId);
             return MoveResult.win(symbol, x, y, userId, loserId, winnerScore, loserScore, winLine);
@@ -191,20 +224,97 @@ public class GameRoomService {
         achievementService.evaluateAfterMatch(
             roomId, winnerId, userId, moves, winnerScoreBefore, loserScoreBefore, topPlayerIdBeforeMatch
         );
+        winningStreakService.recordMatchResult(winnerId, userId);
 
         currentTurn.remove(roomId);
         return SurrenderResult.ok(winnerId, userId, winnerScore, loserScore);
+    }
+
+    public synchronized SkillResult useSkill(String roomId, String userId) {
+        if (!skillsEnabledForRoom(roomId)) {
+            return SkillResult.error("Skill chi duoc dung trong che do nang cao");
+        }
+        Map<String, String> players = roomPlayers.get(roomId);
+        if (players == null || !players.containsKey(userId)) {
+            return SkillResult.error("Player does not belong to room");
+        }
+        if (players.size() < 2) {
+            return SkillResult.error("Waiting for opponent");
+        }
+        String turnUserId = currentTurn.get(roomId);
+        if (turnUserId == null || turnUserId.isBlank()) {
+            return SkillResult.error("Round is not active");
+        }
+        if (!userId.equals(turnUserId)) {
+            return SkillResult.error("Skill can only be used on your turn");
+        }
+
+        SkillType activeSkill = peekNextSkill(roomId, userId);
+        if (activeSkill == null) {
+            return SkillResult.error("You do not have any skill charges");
+        }
+
+        String opponentId = opponentId(players, userId);
+        if (opponentId == null || opponentId.isBlank()) {
+            return SkillResult.error("Opponent not found");
+        }
+
+        String opponentSymbol = players.get(opponentId);
+        String[][] board = boards.get(roomId);
+        if (board == null) {
+            return SkillResult.error("Board is not ready");
+        }
+
+        List<BoardPoint> removedPieces = new ArrayList<>();
+        String nextTurnUserId = opponentId;
+
+        if (activeSkill.requiresOpponentPiece()) {
+            List<BoardPoint> removablePieces = collectPieces(board, opponentSymbol);
+            if (removablePieces.isEmpty()) {
+                return SkillResult.error("Opponent has no pieces to remove");
+            }
+            int piecesToRemove = Math.min(activeSkill.removalCount(), removablePieces.size());
+            for (int index = 0; index < piecesToRemove; index += 1) {
+                BoardPoint removedPiece = removablePieces.remove(random.nextInt(removablePieces.size()));
+                board[removedPiece.x()][removedPiece.y()] = null;
+                removedPieces.add(removedPiece);
+            }
+        } else if (activeSkill == SkillType.EXTRA_TURN) {
+            nextTurnUserId = userId;
+        }
+
+        consumeNextSkill(roomId, userId);
+        currentTurn.put(roomId, nextTurnUserId);
+        int remainingCharges = getSkillChargesSnapshot(roomId).getOrDefault(userId, 0);
+        BoardPoint firstRemoved = removedPieces.isEmpty() ? null : removedPieces.get(0);
+
+        return SkillResult.ok(
+            firstRemoved == null ? -1 : firstRemoved.x(),
+            firstRemoved == null ? -1 : firstRemoved.y(),
+            removedPieces,
+            opponentId,
+            remainingCharges,
+            nextTurnUserId,
+            getSkillChargesSnapshot(roomId),
+            getSkillTypesSnapshot(roomId),
+            activeSkill.code()
+        );
     }
 
     public synchronized void leaveRoom(String roomId, String userId) {
         Map<String, String> players = roomPlayers.get(roomId);
         if (players != null) {
             players.remove(userId);
+            Map<String, List<SkillType>> skillInventory = roomSkillInventory.get(roomId);
+            if (skillInventory != null) {
+                skillInventory.remove(userId);
+            }
             if (players.isEmpty()) {
                 roomPlayers.remove(roomId);
                 boards.remove(roomId);
                 currentTurn.remove(roomId);
                 roomSpectators.remove(roomId);
+                roomSkillInventory.remove(roomId);
                 return;
             }
         }
@@ -261,6 +371,49 @@ public class GameRoomService {
         return currentTurn.get(roomId);
     }
 
+    public synchronized Map<String, Integer> getSkillChargesSnapshot(String roomId) {
+        if (!skillsEnabledForRoom(roomId)) {
+            return Map.of();
+        }
+        Map<String, List<SkillType>> source = roomSkillInventory.get(roomId);
+        Map<String, Integer> snapshot = new HashMap<>();
+        if (source == null) {
+            return snapshot;
+        }
+        source.forEach((playerId, skills) -> snapshot.put(playerId, skills == null ? 0 : Math.max(0, skills.size())));
+        return snapshot;
+    }
+
+    public synchronized Map<String, List<String>> getSkillTypesSnapshot(String roomId) {
+        if (!skillsEnabledForRoom(roomId)) {
+            return Map.of();
+        }
+        Map<String, List<SkillType>> source = roomSkillInventory.get(roomId);
+        Map<String, List<String>> snapshot = new HashMap<>();
+        if (source == null) {
+            return snapshot;
+        }
+        source.forEach((playerId, skills) -> {
+            List<String> codes = new ArrayList<>();
+            if (skills != null) {
+                for (SkillType skill : skills) {
+                    if (skill != null) {
+                        codes.add(skill.code());
+                    }
+                }
+            }
+            snapshot.put(playerId, codes);
+        });
+        return snapshot;
+    }
+
+    public boolean isAdvancedModeRoom(String roomId) {
+        if (roomId == null) {
+            return false;
+        }
+        return roomId.trim().startsWith(ADVANCED_ROOM_PREFIX);
+    }
+
     private void persistGameHistory(String roomId, Map<String, String> players, String winnerId, int moves) {
         List<Map.Entry<String, String>> entries = players.entrySet().stream().toList();
         if (entries.size() < 2) {
@@ -296,6 +449,9 @@ public class GameRoomService {
 
     private String resolveLocationLabel(String roomId) {
         String normalizedRoomId = roomId == null ? "" : roomId.trim();
+        if (normalizedRoomId.startsWith(ADVANCED_ROOM_PREFIX)) {
+            return "Phong nang cao Caro";
+        }
         if (normalizedRoomId.startsWith("Ranked_")) {
             return "Phong xep hang Caro";
         }
@@ -334,6 +490,73 @@ public class GameRoomService {
         userAccountRepository.save(winner);
         userAccountRepository.save(loser);
         return new ScoreUpdate(winner.getScore(), loser.getScore());
+    }
+
+    private void ensurePlayerSkillInventory(String roomId, String userId) {
+        if (roomId == null || roomId.isBlank() || userId == null || userId.isBlank()) {
+            return;
+        }
+        roomSkillInventory
+            .computeIfAbsent(roomId, k -> new ConcurrentHashMap<>())
+            .computeIfAbsent(userId, k -> new ArrayList<>());
+    }
+
+    private SkillType awardRandomAdvancedSkill(String roomId, String userId) {
+        SkillType[] pool = SkillType.advancedPool();
+        SkillType awarded = pool[random.nextInt(pool.length)];
+        awardSkill(roomId, userId, awarded);
+        return awarded;
+    }
+
+    private void awardSkill(String roomId, String userId, SkillType skillType) {
+        if (!skillsEnabledForRoom(roomId) || userId == null || userId.isBlank() || skillType == null) {
+            return;
+        }
+        List<SkillType> inventory = skillInventoryFor(roomId, userId);
+        inventory.add(skillType);
+    }
+
+    private boolean skillsEnabledForRoom(String roomId) {
+        return isAdvancedModeRoom(roomId);
+    }
+
+    private SkillType peekNextSkill(String roomId, String userId) {
+        List<SkillType> inventory = skillInventoryFor(roomId, userId);
+        return inventory.isEmpty() ? null : inventory.get(0);
+    }
+
+    private void consumeNextSkill(String roomId, String userId) {
+        List<SkillType> inventory = skillInventoryFor(roomId, userId);
+        if (!inventory.isEmpty()) {
+            inventory.remove(0);
+        }
+    }
+
+    private List<SkillType> skillInventoryFor(String roomId, String userId) {
+        ensurePlayerSkillInventory(roomId, userId);
+        return roomSkillInventory.get(roomId).get(userId);
+    }
+
+    private String opponentId(Map<String, String> players, String userId) {
+        return players.keySet().stream()
+            .filter(id -> !id.equals(userId))
+            .findFirst()
+            .orElse(null);
+    }
+
+    private List<BoardPoint> collectPieces(String[][] board, String symbol) {
+        List<BoardPoint> result = new ArrayList<>();
+        if (board == null || symbol == null || symbol.isBlank()) {
+            return result;
+        }
+        for (int x = 0; x < BOARD_SIZE; x++) {
+            for (int y = 0; y < BOARD_SIZE; y++) {
+                if (symbol.equals(board[x][y])) {
+                    result.add(new BoardPoint(x, y));
+                }
+            }
+        }
+        return result;
     }
 
     private int countMoves(String[][] board) {
@@ -415,22 +638,55 @@ public class GameRoomService {
 
     public record MoveResult(boolean ok, boolean win, boolean draw, String symbol, int x, int y, String nextTurnUserId,
                              String winnerUserId, String loserUserId, Integer winnerScore, Integer loserScore,
-                             List<BoardPoint> winLine, String error) {
+                             List<BoardPoint> winLine, boolean skillAwarded, String awardedUserId,
+                             String awardedSkillType, Map<String, Integer> skillCharges,
+                             Map<String, List<String>> skillTypes, String error) {
         public static MoveResult ok(String symbol, int x, int y, String nextTurnUserId) {
-            return new MoveResult(true, false, false, symbol, x, y, nextTurnUserId, null, null, null, null, null, null);
+            return new MoveResult(true, false, false, symbol, x, y, nextTurnUserId, null, null, null, null, null, false, null, null, null, null, null);
+        }
+
+        public static MoveResult skillAwarded(String symbol,
+                                              int x,
+                                              int y,
+                                              String nextTurnUserId,
+                                              String awardedUserId,
+                                              String awardedSkillType,
+                                              List<BoardPoint> winLine,
+                                              Map<String, Integer> skillCharges,
+                                              Map<String, List<String>> skillTypes) {
+            return new MoveResult(
+                true,
+                false,
+                false,
+                symbol,
+                x,
+                y,
+                nextTurnUserId,
+                null,
+                null,
+                null,
+                null,
+                winLine,
+                true,
+                awardedUserId,
+                awardedSkillType,
+                skillCharges,
+                skillTypes,
+                null
+            );
         }
 
         public static MoveResult win(String symbol, int x, int y, String winnerUserId, String loserId,
                                      Integer winnerScore, Integer loserScore, List<BoardPoint> winLine) {
-            return new MoveResult(true, true, false, symbol, x, y, null, winnerUserId, loserId, winnerScore, loserScore, winLine, null);
+            return new MoveResult(true, true, false, symbol, x, y, null, winnerUserId, loserId, winnerScore, loserScore, winLine, false, null, null, null, null, null);
         }
 
         public static MoveResult draw(String symbol, int x, int y) {
-            return new MoveResult(true, false, true, symbol, x, y, null, null, null, null, null, null, null);
+            return new MoveResult(true, false, true, symbol, x, y, null, null, null, null, null, null, false, null, null, null, null, null);
         }
 
         public static MoveResult error(String error) {
-            return new MoveResult(false, false, false, null, -1, -1, null, null, null, null, null, null, error);
+            return new MoveResult(false, false, false, null, -1, -1, null, null, null, null, null, null, false, null, null, null, null, error);
         }
     }
 
@@ -443,6 +699,82 @@ public class GameRoomService {
 
         public static SurrenderResult error(String error) {
             return new SurrenderResult(false, null, null, null, null, error);
+        }
+    }
+
+    public record SkillResult(boolean ok,
+                              int removedX,
+                              int removedY,
+                              List<BoardPoint> removedPoints,
+                              String affectedUserId,
+                              Integer remainingCharges,
+                              String nextTurnUserId,
+                              Map<String, Integer> skillCharges,
+                              Map<String, List<String>> skillTypes,
+                              String usedSkillType,
+                              String error) {
+        public static SkillResult ok(int removedX,
+                                     int removedY,
+                                     List<BoardPoint> removedPoints,
+                                     String affectedUserId,
+                                     Integer remainingCharges,
+                                     String nextTurnUserId,
+                                     Map<String, Integer> skillCharges,
+                                     Map<String, List<String>> skillTypes,
+                                     String usedSkillType) {
+            return new SkillResult(true, removedX, removedY, removedPoints, affectedUserId, remainingCharges, nextTurnUserId, skillCharges, skillTypes, usedSkillType, null);
+        }
+
+        public static SkillResult ok(int removedX,
+                                     int removedY,
+                                     String affectedUserId,
+                                     Integer remainingCharges,
+                                     String nextTurnUserId,
+                                     Map<String, Integer> skillCharges) {
+            List<BoardPoint> removedPoints = removedX >= 0 && removedY >= 0
+                ? List.of(new BoardPoint(removedX, removedY))
+                : List.of();
+            return new SkillResult(true, removedX, removedY, removedPoints, affectedUserId, remainingCharges, nextTurnUserId, skillCharges, null, SkillType.REMOVE_RANDOM_PIECE.code(), null);
+        }
+
+        public static SkillResult error(String error) {
+            return new SkillResult(false, -1, -1, List.of(), null, null, null, null, null, null, error);
+        }
+    }
+
+    public enum SkillType {
+        REMOVE_RANDOM_PIECE("REMOVE_RANDOM_PIECE", 1, true),
+        REMOVE_DOUBLE_RANDOM_PIECE("REMOVE_DOUBLE_RANDOM_PIECE", 2, true),
+        EXTRA_TURN("EXTRA_TURN", 0, false);
+
+        private final String code;
+        private final int removalCount;
+        private final boolean requiresOpponentPiece;
+
+        SkillType(String code, int removalCount, boolean requiresOpponentPiece) {
+            this.code = code;
+            this.removalCount = removalCount;
+            this.requiresOpponentPiece = requiresOpponentPiece;
+        }
+
+        public String code() {
+            return code;
+        }
+
+        public int removalCount() {
+            return removalCount;
+        }
+
+        public boolean requiresOpponentPiece() {
+            return requiresOpponentPiece;
+        }
+
+        public static SkillType[] advancedPool() {
+            return new SkillType[] {
+                REMOVE_RANDOM_PIECE,
+                REMOVE_DOUBLE_RANDOM_PIECE,
+                EXTRA_TURN
+            };
         }
     }
 

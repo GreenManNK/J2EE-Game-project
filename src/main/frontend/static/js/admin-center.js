@@ -64,6 +64,8 @@
       usersPage: 0,
       usersPageSize: 10,
       usersTotalPages: 1,
+      puzzleWords: [],
+      moderationTerms: [],
       modules: [],
       previewModules: [],
       previewSource: "",
@@ -95,6 +97,16 @@
     const usersExportCsvPage = document.getElementById("adminUsersExportCsvPage");
     const usersExportExcelAll = document.getElementById("adminUsersExportExcelAll");
     const createUserForm = document.getElementById("adminCenterCreateUserForm");
+    const puzzleWordForm = document.getElementById("adminPuzzleWordForm");
+    const puzzleWordInput = document.getElementById("adminPuzzleWordInput");
+    const puzzleWordReloadBtn = document.getElementById("adminPuzzleWordReloadBtn");
+    const puzzleWordStatus = document.getElementById("adminPuzzleWordStatus");
+    const puzzleWordTableBody = document.getElementById("adminPuzzleWordTableBody");
+    const moderationTermForm = document.getElementById("adminModerationTermForm");
+    const moderationTermInput = document.getElementById("adminModerationTermInput");
+    const moderationTermReloadBtn = document.getElementById("adminModerationTermReloadBtn");
+    const moderationTermStatus = document.getElementById("adminModerationTermStatus");
+    const moderationTermTableBody = document.getElementById("adminModerationTermTableBody");
 
     const modulesStatus = document.getElementById("adminGameModulesStatus");
     const modulesTableBody = document.getElementById("adminGameModulesTableBody");
@@ -224,7 +236,7 @@
         return;
       }
       if (pageItems.length === 0) {
-        usersTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Khong co tai khoan phu hop.</td></tr>';
+        usersTableBody.innerHTML = '<tr><td colspan="11" class="text-center text-muted">Khong co tai khoan phu hop.</td></tr>';
         buildUsersExportLinks();
         updateTopBadges();
         return;
@@ -236,20 +248,37 @@
         const displayName = escapeHtml(u.displayName || "");
         const role = escapeHtml(roleLabel(u.role || "User"));
         const score = escapeHtml(String(u.score ?? 0));
+        const winningStreak = escapeHtml(String(u.winningStreak ?? 0));
+        const chessWinCount = Math.max(0, Number.parseInt(String(u.chessWinCount ?? 0), 10) || 0);
+        const flamingChessIconUnlocked = !!u.flamingChessIconUnlocked;
+        const chessUnlockReady = chessWinCount >= 10;
+        const chessUnlockStatus = flamingChessIconUnlocked
+          ? '<span class="badge text-bg-danger">Co vua boc lua</span>'
+          : '<span class="badge text-bg-light">Chua mo</span>';
+        const violationCount = escapeHtml(String(u.abusiveContentViolationCount ?? 0));
+        const communicationRestrictedUntil = escapeHtml(String(u.communicationRestrictedUntil ?? "-"));
         const banned = !!u.banned || !!u.isBanned || !!u.bannedUntil;
         const banLabel = banned ? "Da khoa" : "Dang hoat dong";
         const banBtn = banned
           ? '<button type="button" class="btn btn-sm btn-outline-success" data-user-action="unban" data-user-id="' + id + '">Mo khoa</button>'
           : '<button type="button" class="btn btn-sm btn-outline-warning" data-user-action="ban60" data-user-id="' + id + '">Khoa 60 phut</button>';
+        const unlockBtn = flamingChessIconUnlocked
+          ? '<button type="button" class="btn btn-sm btn-outline-danger" disabled>Da mo icon Chess</button>'
+          : '<button type="button" class="btn btn-sm btn-outline-primary" data-user-action="unlockChessFlame" data-user-id="' + id + '"' + (chessUnlockReady ? '' : ' disabled') + '>Mo icon Chess</button>';
         return '' +
           "<tr>" +
           "<td>" + id + "</td>" +
           "<td>" + email + "</td>" +
           "<td>" + displayName + "</td>" +
           "<td>" + score + "</td>" +
+          "<td>" + winningStreak + "</td>" +
+          "<td><div>" + chessWinCount + "/10 chien thang</div><div class=\"small text-muted\">" + chessUnlockStatus + "</div></td>" +
+          "<td>" + violationCount + "</td>" +
+          "<td>" + communicationRestrictedUntil + "</td>" +
           "<td>" + role + "</td>" +
           "<td>" + banLabel + "</td>" +
           "<td class=\"d-flex flex-wrap gap-1\">" +
+          unlockBtn +
           banBtn +
           "<button type=\"button\" class=\"btn btn-sm btn-outline-danger\" data-user-action=\"delete\" data-user-id=\"" + id + "\">Xoa</button>" +
           "</td>" +
@@ -283,7 +312,7 @@
       } catch (error) {
         setStatus(usersStatus, String(error?.message || error || "Khong tai duoc danh sach tai khoan"), false);
         if (usersTableBody) {
-          usersTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Khong tai duoc danh sach tai khoan.</td></tr>';
+          usersTableBody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">Khong tai duoc danh sach tai khoan.</td></tr>';
         }
       }
     }
@@ -312,6 +341,9 @@
       } else if (action === "unban") {
         url = appPath("/admin/users/" + encodeURIComponent(userId) + "/unban");
         method = "POST";
+      } else if (action === "unlockChessFlame") {
+        url = appPath("/admin/users/" + encodeURIComponent(userId) + "/unlock-flaming-chess-icon");
+        method = "POST";
       }
 
       const response = await fetch(url, {
@@ -320,6 +352,109 @@
         body
       });
       return response.json();
+    }
+
+    function renderPuzzleWords() {
+      if (!puzzleWordTableBody) {
+        return;
+      }
+      if (!Array.isArray(state.puzzleWords) || state.puzzleWords.length === 0) {
+        puzzleWordTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Database word puzzle chua co du lieu.</td></tr>';
+        return;
+      }
+      puzzleWordTableBody.innerHTML = state.puzzleWords.map((item) => {
+        const id = escapeHtml(String(item.id ?? ""));
+        const word = escapeHtml(String(item.word ?? ""));
+        const length = escapeHtml(String(item.length ?? word.length));
+        return '' +
+          '<tr>' +
+          '<td>' + id + '</td>' +
+          '<td>' + word + '</td>' +
+          '<td>' + length + '</td>' +
+          '</tr>';
+      }).join("");
+    }
+
+    async function loadPuzzleWords() {
+      try {
+        const response = await fetch(appPath("/admin/api/puzzle-words"), {
+          cache: "no-store"
+        });
+        const data = await readJsonResponse(response);
+        state.puzzleWords = Array.isArray(data?.words) ? data.words : [];
+        renderPuzzleWords();
+      } catch (error) {
+        setStatus(puzzleWordStatus, String(error?.message || error || "Khong tai duoc du lieu mo chu"), false);
+        if (puzzleWordTableBody) {
+          puzzleWordTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">Khong tai duoc du lieu mo chu.</td></tr>';
+        }
+      }
+    }
+
+    async function createPuzzleWord(word) {
+      const response = await fetch(appPath("/admin/api/puzzle-words"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ word })
+      });
+      return readJsonResponse(response);
+    }
+
+    function renderModerationTerms() {
+      if (!moderationTermTableBody) {
+        return;
+      }
+      if (!Array.isArray(state.moderationTerms) || state.moderationTerms.length === 0) {
+        moderationTermTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Chua co cum tu can chan nao.</td></tr>';
+        return;
+      }
+      moderationTermTableBody.innerHTML = state.moderationTerms.map((item) => {
+        const id = item.id == null ? "-" : escapeHtml(String(item.id));
+        const term = escapeHtml(String(item.term ?? ""));
+        const sourceLabel = escapeHtml(String(item.sourceLabel ?? item.source ?? "Mac dinh"));
+        const deleteBtn = item.deletable
+          ? '<button type="button" class="btn btn-sm btn-outline-danger" data-moderation-action="delete" data-moderation-id="' + escapeHtml(String(item.id)) + '">Xoa</button>'
+          : '<span class="badge text-bg-light">Mac dinh</span>';
+        return '' +
+          '<tr>' +
+          '<td>' + id + '</td>' +
+          '<td>' + term + '</td>' +
+          '<td>' + sourceLabel + '</td>' +
+          '<td>' + deleteBtn + '</td>' +
+          '</tr>';
+      }).join("");
+    }
+
+    async function loadModerationTerms() {
+      try {
+        const response = await fetch(appPath("/admin/api/chat-moderation/terms"), {
+          cache: "no-store"
+        });
+        const data = await readJsonResponse(response);
+        state.moderationTerms = Array.isArray(data?.terms) ? data.terms : [];
+        renderModerationTerms();
+      } catch (error) {
+        setStatus(moderationTermStatus, String(error?.message || error || "Khong tai duoc bo loc chat"), false);
+        if (moderationTermTableBody) {
+          moderationTermTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Khong tai duoc bo loc chat.</td></tr>';
+        }
+      }
+    }
+
+    async function createModerationTerm(term) {
+      const response = await fetch(appPath("/admin/api/chat-moderation/terms"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ term })
+      });
+      return readJsonResponse(response);
+    }
+
+    async function deleteModerationTerm(id) {
+      const response = await fetch(appPath("/admin/api/chat-moderation/terms/" + encodeURIComponent(id)), {
+        method: "DELETE"
+      });
+      return readJsonResponse(response);
     }
 
     function readCheckbox(el, fallback) {
@@ -998,7 +1133,11 @@
         const ok = !!(data && data.success);
         const successMessage = action === "delete"
           ? "Da xoa tai khoan"
-          : (action === "ban60" ? "Da khoa tai khoan 60 phut" : "Da mo khoa tai khoan");
+          : (action === "ban60"
+            ? "Da khoa tai khoan 60 phut"
+            : (action === "unlockChessFlame"
+              ? String(data?.message || "Da mo khoa icon Co vua boc lua")
+              : "Da mo khoa tai khoan"));
         setStatus(usersStatus, ok ? successMessage : String(data?.error || "Khong the cap nhat tai khoan"), ok);
         if (ok) {
           await loadUsers(false);
@@ -1007,6 +1146,95 @@
         }
       } catch (error) {
         setStatus(usersStatus, String(error?.message || error || "Khong the cap nhat tai khoan"), false);
+        button.disabled = false;
+      }
+    });
+
+    puzzleWordReloadBtn?.addEventListener("click", () => {
+      void loadPuzzleWords();
+    });
+
+    puzzleWordForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const word = normalizeText(puzzleWordInput?.value).toUpperCase();
+      if (!word) {
+        setStatus(puzzleWordStatus, "Vui long nhap tu can them vao database.", false);
+        return;
+      }
+      try {
+        const data = await createPuzzleWord(word);
+        const ok = !!(data && data.success);
+        setStatus(
+          puzzleWordStatus,
+          ok ? "Da them tu moi vao database mo chu." : String(data?.error || "Khong them duoc tu moi"),
+          ok
+        );
+        if (ok) {
+          if (puzzleWordInput) {
+            puzzleWordInput.value = "";
+          }
+          await loadPuzzleWords();
+        }
+      } catch (error) {
+        setStatus(puzzleWordStatus, String(error?.message || error || "Khong them duoc tu moi"), false);
+      }
+    });
+
+    moderationTermReloadBtn?.addEventListener("click", () => {
+      void loadModerationTerms();
+    });
+
+    moderationTermForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const term = normalizeText(moderationTermInput?.value);
+      if (!term) {
+        setStatus(moderationTermStatus, "Vui long nhap cum tu can them vao database.", false);
+        return;
+      }
+      try {
+        const data = await createModerationTerm(term);
+        const ok = !!(data && data.success);
+        setStatus(
+          moderationTermStatus,
+          ok ? "Da them cum tu can chan vao database." : String(data?.error || "Khong them duoc cum tu can chan"),
+          ok
+        );
+        if (ok) {
+          if (moderationTermInput) {
+            moderationTermInput.value = "";
+          }
+          await loadModerationTerms();
+        }
+      } catch (error) {
+        setStatus(moderationTermStatus, String(error?.message || error || "Khong them duoc cum tu can chan"), false);
+      }
+    });
+
+    moderationTermTableBody?.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-moderation-action='delete'][data-moderation-id]");
+      if (!button) {
+        return;
+      }
+      const id = button.getAttribute("data-moderation-id");
+      if (!id) {
+        return;
+      }
+      button.disabled = true;
+      try {
+        const data = await deleteModerationTerm(id);
+        const ok = !!(data && data.success);
+        setStatus(
+          moderationTermStatus,
+          ok ? "Da xoa cum tu can chan khoi database." : String(data?.error || "Khong xoa duoc cum tu can chan"),
+          ok
+        );
+        if (ok) {
+          await loadModerationTerms();
+        } else {
+          button.disabled = false;
+        }
+      } catch (error) {
+        setStatus(moderationTermStatus, String(error?.message || error || "Khong xoa duoc cum tu can chan"), false);
         button.disabled = false;
       }
     });
@@ -1288,6 +1516,8 @@
 
     void Promise.all([
       loadUsers(true),
+      loadPuzzleWords(),
+      loadModerationTerms(),
       loadModules(),
       loadNotices(),
       loadLogs(true)

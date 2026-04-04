@@ -121,8 +121,8 @@ class QuizSocketTest {
         socket.handleTextMessage(firstSession, new TextMessage("{\"action\":\"answer\",\"answer\":\"Jupiter\"}"));
         socket.handleTextMessage(secondSession, new TextMessage("{\"action\":\"answer\",\"answer\":\"Mars\"}"));
 
-        verify(achievementService).checkAndAward("quiz-player-3", "Quiz", true);
-        verify(achievementService, never()).checkAndAward("quiz-player-4", "Quiz", true);
+        verify(achievementService).recordRewardedWin("quiz-player-3", "Quiz");
+        verify(achievementService, never()).recordRewardedWin("quiz-player-4", "Quiz");
     }
 
     @Test

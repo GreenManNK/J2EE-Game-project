@@ -19,13 +19,16 @@ public class PrivateChatService {
     private final UserAccountRepository userAccountRepository;
     private final FriendshipService friendshipService;
     private final PrivateChatRecordRepository privateChatRecordRepository;
+    private final CommunicationGuardService communicationGuardService;
 
     public PrivateChatService(UserAccountRepository userAccountRepository,
                               FriendshipService friendshipService,
-                              PrivateChatRecordRepository privateChatRecordRepository) {
+                              PrivateChatRecordRepository privateChatRecordRepository,
+                              CommunicationGuardService communicationGuardService) {
         this.userAccountRepository = userAccountRepository;
         this.friendshipService = friendshipService;
         this.privateChatRecordRepository = privateChatRecordRepository;
+        this.communicationGuardService = communicationGuardService;
     }
 
     public ChatBootstrapResult buildChatBootstrap(String currentUserId, String friendId) {
@@ -81,6 +84,11 @@ public class PrivateChatService {
         if (normalizedContent.length() > MAX_MESSAGE_LENGTH) {
             normalizedContent = normalizedContent.substring(0, MAX_MESSAGE_LENGTH);
         }
+        CommunicationGuardService.ChatMessageDecision chatDecision = communicationGuardService.inspectChatMessage(normalizedCurrentUserId, normalizedContent);
+        if (!chatDecision.allowed()) {
+            return SendResult.error(roomKey(normalizedCurrentUserId, normalizedFriendId), normalizedCurrentUserId, chatDecision.notice());
+        }
+        normalizedContent = trimToNull(chatDecision.deliveryContent());
 
         UserAccount currentUser = userAccountRepository.findById(normalizedCurrentUserId).orElse(null);
         UserAccount friend = userAccountRepository.findById(normalizedFriendId).orElse(null);
@@ -97,7 +105,7 @@ public class PrivateChatService {
                 .findFirstByRoomKeyAndClientMessageId(roomKey, normalizedClientMessageId)
                 .orElse(null);
             if (existing != null) {
-                return SendResult.success(roomKey, existing.getFromUserId(), payloadFor(existing));
+                return SendResult.success(roomKey, existing.getFromUserId(), payloadFor(existing), null);
             }
         }
 
@@ -118,13 +126,13 @@ public class PrivateChatService {
                     .findFirstByRoomKeyAndClientMessageId(roomKey, normalizedClientMessageId)
                     .orElse(null);
                 if (existing != null) {
-                    return SendResult.success(roomKey, existing.getFromUserId(), payloadFor(existing));
+                    return SendResult.success(roomKey, existing.getFromUserId(), payloadFor(existing), null);
                 }
             }
             throw ex;
         }
 
-        return SendResult.success(roomKey, saved.getFromUserId(), payloadFor(saved));
+        return SendResult.success(roomKey, saved.getFromUserId(), payloadFor(saved), chatDecision.notice());
     }
 
     public String roomKey(String userIdA, String userIdB) {
@@ -231,13 +239,18 @@ public class PrivateChatService {
                              String error,
                              String roomKey,
                              String userId,
-                             Map<String, Object> payload) {
+                             Map<String, Object> payload,
+                             String warning) {
         public static SendResult success(String roomKey, String userId, Map<String, Object> payload) {
-            return new SendResult(true, null, roomKey, userId, payload);
+            return new SendResult(true, null, roomKey, userId, payload, null);
+        }
+
+        public static SendResult success(String roomKey, String userId, Map<String, Object> payload, String warning) {
+            return new SendResult(true, null, roomKey, userId, payload, warning);
         }
 
         public static SendResult error(String roomKey, String userId, String error) {
-            return new SendResult(false, error, roomKey, userId, null);
+            return new SendResult(false, error, roomKey, userId, null, null);
         }
     }
 }

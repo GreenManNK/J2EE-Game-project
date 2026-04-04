@@ -200,8 +200,9 @@ public class QuizSocket extends TextWebSocketHandler {
 
     private void broadcastScores(QuizRoom room) throws IOException {
         Map<WebSocketSession, Integer> scores = room.getScores();
-        Map<String, Integer> scorePayload = new LinkedHashMap<>();
+        Map<String, Object> scorePayload = new LinkedHashMap<>();
         int topScore = scores.values().stream().mapToInt(Integer::intValue).max().orElse(0);
+        List<String> winnerUserIds = new ArrayList<>();
         List<Map.Entry<WebSocketSession, Integer>> orderedScores = scores.entrySet().stream()
             .sorted(Map.Entry.<WebSocketSession, Integer>comparingByValue(Comparator.reverseOrder()))
             .toList();
@@ -215,8 +216,19 @@ public class QuizSocket extends TextWebSocketHandler {
             if (scoreSession.getPrincipal() != null && scoreSession.getPrincipal().getName() != null) {
                 String userId = scoreSession.getPrincipal().getName().trim();
                 if (!userId.isEmpty() && score > 0 && score == topScore) {
-                    achievementService.checkAndAward(userId, "Quiz", true);
+                    winnerUserIds.add(userId);
                 }
+            }
+        }
+
+        List<String> distinctWinnerUserIds = winnerUserIds.stream()
+            .filter(userId -> userId != null && !userId.isBlank())
+            .distinct()
+            .toList();
+        if (!distinctWinnerUserIds.isEmpty()) {
+            scorePayload.put("winnerUserIds", distinctWinnerUserIds);
+            if (room.grantWinRewardOnce()) {
+                distinctWinnerUserIds.forEach(userId -> achievementService.recordRewardedWin(userId, "Quiz"));
             }
         }
 

@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -20,15 +21,18 @@ public class SecurityConfig {
     private final SessionRoleAuthenticationFilter sessionRoleAuthenticationFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
+    private final OAuth2AuthorizationRequestResolver oauth2AuthorizationRequestResolver;
     private final SocialLoginConfiguration socialLoginConfiguration;
 
     public SecurityConfig(SessionRoleAuthenticationFilter sessionRoleAuthenticationFilter,
                           OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
                           OAuth2LoginFailureHandler oAuth2LoginFailureHandler,
+                          OAuth2AuthorizationRequestResolver oauth2AuthorizationRequestResolver,
                           SocialLoginConfiguration socialLoginConfiguration) {
         this.sessionRoleAuthenticationFilter = sessionRoleAuthenticationFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
         this.oAuth2LoginFailureHandler = oAuth2LoginFailureHandler;
+        this.oauth2AuthorizationRequestResolver = oauth2AuthorizationRequestResolver;
         this.socialLoginConfiguration = socialLoginConfiguration;
     }
 
@@ -54,6 +58,8 @@ public class SecurityConfig {
         if (isSocialLoginConfigured()) {
             http.oauth2Login(oauth2 -> oauth2
                 .loginPage("/account/login-page")
+                .authorizationEndpoint(authorization -> authorization
+                    .authorizationRequestResolver(oauth2AuthorizationRequestResolver))
                 .successHandler(oAuth2LoginSuccessHandler)
                 .failureHandler(oAuth2LoginFailureHandler));
         }

@@ -21,12 +21,15 @@ public final class UserExportSupport {
 
     public static byte[] toCsv(List<UserAccount> users) {
         StringBuilder csv = new StringBuilder();
-        csv.append("User ID,Email,DisplayName,Score,Role,Online,EmailConfirmed,BannedUntil\n");
+        csv.append("User ID,Email,DisplayName,Score,WinningStreak,AbusiveContentViolationCount,CommunicationRestrictedUntil,Role,Online,EmailConfirmed,BannedUntil\n");
         for (UserAccount user : users) {
             csv.append(quote(user.getId())).append(',')
                 .append(quote(user.getEmail())).append(',')
                 .append(quote(user.getDisplayName())).append(',')
                 .append(user.getScore()).append(',')
+                .append(user.getWinningStreak()).append(',')
+                .append(user.getAbusiveContentViolationCount()).append(',')
+                .append(quote(formatDateTime(user.getCommunicationRestrictedUntil()))).append(',')
                 .append(quote(user.getRole())).append(',')
                 .append(user.isOnline()).append(',')
                 .append(user.isEmailConfirmed()).append(',')
@@ -45,6 +48,9 @@ public final class UserExportSupport {
                 "Email",
                 "Display Name",
                 "Score",
+                "Winning Streak",
+                "Abusive Content Violations",
+                "Communication Restricted Until",
                 "Role",
                 "Online",
                 "Email Confirmed",
@@ -64,10 +70,13 @@ public final class UserExportSupport {
                 row.createCell(1).setCellValue(safe(user.getEmail()));
                 row.createCell(2).setCellValue(safe(user.getDisplayName()));
                 row.createCell(3).setCellValue(user.getScore());
-                row.createCell(4).setCellValue(safe(user.getRole()));
-                row.createCell(5).setCellValue(user.isOnline() ? "Online" : "Offline");
-                row.createCell(6).setCellValue(user.isEmailConfirmed() ? "Yes" : "No");
-                row.createCell(7).setCellValue(formatDateTime(user.getBannedUntil()));
+                row.createCell(4).setCellValue(user.getWinningStreak());
+                row.createCell(5).setCellValue(user.getAbusiveContentViolationCount());
+                row.createCell(6).setCellValue(formatDateTime(user.getCommunicationRestrictedUntil()));
+                row.createCell(7).setCellValue(safe(user.getRole()));
+                row.createCell(8).setCellValue(user.isOnline() ? "Online" : "Offline");
+                row.createCell(9).setCellValue(user.isEmailConfirmed() ? "Yes" : "No");
+                row.createCell(10).setCellValue(formatDateTime(user.getBannedUntil()));
             }
 
             for (int i = 0; i < headers.length; i++) {

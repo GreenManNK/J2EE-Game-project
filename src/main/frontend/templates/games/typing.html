@@ -443,6 +443,7 @@
     let reconnectAttempts = 0;
     let manualDisconnect = false;
     let lastAutoSyncAt = 0;
+    let rewardScoreSyncedForResult = false;
     let cachedRooms = [];
     const MAX_RECONNECT_ATTEMPTS = 5;
     const RECONNECT_BASE_DELAY_MS = 1200;
@@ -458,6 +459,18 @@
         connectionStatusEl.classList.remove('error', 'success');
         if (type) {
             connectionStatusEl.classList.add(type);
+        }
+    }
+
+    function refreshRewardScoreIfWinner(winnerUserId) {
+        const currentUserId = String(window.CaroUser?.get?.()?.userId || '').trim();
+        if (!currentUserId || !winnerUserId || rewardScoreSyncedForResult || currentUserId !== String(winnerUserId).trim()) {
+            return;
+        }
+        rewardScoreSyncedForResult = true;
+        const task = window.CaroUser?.refresh?.();
+        if (task && typeof task.catch === 'function') {
+            task.catch(() => {});
         }
     }
 
@@ -860,9 +873,11 @@
                 const winner = room.winner || 'Chua xac dinh';
                 winnerDisplay.hidden = false;
                 winnerDisplay.textContent = `Nguoi ve dich: ${winner}`;
+                refreshRewardScoreIfWinner(room.winner);
                 rematchBtn.disabled = false;
                 setStatus('Tran da ket thuc. Bam tai dau de choi tiep.', 'success');
             } else {
+                rewardScoreSyncedForResult = false;
                 winnerDisplay.hidden = true;
                 rematchBtn.disabled = room.gameState !== 'PLAYING' && room.gameState !== 'WAITING' && room.gameState !== 'COUNTDOWN';
             }

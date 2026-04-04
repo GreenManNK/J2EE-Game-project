@@ -587,6 +587,7 @@
     let reconnectAttempts = 0;
     let manualDisconnect = false;
     let reconnectMode = 'join';
+    let rewardScoreSyncedForResult = false;
     let cachedRooms = [];
     const MAX_RECONNECT_ATTEMPTS = 5;
     const RECONNECT_BASE_DELAY_MS = 1200;
@@ -610,6 +611,18 @@
         questionFeedbackEl.classList.remove('error', 'success');
         if (type) {
             questionFeedbackEl.classList.add(type);
+        }
+    }
+
+    function refreshRewardScoreIfWinner(winnerUserIds) {
+        const currentUserId = String(window.CaroUser?.get?.()?.userId || '').trim();
+        if (!currentUserId || rewardScoreSyncedForResult || !Array.isArray(winnerUserIds) || !winnerUserIds.includes(currentUserId)) {
+            return;
+        }
+        rewardScoreSyncedForResult = true;
+        const task = window.CaroUser?.refresh?.();
+        if (task && typeof task.catch === 'function') {
+            task.catch(() => {});
         }
     }
 
@@ -976,6 +989,9 @@
             stopCountdown();
             timerEl.textContent = '0s';
         }
+        if (normalizedState !== 'FINISHED') {
+            rewardScoreSyncedForResult = false;
+        }
 
         fetchRoomList(false);
     }
@@ -1068,6 +1084,7 @@
         questionEl.innerHTML = resultHtml;
         optionsEl.innerHTML = '';
         setQuestionFeedback('Da co ket qua cuoi. Ban co the sao chep link moi hoac roi phong.', 'success');
+        refreshRewardScoreIfWinner(scorePayload.winnerUserIds);
         fetchHighScores();
         fetchRoomList(false);
     }

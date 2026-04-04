@@ -10,6 +10,16 @@ spring:
     show-sql: false
   thymeleaf:
     cache: false
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-google-client
+            client-secret: test-google-secret
+          facebook:
+            client-id: test-facebook-client
+            client-secret: test-facebook-secret
 
 app:
   api:

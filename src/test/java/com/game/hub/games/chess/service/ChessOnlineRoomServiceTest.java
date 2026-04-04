@@ -17,9 +17,9 @@ class ChessOnlineRoomServiceTest {
     void joinRoomShouldAssignWhiteThenBlackAndRejectThirdPlayer() {
         ChessOnlineRoomService service = new ChessOnlineRoomService();
 
-        ChessOnlineRoomService.JoinResult first = service.joinRoom("CHESS-1", "u1", "User 1", "");
-        ChessOnlineRoomService.JoinResult second = service.joinRoom("CHESS-1", "u2", "User 2", "");
-        ChessOnlineRoomService.JoinResult third = service.joinRoom("CHESS-1", "u3", "User 3", "");
+        ChessOnlineRoomService.JoinResult first = service.joinRoom("CHESS-1", "u1", "User 1", "", 0);
+        ChessOnlineRoomService.JoinResult second = service.joinRoom("CHESS-1", "u2", "User 2", "", 0);
+        ChessOnlineRoomService.JoinResult third = service.joinRoom("CHESS-1", "u3", "User 3", "", 0);
 
         assertTrue(first.ok());
         assertEquals("w", first.assignedColor());
@@ -35,8 +35,8 @@ class ChessOnlineRoomServiceTest {
     @Test
     void moveShouldEnforceTurnAndSwitchToOtherPlayer() {
         ChessOnlineRoomService service = new ChessOnlineRoomService();
-        service.joinRoom("CHESS-2", "whiteUser", "W", "");
-        service.joinRoom("CHESS-2", "blackUser", "B", "");
+        service.joinRoom("CHESS-2", "whiteUser", "W", "", 0);
+        service.joinRoom("CHESS-2", "blackUser", "B", "", 0);
 
         ChessOnlineRoomService.ActionResult okMove = service.move("CHESS-2", "whiteUser", 6, 4, 4, 4, null);
 
@@ -55,10 +55,22 @@ class ChessOnlineRoomServiceTest {
     }
 
     @Test
+    void joinRoomShouldMarkPlayersWithWinningStreakOverTenAsRedPieces() {
+        ChessOnlineRoomService service = new ChessOnlineRoomService();
+
+        ChessOnlineRoomService.JoinResult result = service.joinRoom("CHESS-RED", "whiteUser", "White", "", 11);
+
+        assertTrue(result.ok());
+        assertNotNull(result.room());
+        assertEquals(11, result.room().players().get(0).winningStreak());
+        assertTrue(result.room().players().get(0).redPieces());
+    }
+
+    @Test
     void moveShouldRejectIllegalPieceMovement() {
         ChessOnlineRoomService service = new ChessOnlineRoomService();
-        service.joinRoom("CHESS-ILLEGAL", "whiteUser", "W", "");
-        service.joinRoom("CHESS-ILLEGAL", "blackUser", "B", "");
+        service.joinRoom("CHESS-ILLEGAL", "whiteUser", "W", "", 0);
+        service.joinRoom("CHESS-ILLEGAL", "blackUser", "B", "", 0);
 
         ChessOnlineRoomService.ActionResult result = service.move("CHESS-ILLEGAL", "whiteUser", 7, 0, 5, 1, null);
 
@@ -69,8 +81,8 @@ class ChessOnlineRoomServiceTest {
     @Test
     void foolsMateShouldMarkGameOver() {
         ChessOnlineRoomService service = new ChessOnlineRoomService();
-        service.joinRoom("CHESS-MATE", "whiteUser", "White", "");
-        service.joinRoom("CHESS-MATE", "blackUser", "Black", "");
+        service.joinRoom("CHESS-MATE", "whiteUser", "White", "", 0);
+        service.joinRoom("CHESS-MATE", "blackUser", "Black", "", 0);
 
         assertTrue(service.move("CHESS-MATE", "whiteUser", 6, 5, 5, 5, null).ok()); // f2-f3
         assertTrue(service.move("CHESS-MATE", "blackUser", 1, 4, 3, 4, null).ok()); // e7-e5
@@ -88,8 +100,8 @@ class ChessOnlineRoomServiceTest {
     @Test
     void leaveRoomShouldKeepRoomWaitingForNewOpponent() {
         ChessOnlineRoomService service = new ChessOnlineRoomService();
-        service.joinRoom("CHESS-3", "u2", "U2", "");
-        service.joinRoom("CHESS-3", "u1", "U1", "");
+        service.joinRoom("CHESS-3", "u2", "U2", "", 0);
+        service.joinRoom("CHESS-3", "u1", "U1", "", 0);
 
         service.leaveRoom("CHESS-3", "u1");
 
@@ -106,8 +118,8 @@ class ChessOnlineRoomServiceTest {
     @Test
     void surrenderShouldMarkGameOverAndBlockFurtherMoves() {
         ChessOnlineRoomService service = new ChessOnlineRoomService();
-        service.joinRoom("CHESS-4", "whiteUser", "White", "");
-        service.joinRoom("CHESS-4", "blackUser", "Black", "");
+        service.joinRoom("CHESS-4", "whiteUser", "White", "", 0);
+        service.joinRoom("CHESS-4", "blackUser", "Black", "", 0);
 
         ChessOnlineRoomService.ActionResult surrender = service.surrenderGame("CHESS-4", "whiteUser");
 
@@ -127,8 +139,8 @@ class ChessOnlineRoomServiceTest {
     @Test
     void spectatorShouldJoinFullRoomWithoutTakingPlayerSeat() {
         ChessOnlineRoomService service = new ChessOnlineRoomService();
-        service.joinRoom("CHESS-SPEC", "whiteUser", "White", "");
-        service.joinRoom("CHESS-SPEC", "blackUser", "Black", "");
+        service.joinRoom("CHESS-SPEC", "whiteUser", "White", "", 0);
+        service.joinRoom("CHESS-SPEC", "blackUser", "Black", "", 0);
 
         ChessOnlineRoomService.JoinResult spectator = service.joinAsSpectator("CHESS-SPEC", "viewer-1");
 
@@ -142,8 +154,8 @@ class ChessOnlineRoomServiceTest {
     @Test
     void spectatorLeaveShouldNotResetCurrentBoardState() {
         ChessOnlineRoomService service = new ChessOnlineRoomService();
-        service.joinRoom("CHESS-SPEC-LEAVE", "whiteUser", "White", "");
-        service.joinRoom("CHESS-SPEC-LEAVE", "blackUser", "Black", "");
+        service.joinRoom("CHESS-SPEC-LEAVE", "whiteUser", "White", "", 0);
+        service.joinRoom("CHESS-SPEC-LEAVE", "blackUser", "Black", "", 0);
         service.move("CHESS-SPEC-LEAVE", "whiteUser", 6, 4, 4, 4, null);
         service.joinAsSpectator("CHESS-SPEC-LEAVE", "viewer-1");
 
@@ -162,8 +174,8 @@ class ChessOnlineRoomServiceTest {
     @Test
     void kingSideCastlingShouldMoveKingAndRookTogether() {
         ChessOnlineRoomService service = new ChessOnlineRoomService();
-        service.joinRoom("CHESS-CASTLE", "whiteUser", "White", "");
-        service.joinRoom("CHESS-CASTLE", "blackUser", "Black", "");
+        service.joinRoom("CHESS-CASTLE", "whiteUser", "White", "", 0);
+        service.joinRoom("CHESS-CASTLE", "blackUser", "Black", "", 0);
 
         assertTrue(service.move("CHESS-CASTLE", "whiteUser", 7, 6, 5, 5, null).ok()); // Ng1-f3
         assertTrue(service.move("CHESS-CASTLE", "blackUser", 0, 6, 2, 5, null).ok()); // Ng8-f6
@@ -186,8 +198,8 @@ class ChessOnlineRoomServiceTest {
     @Test
     void enPassantShouldCapturePawnPassedTwoSquares() {
         ChessOnlineRoomService service = new ChessOnlineRoomService();
-        service.joinRoom("CHESS-ENPASSANT", "whiteUser", "White", "");
-        service.joinRoom("CHESS-ENPASSANT", "blackUser", "Black", "");
+        service.joinRoom("CHESS-ENPASSANT", "whiteUser", "White", "", 0);
+        service.joinRoom("CHESS-ENPASSANT", "blackUser", "Black", "", 0);
 
         assertTrue(service.move("CHESS-ENPASSANT", "whiteUser", 6, 4, 4, 4, null).ok()); // e2-e4
         assertTrue(service.move("CHESS-ENPASSANT", "blackUser", 1, 0, 2, 0, null).ok()); // a7-a6
@@ -207,8 +219,8 @@ class ChessOnlineRoomServiceTest {
     @Test
     void repeatedPositionThreeTimesShouldEndAsDraw() {
         ChessOnlineRoomService service = new ChessOnlineRoomService();
-        service.joinRoom("CHESS-THREEFOLD", "whiteUser", "White", "");
-        service.joinRoom("CHESS-THREEFOLD", "blackUser", "Black", "");
+        service.joinRoom("CHESS-THREEFOLD", "whiteUser", "White", "", 0);
+        service.joinRoom("CHESS-THREEFOLD", "blackUser", "Black", "", 0);
 
         for (int i = 0; i < 2; i++) {
             assertTrue(service.move("CHESS-THREEFOLD", "whiteUser", 7, 6, 5, 5, null).ok()); // Ng1-f3
@@ -232,8 +244,8 @@ class ChessOnlineRoomServiceTest {
     @Test
     void fiftyMoveRuleShouldEndGameWhenHalfmoveClockReachesHundred() {
         ChessOnlineRoomService service = new ChessOnlineRoomService();
-        service.joinRoom("CHESS-50MOVE", "whiteUser", "White", "");
-        service.joinRoom("CHESS-50MOVE", "blackUser", "Black", "");
+        service.joinRoom("CHESS-50MOVE", "whiteUser", "White", "", 0);
+        service.joinRoom("CHESS-50MOVE", "blackUser", "Black", "", 0);
 
         @SuppressWarnings("unchecked")
         Map<String, Object> rooms = (Map<String, Object>) ReflectionTestUtils.getField(service, "rooms");
