@@ -76,17 +76,60 @@ Project chi giu 2 task trong [tasks.json](C:\Users\GreenManNK\IdeaProjects\Game\
 Cach dung:
 
 1. Mo project trong VS Code
-2. `Terminal` -> `Run Task...`
-3. Chon mot trong 2 task tren
+2. Bam `Ctrl+Shift+B`
+3. VS Code se goi default build task `Game: Start (Default Public)`
+
+Khi can dung:
+
+1. `Terminal` -> `Run Task...`
+2. Chon `Game: Stop (All)`
+
+Neu thich dung Command Palette:
+
+1. `Ctrl+Shift+P`
+2. Go `Tasks: Run Build Task` de start
+3. Hoac go `Tasks: Run Task` roi chon `Game: Stop (All)` de stop
+
+Sau khi start xong, task se in link public ngay trong terminal cua VS Code. Neu can xem lai link dang song:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\runtime\print-runtime-status.ps1
+```
+
+Chi gui `ACTIVE_PUBLIC_GAME_URL` cho nguoi choi.
 
 ## Visual Studio 2022 (Open Folder)
 
-Visual Studio 2022 khong co launcher rieng cho Spring Boot, nen dung chung 2 lenh sau trong terminal:
+Visual Studio 2022 khong dung `.run/` cua IntelliJ va cung khong doc `tasks.json` cua VS Code lam launcher chinh cho repo nay.
+
+Cach dung:
+
+1. `File -> Open -> Folder...` va mo root project
+2. `View -> Terminal`
+3. Dam bao terminal dang dung tai thu muc goc cua repo `Game`
+4. Chay lenh start/stop bang terminal
+
+Neu terminal la PowerShell:
 
 ```powershell
 .\scripts\manual-start.cmd --no-pause
 .\scripts\manual-start.cmd stop --no-pause
 ```
+
+Neu terminal la Command Prompt:
+
+```cmd
+cmd /c scripts\manual-start.cmd
+cmd /c scripts\manual-start.cmd stop
+```
+
+Sau khi start xong, neu can lay link public dang song thi chay them:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\runtime\print-runtime-status.ps1
+```
+
+Chi gui `ACTIVE_PUBLIC_GAME_URL` cho nguoi choi.
 
 ## Cau hinh public on dinh
 

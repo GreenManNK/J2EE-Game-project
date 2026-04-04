@@ -4,6 +4,7 @@
     {
       "label": "Game: Start (Default Public)",
       "type": "shell",
+      "detail": "Start app production profile + public tunnel",
       "command": "cmd",
       "args": [
         "/c",
@@ -27,6 +28,7 @@
     {
       "label": "Game: Stop (All)",
       "type": "shell",
+      "detail": "Stop app, Cloudflare tunnel, fallback tunnel, and Docker runtime if any",
       "command": "cmd",
       "args": [
         "/c",

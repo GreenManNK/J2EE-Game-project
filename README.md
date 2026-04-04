@@ -42,6 +42,74 @@ Windows PowerShell:
 .\scripts\manual-start.cmd stop --no-pause
 ```
 
+## Chay trong IDE
+
+### IntelliJ
+
+Project giu 2 run configurations trong thu muc `.run/`:
+
+- `Start (Default Public)`
+- `Stop (All)`
+
+Cac nut nay deu goi chung `scripts/manual-start.cmd`.
+
+### Visual Studio Code
+
+Project giu 2 task trong `.vscode/tasks.json`:
+
+- `Game: Start (Default Public)`
+- `Game: Stop (All)`
+
+Cach de nhat:
+
+1. Mo folder project trong VS Code
+2. Bam `Ctrl+Shift+B`
+3. VS Code se chay default build task `Game: Start (Default Public)`
+
+Khi can dung:
+
+1. `Terminal -> Run Task...`
+2. Chon `Game: Stop (All)`
+
+Neu muon chay bang Command Palette:
+
+- `Tasks: Run Build Task` -> start
+- `Tasks: Run Task` -> `Game: Stop (All)` -> stop
+
+Sau khi start xong, task se in ra link public. Neu can xem lai trang thai dang song, chay:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\runtime\print-runtime-status.ps1
+```
+
+Chi gui cho nguoi choi gia tri `ACTIVE_PUBLIC_GAME_URL`.
+
+### Visual Studio 2022 (Open Folder)
+
+Visual Studio 2022 khong dung `.run/` cua IntelliJ va khong doc `tasks.json` cua VS Code lam launcher chinh cho repo nay. Cach chay dung la mo project bang `File -> Open -> Folder`, sau do mo `View -> Terminal` va chay lenh ngay tai root repo.
+
+Neu terminal la PowerShell:
+
+```powershell
+.\scripts\manual-start.cmd --no-pause
+.\scripts\manual-start.cmd stop --no-pause
+```
+
+Neu terminal la Command Prompt:
+
+```cmd
+cmd /c scripts\manual-start.cmd
+cmd /c scripts\manual-start.cmd stop
+```
+
+Sau khi start xong, co the kiem tra link public dang song bang:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\runtime\print-runtime-status.ps1
+```
+
+Chi gui cho nguoi choi gia tri `ACTIVE_PUBLIC_GAME_URL`.
+
 ## Start (Default Public) lam gi
 
 Khi chay `Start (Default Public)`, he thong se tu dong:
