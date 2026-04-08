@@ -1,0 +1,12 @@
+{
+  "name": "@game/frontend-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "check": "echo Frontend workspace scaffolded for multi-team split"
+  }
+}

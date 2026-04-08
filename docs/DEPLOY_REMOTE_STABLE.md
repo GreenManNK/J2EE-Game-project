@@ -20,9 +20,9 @@ Muc tieu: giu mot cach van hanh duy nhat cho public runtime. Tu nay chi dung:
 
 `Stop (All)` se dung toan bo app + tunnel + Docker runtime neu co.
 
-## 1) Chuan bi `.env.public.local`
+## 1) Chuan bi `FULLSTACK/BACKEND/.env.public.local`
 
-Tao file `.env.public.local` tu `.env.public.example`, sau do dien cac bien can thiet:
+Tao file `FULLSTACK/BACKEND/.env.public.local` tu `FULLSTACK/BACKEND/.env.public.example`, sau do dien cac bien can thiet:
 
 - `CLOUDFLARE_TUNNEL_TOKEN`
 - `PUBLIC_BASE_URL` vi du `https://game.example.com`
@@ -37,7 +37,7 @@ Luu y:
 ## 2) Build production neu muon chuan bi truoc
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\build-prod.ps1
+powershell -ExecutionPolicy Bypass -File .\FULLSTACK\BACKEND\scripts\build-prod.ps1
 ```
 
 Buoc nay la optional. `Start (Default Public)` van tu build lai khi can.
@@ -45,12 +45,14 @@ Buoc nay la optional. `Start (Default Public)` van tu build lai khi can.
 ## 3) Start public
 
 ```powershell
+cd FULLSTACK/BACKEND
 cmd /c scripts\manual-start.cmd
 ```
 
 Hoac:
 
 ```powershell
+Set-Location FULLSTACK/BACKEND
 .\scripts\manual-start.cmd --no-pause
 ```
 
@@ -58,17 +60,19 @@ Ket qua mong doi:
 
 - app chay tren `prod`
 - public URL duoc in ra man hinh duoi dang `PUBLIC_GAME_URL=...`
-- link duoc ghi vao `public-game-url.txt`
+- link duoc ghi vao `FULLSTACK/BACKEND/public-game-url.txt`
 
 ## 4) Stop toan bo runtime
 
 ```powershell
+cd FULLSTACK/BACKEND
 cmd /c scripts\manual-start.cmd stop
 ```
 
 Hoac:
 
 ```powershell
+Set-Location FULLSTACK/BACKEND
 .\scripts\manual-start.cmd stop --no-pause
 ```
 
@@ -93,9 +97,9 @@ Ly do:
 
 ## 7) Kiem tra nhanh khi loi
 
-- App log: `run-prod-public.err.log`
-- Quick tunnel log: `cloudflared.err.log`
-- Named tunnel log: `cloudflared-named.err.log`
+- App log: `FULLSTACK/BACKEND/run-prod-public.err.log`
+- Quick tunnel log: `FULLSTACK/BACKEND/cloudflared.err.log`
+- Named tunnel log: `FULLSTACK/BACKEND/cloudflared-named.err.log`
 - Local app: `http://127.0.0.1:8080/Game`
 - Public app: `https://<domain>/Game`
 

@@ -18,19 +18,25 @@ Khong con duy tri launcher `local`, `docker`, `mysql`, `postgres`, `status` rien
 
 ## Cau truc thu muc
 
-- Backend source: `src/main/backend/java`
-- Backend resources: `src/main/backend/resources`
-- Frontend templates: `src/main/frontend/templates`
-- Frontend static assets: `src/main/frontend/static`
-- Tests: `src/test/java`
-- Runtime scripts: `scripts/runtime`
+- `FULLSTACK/FRONTEND/`: monorepo con cho frontend teams
+  - `FULLSTACK/FRONTEND/apps/user-web`: frontend user-facing hien tai
+  - `FULLSTACK/FRONTEND/apps/admin-web`: scaffold cho admin frontend tach rieng
+  - `FULLSTACK/FRONTEND/packages/*`: khu vuc shared UI / hooks / utils
+- `FULLSTACK/BACKEND/`: monorepo con cho backend teams
+  - `FULLSTACK/BACKEND/services/game-platform-service`: Spring Boot service hien tai
+  - `FULLSTACK/BACKEND/packages/*`: scaffold cho shared core / db / contracts
+  - `FULLSTACK/BACKEND/scripts/runtime`: launcher va runtime tooling
+- `infra/`: scaffold cho deployment va platform automation
 - Tai lieu van hanh: `docs`
 
 ## Chay nhanh
 
+Tat ca lenh backend ben duoi duoc chay trong thu muc `FULLSTACK/BACKEND/`.
+
 Windows CMD:
 
 ```cmd
+cd FULLSTACK/BACKEND
 cmd /c scripts\manual-start.cmd
 cmd /c scripts\manual-start.cmd stop
 ```
@@ -38,6 +44,7 @@ cmd /c scripts\manual-start.cmd stop
 Windows PowerShell:
 
 ```powershell
+Set-Location FULLSTACK/BACKEND
 .\scripts\manual-start.cmd --no-pause
 .\scripts\manual-start.cmd stop --no-pause
 ```
@@ -51,7 +58,7 @@ Project giu 2 run configurations trong thu muc `.run/`:
 - `Start (Default Public)`
 - `Stop (All)`
 
-Cac nut nay deu goi chung `scripts/manual-start.cmd`.
+Cac nut nay deu goi chung `FULLSTACK/BACKEND/scripts/manual-start.cmd`.
 
 ### Visual Studio Code
 
@@ -79,18 +86,19 @@ Neu muon chay bang Command Palette:
 Sau khi start xong, task se in ra link public. Neu can xem lai trang thai dang song, chay:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\runtime\print-runtime-status.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\FULLSTACK\BACKEND\scripts\runtime\print-runtime-status.ps1
 ```
 
 Chi gui cho nguoi choi gia tri `ACTIVE_PUBLIC_GAME_URL`.
 
 ### Visual Studio 2022 (Open Folder)
 
-Visual Studio 2022 khong dung `.run/` cua IntelliJ va khong doc `tasks.json` cua VS Code lam launcher chinh cho repo nay. Cach chay dung la mo project bang `File -> Open -> Folder`, sau do mo `View -> Terminal` va chay lenh ngay tai root repo.
+Visual Studio 2022 khong dung `.run/` cua IntelliJ va khong doc `tasks.json` cua VS Code lam launcher chinh cho repo nay. Cach chay dung la mo project bang `File -> Open -> Folder`, sau do mo `View -> Terminal`, chuyen vao `FULLSTACK/BACKEND/` va chay lenh tai do.
 
 Neu terminal la PowerShell:
 
 ```powershell
+Set-Location FULLSTACK/BACKEND
 .\scripts\manual-start.cmd --no-pause
 .\scripts\manual-start.cmd stop --no-pause
 ```
@@ -98,6 +106,7 @@ Neu terminal la PowerShell:
 Neu terminal la Command Prompt:
 
 ```cmd
+cd FULLSTACK/BACKEND
 cmd /c scripts\manual-start.cmd
 cmd /c scripts\manual-start.cmd stop
 ```
@@ -105,7 +114,7 @@ cmd /c scripts\manual-start.cmd stop
 Sau khi start xong, co the kiem tra link public dang song bang:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\runtime\print-runtime-status.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\FULLSTACK\BACKEND\scripts\runtime\print-runtime-status.ps1
 ```
 
 Chi gui cho nguoi choi gia tri `ACTIVE_PUBLIC_GAME_URL`.
@@ -139,7 +148,7 @@ Luu y:
 Sau khi start, kiem tra trang thai:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\runtime\print-runtime-status.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\FULLSTACK\BACKEND\scripts\runtime\print-runtime-status.ps1
 ```
 
 Chi gui cho nguoi choi gia tri:
@@ -163,7 +172,7 @@ Neu ca 3 deu bang `1`, public session dang on.
 
 ## Cau hinh public on dinh
 
-Mo `.env.public.local` va dien:
+Mo `FULLSTACK/BACKEND/.env.public.local` va dien:
 
 - `CLOUDFLARE_TUNNEL_TOKEN`
 - `PUBLIC_BASE_URL`
@@ -179,7 +188,7 @@ Neu da co 2 bien nay, launcher se uu tien named tunnel tu dong.
 
 ## Email xac thuc dang ky
 
-SMTP/public mail config dat trong `.env.public.local`.
+SMTP/public mail config dat trong `FULLSTACK/BACKEND/.env.public.local`.
 
 Nhung bien chinh:
 
@@ -234,6 +243,7 @@ Luu y:
 Chay test:
 
 ```powershell
+Set-Location FULLSTACK/BACKEND
 .\gradlew.bat test
 .\mvnw.cmd -q -DskipTests compile
 ```
@@ -241,16 +251,16 @@ Chay test:
 Kiem tra runtime/public launcher:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\runtime\verify-public-all.ps1 -NoLive
+powershell -NoProfile -ExecutionPolicy Bypass -File .\FULLSTACK\BACKEND\scripts\runtime\verify-public-all.ps1 -NoLive
 ```
 
 ## Log can xem khi gap loi
 
-- `run-prod-public.out.log`
-- `run-prod-public.err.log`
-- `cloudflared.err.log`
-- `cloudflared-named.err.log`
-- `public-fallback-tunnel.err.log`
+- `FULLSTACK/BACKEND/run-prod-public.out.log`
+- `FULLSTACK/BACKEND/run-prod-public.err.log`
+- `FULLSTACK/BACKEND/cloudflared.err.log`
+- `FULLSTACK/BACKEND/cloudflared-named.err.log`
+- `FULLSTACK/BACKEND/public-fallback-tunnel.err.log`
 
 ## Tai lieu chi tiet
 

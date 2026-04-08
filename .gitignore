@@ -44,7 +44,7 @@ build/
 ### Local Runtime / Deployment Artifacts ###
 .env.public.local
 .env.public.*.local
-.tools/cloudflared.exe
+**/.tools/cloudflared.exe
 *.pid
 cloudflared*.log
 public-fallback-tunnel*.log

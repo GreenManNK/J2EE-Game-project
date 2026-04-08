@@ -1,0 +1,6 @@
+{
+  "name": "@game/user-web",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Server-rendered user-facing frontend resources for Game Hub."
+}

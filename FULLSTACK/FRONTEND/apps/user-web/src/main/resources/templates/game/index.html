@@ -1,0 +1,750 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: appHead('Phong choi Caro')}"></head>
+<body>
+<div th:replace="~{fragments :: appShell('game-index')}"></div>
+
+<main id="gameMain" class="transition-margin d-flex flex-column align-items-center text-center gap-2 game-online-shell">
+  <div class="info-top-container">
+    <div class="info-box theme-box">
+      <div><strong>Ma phong:</strong> <span id="roomIdText" th:text="${roomId}">room</span></div>
+      <div><strong>Che do:</strong> <span id="roomModeLabel">Thuong</span></div>
+      <div><strong>Ky hieu:</strong> <span id="playerSymbol" th:text="${symbol}">?</span></div>
+      <div id="skillSummaryBlock" class="d-none">
+        <div><strong>Skill con lai:</strong> <span id="skillCount">0</span></div>
+        <div><strong>Skill sap dung:</strong> <span id="skillTypeLabel">Chua co</span></div>
+      </div>
+      <div class="mt-2">
+        <button id="surrenderBtn" class="btn btn-outline-warning btn-sm me-2">Dau hang</button>
+        <button id="skillBtn" class="btn btn-outline-primary btn-sm me-2 d-none" disabled>Dung skill</button>
+        <button id="leaveRoomBtn" class="btn btn-outline-danger btn-sm">Roi phong</button>
+      </div>
+    </div>
+    <div class="info-box theme-box">
+      <div><strong>Trang thai:</strong> <span id="turnStatus">Dang ket noi...</span></div>
+      <div><strong>Nguoi choi:</strong> <span id="playerName">...</span></div>
+      <div class="cg-reward-inline-card mt-2" data-current-user-reward="true">
+        <span class="cg-reward-inline-card__icon"><i class="bi bi-stars"></i></span>
+        <span class="cg-reward-inline-card__body">
+          <small>Diem thuong PvP</small>
+          <strong data-current-user-score="true">0</strong>
+          <span>Chi cong khi thang nguoi choi</span>
+        </span>
+      </div>
+      <div id="advancedModeHint" class="game-mode-note d-none">Che do nang cao: du 5 quan se nhan skill ngau nhien, van dau khong ket thuc ngay.</div>
+    </div>
+  </div>
+
+  <div class="game-stage-layout d-flex justify-content-center align-items-start gap-3 w-100">
+    <div id="chat-container" class="theme-box d-flex flex-column">
+      <div id="chat-box" class="chat-box"></div>
+      <div class="game-online-chat-toolbar d-flex p-2 border-top">
+        <input id="message-input" type="text" class="form-control" placeholder="Nhan tin...">
+        <button id="sendBtn" class="btn btn-primary rounded-circle"><i class="bi bi-send"></i></button>
+      </div>
+    </div>
+
+    <div class="game-online-board-stage theme-box">
+      <div id="game-board-wrapper"></div>
+    </div>
+  </div>
+</main>
+
+<style>
+  #gameMain {
+    padding: 0 12px 86px;
+    width: 100%;
+  }
+  .info-box { border: 2px solid; border-radius: 10px; padding: 12px; }
+  .info-top-container { max-width: 760px; margin: 0 auto 12px auto; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  #game-board-wrapper { display: grid; grid-template-columns: repeat(10, 1fr); width: 420px; aspect-ratio: 1 / 1; }
+  .game-stage-layout { width: 100%; flex-wrap: wrap; }
+  #chat-container { flex: 0 1 300px; }
+  .cell {
+    aspect-ratio: 1 / 1;
+    border: 1px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+  }
+  .cell.win { background: rgba(255, 193, 7, .25); }
+  .cell.last-move { box-shadow: inset 0 0 0 2px rgba(13, 202, 240, .9); }
+  .cell.disabled { cursor: not-allowed; opacity: .9; }
+  .player-x { color: #0d6efd; }
+  .player-o { color: #dc3545; }
+  .game-mode-note {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 140, 84, .3);
+    background: rgba(255, 140, 84, .12);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  #chat-box { display: flex; flex-direction: column; gap: 8px; height: 300px; overflow-y: auto; padding: 8px; }
+  .chat-message { padding: 6px 10px; border-radius: 12px; max-width: 85%; word-wrap: break-word; }
+  .chat-you { align-self: flex-end; background: #0d6efd; color: #fff; }
+  .chat-other { align-self: flex-start; background: #f1f1f1; color: #000; }
+  body.dark-mode .chat-other { background: #333; color: #e0e0e0; }
+
+  @media (max-width: 991.98px) {
+    .game-stage-layout {
+      flex-direction: column;
+      align-items: center !important;
+      max-width: 460px;
+    }
+    #chat-container {
+      order: 2;
+      width: 100% !important;
+      flex-basis: auto;
+    }
+    #game-board-wrapper {
+      width: min(420px, 100%);
+    }
+    #chat-box {
+      height: 220px;
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    #gameMain {
+      padding: 0 8px 92px;
+    }
+    .info-top-container {
+      gap: 8px;
+      width: 100%;
+    }
+    .info-box {
+      width: 100%;
+      padding: 10px;
+    }
+    #game-board-wrapper {
+      width: min(100vw - 20px, 420px);
+    }
+    .cell {
+      font-size: 15px;
+    }
+    #sendBtn {
+      width: 38px !important;
+      height: 38px !important;
+    }
+  }
+</style>
+
+<th:block th:replace="~{fragments :: appScripts('game-index')}"></th:block>
+<script th:src="@{/vendor/sockjs.min.js}"></script>
+<script th:src="@{/vendor/stomp.umd.min.js}"></script>
+<script th:inline="javascript">
+  (function () {
+    const appPath = (window.CaroUrl && typeof window.CaroUrl.path === 'function')
+      ? window.CaroUrl.path
+      : (value) => value;
+    const ui = window.CaroUi || {};
+    function notify(message, type) {
+      const text = String(message || '');
+      if (ui.toast) {
+        ui.toast(text, { type: type || 'info' });
+      } else {
+        alert(text);
+      }
+    }
+
+    function refreshRewardScore() {
+      const task = window.CaroUser && typeof window.CaroUser.refresh === 'function'
+        ? window.CaroUser.refresh()
+        : null;
+      if (task && typeof task.catch === 'function') {
+        task.catch(() => {});
+      }
+    }
+
+    async function confirmSurrender() {
+      if (typeof ui.confirmAction === 'function') {
+        return ui.confirmAction({
+          title: 'Dau hang van Caro?',
+          text: 'Ban se thua ngay lap tuc va doi thu se duoc tinh la chien thang cho van dau hien tai.',
+          confirmText: 'Dau hang',
+          cancelText: 'Quay lai',
+          fallbackText: 'Ban chac chan muon dau hang van nay?',
+          danger: true
+        });
+      }
+      return typeof window.confirm === 'function'
+        ? window.confirm('Ban chac chan muon dau hang van nay?')
+        : false;
+    }
+    const initialRoomId = /*[[${roomId}]]*/ '';
+    const requestedSymbol = /*[[${symbol}]]*/ '';
+    const sessionUserId = /*[[${sessionUserId}]]*/ '';
+    const sessionDisplayName = /*[[${sessionDisplayName}]]*/ '';
+    const sessionAvatarPath = /*[[${sessionAvatarPath}]]*/ '';
+    const roomId = (initialRoomId || '').trim();
+    if (!roomId) {
+      notify('Ban chua vao phong. He thong se quay lai sanh.', 'warning');
+      window.location.href = appPath('/games/caro/rooms');
+      return;
+    }
+
+    const boardEl = document.getElementById('game-board-wrapper');
+    const statusEl = document.getElementById('turnStatus');
+    const symbolEl = document.getElementById('playerSymbol');
+    const playerNameEl = document.getElementById('playerName');
+    const chatBox = document.getElementById('chat-box');
+    const messageInput = document.getElementById('message-input');
+    const surrenderBtn = document.getElementById('surrenderBtn');
+    const skillBtn = document.getElementById('skillBtn');
+    const skillCountEl = document.getElementById('skillCount');
+    const skillSummaryBlockEl = document.getElementById('skillSummaryBlock');
+    const roomModeLabelEl = document.getElementById('roomModeLabel');
+    const skillTypeLabelEl = document.getElementById('skillTypeLabel');
+    const advancedModeHintEl = document.getElementById('advancedModeHint');
+
+    const userId = (sessionUserId || '').trim();
+    const displayName = (sessionDisplayName || (userId ? ('Khach ' + userId.slice(-4).toUpperCase()) : '')).trim();
+    const avatarPath = (sessionAvatarPath || '/uploads/avatars/default-avatar.jpg').trim();
+    const isGuestUser = /^guest-/i.test(userId);
+
+    if (!userId) {
+      notify('Khong xac dinh duoc nguoi choi. He thong se quay lai sanh.', 'danger');
+      window.location.href = appPath('/games/caro/rooms');
+      return;
+    }
+
+    if (!isGuestUser && window.CaroUser && typeof window.CaroUser.set === 'function') {
+      const currentUser = typeof window.CaroUser.get === 'function'
+        ? window.CaroUser.get()
+        : null;
+      const persistedUser = currentUser && currentUser.userId === userId
+        ? currentUser
+        : null;
+      window.CaroUser.set({
+        userId: userId,
+        displayName: displayName || (persistedUser ? persistedUser.displayName : '') || 'Nguoi choi',
+        email: persistedUser ? (persistedUser.email || '') : '',
+        role: persistedUser ? (persistedUser.role || 'User') : 'User',
+        avatarPath: avatarPath || (persistedUser ? persistedUser.avatarPath : '') || '/uploads/avatars/default-avatar.jpg',
+        score: persistedUser ? (persistedUser.score || 0) : 0
+      });
+    }
+    playerNameEl.textContent = displayName;
+
+    const BOARD_SIZE = 10;
+    const ADVANCED_ROOM_PREFIX = 'Advanced_';
+    const board = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(''));
+    const cellRefs = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(null));
+    let mySymbol = requestedSymbol || '';
+    let myTurnUserId = '';
+    let connected = false;
+    let gameOver = false;
+    let advancedMode = roomId.startsWith(ADVANCED_ROOM_PREFIX);
+    let currentWinLine = [];
+    let lastMove = null;
+    let roomPlayerCount = 0;
+    let skillCharges = {};
+    let skillTypes = {};
+
+    function applyBoardSnapshot(snapshot) {
+      if (!Array.isArray(snapshot)) return;
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        for (let y = 0; y < BOARD_SIZE; y++) {
+          board[x][y] = (snapshot[x] && snapshot[x][y]) || '';
+        }
+      }
+      renderBoard();
+    }
+
+    function setWinLine(winLine) {
+      if (!Array.isArray(winLine)) {
+        currentWinLine = [];
+        return;
+      }
+      currentWinLine = winLine
+        .filter((p) => typeof p?.x === 'number' && typeof p?.y === 'number')
+        .map((p) => ({ x: p.x, y: p.y }));
+    }
+
+    function isWinningCell(x, y) {
+      return currentWinLine.some((p) => p.x === x && p.y === y);
+    }
+
+    function setLastMove(move) {
+      if (!move || typeof move.x !== 'number' || typeof move.y !== 'number') {
+        lastMove = null;
+        return;
+      }
+      lastMove = { x: move.x, y: move.y };
+    }
+
+    function isLastMoveCell(x, y) {
+      return !!lastMove && lastMove.x === x && lastMove.y === y;
+    }
+
+    function resetDelaySuffix(resetDelayMs) {
+      const ms = Number(resetDelayMs || 0);
+      if (!Number.isFinite(ms) || ms <= 0) return '';
+      const sec = Math.round(ms / 100) / 10;
+      return ' Van moi sau ~' + sec + 's';
+    }
+
+    function skillLabel(code) {
+      const normalized = String(code || '').trim().toUpperCase();
+      if (normalized === 'REMOVE_RANDOM_PIECE') return 'Pha 1 quan';
+      if (normalized === 'REMOVE_DOUBLE_RANDOM_PIECE') return 'Pha 2 quan';
+      if (normalized === 'EXTRA_TURN') return 'Giu luot';
+      return 'Chua co';
+    }
+
+    function skillDescription(code) {
+      const normalized = String(code || '').trim().toUpperCase();
+      if (normalized === 'REMOVE_RANDOM_PIECE') return 'Xoa ngau nhien 1 quan cua doi thu va ket thuc luot cua ban.';
+      if (normalized === 'REMOVE_DOUBLE_RANDOM_PIECE') return 'Xoa ngau nhien toi da 2 quan cua doi thu va ket thuc luot cua ban.';
+      if (normalized === 'EXTRA_TURN') return 'Kich hoat de giu lai luot hien tai cua ban.';
+      return 'Chua co skill de dung.';
+    }
+
+    function mySkillTypes() {
+      return Array.isArray(skillTypes[userId]) ? skillTypes[userId] : [];
+    }
+
+    function myNextSkillType() {
+      return mySkillTypes()[0] || '';
+    }
+
+    function refreshRoomModeUi() {
+      if (roomModeLabelEl) {
+        roomModeLabelEl.textContent = advancedMode ? 'Nang cao' : 'Thuong';
+      }
+      if (skillSummaryBlockEl) {
+        skillSummaryBlockEl.classList.toggle('d-none', !advancedMode);
+      }
+      if (skillBtn) {
+        skillBtn.classList.toggle('d-none', !advancedMode);
+      }
+      if (advancedModeHintEl) {
+        advancedModeHintEl.classList.toggle('d-none', !advancedMode);
+      }
+    }
+
+    function renderSkillSummary() {
+      if (skillCountEl) {
+        skillCountEl.textContent = String(mySkillCharges());
+      }
+      if (skillTypeLabelEl) {
+        const nextType = myNextSkillType();
+        skillTypeLabelEl.textContent = nextType ? skillLabel(nextType) : 'Chua co';
+      }
+    }
+
+    function applySkillState(nextSkillCharges, nextSkillTypes) {
+      if (nextSkillCharges && typeof nextSkillCharges === 'object') {
+        skillCharges = Object.fromEntries(Object.entries(nextSkillCharges).map(([key, value]) => [
+          String(key || ''),
+          Math.max(0, Number.parseInt(String(value ?? 0), 10) || 0)
+        ]));
+      }
+      if (nextSkillTypes && typeof nextSkillTypes === 'object') {
+        skillTypes = Object.fromEntries(Object.entries(nextSkillTypes).map(([key, value]) => [
+          String(key || ''),
+          Array.isArray(value)
+            ? value.map((item) => String(item || '').trim()).filter(Boolean)
+            : []
+        ]));
+      }
+      renderSkillSummary();
+    }
+
+    function mySkillCharges() {
+      return Math.max(0, Number.parseInt(String(skillCharges[userId] ?? 0), 10) || 0);
+    }
+
+    function updateActionButtons() {
+      const canSurrender = connected && !gameOver && roomPlayerCount >= 2 && !!myTurnUserId;
+      if (surrenderBtn) {
+        surrenderBtn.disabled = !canSurrender;
+        surrenderBtn.title = canSurrender ? '' : 'Chi dau hang khi van dau dang dien ra';
+      }
+      if (skillBtn) {
+        const nextSkillType = myNextSkillType();
+        const canUseSkill = connected
+          && advancedMode
+          && !gameOver
+          && roomPlayerCount >= 2
+          && !!myTurnUserId
+          && myTurnUserId === userId
+          && mySkillCharges() > 0;
+        skillBtn.disabled = !canUseSkill;
+        skillBtn.textContent = canUseSkill && nextSkillType
+          ? ('Dung skill: ' + skillLabel(nextSkillType))
+          : 'Dung skill';
+        skillBtn.title = canUseSkill
+          ? skillDescription(nextSkillType)
+          : (advancedMode
+              ? 'Can it nhat 1 skill, den luot cua ban va van dau dang dien ra'
+              : 'Chi co o che do nang cao');
+      }
+    }
+
+    function initBoardUi() {
+      if (!boardEl) return;
+      if (boardEl.childElementCount === BOARD_SIZE * BOARD_SIZE) return;
+      boardEl.innerHTML = '';
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        for (let y = 0; y < BOARD_SIZE; y++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.dataset.x = String(x);
+          cell.dataset.y = String(y);
+          cell.addEventListener('click', () => makeMove(x, y));
+          cellRefs[x][y] = cell;
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    function renderBoard() {
+      initBoardUi();
+      const winKeys = new Set(currentWinLine.map((p) => p.x + ':' + p.y));
+      const lastMoveKey = lastMove ? (lastMove.x + ':' + lastMove.y) : null;
+
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        for (let y = 0; y < BOARD_SIZE; y++) {
+          const cell = cellRefs[x][y];
+          if (!cell) continue;
+          const value = board[x][y] || '';
+          if (cell.textContent !== value) {
+            cell.textContent = value;
+          }
+          cell.classList.toggle('player-x', value === 'X');
+          cell.classList.toggle('player-o', value === 'O');
+          cell.classList.toggle('win', winKeys.has(x + ':' + y));
+          cell.classList.toggle('last-move', lastMoveKey === (x + ':' + y));
+          cell.classList.toggle('disabled', gameOver);
+        }
+      }
+    }
+
+    function appendChat(name, text, isYou) {
+      const line = document.createElement('div');
+      line.className = 'game-online-chat-message ' + (isYou ? 'game-online-chat-message--self' : 'game-online-chat-message--other');
+      const sender = document.createElement('div');
+      sender.className = 'game-online-chat-message__sender';
+      sender.textContent = name || 'Khong ro';
+      line.appendChild(sender);
+      const body = document.createElement('div');
+      body.className = 'game-online-chat-message__body';
+      body.textContent = text || '';
+      line.appendChild(body);
+      chatBox.appendChild(line);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    const client = new window.StompJs.Client({
+      webSocketFactory: () => new SockJS(appPath('/ws'), null, {
+        transports: ['websocket', 'xhr-streaming', 'xhr-polling']
+      }),
+      reconnectDelay: 3000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
+      connectionTimeout: 12000,
+      onConnect: () => {
+        connected = true;
+        statusEl.textContent = 'Da ket noi. Dang vao phong...';
+        updateActionButtons();
+
+        client.subscribe('/topic/room.' + roomId, (message) => {
+          const payload = JSON.parse(message.body || '{}');
+          if (payload.type === 'PLAYER_JOINED') {
+            setWinLine([]);
+            setLastMove(null);
+            applyBoardSnapshot(payload.board);
+            applySkillState(payload.skillCharges, payload.skillTypes);
+            if (typeof payload.advancedMode === 'boolean') {
+              advancedMode = payload.advancedMode;
+              refreshRoomModeUi();
+            }
+            if (payload.userId === userId && payload.symbol) {
+              mySymbol = payload.symbol;
+              symbolEl.textContent = mySymbol;
+            }
+            myTurnUserId = payload.currentTurnUserId || myTurnUserId || '';
+            roomPlayerCount = Number(payload.playerCount || roomPlayerCount || 0);
+            if (roomPlayerCount >= 2) {
+              gameOver = false;
+            }
+            if (roomPlayerCount >= 2 && myTurnUserId) {
+              statusEl.textContent = 'Luot cua: ' + (myTurnUserId === userId ? 'ban' : 'doi thu');
+            } else {
+              statusEl.textContent = 'Dang cho doi thu vao phong...';
+            }
+            renderBoard();
+            updateActionButtons();
+          }
+          if (payload.type === 'MOVE') {
+            if (payload.x >= 0 && payload.y >= 0) {
+              gameOver = false;
+              setWinLine(payload.winLine);
+              setLastMove({ x: payload.x, y: payload.y });
+              board[payload.x][payload.y] = payload.symbol || '';
+              renderBoard();
+            }
+            applySkillState(payload.skillCharges, payload.skillTypes);
+            if (typeof payload.advancedMode === 'boolean') {
+              advancedMode = payload.advancedMode;
+              refreshRoomModeUi();
+            }
+            myTurnUserId = payload.nextTurnUserId || '';
+            if (payload.skillAwarded && payload.awardedSkillType) {
+              const skillName = skillLabel(payload.awardedSkillType);
+              const selfAwarded = payload.awardedUserId === userId;
+              statusEl.textContent = selfAwarded
+                ? ('Ban vua tao du 5 quan va nhan skill: ' + skillName + '.')
+                : ('Doi thu vua tao du 5 quan va nhan skill: ' + skillName + '.');
+              setTimeout(() => notify(
+                selfAwarded
+                  ? ('Ban nhan duoc skill moi: ' + skillName)
+                  : ('Doi thu nhan them skill: ' + skillName),
+                selfAwarded ? 'success' : 'warning'
+              ), 80);
+            } else {
+              statusEl.textContent = myTurnUserId
+                ? ('Luot cua: ' + (myTurnUserId === userId ? 'ban' : 'doi thu'))
+                : 'Dang cho doi thu';
+            }
+            updateActionButtons();
+          }
+          if (payload.type === 'GAME_OVER') {
+            myTurnUserId = '';
+            gameOver = true;
+            applySkillState(payload.skillCharges, payload.skillTypes);
+            if (typeof payload.advancedMode === 'boolean') {
+              advancedMode = payload.advancedMode;
+              refreshRoomModeUi();
+            }
+            setWinLine(payload.winLine);
+            renderBoard();
+            const win = payload.winnerUserId === userId;
+            const surrenderGame = payload.reason === 'SURRENDER';
+            if (surrenderGame) {
+              const selfSurrender = payload.surrenderUserId === userId;
+              statusEl.textContent = (selfSurrender ? 'Ban da dau hang!' : 'Doi thu dau hang - ban thang!')
+                + resetDelaySuffix(payload.resetDelayMs);
+              setTimeout(() => notify(
+                selfSurrender ? 'Ban da dau hang.' : 'Doi thu da dau hang. Ban thang!',
+                selfSurrender ? 'warning' : 'success'
+              ), 100);
+            } else {
+              statusEl.textContent = (win ? 'Ban thang!' : 'Ban thua!') + resetDelaySuffix(payload.resetDelayMs);
+              setTimeout(() => notify(win ? 'Ban da thang!' : 'Ban da thua!', win ? 'success' : 'warning'), 100);
+            }
+            if (win) {
+              refreshRewardScore();
+            }
+            updateActionButtons();
+          }
+          if (payload.type === 'DRAW') {
+            myTurnUserId = '';
+            gameOver = true;
+            applySkillState(payload.skillCharges, payload.skillTypes);
+            if (typeof payload.advancedMode === 'boolean') {
+              advancedMode = payload.advancedMode;
+              refreshRoomModeUi();
+            }
+            setWinLine([]);
+            renderBoard();
+            statusEl.textContent = 'Hoa co!' + resetDelaySuffix(payload.resetDelayMs);
+            setTimeout(() => notify('Van dau hoa!', 'info'), 100);
+            updateActionButtons();
+          }
+          if (payload.type === 'RESET') {
+            gameOver = false;
+            setWinLine([]);
+            setLastMove(null);
+            applyBoardSnapshot(payload.board);
+            applySkillState(payload.skillCharges, payload.skillTypes);
+            if (typeof payload.advancedMode === 'boolean') {
+              advancedMode = payload.advancedMode;
+              refreshRoomModeUi();
+            }
+            myTurnUserId = payload.currentTurnUserId || '';
+            statusEl.textContent = myTurnUserId
+              ? ('Van moi - luot cua: ' + (myTurnUserId === userId ? 'ban' : 'doi thu'))
+              : 'Van moi da san sang';
+            updateActionButtons();
+          }
+          if (payload.type === 'SKILL_USED') {
+            const removedPoints = Array.isArray(payload.removedPoints)
+              ? payload.removedPoints.filter((point) => typeof point?.x === 'number' && typeof point?.y === 'number')
+              : [];
+            if (removedPoints.length > 0) {
+              removedPoints.forEach((point) => {
+                board[point.x][point.y] = '';
+              });
+              setLastMove(removedPoints[0]);
+              setWinLine([]);
+              renderBoard();
+            }
+            applySkillState(payload.skillCharges, payload.skillTypes);
+            if (typeof payload.advancedMode === 'boolean') {
+              advancedMode = payload.advancedMode;
+              refreshRoomModeUi();
+            }
+            myTurnUserId = payload.nextTurnUserId || '';
+            const selfUsed = payload.userId === userId;
+            const usedSkillName = skillLabel(payload.usedSkillType);
+            if (String(payload.usedSkillType || '') === 'EXTRA_TURN') {
+              statusEl.textContent = selfUsed
+                ? ('Ban da dung skill ' + usedSkillName + ' va duoc di tiep.')
+                : ('Doi thu da dung skill ' + usedSkillName + ' va giu lai luot.');
+            } else if (removedPoints.length > 1) {
+              statusEl.textContent = selfUsed
+                ? ('Ban da dung skill ' + usedSkillName + ' va xoa ' + removedPoints.length + ' quan cua doi thu.')
+                : ('Doi thu da dung skill ' + usedSkillName + ' va xoa ' + removedPoints.length + ' quan cua ban.');
+            } else {
+              statusEl.textContent = selfUsed
+                ? ('Ban da dung skill ' + usedSkillName + ' va xoa 1 quan cua doi thu.')
+                : ('Doi thu da dung skill ' + usedSkillName + ' va xoa 1 quan cua ban.');
+            }
+            updateActionButtons();
+          }
+          if (payload.type === 'PLAYER_LEFT') {
+            roomPlayerCount = Math.min(roomPlayerCount, 1);
+            myTurnUserId = '';
+            gameOver = true;
+            setWinLine([]);
+            renderBoard();
+            statusEl.textContent = 'Doi thu da roi phong';
+            updateActionButtons();
+          }
+          if (payload.type === 'ERROR' && payload.userId === userId && payload.error) {
+            statusEl.textContent = payload.error;
+            updateActionButtons();
+          }
+          if (payload.type === 'CHAT') {
+            appendChat(payload.displayName || 'Khong ro', payload.message || '', payload.userId === userId);
+          }
+        });
+
+        client.subscribe('/user/queue/errors', (message) => {
+          const payload = JSON.parse(message.body || '{}');
+          if (payload.error) {
+            statusEl.textContent = payload.error;
+          }
+        });
+
+        client.publish({
+          destination: '/app/game.join',
+          body: JSON.stringify({ roomId, userId, displayName, avatarPath })
+        });
+      },
+      onStompError: () => {
+        statusEl.textContent = 'Loi ket noi STOMP';
+        updateActionButtons();
+      },
+      onWebSocketError: () => {
+        connected = false;
+        statusEl.textContent = 'Loi WebSocket - dang thu ket noi lai...';
+        updateActionButtons();
+      },
+      onWebSocketClose: () => {
+        connected = false;
+        statusEl.textContent = 'Mat ket noi - dang thu ket noi lai...';
+        updateActionButtons();
+      }
+    });
+
+    function makeMove(x, y) {
+      if (!connected) return;
+      if (gameOver) return;
+      if (!myTurnUserId) return;
+      if (myTurnUserId !== userId) return;
+      if (board[x][y]) return;
+      client.publish({
+        destination: '/app/game.move',
+        body: JSON.stringify({ roomId, userId, x, y })
+      });
+    }
+
+    document.getElementById('sendBtn')?.addEventListener('click', () => {
+      const text = (messageInput.value || '').trim();
+      if (!text || !connected) return;
+      client.publish({
+        destination: '/app/game.chat',
+        body: JSON.stringify({ roomId, userId, displayName, avatarPath, content: text })
+      });
+      messageInput.value = '';
+    });
+
+    messageInput?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('sendBtn')?.click();
+      }
+    });
+
+    document.getElementById('leaveRoomBtn')?.addEventListener('click', () => {
+      if (connected) {
+        client.publish({ destination: '/app/game.leave', body: JSON.stringify({ roomId, userId }) });
+      }
+      window.location.href = appPath('/games/caro/rooms');
+    });
+
+    surrenderBtn?.addEventListener('click', async () => {
+      if (!connected || gameOver || !myTurnUserId) return;
+      if (!await confirmSurrender()) return;
+      client.publish({
+        destination: '/app/game.surrender',
+        body: JSON.stringify({ roomId, userId })
+      });
+    });
+
+    skillBtn?.addEventListener('click', () => {
+      if (!connected || gameOver || myTurnUserId !== userId || mySkillCharges() <= 0) {
+        return;
+      }
+      client.publish({
+        destination: '/app/game.skill',
+        body: JSON.stringify({ roomId, userId })
+      });
+    });
+
+    initBoardUi();
+    renderBoard();
+    applySkillState({}, {});
+    refreshRoomModeUi();
+    updateActionButtons();
+    client.activate();
+    window.addEventListener('online', () => {
+      statusEl.textContent = roomId
+        ? ('Internet da quay lai. Dang dong bo phong ' + roomId + ' ...')
+        : 'Internet da quay lai. Dang khoi phuc ket noi...';
+      if (!client.active) {
+        try {
+          client.activate();
+        } catch (_) {
+        }
+      }
+    });
+    window.addEventListener('focus', () => {
+      if (!connected) {
+        statusEl.textContent = 'Dang kiem tra lai ket noi phong...';
+      }
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !connected) {
+        statusEl.textContent = 'Dang dong bo lai ket noi phong...';
+      }
+    });
+    window.addEventListener('beforeunload', () => {
+      try {
+        client.deactivate();
+      } catch (_) {
+      }
+    });
+  })();
+</script>
+</body>
+</html>

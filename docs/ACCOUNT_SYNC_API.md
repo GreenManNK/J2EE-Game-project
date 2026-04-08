@@ -8,7 +8,8 @@ Dat API key truoc khi chay ung dung:
 
 ```powershell
 $env:APP_SYNC_API_KEY="replace-with-a-secret"
-./mvnw spring-boot:run
+Set-Location FULLSTACK/BACKEND
+.\mvnw.cmd spring-boot:run
 ```
 
 Neu `APP_SYNC_API_KEY` de trong, endpoint sync se bi tat va tra ve `503`.

@@ -4,9 +4,9 @@
 This document provides step-by-step instructions to enable Facebook OAuth2 login functionality for the J2EE Game application.
 
 ## Current Status
-✅ **Backend Configuration:** Complete - All code and YAML configuration is in place
-✅ **Frontend UI:** Complete - Login and registration pages have Facebook buttons
-⏳ **Setup Required:** You need to configure Facebook App credentials
+ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **Backend Configuration:** Complete - All code and YAML configuration is in place
+ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **Frontend UI:** Complete - Login and registration pages have Facebook buttons
+ÃƒÂ¢Ã‚ÂÃ‚Â³ **Setup Required:** You need to configure Facebook App credentials
 
 ## Step 1: Create Facebook App
 
@@ -15,7 +15,7 @@ This document provides step-by-step instructions to enable Facebook OAuth2 login
 2. Log in with your Facebook account (create one if needed)
 
 ### 1.2 Create a New App
-1. Click "My Apps" → "Create App"
+1. Click "My Apps" ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ "Create App"
 2. Choose "Consumer" as the app type
 3. Fill in app details:
    - **App Name:** Game Hub (or your preferred name)
@@ -30,14 +30,14 @@ This document provides step-by-step instructions to enable Facebook OAuth2 login
 ## Step 2: Configure App Settings
 
 ### 2.1 Get Credentials
-1. Go to **Settings → Basic** in your app dashboard
+1. Go to **Settings ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Basic** in your app dashboard
 2. Copy your:
    - **App ID** (Facebook Client ID)
    - **App Secret** (Facebook Client Secret)
-   - ⚠️ **Keep the App Secret secure** - never commit to version control
+   - ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â **Keep the App Secret secure** - never commit to version control
 
 ### 2.2 Set Callback/Redirect URIs
-1. Go to **Facebook Login → Settings**
+1. Go to **Facebook Login ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Settings**
 2. Under "Valid OAuth Redirect URIs", add your callback URL:
    ```
    https://<your-domain>/Game/login/oauth2/code/facebook
@@ -59,7 +59,7 @@ This document provides step-by-step instructions to enable Facebook OAuth2 login
 ## Step 3: Configure Application Environment Variables
 
 ### 3.1 Using Environment File (.env.local)
-Copy the `.env.public.example` to `.env.public.local` and add:
+Copy `FULLSTACK/BACKEND/.env.public.example` to `FULLSTACK/BACKEND/.env.public.local` and add:
 
 ```env
 # Facebook OAuth2 Configuration
@@ -77,7 +77,7 @@ $env:SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_SECRET = "YOUR_A
 ```
 
 ### 3.3 Using Docker Environment
-If using Docker, add to your `docker-compose.yml` or Docker environment:
+If using Docker, add to `FULLSTACK/BACKEND/docker-compose.yml` or Docker environment:
 ```yaml
 environment:
   SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_CLIENT_ID: YOUR_APP_ID
@@ -99,10 +99,10 @@ The application automatically detects Facebook configuration when:
 
 ### 4.3 Troubleshooting
 If the Facebook button appears disabled:
-- ❌ Check that environment variables are set correctly
-- ❌ Verify variables are loaded before the app starts
-- ❌ Check application logs for any configuration errors
-- ❌ Ensure no typos in environment variable names
+- ÃƒÂ¢Ã‚ÂÃ…â€™ Check that environment variables are set correctly
+- ÃƒÂ¢Ã‚ÂÃ…â€™ Verify variables are loaded before the app starts
+- ÃƒÂ¢Ã‚ÂÃ…â€™ Check application logs for any configuration errors
+- ÃƒÂ¢Ã‚ÂÃ…â€™ Ensure no typos in environment variable names
 
 ## Step 5: Additional Configuration (Optional)
 
@@ -140,25 +140,25 @@ SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_FACEBOOK_USER_INFO_URI=https://graph.face
 ### Callback Flow
 ```
 User Login Page
-    ↓
+    ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“
 Click "Dang nhap voi Facebook"
-    ↓
+    ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“
 POST /oauth2/authorization/facebook
-    ↓
+    ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“
 Redirect to Facebook (authorization-uri)
-    ↓
+    ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“
 User grants permissions on Facebook
-    ↓
+    ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“
 Facebook redirects to: /Game/login/oauth2/code/facebook?code=...&state=...
-    ↓
+    ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“
 Exchange code for token (token-uri)
-    ↓
+    ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“
 Get user info (user-info-uri)
-    ↓
+    ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“
 Create or link account
-    ↓
+    ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“
 Set user session
-    ↓
+    ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“
 Redirect to /account/oauth2-success or home page
 ```
 
@@ -171,16 +171,16 @@ Redirect to /account/oauth2-success or home page
 ## Related Files
 
 ### Frontend Templates
-- [Login Page](../src/main/frontend/templates/account/login.html) - Facebook button in social section
-- [Register Page](../src/main/frontend/templates/account/register.html) - Quick registration option
-- [OAuth2 Success Page](../src/main/frontend/templates/account/oauth2-success.html) - Landing after login
+- [Login Page](../FULLSTACK/FRONTEND/apps/user-web/src/main/resources/templates/account/login.html) - Facebook button in social section
+- [Register Page](../FULLSTACK/FRONTEND/apps/user-web/src/main/resources/templates/account/register.html) - Quick registration option
+- [OAuth2 Success Page](../FULLSTACK/FRONTEND/apps/user-web/src/main/resources/templates/account/oauth2-success.html) - Landing after login
 
 ### Backend Configuration
-- [Application Configuration](../src/main/backend/resources/application.yml) - OAuth2 provider and client registration
-- [Security Config](../src/main/backend/java/com/game/hub/config/SecurityConfig.java) - Spring Security OAuth2 setup
-- [Social Login Config](../src/main/backend/java/com/game/hub/config/SocialLoginConfiguration.java) - Provider status checking
-- [OAuth2 Success Handler](../src/main/backend/java/com/game/hub/config/OAuth2LoginSuccessHandler.java) - Post-auth processing
-- [Account Service](../src/main/backend/java/com/game/hub/service/AccountService.java) - Account creation/linking logic
+- [Application Configuration](../FULLSTACK/BACKEND/services/game-platform-service/src/main/resources/application.yml) - OAuth2 provider and client registration
+- [Security Config](../FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/config/SecurityConfig.java) - Spring Security OAuth2 setup
+- [Social Login Config](../FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/config/SocialLoginConfiguration.java) - Provider status checking
+- [OAuth2 Success Handler](../FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/config/OAuth2LoginSuccessHandler.java) - Post-auth processing
+- [Account Service](../FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/service/AccountService.java) - Account creation/linking logic
 
 ## Troubleshooting
 
@@ -214,7 +214,7 @@ Redirect to /account/oauth2-success or home page
 **Problem:** Email field is empty after login
 
 **Solution:**
-1. In Facebook App settings → Facebook Login → Permissions, check that `email` is requested
+1. In Facebook App settings ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Facebook Login ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Permissions, check that `email` is requested
 2. Verify `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FACEBOOK_SCOPE` includes `email`
 3. User must have a confirmed email in their Facebook account
 

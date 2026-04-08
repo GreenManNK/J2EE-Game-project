@@ -1,4 +1,4 @@
-﻿# Caro C# -> Java Migration Report
+# Caro C# -> Java Migration Report
 
 ## Source analyzed
 - Original project: archived C# snapshot (removed from repo tree after migration cleanup)
@@ -61,12 +61,12 @@
 
 ## Run
 ```bash
-./mvnw spring-boot:run
+cd FULLSTACK/BACKEND && ./mvnw spring-boot:run
 # or
-./gradlew bootRun
+cd FULLSTACK/BACKEND && ./gradlew bootRun
 # or (no local JDK/Maven/Gradle required)
-docker compose pull
-docker compose up -d
+docker compose -f FULLSTACK/BACKEND/docker-compose.yml pull
+docker compose -f FULLSTACK/BACKEND/docker-compose.yml up -d
 ```
 
 ## Note about validation in this environment

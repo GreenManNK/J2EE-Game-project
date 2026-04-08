@@ -12,6 +12,7 @@ Khong con su dung cac launcher `local`, `docker`, `status`, `verify`, `mysql`, `
 Windows CMD:
 
 ```cmd
+cd FULLSTACK/BACKEND
 cmd /c scripts\manual-start.cmd
 cmd /c scripts\manual-start.cmd stop
 ```
@@ -19,6 +20,7 @@ cmd /c scripts\manual-start.cmd stop
 Windows PowerShell:
 
 ```powershell
+Set-Location FULLSTACK/BACKEND
 .\scripts\manual-start.cmd --no-pause
 .\scripts\manual-start.cmd stop --no-pause
 ```
@@ -64,7 +66,7 @@ Cach dung:
 2. Chon run configuration o goc tren ben phai
 3. Bam `Run`
 
-Ca hai nut deu goi chung `scripts/manual-start.cmd`.
+Ca hai nut deu goi chung `FULLSTACK/BACKEND/scripts/manual-start.cmd`.
 
 ## Visual Studio Code
 
@@ -93,7 +95,7 @@ Neu thich dung Command Palette:
 Sau khi start xong, task se in link public ngay trong terminal cua VS Code. Neu can xem lai link dang song:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\runtime\print-runtime-status.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\FULLSTACK\BACKEND\scripts\runtime\print-runtime-status.ps1
 ```
 
 Chi gui `ACTIVE_PUBLIC_GAME_URL` cho nguoi choi.
@@ -106,12 +108,13 @@ Cach dung:
 
 1. `File -> Open -> Folder...` va mo root project
 2. `View -> Terminal`
-3. Dam bao terminal dang dung tai thu muc goc cua repo `Game`
+3. Chuyen vao thu muc `BACKEND`
 4. Chay lenh start/stop bang terminal
 
 Neu terminal la PowerShell:
 
 ```powershell
+Set-Location FULLSTACK/BACKEND
 .\scripts\manual-start.cmd --no-pause
 .\scripts\manual-start.cmd stop --no-pause
 ```
@@ -119,6 +122,7 @@ Neu terminal la PowerShell:
 Neu terminal la Command Prompt:
 
 ```cmd
+cd FULLSTACK/BACKEND
 cmd /c scripts\manual-start.cmd
 cmd /c scripts\manual-start.cmd stop
 ```
@@ -126,14 +130,14 @@ cmd /c scripts\manual-start.cmd stop
 Sau khi start xong, neu can lay link public dang song thi chay them:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\runtime\print-runtime-status.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\FULLSTACK\BACKEND\scripts\runtime\print-runtime-status.ps1
 ```
 
 Chi gui `ACTIVE_PUBLIC_GAME_URL` cho nguoi choi.
 
 ## Cau hinh public on dinh
 
-Neu muon link public co dinh thay vi quick tunnel, mo [`.env.public.local`](C:\Users\GreenManNK\IdeaProjects\Game\.env.public.local) va dien:
+Neu muon link public co dinh thay vi quick tunnel, mo [`.env.public.local`](C:\Users\GreenManNK\IdeaProjects\Game\FULLSTACK\BACKEND\.env.public.local) va dien:
 
 - `CLOUDFLARE_TUNNEL_TOKEN`
 - `PUBLIC_BASE_URL`
@@ -142,7 +146,7 @@ Khi 2 bien nay ton tai, `Start (Default Public)` se uu tien named tunnel tu dong
 
 ## Cau hinh dang nhap/dang ky Google-Facebook
 
-Mo [`.env.public.local`](C:\Users\GreenManNK\IdeaProjects\Game\.env.public.local) va dien:
+Mo [`.env.public.local`](C:\Users\GreenManNK\IdeaProjects\Game\FULLSTACK\BACKEND\.env.public.local) va dien:
 
 - `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID`
 - `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET`
@@ -161,26 +165,27 @@ Cac script `doctor/setup` van duoc giu de kiem tra hoac cai tool thieu, nhung kh
 Kiem tra moi truong:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-env-doctor.ps1 -Mode public -Db auto -CheckOnly
+powershell -NoProfile -ExecutionPolicy Bypass -File .\FULLSTACK\BACKEND\scripts\dev-env-doctor.ps1 -Mode public -Db auto -CheckOnly
 ```
 
 Thu cai cong cu thieu:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev-env-setup.ps1 -Mode public -Db auto
+powershell -NoProfile -ExecutionPolicy Bypass -File .\FULLSTACK\BACKEND\scripts\dev-env-setup.ps1 -Mode public -Db auto
 ```
 
 ## Log can xem khi gap loi
 
-- `run-prod-public.out.log`
-- `run-prod-public.err.log`
-- `cloudflared.err.log`
-- `cloudflared-named.err.log`
-- `public-fallback-tunnel.err.log`
+- `FULLSTACK/BACKEND/run-prod-public.out.log`
+- `FULLSTACK/BACKEND/run-prod-public.err.log`
+- `FULLSTACK/BACKEND/cloudflared.err.log`
+- `FULLSTACK/BACKEND/cloudflared-named.err.log`
+- `FULLSTACK/BACKEND/public-fallback-tunnel.err.log`
 
 ## Lenh nhanh de nho
 
 ```powershell
+cd FULLSTACK/BACKEND
 cmd /c scripts\manual-start.cmd
 cmd /c scripts\manual-start.cmd stop
 ```

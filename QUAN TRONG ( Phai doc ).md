@@ -93,7 +93,7 @@ He thong khong chi la mot game don le. Day la mot hub co 3 lop:
 | Chess | `/Game/games/chess` | offline, bot, online 1v1 | Dong bo nuoc di realtime, room/spectate, ban co da refresh giao dien |
 | Xiangqi | `/Game/games/xiangqi` | offline, bot, online 1v1 | Dong bo nuoc di realtime, room/spectate, ban co da refresh giao dien |
 | Cards hub | `/Game/games/cards` | hub dieu huong | Gom Tien Len va Blackjack |
-| Tien Len | `/Game/cards/tien-len/rooms` | online 4 nguoi, bot | Sảnh phong rieng, room realtime tach biet, ban bai 4 huong |
+| Tien Len | `/Game/cards/tien-len/rooms` | online 4 nguoi, bot | SÃ¡ÂºÂ£nh phong rieng, room realtime tach biet, ban bai 4 huong |
 | Blackjack | `/Game/games/cards/blackjack` | realtime room, spectate | Dat cuoc, hit, stand, double co ban, room page rieng |
 | Quiz | `/Game/games/quiz` | room, spectate, highscores | Ho tro single / multiple / typed question, room page rieng |
 | Typing Battle | `/Game/games/typing` | room realtime | Theo doi progress + accuracy + winner, room page rieng |
@@ -249,16 +249,22 @@ Tai lieu chi tiet: [docs/ACCOUNT_SYNC_API.md](docs/ACCOUNT_SYNC_API.md)
 
 | Thu muc | Vai tro |
 | --- | --- |
-| `src/main/backend/java/com/game/hub/config` | Security, datasource, WebSocket, MVC |
-| `src/main/backend/java/com/game/hub/controller` | Page controller, API controller, admin, social, catalog |
-| `src/main/backend/java/com/game/hub/games` | Tung game/module rieng |
-| `src/main/backend/java/com/game/hub/service` | Service layer, catalog, external modules, achievements |
-| `src/main/backend/java/com/game/hub/repository` | JPA repository |
-| `src/main/backend/java/com/game/hub/entity` | Entity DB |
-| `src/main/frontend/templates` | Thymeleaf pages |
-| `src/main/frontend/static` | CSS, JS, images, PWA assets |
-| `src/test/java` | Unit test, MVC test, integration test, websocket test |
-| `scripts` | launcher, build, runtime, tunnel, env bootstrap |
+| `FULLSTACK/FRONTEND/apps/user-web` | User-facing frontend hien tai |
+| `FULLSTACK/FRONTEND/apps/admin-web` | Scaffold cho admin frontend tach rieng |
+| `FULLSTACK/FRONTEND/packages` | Noi dat shared-ui, shared-hooks, shared-utils |
+| `FULLSTACK/BACKEND/services/game-platform-service` | Spring Boot service hien tai |
+| `FULLSTACK/BACKEND/packages` | Noi dat shared-core, shared-db, shared-contracts |
+| `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/config` | Security, datasource, WebSocket, MVC |
+| `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/controller` | Page controller, API controller, admin, social, catalog |
+| `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games` | Tung game/module rieng |
+| `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/service` | Service layer, catalog, external modules, achievements |
+| `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/repository` | JPA repository |
+| `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/entity` | Entity DB |
+| `FULLSTACK/FRONTEND/apps/user-web/src/main/resources/templates` | Thymeleaf pages |
+| `FULLSTACK/FRONTEND/apps/user-web/src/main/resources/static` | CSS, JS, images, PWA assets |
+| `FULLSTACK/BACKEND/services/game-platform-service/src/test/java` | Unit test, MVC test, integration test, websocket test |
+| `FULLSTACK/BACKEND/scripts` | launcher, build, runtime, tunnel, env bootstrap |
+| `infra` | Noi dat ha tang va deployment artifacts ve sau |
 | `docs` | tai lieu van hanh, account sync, deploy, external module |
 
 ## 10. Cau hinh va runtime can nho
@@ -281,26 +287,29 @@ Tai lieu chi tiet: [docs/ACCOUNT_SYNC_API.md](docs/ACCOUNT_SYNC_API.md)
 
 Main config:
 
-- [src/main/backend/resources/application.yml](src/main/backend/resources/application.yml)
-- [src/main/backend/resources/application-prod.yml](src/main/backend/resources/application-prod.yml)
+- [FULLSTACK/BACKEND/services/game-platform-service/src/main/resources/application.yml](FULLSTACK/BACKEND/services/game-platform-service/src/main/resources/application.yml)
+- [FULLSTACK/BACKEND/services/game-platform-service/src/main/resources/application-prod.yml](FULLSTACK/BACKEND/services/game-platform-service/src/main/resources/application-prod.yml)
 
 ## 11. Cach chay nhanh
 
 ### 11.1 Local bang Maven
 
 ```powershell
+Set-Location FULLSTACK/BACKEND
 .\mvnw.cmd spring-boot:run
 ```
 
 ### 11.2 Local bang Gradle
 
 ```powershell
+Set-Location FULLSTACK/BACKEND
 .\gradlew.bat bootRun
 ```
 
 ### 11.3 Compile / test
 
 ```powershell
+Set-Location FULLSTACK/BACKEND
 .\mvnw.cmd -q -DskipTests compile
 .\mvnw.cmd test
 ```
@@ -308,6 +317,7 @@ Main config:
 Neu `target/` dang bi lock boi process khac tren Windows, co the dung:
 
 ```powershell
+Set-Location FULLSTACK/BACKEND
 .\mvnw.cmd -q "-Dproject.build.directory=target-verify" test
 ```
 
@@ -325,6 +335,7 @@ Khi can verify online flow ngoai pham vi test trong JVM, nen chay them mot dot s
 ### 11.5 Chay bang script tong
 
 ```powershell
+Set-Location FULLSTACK/BACKEND
 .\scripts\manual-start.cmd
 .\scripts\manual-start.cmd stop
 ```
@@ -332,6 +343,7 @@ Khi can verify online flow ngoai pham vi test trong JVM, nen chay them mot dot s
 ### 11.6 Docker
 
 ```powershell
+Set-Location FULLSTACK/BACKEND
 docker compose up --build
 ```
 
@@ -346,10 +358,10 @@ Neu ban moi vao du an, thu tu doc/soi code nen la:
 
 1. Doc file `QUAN TRONG ( Phai doc ).md` nay de nam pham vi chung.
 2. Doc `docs/HUONG_DAN_CHAY_THU_CONG.md` de chay du an.
-3. Doc `src/main/backend/resources/application.yml` de nam env/runtime.
-4. Doc `src/main/backend/java/com/game/hub/controller/HomeController.java` va `GameCatalogController.java` de nam flow storefront + catalog.
-5. Doc game module ma ban sap sua trong `src/main/backend/java/com/game/hub/games/...`.
-6. Doc template cung ten trong `src/main/frontend/templates/...`.
+3. Doc `FULLSTACK/BACKEND/services/game-platform-service/src/main/resources/application.yml` de nam env/runtime.
+4. Doc `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/controller/HomeController.java` va `GameCatalogController.java` de nam flow storefront + catalog.
+5. Doc game module ma ban sap sua trong `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/...`.
+6. Doc template cung ten trong `FULLSTACK/FRONTEND/apps/user-web/src/main/resources/templates/...`.
 7. Chay test lien quan truoc khi sua.
 
 ## 13. Cac diem can luu y khi tiep tuc phat trien
@@ -366,7 +378,7 @@ Neu ban moi vao du an, thu tu doc/soi code nen la:
 - External module registry co the override game native neu manifest bat `overrideExisting`.
 - Full suite hien tai dang o muc `253` test pass.
 - Online flow hien da duoc verify them bang smoke test chay tren app jar local that, khong chi dua vao surefire test trong JVM.
-- Khi sua room flow/websocket, uu tien re-run ca `.\mvnw.cmd test` va mot dot smoke test local cho create/join/spectate/rejoin/action.
+- Khi sua room flow/websocket, uu tien re-run ca `Set-Location FULLSTACK/BACKEND; .\mvnw.cmd test` va mot dot smoke test local cho create/join/spectate/rejoin/action.
 
 ## 14. Moc lich su phat trien
 

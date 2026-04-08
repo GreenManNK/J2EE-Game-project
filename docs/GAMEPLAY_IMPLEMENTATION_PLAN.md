@@ -92,9 +92,9 @@ Ly do:
 
 ### Hien trang code
 
-- room service: `src/main/backend/java/com/game/hub/games/caro/service/GameRoomService.java`
-- websocket controller: `src/main/backend/java/com/game/hub/games/caro/websocket/GameWebSocketController.java`
-- bot: `src/main/backend/java/com/game/hub/games/caro/controller/BotController.java`
+- room service: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/caro/service/GameRoomService.java`
+- websocket controller: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/caro/websocket/GameWebSocketController.java`
+- bot: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/caro/controller/BotController.java`
 - da co:
   - online room 2 nguoi
   - spectate
@@ -167,9 +167,9 @@ Ly do:
 
 ### Hien trang code
 
-- room service: `src/main/backend/java/com/game/hub/games/chess/service/ChessOnlineRoomService.java`
-- move rules: `src/main/backend/java/com/game/hub/games/chess/service/ChessMoveRules.java`
-- websocket: `src/main/backend/java/com/game/hub/games/chess/websocket/ChessWebSocketController.java`
+- room service: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/chess/service/ChessOnlineRoomService.java`
+- move rules: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/chess/service/ChessMoveRules.java`
+- websocket: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/chess/websocket/ChessWebSocketController.java`
 - da co:
   - join room / spectate
   - move validation co ban
@@ -242,9 +242,9 @@ Ly do:
 
 ### Hien trang code
 
-- room service: `src/main/backend/java/com/game/hub/games/xiangqi/service/XiangqiOnlineRoomService.java`
-- move rules: `src/main/backend/java/com/game/hub/games/xiangqi/service/XiangqiMoveRules.java`
-- websocket: `src/main/backend/java/com/game/hub/games/xiangqi/websocket/XiangqiWebSocketController.java`
+- room service: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/xiangqi/service/XiangqiOnlineRoomService.java`
+- move rules: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/xiangqi/service/XiangqiMoveRules.java`
+- websocket: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/xiangqi/websocket/XiangqiWebSocketController.java`
 - da co:
   - online 1v1
   - spectate
@@ -308,8 +308,8 @@ Ly do:
 
 ### Hien trang code
 
-- room service: `src/main/backend/java/com/game/hub/games/cards/tienlen/service/TienLenRoomService.java`
-- websocket: `src/main/backend/java/com/game/hub/games/cards/tienlen/websocket/TienLenWebSocketController.java`
+- room service: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/cards/tienlen/service/TienLenRoomService.java`
+- websocket: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/cards/tienlen/websocket/TienLenWebSocketController.java`
 - da co kha nhieu:
   - 4 nguoi
   - auto-fill bot
@@ -380,8 +380,8 @@ Ly do:
 
 ### Hien trang code
 
-- room logic: `src/main/backend/java/com/game/hub/games/cards/blackjack/logic/BlackjackRoom.java`
-- raw socket: `src/main/backend/java/com/game/hub/games/cards/blackjack/websocket/BlackjackSocket.java`
+- room logic: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/cards/blackjack/logic/BlackjackRoom.java`
+- raw socket: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/cards/blackjack/websocket/BlackjackSocket.java`
 - da co:
   - create / join / spectate
   - bet
@@ -442,9 +442,9 @@ Ly do:
 
 ### Hien trang code
 
-- controller: `src/main/backend/java/com/game/hub/games/quiz/controller/QuizController.java`
-- room logic: `src/main/backend/java/com/game/hub/games/quiz/logic/QuizRoom.java`
-- socket: `src/main/backend/java/com/game/hub/games/quiz/websocket/QuizSocket.java`
+- controller: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/quiz/controller/QuizController.java`
+- room logic: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/quiz/logic/QuizRoom.java`
+- socket: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/quiz/websocket/QuizSocket.java`
 - da co:
   - create / join / spectate / leave
   - host start
@@ -499,9 +499,9 @@ Ly do:
 
 ### Hien trang code
 
-- room logic: `src/main/backend/java/com/game/hub/games/typing/logic/TypingRoom.java`
-- socket: `src/main/backend/java/com/game/hub/games/typing/websocket/TypingSocket.java`
-- service: `src/main/backend/java/com/game/hub/games/typing/service/TypingService.java`
+- room logic: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/typing/logic/TypingRoom.java`
+- socket: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/typing/websocket/TypingSocket.java`
+- service: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/typing/service/TypingService.java`
 - da co:
   - create / join / leave
   - random text
@@ -557,9 +557,9 @@ Ly do:
 
 ### Hien trang code
 
-- controller: `src/main/backend/java/com/game/hub/games/minesweeper/controller/MinesweeperController.java`
-- UI chinh: `src/main/frontend/templates/minesweeper/index.html`
-- portal page: `src/main/frontend/templates/games/minesweeper.html`
+- controller: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/minesweeper/controller/MinesweeperController.java`
+- UI chinh: `FULLSTACK/FRONTEND/apps/user-web/src/main/resources/templates/minesweeper/index.html`
+- portal page: `FULLSTACK/FRONTEND/apps/user-web/src/main/resources/templates/games/minesweeper.html`
 - da co:
   - preset level
   - local JS board
@@ -630,12 +630,12 @@ Ly do:
 
 ### Hien trang code
 
-- controllers: `src/main/backend/java/com/game/hub/games/puzzle/controller/*`
+- controllers: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/puzzle/controller/*`
 - templates:
-  - `src/main/frontend/templates/games/puzzle/jigsaw.html`
-  - `src/main/frontend/templates/games/puzzle/sliding.html`
-  - `src/main/frontend/templates/games/puzzle/sudoku.html`
-  - `src/main/frontend/templates/games/puzzle/word.html`
+  - `FULLSTACK/FRONTEND/apps/user-web/src/main/resources/templates/games/puzzle/jigsaw.html`
+  - `FULLSTACK/FRONTEND/apps/user-web/src/main/resources/templates/games/puzzle/sliding.html`
+  - `FULLSTACK/FRONTEND/apps/user-web/src/main/resources/templates/games/puzzle/sudoku.html`
+  - `FULLSTACK/FRONTEND/apps/user-web/src/main/resources/templates/games/puzzle/word.html`
 - da co local gameplay cho ca 4 mini-game.
 
 ### Do lech / van de
@@ -695,10 +695,10 @@ Ly do:
 
 ### Hien trang code
 
-- room service: `src/main/backend/java/com/game/hub/games/monopoly/service/MonopolyRoomService.java`
-- engine: `src/main/backend/java/com/game/hub/games/monopoly/service/MonopolyGameEngine.java`
-- room API: `src/main/backend/java/com/game/hub/games/monopoly/controller/MonopolyRoomApiController.java`
-- client UI: `src/main/frontend/static/js/monopoly-game.js`
+- room service: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/monopoly/service/MonopolyRoomService.java`
+- engine: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/monopoly/service/MonopolyGameEngine.java`
+- room API: `FULLSTACK/BACKEND/services/game-platform-service/src/main/java/com/game/hub/games/monopoly/controller/MonopolyRoomApiController.java`
+- client UI: `FULLSTACK/FRONTEND/apps/user-web/src/main/resources/static/js/monopoly-game.js`
 - da co:
   - local 2-4 nguoi
   - room create/join/leave/token/start

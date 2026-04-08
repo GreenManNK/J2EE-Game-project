@@ -12,7 +12,7 @@
         "--no-pause"
       ],
       "options": {
-        "cwd": "${workspaceFolder}"
+        "cwd": "${workspaceFolder}/FULLSTACK/BACKEND"
       },
       "group": {
         "kind": "build",
@@ -37,7 +37,7 @@
         "--no-pause"
       ],
       "options": {
-        "cwd": "${workspaceFolder}"
+        "cwd": "${workspaceFolder}/FULLSTACK/BACKEND"
       },
       "presentation": {
         "reveal": "always",
